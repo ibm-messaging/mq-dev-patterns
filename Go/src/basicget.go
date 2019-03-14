@@ -59,16 +59,15 @@ func main() {
 	logger.Println("Application is Ending")
 }
 
-// Output Basic Authentication values to verify that they have
+// Output authentication values to verify that they have
 // been read from the envrionment settings
 func logSettings() {
 	logger.Printf("Username is (%s)\n", mqsamputils.EnvSettings.User)
-	logger.Printf("Password is (%s)\n", mqsamputils.EnvSettings.Password)
+	//logger.Printf("Password is (%s)\n", mqsamputils.EnvSettings.Password)
 }
 
 func logError(err error) {
 	logger.Println(err)
-	logger.Printf("Error Code %v", err.(*ibmmq.MQReturn).MQCC)
 }
 
 func getMessage(qObject ibmmq.MQObject) {
@@ -97,7 +96,7 @@ func getMessage(qObject ibmmq.MQObject) {
 		// for the messages put by the amqsput sample.
 		buffer := make([]byte, 1024)
 
-		// Now we can try to get the message
+		// Now try to get the message
 		datalen, err = qObject.Get(getmqmd, gmo, buffer)
 
 		if err != nil {
@@ -106,14 +105,13 @@ func getMessage(qObject ibmmq.MQObject) {
 			mqret := err.(*ibmmq.MQReturn)
 			logger.Printf("return code %d, expected %d,", mqret.MQRC, ibmmq.MQRC_NO_MSG_AVAILABLE)
 			if mqret.MQRC == ibmmq.MQRC_NO_MSG_AVAILABLE {
-				// If there's no message available, then I won't treat that as a real error as
+				// If there's no message available, then don't treat that as a real error as
 				// it's an expected situation
 				msgAvail = true
 				err = nil
 			}
 		} else {
-			// Assume the message is a printable string, which it will be
-			// if it's been created by the amqsput program
+			// Assume the message is a printable string
 			logger.Printf("Got message of length %d: ", datalen)
 			logger.Println(strings.TrimSpace(string(buffer[:datalen])))
 

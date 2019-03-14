@@ -35,7 +35,7 @@ type message struct {
 	Value    int    `json:"value"`
 }
 
-// Main Entry to Put application
+// Main Entry to request application
 // Creates Connection to Queue
 func main() {
 	logger.Println("Application is Starting")
@@ -76,16 +76,15 @@ func main() {
 	logger.Println("Application is Ending")
 }
 
-// Output Basic Authentication values to verify that they have
+// Output authentication values to verify that they have
 // been read from the envrionment settings
 func logSettings() {
 	logger.Printf("Username is (%s)\n", mqsamputils.EnvSettings.User)
-	logger.Printf("Password is (%s)\n", mqsamputils.EnvSettings.Password)
+	//logger.Printf("Password is (%s)\n", mqsamputils.EnvSettings.Password)
 }
 
 func logError(err error) {
 	logger.Println(err)
-	logger.Printf("Error Code %v", err.(*ibmmq.MQReturn).MQCC)
 }
 
 func putMessage(qObject ibmmq.MQObject, qDynamicObject ibmmq.MQObject) ([]byte, error) {
@@ -108,7 +107,6 @@ func putMessage(qObject ibmmq.MQObject, qDynamicObject ibmmq.MQObject) ([]byte, 
 	putmqmd.Format = ibmmq.MQFMT_STRING
 
 	// And create the contents to include a timestamp just to prove when it was created
-	//msgData := "Hello from Go at " + time.Now().Format(time.RFC3339)
 
 	msgData := &message{
 		Greeting: "Hello from Go at " + time.Now().Format(time.RFC3339),
@@ -122,7 +120,6 @@ func putMessage(qObject ibmmq.MQObject, qDynamicObject ibmmq.MQObject) ([]byte, 
 	}
 
 	// The message is always sent as bytes, so has to be converted before the PUT.
-	//buffer := []byte(msgData.greeting)
 
 	// Now put the message to the queue
 	logger.Printf("Sending message %s", data)
@@ -132,7 +129,7 @@ func putMessage(qObject ibmmq.MQObject, qDynamicObject ibmmq.MQObject) ([]byte, 
 		logError(err)
 	} else {
 		logger.Println("Put message to", strings.TrimSpace(qObject.Name))
-		// Print the MsgId so it can be used as a parameter to amqsget
+
 		logger.Println("MsgId:" + hex.EncodeToString(putmqmd.MsgId))
 		logger.Println("CorrelID:" + hex.EncodeToString(putmqmd.CorrelId))
 		corellationId = putmqmd.CorrelId
@@ -156,16 +153,10 @@ func awaitResponse(qDynamicObject ibmmq.MQObject, correlId []byte) {
 		// The default options are OK, but it's always
 		// a good idea to be explicit about transactional boundaries as
 		// not all platforms behave the same way.
-		//gmo.Options = ibmmq.MQGMO_NO_SYNCPOINT | ibmmq.MQGMO_NO_WAIT | ibmmq.MQGMO_CONVERT | ibmmq.MQGMO_FAIL_IF_QUIESCING;
 		gmo.Options = ibmmq.MQGMO_WAIT | ibmmq.MQGMO_FAIL_IF_QUIESCING
-		// Set options to wait for a maximum of 3 seconds for any new message to arrive
-		//gmo.Options |= ibmmq.MQGMO_WAIT
+		// Set options to wait for a maximum of 10 seconds for any new message to arrive
 		gmo.MatchOptions = ibmmq.MQMO_MATCH_CORREL_ID
 
-		// **** Why does setting either of the below .MsgId and / or CorrelId
-		// stop the message rom being received?
-
-		//getmqmd.MsgId = correlId
 		getmqmd.CorrelId = correlId
 
 		gmo.WaitInterval = 10 * 1000 // The WaitInterval is in milliseconds
@@ -176,7 +167,7 @@ func awaitResponse(qDynamicObject ibmmq.MQObject, correlId []byte) {
 		// for the messages put by the amqsput sample.
 		buffer := make([]byte, 1024)
 
-		// Now we can try to get the message
+		// Now try to get the message
 		datalen, err = qDynamicObject.Get(getmqmd, gmo, buffer)
 
 		if err != nil {
@@ -185,14 +176,13 @@ func awaitResponse(qDynamicObject ibmmq.MQObject, correlId []byte) {
 			mqret := err.(*ibmmq.MQReturn)
 			logger.Printf("return code %d, expected %d,", mqret.MQRC, ibmmq.MQRC_NO_MSG_AVAILABLE)
 			if mqret.MQRC == ibmmq.MQRC_NO_MSG_AVAILABLE {
-				// If there's no message available, then I won't treat that as a real error as
+				// If there's no message available, then don't treat that as a real error as
 				// it's an expected situation
 				msgAvail = true
 				err = nil
 			}
 		} else {
-			// Assume the message is a printable string, which it will be
-			// if it's been created by the amqsput program
+			// Assume the message is a printable string
 			logger.Printf("Got message of length %d: ", datalen)
 			logger.Println(strings.TrimSpace(string(buffer[:datalen])))
 			msgAvail = false

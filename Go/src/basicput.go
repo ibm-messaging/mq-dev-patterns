@@ -63,16 +63,15 @@ func main() {
 	logger.Println("Application is Ending")
 }
 
-// Output Basic Authentication values to verify that they have
+// Output authentication values to verify that they have
 // been read from the envrionment settings
 func logSettings() {
 	logger.Printf("Username is (%s)\n", mqsamputils.EnvSettings.User)
-	logger.Printf("Password is (%s)\n", mqsamputils.EnvSettings.Password)
+	//logger.Printf("Password is (%s)\n", mqsamputils.EnvSettings.Password)
 }
 
 func logError(err error) {
 	logger.Println(err)
-	logger.Printf("Error Code %v", err.(*ibmmq.MQReturn).MQCC)
 }
 
 func putMessage(qObject ibmmq.MQObject) {
@@ -92,8 +91,6 @@ func putMessage(qObject ibmmq.MQObject) {
 	putmqmd.Format = ibmmq.MQFMT_STRING
 
 	// And create the contents to include a timestamp just to prove when it was created
-	//msgData := "Hello from Go at " + time.Now().Format(time.RFC3339)
-
 	msgData := &message{
 		Greeting: "Hello from Go at " + time.Now().Format(time.RFC3339),
 		Value:    rand.Intn(100)}
@@ -106,7 +103,6 @@ func putMessage(qObject ibmmq.MQObject) {
 	}
 
 	// The message is always sent as bytes, so has to be converted before the PUT.
-	//buffer := []byte(msgData.greeting)
 
 	// Now put the message to the queue
 	logger.Printf("Sending message %s", data)
