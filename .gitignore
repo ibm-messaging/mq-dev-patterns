@@ -1,0 +1,11 @@
+*.class
+*.log
+*.jar
+*.war
+*.DS_Store
+*.pyc
+**/pkg/*
+**/mq-golang/*
+**/Go/src/*
+!**/Go/src/*.go
+**/node_modules/*
