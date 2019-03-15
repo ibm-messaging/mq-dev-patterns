@@ -1,1 +1,186 @@
-# mq-dev-patterns
+## IBM MQ samples and patterns
+
+When your application needs messaging, you don’t want to spend countless hours learning the basics, you want to jump straight in and play, see how things work.
+
+We have taken parts that make up the current set of our IBM MQ samples and built applications that you can use to do just that.
+
+You'll find `put/get`, `pub/sub`, `request/response` samples that you can run in the same language or you can try mixing things up and do a `put` in Java, `get` with Go etc.
+
+There is a [README for each language](#readme-docs) that helps you with the initial setup.
+
+You need an MQ server with a queue or topic to run these samples against. To find out more about what MQ is and how it works, start from [LearnMQ](https://developer.ibm.com/messaging/learn-mq/).
+
+To get your MQ server set up, check out [Ready, Set, Connect](https://developer.ibm.com/messaging/learn-mq/mq-tutorials/mq-connect-to-queue-manager/).
+
+You can use your own MQ server, you'll just have to adjust the MQ objects accordingly so they match on both the server and the client side.
+
+* **HOST** - Host name or IP address of your queue manager
+* **PORT** - Listener port for your queue manager
+* **CHANNEL** - MQ channel name
+* **QMGR** - Queue manager name
+* **APP_USER** - User name that application uses to connect to MQ
+* **APP_PASSWORD** - Password that the application uses to connect to MQ
+* **QUEUE_NAME** - Queue name for `put/get`, `request/response`
+* **TOPIC_NAME** - Topic for `publish/subscribe`
+* **MODEL_QUEUE_NAME** - Model Queue used as template to base dynamic queues on for `request/response`
+* **DYNAMIC_QUEUE_PREFIX** - Prefix for dynamically created reply queue - you don't need to create this
+* **CIPHER** - If present in the `env,json`, TLS Cipher specification to use
+* **KEY_REPOSITORY** - Path to the `keystore` `.kbd` and `.sth` files. If present in the `env.json`, TLS is enabled - this is on the app side.
+
+If you use our MQ server for developers in Docker, Linux or Windows, with the default config, you'll have the following MQ objects on the MQ server;
+
+~~~Text
+Host - localhost
+Port - 1414 - Non TLS
+Channel - DEV.APP.SVRCONN
+Queue manager - QM1
+App user - app (member of mqclient group)
+App password - passw0rd (you can set your own when running the Docker container, MQ_APP_PASSWORD)
+Queue - DEV.QUEUE.1
+Topic - dev/
+Cipher suite - TLS_RSA_WITH_AES_128_CBC_SHA256
+~~~
+
+The default configuration for MQ objects that you get with our Docker container does not include the model queue.
+
+We use the model queue in the `request/response` pattern as a template for the request application to create a temporary reply queue.
+
+Use the MQ Web Console to create the model queue. You can access the MQ Web Console for your MQ running in Docker at [https://localhost:9443/ibmmq/console/](https://localhost:9443/ibmmq/console/). You can log in with the [default admin details](https://github.com/ibm-messaging/mq-container/blob/4d4051312eb9d95a086e2ead76482d1f1616d149/docs/developer-config.md#web-console) or your own, if you made changes.
+
+## Environment variables
+
+All the samples make use of the same environment variables to define MQ connection settings - these match the default developer config objects on the MQ server.
+
+We've tried to make this easier by providing one `env.json` file in the main `samples` directory;
+
+```JSON
+{
+"HOST":"localhost",
+"PORT":"1414",
+"CHANNEL":"DEV.APP.SVRCONN",
+"QMGR":"QM1",
+"APP_USER":"app",
+"APP_PASSWORD":"passw0rd",
+"QUEUE_NAME":"DEV.QUEUE.1",
+"MODEL_QUEUE_NAME":"DEV.APP.MODEL.QUEUE",
+"TOPIC_NAME":"dev/",
+"CIPHER_SUITE":"TLS_RSA_WITH_AES_128_CBC_SHA256",
+"KEY_REPOSITORY": "./keys/clientkey"
+}
+```
+
+You can use the `env.json` file to 'switch on' or 'switch off' parts of the code.
+
+## TLS
+
+For example, removing the CIPHER_SUITE and KEY_REPOSITORY lines (don't forget to remove the comma from the last line in the json)
+will mean the sample will not connect using TLS.
+
+Also, if you have two docker containers, one with TLS and one without, changing the port number in the `env.json` allows you to switch between them.
+
+### Running a second Docker container with TLS
+
+Let's say you're already running MQ in a Docker container without TLS having set it up by following the [Ready, Set, Connect](https://developer.ibm.com/messaging/learn-mq/mq-tutorials/mq-connect-to-queue-manager/) tutorial.
+
+Now you want to run the second Docker container to try the samples with TLS switched on.
+
+You can have the same MQ objects set up in both, and switch between them by using the host port forwarding to make the non TLS queue manager available on port 1414 and the TLS one on port 1415.
+
+#### Creating self signed certificates by using `openssl`
+
+Do this in a directory you'll easily remember as you'll have to copy the server certificates over into a temporary folder each time you need to run MQ with TLS in a Docker container.
+
+You'll also have to point to the client keystore location from the `env.json` file so that if you want to run samples with TLS, the sample knows where to look.
+
+1. Generate a self-signed server key and certificate
+
+   `openssl req -newkey rsa:2048 -nodes -keyout serverkey.pem -x509 -days 365 -out servercert.pem`
+
+   An RSA private key will be generated and you'll need to complete information that will go inside the self signed certificate.
+
+2. Verify that the certificate has been created successfully
+
+   `openssl x509 -text -noout -in servercert.pem`
+
+   When done, you'll see the certificate data output.
+
+3. Create a PKCS12 keystore for the server
+
+   `openssl pkcs12 -export -name server-cert -in servercert.pem -inkey serverkey.pem -out serverkeystore.p12`
+
+    You'll be asked to create an export password for the PKCS12 keystore. You'll need this later so note it down.
+
+4. Create a client keystore
+
+ - For JMS and XMS based clients, create a PKCS12 client keystore
+
+    `keytool -keystore clientkey.jks -storetype jks -importcert -file servercert.pem -alias server-cert`
+
+ - For MQI based Client (Node, Python, Go)
+
+    Create a key database, a stash file. You will need to have installed the MQI client, so that you can run the runmqakm tool:
+
+    `runmqakm -keydb -create -db clientkey.kdb -pw tru5tpassw0rd -type pkcs12 -expire 1000 -stash`
+
+5. Import the server's public key certificate into the client key database
+
+   `runmqakm -cert -add -label QM1.cert -db clientkey.kdb -pw tru5tpassw0rd -trust enable -file servercert.pem`
+
+6. Create a temporary location on your machine
+
+   You'll use this to share your newly created server certificate with the second Docker container, allowing MQ to be configured with TLS.
+
+   `mkdir /tmp/mq`
+
+7. Copy the server certificate and keystore to the temporary directory
+
+   `cp server* /tmp/mq/`
+
+8. Run the new docker container
+
+   Give it a name, for example `mqtls` so you can differentiate it from your other MQ container when you `docker ps`, and point it at the location where you copied the server certificate to.
+
+   `docker run --name mqtls --env LICENSE=accept --env MQ_QMGR_NAME=QM1 --volume /tmp/mq:/mnt/certs --publish 1415:1414 --publish 9444:9443 --detach --env MQ_APP_PASSWORD=passw0rd --env MQ_TLS_KEYSTORE=/mnt/certs/serverkeystore.p12 --env MQ_TLS_PASSPHRASE=tru5tpassw0rd  ibmcom/mq:latest`
+
+   Remember to use a secure password for `MQ_APP_PASSWORD` and use your server keystore password for `MQ_TLS_PASSPHRASE`.
+
+You should be able to open the MQ Web console for this TLS container on https://localhost:9444/ibmmq/console.
+
+*Note:* If/when you stop the container running MQ with TLS, the temporary folder with the server certificates gets deleted. To start the container again, recreate the `/tmp/mq` directory and copy the server certificates into the directory.
+
+To check the ID or name of the TLS container that was running previously, try;
+
+`docker ps -a`
+
+then run
+
+`docker start <container id or name>`
+
+
+## MQI Paths
+The MQI samples; `Node.js`, `Python`, `Go`, require the MQI Client to have been
+installed and the paths
+
+`MQ_INSTALLATION_PATH` and
+
+`DYLD_LIBRARY_PATH` set.
+
+If you have installed the MQI client manually, ensure that
+
+`MQ_INSTALLATION_PATH` is set to the root directory of your MQI Client installation and
+
+`DYLD_LIBRARY_PATH` is set to `$MQ_INSTALLATION_PATH\lib64`.
+
+Do not install any application requirements until
+
+`MQ_INSTALLATION_PATH` and
+
+`DYLD_LIBRARY_PATH` are set and exported (see language README docs for more info).
+
+## README docs
+
+## [Node.js](/Node.js/README.md)
+## [JMS](/JMS/README.md)
+## [Python](/Python/README.md)
+## [C# .Net](/dotnet/README.md)
+## [Go](/Go/README.md)
