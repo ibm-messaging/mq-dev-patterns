@@ -150,7 +150,7 @@ Will be compiled when you compile either request / response samples.
 
 To run the samples with TLS you need to provide additional arguments;
 
-`java -Djavax.net.ssl.trustStoreType=jks -Djavax.net.ssl.trustStore=/your_key_directory/clientkey.jks -Djavax.net.ssl.trustStore Password=<your_keystore_pw> -Dcom.ibm.mq.cfg.useIBMCipherMappings=false -cp ./com.ibm.mq.allclient-9.1.1.0.jar:./javax.jms-api-2.0.1.jar:. com.ibm.mq.samples.jms.JmsPut`
+`java -Djavax.net.ssl.trustStoreType=jks -Djavax.net.ssl.trustStore=/your_key_directory/clientkey.jks -Djavax.net.ssl.trustStorePassword=<your_keystore_pw> -Dcom.ibm.mq.cfg.useIBMCipherMappings=false -cp ./com.ibm.mq.allclient-9.1.1.0.jar:./javax.jms-api-2.0.1.jar:. com.ibm.mq.samples.jms.JmsPut`
 
  *A note on the* `Dcom.ibm.mq.cfg.useIBMCipherMappings=false` property
 
