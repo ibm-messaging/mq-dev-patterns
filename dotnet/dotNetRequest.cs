@@ -22,7 +22,7 @@ using Newtonsoft.Json;
 using IBM.XMS;
 
 
-namespace dotnet
+namespace ibmmq_samples
 {
     class SimpleRequest
     {

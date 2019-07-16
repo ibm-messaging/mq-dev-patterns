@@ -16,7 +16,7 @@
 
 using System;
 
-namespace dotnet
+namespace ibmmq_samples
 {
     class Rocket
     {

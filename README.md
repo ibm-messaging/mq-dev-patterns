@@ -122,21 +122,21 @@ You'll also have to point to the client keystore location from the `env.json` fi
 
     `runmqakm -keydb -create -db clientkey.kdb -pw tru5tpassw0rd -type pkcs12 -expire 1000 -stash`
 
-5. Import the server's public key certificate into the client key database
+    Import the server's public key certificate into the client key database
 
    `runmqakm -cert -add -label QM1.cert -db clientkey.kdb -pw tru5tpassw0rd -trust enable -file servercert.pem`
 
-6. Create a temporary location on your machine
+5. Create a temporary location on your machine
 
    You'll use this to share your newly created server certificate with the second Docker container, allowing MQ to be configured with TLS.
 
    `mkdir /tmp/mq`
 
-7. Copy the server certificate and keystore to the temporary directory
+6. Copy the server certificate and keystore to the temporary directory
 
    `cp server* /tmp/mq/`
 
-8. Run the new docker container
+7. Run the new docker container
 
    Give it a name, for example `mqtls` so you can differentiate it from your other MQ container when you `docker ps`, and point it at the location where you copied the server certificate to.
 
