@@ -35,7 +35,7 @@
   <ItemGroup>
     <Reference Include="IBM.XMS, Version=9.1.2.0, Culture=neutral, PublicKeyToken=d2666ab12fca862b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Program Files\IBM\MQ\bin\IBM.XMS.dll</HintPath>
+      <HintPath>C:\Program Files\IBM\MQ\bin\IBM.XMS.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -60,6 +60,9 @@
     <Compile Include="Rocket.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="env.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
     <None Include="README.md" />
   </ItemGroup>

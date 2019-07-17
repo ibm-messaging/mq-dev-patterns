@@ -5,9 +5,11 @@ The XMS samples are based on the the existing samples shipped with IBM MQ Server
 
 [Windows MQ client v 9.1.2.0 download](https://www-945.ibm.com/support/fixcentral/swg/selectFixes?parent=ibm~WebSphere&product=ibm/WebSphere/WebSphere+MQ&release=9.1.2&platform=Windows+64-bit,+x86&function=fixId&fixids=9.1.2.0-IBM-MQC-Win64+&useReleaseAsTarget=true&includeSupersedes=0)
 
-Reference the IBM.XMS library through Visual Studio Solution References option, right click and browse to [MQ default install location](C:\Program Files\IBM\MQ\bin\IBM.XMS.dll).
+Reference the 'IBM.XMS' library through Visual Studio Solution References option, right click and browse to [MQ default install location](C:\Program Files\IBM\MQ\bin\IBM.XMS.dll).
 
-We have included '.sln' and '.csproj' files. These were created with the Visual Studio Community 2019. You'll need to copy the 'env.json' file from the top level directory to '/bin/Debug' in your project directory and adjust to use your own queue manager.
+You can also get the 'IBM.XMS' library from the IBM MQ Redistributable Client zip for Windows - for example [9.1.2.0-IBM-MQC-Redist-Win64.zip] (http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist/). You don't need to install it, just unzip and use.
+
+We have included '.sln', '.csproj', 'packages.config' and 'AssemblyInfo.cs' files. These were created with the Visual Studio Community 2019. We've also added the copy of the 'env.json' file from the top level directory to the '/dotnet' project directory, you'll need to copy this again to '/bin/Debug' in your project directory and adjust the parameters to use your own queue manager.
 
 ## Reference from Visual Studio
 
@@ -21,17 +23,17 @@ We drive the running of all the samples through this one module that has the one
 
 For example:
 
-`dotnet.exe put`
+`ibmmq_samples.exe put`
 
 ## Put / Get
 
 Run
 
-`dotnet.exe put`
+`ibmmq_samples.exe put`
 
 In a separate terminal
 
-`dotnet.exe get`
+`ibmmq_samples.exe get`
 
 
 ## Publish / Subscribe
@@ -42,13 +44,13 @@ You have to run the subscriber sample first so it creates a subscription and wai
 
 Run
 
-`dotnet.exe sub`
+`ibmmq_samples.exe sub`
 
 In the second terminal;
 
 Run the publisher sample
 
-`dotnet.exe pub`
+`ibmmq_samples.exe pub`
 
 
 ## Request / Response
@@ -59,7 +61,7 @@ Run the request sample
 
 Run
 
-`dotnet.exe request`
+`ibmmq_samples.exe request`
 
 The request sample will put a message and wait for a response until it either gets a response or you ctrl+c interrupt it.
 
@@ -69,7 +71,7 @@ Run the response sample
 
 Run
 
-`dotnet.exe response`
+`ibmmq_samples.exe response`
 
 The response sample will get a message from the queue, process it and put the response on the reply to queue and keep looking for more messages to respond to till you ctrl+c interrupt it.
 
