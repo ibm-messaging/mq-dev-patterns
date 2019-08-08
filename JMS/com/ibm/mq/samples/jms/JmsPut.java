@@ -45,7 +45,7 @@ public class JmsPut {
     private static String APP_PASSWORD; // = "passw0rd"; // Password that the application uses to connect to MQ
     private static String QUEUE_NAME; // = "DEV.QUEUE.1"; // Queue that the application uses to put and get messages
                                       // to and from
-    private static String CIPHER_SUITE;
+    private static String CIPHER_SUITE; 
 
     public static void main(String[] args) {
         initialiseLogging();

@@ -92,63 +92,51 @@ Do this in a directory you'll easily remember as you'll have to copy the server 
 
 You'll also have to point to the client keystore location from the `env.json` file so that if you want to run samples with TLS, the sample knows where to look.
 
-1. Generate a self-signed server key and certificate
+1. Create a new directory. Navigate inside this and generate a self-signed server key and certificate
 
-   `openssl req -newkey rsa:2048 -nodes -keyout serverkey.pem -x509 -days 365 -out servercert.pem`
+   `openssl req -newkey rsa:2048 -nodes -keyout key.key -x509 -days 365 -out key.crt`
 
    An RSA private key will be generated and you'll need to complete information that will go inside the self signed certificate.
 
+   **IMPORTANT: this directory should initially be empty.**
+
 2. Verify that the certificate has been created successfully
 
-   `openssl x509 -text -noout -in servercert.pem`
+   `openssl x509 -text -noout -in key.crt`
 
    When done, you'll see the certificate data output.
 
-3. Create a PKCS12 keystore for the server
+3. Create a client keystore.
 
-   `openssl pkcs12 -export -name server-cert -in servercert.pem -inkey serverkey.pem -out serverkeystore.p12`
+ - For **JMS and XMS** based clients, create a .jks client keystore and create and verify a keystore password:
 
-    You'll be asked to create an export password for the PKCS12 keystore. You'll need this later so note it down.
+    `keytool -keystore clientkey.jks -storetype jks -importcert -file key.crt -alias server-certificate`
 
-4. Create a client keystore
-
- - For JMS and XMS based clients, create a PKCS12 client keystore
-
-    `keytool -keystore clientkey.jks -storetype jks -importcert -file servercert.pem -alias server-cert`
-
- - For MQI based Client (Node, Python, Go)
+ - For MQI based Clients (**Node, Python, Go**)
 
     Create a key database, a stash file. You will need to have installed the MQI client, so that you can run the runmqakm tool:
 
     `runmqakm -keydb -create -db clientkey.kdb -pw tru5tpassw0rd -type pkcs12 -expire 1000 -stash`
 
-5. Import the server's public key certificate into the client key database
+    Import the server's public key certificate into the client key database
 
-   `runmqakm -cert -add -label QM1.cert -db clientkey.kdb -pw tru5tpassw0rd -trust enable -file servercert.pem`
+    `runmqakm -cert -add -label QM1.cert -db clientkey.kdb -pw tru5tpassw0rd -trust enable -file key.crt`
 
-6. Create a temporary location on your machine
+4. Move the client keystore
 
-   You'll use this to share your newly created server certificate with the second Docker container, allowing MQ to be configured with TLS.
+- Move the client keystore somewhere you will remember. Ensure the only files in the current directory are the `key.key` and `key.crt` files, as IBM MQ will use the contents of this directory to configure security inside the container.
 
-   `mkdir /tmp/mq`
+5. Run the new docker container
 
-7. Copy the server certificate and keystore to the temporary directory
+    Give it a name, for example `mqtls` so you can differentiate it from your other MQ container when you `docker ps`, and point it at the location where you copied the server certificate.
 
-   `cp server* /tmp/mq/`
+    `docker run --name mqtls --env LICENSE=accept --env MQ_QMGR_NAME=QM1 --volume ___PATH TO SERVER_KEY/CERTIFICATE DIRECTORY___:/etc/mqm/pki/keys/mykey --publish 1415:1414 --publish 9444:9443 --detach --env MQ_APP_PASSWORD=passw0rd ibmcom/mq:latest`
 
-8. Run the new docker container
-
-   Give it a name, for example `mqtls` so you can differentiate it from your other MQ container when you `docker ps`, and point it at the location where you copied the server certificate to.
-
-   `docker run --name mqtls --env LICENSE=accept --env MQ_QMGR_NAME=QM1 --volume /tmp/mq:/mnt/certs --publish 1415:1414 --publish 9444:9443 --detach --env MQ_APP_PASSWORD=passw0rd --env MQ_TLS_KEYSTORE=/mnt/certs/serverkeystore.p12 --env MQ_TLS_PASSPHRASE=tru5tpassw0rd  ibmcom/mq:latest`
-
-   Remember to use a secure password for `MQ_APP_PASSWORD` and use your server keystore password for `MQ_TLS_PASSPHRASE`.
+    Remember to use a secure password for `MQ_APP_PASSWORD`.
 
 You should be able to open the MQ Web console for this TLS container on https://localhost:9444/ibmmq/console.
 
-*Note:* If/when you stop the container running MQ with TLS, the temporary folder with the server certificates gets deleted. To start the container again, recreate the `/tmp/mq` directory and copy the server certificates into the directory.
-
-To check the ID or name of the TLS container that was running previously, try;
+If you choose to stop the container, check the ID or name of the TLS container that was running previously with:
 
 `docker ps -a`
 
@@ -156,6 +144,7 @@ then run
 
 `docker start <container id or name>`
 
+to start the container again.
 
 ## MQI Paths
 The MQI samples; `Node.js`, `Python`, `Go`, require the MQI Client to have been
