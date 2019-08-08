@@ -106,13 +106,13 @@ You'll also have to point to the client keystore location from the `env.json` fi
 
    When done, you'll see the certificate data output.
 
-3. Leave this directory and create a client keystore elsewhere.
+3. *Leave this directory* and create a client keystore elsewhere.
 
- - For **JMS and XMS based clients**, create a .jks client keystore
+ - For **JMS and XMS** based clients, create a .jks client keystore
 
     `keytool -keystore clientkey.jks -storetype jks -importcert -file key.crt -alias server-certificate`
 
- - For **MQI based Client (Node, Python, Go)**
+ - For MQI based Clients (**Node, Python, Go**)
 
     Create a key database, a stash file. You will need to have installed the MQI client, so that you can run the runmqakm tool:
 
