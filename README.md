@@ -98,7 +98,7 @@ You'll also have to point to the client keystore location from the `env.json` fi
 
    An RSA private key will be generated and you'll need to complete information that will go inside the self signed certificate.
 
-   **IMPORTANT: the files key.key and key.crt should be the only files in this directory.**
+   **IMPORTANT: this directory should initially be empty.**
 
 2. Verify that the certificate has been created successfully
 
@@ -106,9 +106,9 @@ You'll also have to point to the client keystore location from the `env.json` fi
 
    When done, you'll see the certificate data output.
 
-3. *Leave this directory* and create a client keystore elsewhere.
+3. Create a client keystore.
 
- - For **JMS and XMS** based clients, create a .jks client keystore
+ - For **JMS and XMS** based clients, create a .jks client keystore and create and verify a keystore password:
 
     `keytool -keystore clientkey.jks -storetype jks -importcert -file key.crt -alias server-certificate`
 
@@ -122,11 +122,15 @@ You'll also have to point to the client keystore location from the `env.json` fi
 
     `runmqakm -cert -add -label QM1.cert -db clientkey.kdb -pw tru5tpassw0rd -trust enable -file key.crt`
 
-4. Run the new docker container
+4. Move the client keystore
+
+- Move the client keystore somewhere you will remember. Ensure the only files in the current directory are the `key.key` and `key.crt` files, as IBM MQ will use the contents of this directory to configure security inside the container.
+
+5. Run the new docker container
 
     Give it a name, for example `mqtls` so you can differentiate it from your other MQ container when you `docker ps`, and point it at the location where you copied the server certificate.
 
-    `docker run --name mqtls --env LICENSE=accept --env MQ_QMGR_NAME=QM1 --volume ___PATH TO KEYSTORE DIRECTORY___:/etc/mqm/pki/keys/mykey --publish 1415:1414 --publish 9444:9443 --detach --env MQ_APP_PASSWORD=passw0rd ibmcom/mq:latest`
+    `docker run --name mqtls --env LICENSE=accept --env MQ_QMGR_NAME=QM1 --volume ___PATH TO SERVER_KEY/CERTIFICATE DIRECTORY___:/etc/mqm/pki/keys/mykey --publish 1415:1414 --publish 9444:9443 --detach --env MQ_APP_PASSWORD=passw0rd ibmcom/mq:latest`
 
     Remember to use a secure password for `MQ_APP_PASSWORD`.
 
