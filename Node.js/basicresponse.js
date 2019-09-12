@@ -33,8 +33,8 @@ var mq = require('ibmmq');
 var StringDecoder = require('string_decoder').StringDecoder;
 var decoder = new StringDecoder('utf8');
 
-// Load up missing envrionment variables from the .env settings file.
-require('dotenv').load();
+// Load up missing envrionment variables from the env.json file
+var env = require('../env.json');
 
 var MQC = mq.MQC; // Want to refer to this export directly for simplicity
 
@@ -42,19 +42,20 @@ var MQC = mq.MQC; // Want to refer to this export directly for simplicity
 var debug_info = require('debug')('amqsrep:info');
 var debug_warn = require('debug')('amqsrep:warn');
 
-var MQDetails = {
-  QMGR: process.env.QMGR,
-  QUEUE_NAME: process.env.QUEUE_NAME,
-  HOST: process.env.HOST,
-  PORT: process.env.PORT,
-  CHANNEL: process.env.CHANNEL,
-  KEY_REPOSITORY: process.env.KEY_REPOSITORY,
-  CIPHER: process.env.CIPHER
-}
+// Load the MQ Endpoint details either from the envrionment or from the
+// env.json file. The envrionment takes precedence. The json file allows for
+// mulitple endpoints ala a cluster, but for this sample only the first
+// endpoint in the arryay is used.
+var MQDetails = {};
+
+['QMGR', 'QUEUE_NAME', 'HOST', 'PORT',
+ 'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach(function(f) {
+  MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[0][f]
+});
 
 var credentials = {
-  USER: process.env.APP_USER,
-  PASSWORD: process.env.APP_PASSWORD
+  USER: process.env.APP_USER || env.MQ_ENDPOINTS[0].APP_USER,
+  PASSWORD: process.env.APP_PASSWORD || env.MQ_ENDPOINTS[0].APP_PASSWORD
 }
 
 // The default queue manager and queue to be used

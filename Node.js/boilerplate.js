@@ -20,8 +20,8 @@
 // Import the MQ package
 const mq = require('ibmmq');
 
-// Load up missing envrionment variables from the .env settings file.
-require('dotenv').load();
+// Load up missing envrionment variables from the env.json file
+var env = require('../env.json');
 
 // Set up debug logging options
 var debug_info = require('debug')('boiler:info');
@@ -34,22 +34,23 @@ var waitInterval = 10; // max seconds to wait for a new message
 var canExit = false;
 var activeCB = null;
 
-var MQDetails = {
-  QMGR: process.env.QMGR,
-  QUEUE_NAME: process.env.QUEUE_NAME,
-  MODEL_QUEUE_NAME: process.env.MODEL_QUEUE_NAME,
-  DYNAMIC_QUEUE_PREFIX: process.env.DYNAMIC_QUEUE_PREFIX,
-  TOPIC_NAME: process.env.TOPIC_NAME,
-  HOST: process.env.HOST,
-  PORT: process.env.PORT,
-  CHANNEL: process.env.CHANNEL,
-  KEY_REPOSITORY: process.env.KEY_REPOSITORY,
-  CIPHER: process.env.CIPHER
-}
+
+// Load the MQ Endpoint details either from the envrionment or from the
+// env.json file. The envrionment takes precedence. The json file allows for
+// mulitple endpoints ala a cluster, but for this sample only the first
+// endpoint in the arryay is used.
+var MQDetails = {};
+
+['QMGR', 'QUEUE_NAME', 'TOPIC_NAME',
+ 'MODEL_QUEUE_NAME', 'DYNAMIC_QUEUE_PREFIX',
+ 'HOST', 'PORT',
+ 'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach(function(f) {
+  MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[0][f]
+});
 
 var credentials = {
-  USER: process.env.APP_USER,
-  PASSWORD: process.env.APP_PASSWORD
+  USER: process.env.APP_USER || env.MQ_ENDPOINTS[0].APP_USER,
+  PASSWORD: process.env.APP_PASSWORD || env.MQ_ENDPOINTS[0].APP_PASSWORD
 }
 
 class MQBoilerPlate {
@@ -212,6 +213,7 @@ class MQBoilerPlate {
       mq.setTuningParameters({
         getLoopPollTimeMs: 500
       });
+
       mq.Get(queueObj, md, gmo, me.getCallback);
       resolve();
     });
