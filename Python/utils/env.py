@@ -50,12 +50,15 @@ class EnvStore(object):
             # logger.info("Envrionment File was not found")
 
     def setEnv(self):
-        if EnvStore.env:
+        if (EnvStore.env
+             and 'MQ_ENDPOINTS' in EnvStore.env
+             and isinstance( EnvStore.env['MQ_ENDPOINTS'], list)):
             logger.info('Have File so ready to set envrionment variables')
-            for e in EnvStore.env:
-                os.environ[e] = EnvStore.env[e]
+
+            for e in EnvStore.env['MQ_ENDPOINTS'][0]:
+                os.environ[e] = EnvStore.env['MQ_ENDPOINTS'][0][e]
                 if 'PASSWORD' not in e:
-                    logger.info('Checking %s value is %s ' % (e, EnvStore.env[e]))
+                    logger.info('Checking %s value is %s ' % (e, EnvStore.env['MQ_ENDPOINTS'][0][e]))
         else:
             logger.info('No envrionment variables to set')
 
