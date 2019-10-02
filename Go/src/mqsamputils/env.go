@@ -40,7 +40,12 @@ type Env struct {
 	Cipher           string `json:"CIPHER"`
 }
 
+type MQEndpoints struct {
+	Points []Env `json:"MQ_ENDPOINTS"`
+}
+
 var EnvSettings Env
+var MQ_ENDPOINTS MQEndpoints
 
 func init() {
 	jsonFile, err := os.Open("../../env.json")
@@ -53,7 +58,14 @@ func init() {
 	logger.Println("Successfully Opened env.json")
 
 	byteValue, _ := ioutil.ReadAll(jsonFile)
-	json.Unmarshal(byteValue, &EnvSettings)
+	json.Unmarshal(byteValue, &MQ_ENDPOINTS)
+
+  // The .json should have supplied the MQ Endpoints as an array.
+	// If there are no elements, then EnvSettings will be default
+	// initialised to be empty.
+	if len(MQ_ENDPOINTS.Points) > 0 {
+		EnvSettings = MQ_ENDPOINTS.Points[0]
+	}
 
 	envrionmentOverides()
 }
@@ -61,6 +73,8 @@ func init() {
 func envrionmentOverides() {
 	logger.Println("Looking for Envrionment Overrides")
 	var s string
+
+
 
 	overrides := map[string]*string{
 		"APP_USER":             &EnvSettings.User,
