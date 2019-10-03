@@ -20,6 +20,7 @@ import java.util.logging.*;
 import org.json.simple.parser.ParseException;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONArray;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.FileNotFoundException;
@@ -31,12 +32,30 @@ public class SampleEnvSetter {
     private JSONObject mqAppEnv;
 
     public SampleEnvSetter() {
+        JSONObject mqEnvSettings = null;
+        JSONArray  mqEndPoints = null;
         mqAppEnv = null;
+
         try {
             JSONParser parser = new JSONParser();
             Object data = parser.parse(new FileReader("../env.json"));
             logger.info("File read");
-            mqAppEnv = (JSONObject) data;
+
+            mqEnvSettings = (JSONObject) data;
+
+            if (mqEnvSettings != null) {
+              logger.info("JSON Data Found");
+              mqEndPoints = (JSONArray) mqEnvSettings.get("MQ_ENDPOINTS");
+            }
+
+            if (mqEndPoints == null || mqEndPoints.isEmpty()) {
+                logger.warning("No Endpoints found in .json file next instruction " +
+                                 "will raise a null pointer exception");
+            } else {
+                logger.info("There is at least one MQ endpoint in the .json file");
+                mqAppEnv = (JSONObject) mqEndPoints.get(0);
+            }
+
             String qm = (String) mqAppEnv.get("QMGR");
             logger.info(qm);
 
