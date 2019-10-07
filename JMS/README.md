@@ -56,23 +56,24 @@ Encapsulates the reading of MQ environment variables and allows all the samples 
 
 ***LoggingHelper.java*** - Common class to set up logging options
 
+For TLS info, see the end of this document.
 
 ## Put / Get
 From the top level JMS folder, compile first
 
-`javac -cp ./com.ibm.mq.allclient-9.1.1.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsPut.java`
+`javac -cp ./com.ibm.mq.allclient-9.1.3.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsPut.java`
 
 and run
 
-`java -cp ./com.ibm.mq.allclient-9.1.1.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsPut`
+`java -cp ./com.ibm.mq.allclient-9.1.3.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsPut`
 
 In a separate terminal, from the top level JMS folder, compile first
 
-`javac -cp ./com.ibm.mq.allclient-9.1.1.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsGet.java`
+`javac -cp ./com.ibm.mq.allclient-9.1.3.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsGet.java`
 
 and run
 
-`java -cp ./com.ibm.mq.allclient-9.1.1.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsGet`
+`java -cp ./com.ibm.mq.allclient-9.1.3.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsGet`
 
 
 ## Publish / Subscribe
@@ -84,11 +85,11 @@ You have to run the subscriber sample first so it creates a subscription and wai
 
 Compile first
 
-`javac -cp ./com.ibm.mq.allclient-9.1.1.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsSub.java`
+`javac -cp ./com.ibm.mq.allclient-9.1.3.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsSub.java`
 
 then run
 
-`java -cp ./com.ibm.mq.allclient-9.1.1.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsSub`
+`java -cp ./com.ibm.mq.allclient-9.1.3.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsSub`
 
 In the second terminal;
 
@@ -96,11 +97,11 @@ Run the publisher sample
 
 Compile first
 
-`javac -cp ./com.ibm.mq.allclient-9.1.1.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsPub.java`
+`javac -cp ./com.ibm.mq.allclient-9.1.3.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsPub.java`
 
 then run
 
-`java -cp ./com.ibm.mq.allclient-9.1.1.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsPub`
+`java -cp ./com.ibm.mq.allclient-9.1.3.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsPub`
 
 ## Request / Response
 Open two terminals.
@@ -111,13 +112,13 @@ Run the request sample
 
 Compile
 
-`javac -cp ./com.ibm.mq.allclient-9.1.1.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsRequest.java`
+`javac -cp ./com.ibm.mq.allclient-9.1.3.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsRequest.java`
 
 then run
 
-`java -cp ./com.ibm.mq.allclient-9.1.1.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsRequest`
+`java -cp ./com.ibm.mq.allclient-9.1.3.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsRequest`
 
-The request sample will put a message and wait for a response until it either gets a response or you ctrl+c interrupt it.
+The request sample will put a message and wait for a response until it either gets a response or you `ctrl+c` interrupt it.
 
 In the second terminal;
 
@@ -125,11 +126,11 @@ Run the response sample
 
 Compile first
 
-`javac -cp ./com.ibm.mq.allclient-9.1.1.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsResponse.java`
+`javac -cp ./com.ibm.mq.allclient-9.1.3.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsResponse.java`
 
 and run
 
-`java -cp ./com.ibm.mq.allclient-9.1.1.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsResponse`
+`java -cp ./com.ibm.mq.allclient-9.1.3.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsResponse`
 
 The response sample will get a message from the queue, process it and put the response on the reply to queue and keep looking for more messages to respond to till you ctrl+c interrupt it.
 
@@ -150,7 +151,7 @@ Will be compiled when you compile either request / response samples.
 
 To run the samples with TLS you need to provide additional arguments;
 
-`java -Djavax.net.ssl.trustStoreType=jks -Djavax.net.ssl.trustStore=/your_key_directory/clientkey.jks -Djavax.net.ssl.trustStorePassword=<your_keystore_pw> -Dcom.ibm.mq.cfg.useIBMCipherMappings=false -cp ./com.ibm.mq.allclient-9.1.1.0.jar:./javax.jms-api-2.0.1.jar:. com.ibm.mq.samples.jms.JmsPut`
+`java -Djavax.net.ssl.trustStoreType=jks -Djavax.net.ssl.trustStore=/your_key_directory/clientkey.jks -Djavax.net.ssl.trustStorePassword=<your_keystore_pw> -Dcom.ibm.mq.cfg.useIBMCipherMappings=false -cp ./com.ibm.mq.allclient-9.1.3.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsPut`
 
  *A note on the* `Dcom.ibm.mq.cfg.useIBMCipherMappings=false` property
 
