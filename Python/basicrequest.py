@@ -195,7 +195,7 @@ credentials = {
 buildMQDetails()
 
 logger.info('Credentials are set')
-logger.info(credentials)
+#logger.info(credentials)
 
 #conn_info = "%s(%s)" % (MQDetails['HOST'], MQDetails['PORT'])
 conn_info = EnvStore.getConnection('HOST', 'PORT')

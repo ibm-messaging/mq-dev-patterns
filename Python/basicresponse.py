@@ -137,6 +137,7 @@ def respondToRequest(md, msgObject):
     response_md = pymqi.MD()
     response_md.CorrelId = md.CorrelId
     response_md.MsgId = md.MsgId
+    response_md.Format = pymqi.CMQC.MQFMT_STRING
 
     msgReply = {
         'Greeting': "Reply from Python! " + str(datetime.datetime.now()),
@@ -187,7 +188,7 @@ credentials = {
 buildMQDetails()
 
 logger.info('Credentials are set')
-logger.info(credentials)
+#logger.info(credentials)
 
 #conn_info = "%s(%s)" % (MQDetails['HOST'], MQDetails['PORT'])
 conn_info = EnvStore.getConnection('HOST', 'PORT')

@@ -80,16 +80,16 @@ def getQueue():
         return None
 
 # function to put message onto Queue
-
-
 def putMessage():
     logger.info('Attempting put to Queue')
     try:
+        md = pymqi.MD()
+        md.Format = pymqi.CMQC.MQFMT_STRING
         # queue.put(json.dumps(msgObject).encode())
         # queue.put(json.dumps(msgObject))
         # queue.put(str(json.dumps(msgObject)))
         #queue.put(bytes(json.dumps(msgObject), 'utf-8'))
-        queue.put(EnvStore.stringForVersion(json.dumps(msgObject)))
+        queue.put(EnvStore.stringForVersion(json.dumps(msgObject)),md)
 
         logger.info("Put message successful")
     except pymqi.MQMIError as e:
@@ -118,7 +118,7 @@ credentials = {
 buildMQDetails()
 
 logger.info('Credentials are set')
-logger.info(credentials)
+#logger.info(credentials)
 
 conn_info = EnvStore.getConnection('HOST', 'PORT')
 #conn_info = "%s(%s)" % (MQDetails['HOST'], MQDetails['PORT'])
