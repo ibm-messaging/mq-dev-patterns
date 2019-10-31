@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 def connect():
     logger.info('Establising Connection with MQ Server')
     try:
-        cd = pymqi.CD()
+        cd = pymqi.CD(Version=pymqi.CMQXC.MQCD_VERSION_11)
         cd.ChannelName = MQDetails['CHANNEL']
         cd.ConnectionName = conn_info
         cd.ChannelType = pymqi.CMQC.MQCHT_CLNTCONN
@@ -38,8 +38,10 @@ def connect():
 
         # Create an empty SCO object, and optionally set TLS settings
         # if a cipher is set in the envrionment variables.
+        logger.info('Checking Cypher details')
         sco = pymqi.SCO()
         if MQDetails['CIPHER']:
+            logger.info('Making use of Cypher details')
             cd.SSLCipherSpec = MQDetails['CIPHER']
             sco.KeyRepository = MQDetails['KEY_REPOSITORY']
 

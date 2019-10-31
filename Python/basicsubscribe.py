@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 def connect():
     logger.info('Establising Connection with MQ Server')
     try:
-        cd = pymqi.CD()
+        cd = pymqi.CD(Version=pymqi.CMQXC.MQCD_VERSION_11)
         cd.ChannelName = MQDetails['CHANNEL']
         cd.ConnectionName = conn_info
         cd.ChannelType = pymqi.CMQC.MQCHT_CLNTCONN
@@ -62,7 +62,8 @@ def getSubscription():
     logger.info('Connecting to Subscription')
     try:
         sub_desc = pymqi.SD()
-        sub_desc["Options"] = pymqi.CMQC.MQSO_CREATE + pymqi.CMQC.MQSO_RESUME + \
+        #sub_desc["Options"] = pymqi.CMQC.MQSO_CREATE + pymqi.CMQC.MQSO_RESUME + \
+        sub_desc["Options"] = pymqi.CMQC.MQSO_CREATE + \
             pymqi.CMQC.MQSO_DURABLE + pymqi.CMQC.MQSO_MANAGED
         sub_desc.set_vs("SubName", "MySub")
         sub_desc.set_vs("ObjectString", MQDetails['TOPIC_NAME'])

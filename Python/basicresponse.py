@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 def connect():
     logger.info('Establising Connection with MQ Server')
     try:
-        cd = pymqi.CD()
+        cd = pymqi.CD(Version=pymqi.CMQXC.MQCD_VERSION_11)
         cd.ChannelName = MQDetails['CHANNEL']
         cd.ConnectionName = conn_info
         cd.ChannelType = pymqi.CMQC.MQCHT_CLNTCONN
