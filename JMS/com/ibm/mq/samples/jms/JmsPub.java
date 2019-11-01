@@ -30,6 +30,8 @@ import com.ibm.msg.client.jms.JmsConnectionFactory;
 import com.ibm.msg.client.jms.JmsFactoryFactory;
 import com.ibm.msg.client.wmq.WMQConstants;
 
+import com.ibm.mq.jms.MQDestination;
+
 import com.ibm.mq.samples.jms.SampleEnvSetter;
 
 public class JmsPub {
@@ -62,7 +64,15 @@ public class JmsPub {
     setJMSProperties(connectionFactory);
 
     context = connectionFactory.createContext();
+
+    // Set targetClient to be non JMS, so no JMS headers are transmitted.
+    // Either this line can be used or ...
+    //destination = context.createTopic("topic://" + TOPIC_NAME + "?targetClient=1");
     destination = context.createTopic("topic://" + TOPIC_NAME);
+
+    // ... this one.
+    setTargetClient(destination);
+
     publisher = context.createProducer();
 
     for (int i = 0; i < 20; i++) {
@@ -129,6 +139,15 @@ public class JmsPub {
       recordFailure(jmsex);
     }
     return;
+  }
+
+  private static void setTargetClient(Destination destination) {
+    try {
+        MQDestination mqDestination = (MQDestination) destination;
+        mqDestination.setTargetClient(WMQConstants.WMQ_CLIENT_NONJMS_MQ);
+    } catch (JMSException jmsex) {
+      logger.warning("Unable to set target destination to non JMS");
+    }
   }
 
   private static void recordFailure(Exception ex) {

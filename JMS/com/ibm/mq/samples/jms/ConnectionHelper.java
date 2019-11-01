@@ -26,6 +26,8 @@ import com.ibm.msg.client.jms.JmsConnectionFactory;
 import com.ibm.msg.client.jms.JmsFactoryFactory;
 import com.ibm.msg.client.wmq.WMQConstants;
 
+import com.ibm.mq.jms.MQDestination;
+
 import com.ibm.mq.samples.jms.SampleEnvSetter;
 
 public class ConnectionHelper {
@@ -78,6 +80,15 @@ public class ConnectionHelper {
     public Destination getTopicDestination () {
         return context.createTopic("topic://" + TOPIC_NAME);
 
+    }
+
+    public void setTargetClient(Destination destination) {
+      try {
+          MQDestination mqDestination = (MQDestination) destination;
+          mqDestination.setTargetClient(WMQConstants.WMQ_CLIENT_NONJMS_MQ);
+      } catch (JMSException jmsex) {
+        logger.warning("Unable to set target destination to non JMS");
+      }
     }
 
     private void mqConnectionVariables() {

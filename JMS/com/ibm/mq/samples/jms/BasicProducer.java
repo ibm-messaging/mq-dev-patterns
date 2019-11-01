@@ -70,6 +70,9 @@ public class BasicProducer {
                 break;
         }
 
+        // Set so no JMS headers are sent.
+        ch.setTargetClient(destination);
+
         logger.info("destination created");
 
         producer = context.createProducer();

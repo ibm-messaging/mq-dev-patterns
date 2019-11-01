@@ -31,6 +31,8 @@ import com.ibm.msg.client.jms.JmsConnectionFactory;
 import com.ibm.msg.client.jms.JmsFactoryFactory;
 import com.ibm.msg.client.wmq.WMQConstants;
 
+import com.ibm.mq.jms.MQDestination;
+
 import com.ibm.mq.samples.jms.SampleEnvSetter;
 
 public class JmsResponse {

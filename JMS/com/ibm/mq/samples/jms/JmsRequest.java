@@ -19,6 +19,7 @@ package com.ibm.mq.samples.jms;
 import java.util.logging.*;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.Random;
 
 import javax.jms.Destination;
 import javax.jms.JMSConsumer;
@@ -52,6 +53,8 @@ public class JmsRequest {
     private static String MODEL_QUEUE_NAME; //
     private static String CIPHER_SUITE;
 
+    private static Random random = new Random();
+
     public static void main(String[] args) {
         initialiseLogging();
         mqConnectionVariables();
@@ -77,7 +80,7 @@ public class JmsRequest {
         producer = context.createProducer();
         logger.info("producer created");
 
-        TextMessage message = context.createTextMessage(RequestCalc.buildStringForRequest(3));
+        TextMessage message = context.createTextMessage(RequestCalc.buildStringForRequest(random.nextInt(101)));
         try {
             String correlationID = String.format("%24.24s", UUID.randomUUID().toString());
             byte[] b = null;

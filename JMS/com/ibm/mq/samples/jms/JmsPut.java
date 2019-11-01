@@ -29,6 +29,8 @@ import com.ibm.msg.client.jms.JmsConnectionFactory;
 import com.ibm.msg.client.jms.JmsFactoryFactory;
 import com.ibm.msg.client.wmq.WMQConstants;
 
+import com.ibm.mq.jms.MQDestination;
+
 import com.ibm.mq.samples.jms.SampleEnvSetter;
 
 public class JmsPut {
@@ -45,7 +47,7 @@ public class JmsPut {
     private static String APP_PASSWORD; // = "passw0rd"; // Password that the application uses to connect to MQ
     private static String QUEUE_NAME; // = "DEV.QUEUE.1"; // Queue that the application uses to put and get messages
                                       // to and from
-    private static String CIPHER_SUITE; 
+    private static String CIPHER_SUITE;
 
     public static void main(String[] args) {
         initialiseLogging();
@@ -62,8 +64,17 @@ public class JmsPut {
 
         context = connectionFactory.createContext();
         logger.info("context created");
-        destination = context.createQueue("queue:///" + QUEUE_NAME);
+
+        // Set targetClient to be non JMS, so no JMS headers are transmitted.
+        // Only one of these settings is required, but both shown here.
+        // 1. Add targetClient parameter to Queue uri
+        destination = context.createQueue("queue:///" + QUEUE_NAME + "?targetClient=1");
+        // destination = context.createQueue("queue:///" + QUEUE_NAME);
         logger.info("destination created");
+
+        // 2. Cast destination queue to underlying MQQueue and set target client
+        setTargetClient(destination);
+
         producer = context.createProducer();
         logger.info("producer created");
 
@@ -117,6 +128,15 @@ public class JmsPut {
             recordFailure(jmsex);
         }
         return;
+    }
+
+    private static void setTargetClient(Destination destination) {
+      try {
+          MQDestination mqDestination = (MQDestination) destination;
+          mqDestination.setTargetClient(WMQConstants.WMQ_CLIENT_NONJMS_MQ);
+      } catch (JMSException jmsex) {
+        logger.warning("Unable to set target destination to non JMS");
+      }
     }
 
     private static void recordFailure(Exception ex) {
