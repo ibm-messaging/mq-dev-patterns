@@ -55,11 +55,12 @@ func CreateConnection() (ibmmq.MQQueueManager, error) {
 	}
 
 	if EnvSettings.KeyRepository != "" {
-		logger.Println("Running in  Debug Mode")
+		logger.Println("Running in TLS Mode")
 		sco := ibmmq.NewMQSCO()
 		cd.SSLCipherSpec = EnvSettings.Cipher
 		cd.SSLClientAuth = ibmmq.MQSCA_OPTIONAL
 		sco.KeyRepository = EnvSettings.KeyRepository
+		
 		cno.SSLConfig = sco
 	}
 
