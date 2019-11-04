@@ -102,6 +102,12 @@ def getMessages():
     keep_running = True
     while keep_running:
         try:
+            # Reset the MsgId, CorrelId & GroupId so that we can reuse
+            # the same 'md' object again.
+            md.MsgId = pymqi.CMQC.MQMI_NONE
+            md.CorrelId = pymqi.CMQC.MQCI_NONE
+            md.GroupId = pymqi.CMQC.MQGI_NONE
+
             # Wait up to to gmo.WaitInterval for a new message.
             message = queue.get(None, md, gmo)
 
@@ -112,12 +118,6 @@ def getMessages():
 
             respondToRequest(md, msgObject)
 
-            # Reset the MsgId, CorrelId & GroupId so that we can reuse
-            # the same 'md' object again.
-            md.MsgId = pymqi.CMQC.MQMI_NONE
-            md.CorrelId = pymqi.CMQC.MQCI_NONE
-            md.GroupId = pymqi.CMQC.MQGI_NONE
-
         except pymqi.MQMIError as e:
             if e.comp == pymqi.CMQC.MQCC_FAILED and e.reason == pymqi.CMQC.MQRC_NO_MSG_AVAILABLE:
                 # No messages, that's OK, we can ignore it.
@@ -125,6 +125,12 @@ def getMessages():
             else:
                 # Some other error condition.
                 raise
+
+        except (UnicodeDecodeError, json.JSONDecodeError) as e:
+            logger.info('Message is not valid json')
+            logger.info(e)
+            logger.info(message)
+            continue                
 
         except KeyboardInterrupt:
             logger.info('Have received a keyboard interrupt')

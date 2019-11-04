@@ -145,7 +145,9 @@ def awaitResponse(msgId, correlId):
     gmo.Options = pymqi.CMQC.MQGMO_WAIT | pymqi.CMQC.MQGMO_FAIL_IF_QUIESCING
     gmo.WaitInterval = 5000  # 5 seconds
     #gmo.MatchOptions = pymqi.CMQC.MQMO_MATCH_MSG_ID
-    gmo.MatchOptions = pymqi.CMQC.MQMO_MATCH_CORREL_ID
+
+
+    #gmo.MatchOptions = pymqi.CMQC.MQMO_MATCH_CORREL_ID
 
     keep_running = True
     while keep_running:
@@ -168,6 +170,13 @@ def awaitResponse(msgId, correlId):
             else:
                 # Some other error condition.
                 raise
+
+        except (UnicodeDecodeError, json.JSONDecodeError) as e:
+            logger.info('Message is not valid json')
+            logger.info(e)
+            logger.info(message)
+            continue
+
         except KeyboardInterrupt:
             logger.info('Have received a keyboard interrupt')
             keep_running = False
