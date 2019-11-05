@@ -115,6 +115,7 @@ def putMessage():
         logger.info(dynamic['name'])
         md = pymqi.MD()
         md.ReplyToQ = dynamic['name']
+        md.MsgType = pymqi.CMQC.MQMT_REQUEST
         md.Format = pymqi.CMQC.MQFMT_STRING
 
         # Send the message.
@@ -124,6 +125,7 @@ def putMessage():
         # queue.put("Hello")
 
         logger.info("Put message successful")
+        #logger.info(md.CorrelID)
         return md.MsgId, md.CorrelId
         # return md.CorrelId
     except pymqi.MQMIError as e:
@@ -135,6 +137,7 @@ def putMessage():
 
 def awaitResponse(msgId, correlId):
     logger.info('Attempting get from Reply Queue')
+
     # Message Descriptor
     md = pymqi.MD()
     md.MsgId = msgId
@@ -146,6 +149,7 @@ def awaitResponse(msgId, correlId):
     gmo.WaitInterval = 5000  # 5 seconds
     #gmo.MatchOptions = pymqi.CMQC.MQMO_MATCH_MSG_ID
     gmo.MatchOptions = pymqi.CMQC.MQMO_MATCH_CORREL_ID
+    gmo.Version = pymqi.CMQC.MQGMO_VERSION_2
 
     keep_running = True
     while keep_running:
@@ -169,7 +173,7 @@ def awaitResponse(msgId, correlId):
                 # Some other error condition.
                 raise
 
-        except (UnicodeDecodeError, json.JSONDecodeError) as e:
+        except (UnicodeDecodeError, ValueError) as e:
             logger.info('Message is not valid json')
             logger.info(e)
             logger.info(message)

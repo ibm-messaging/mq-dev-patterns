@@ -115,7 +115,7 @@ def getMessages():
                 # Some other error condition.
                 raise
 
-        except (UnicodeDecodeError, json.JSONDecodeError)  as e:
+        except (UnicodeDecodeError, ValueError)  as e:
             logger.info('Message is not valid json')
             logger.info(e)
             logger.info(message)
