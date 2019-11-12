@@ -87,8 +87,14 @@ def getMessages():
     md = pymqi.MD()
 
     # Get Message Options
+    # MQGMO_NO_PROPERTIES indicates that JMS headers are to be stripped
+    # off the message during the get. This can also be done by calling
+    # .get_no_jms on the queue instead of .get 
     gmo = pymqi.GMO()
-    gmo.Options = pymqi.CMQC.MQGMO_WAIT | pymqi.CMQC.MQGMO_FAIL_IF_QUIESCING
+    gmo.Options = pymqi.CMQC.MQGMO_WAIT | \
+                       pymqi.CMQC.MQGMO_FAIL_IF_QUIESCING | \
+                       pymqi.CMQC.MQGMO_NO_PROPERTIES
+
     gmo.WaitInterval = 5000  # 5 seconds
 
     keep_running = True
@@ -101,7 +107,8 @@ def getMessages():
             md.GroupId = pymqi.CMQC.MQGI_NONE
 
             # Wait up to to gmo.WaitInterval for a new message.
-            message = queue.get_no_jms(None, md, gmo)
+            # message = queue.get_no_jms(None, md, gmo)
+            message = queue.get(None, md, gmo)
 
             # Process the message here..
             msgObject = json.loads(message.decode())

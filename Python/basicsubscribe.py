@@ -83,7 +83,9 @@ def getMessages():
 
     subOptions = pymqi.CMQC.MQGMO_NO_SYNCPOINT + \
         pymqi.CMQC.MQGMO_FAIL_IF_QUIESCING + \
-        pymqi.CMQC.MQGMO_WAIT
+        pymqi.CMQC.MQGMO_WAIT + \
+        pymqi.CMQC.MQGMO_NO_PROPERTIES
+
     gmo = pymqi.GMO(Options=subOptions)
     gmo["WaitInterval"] = 30 * 1000
 

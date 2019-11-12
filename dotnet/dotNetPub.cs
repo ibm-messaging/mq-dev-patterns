@@ -18,13 +18,14 @@ using System;
 using System.IO;
 using Newtonsoft.Json;
 using IBM.XMS;
-
+using System.Collections.Generic;
 
 namespace ibmmq_samples
 {
     class SimplePublisher
     {
-        ConnVariables conn = null;
+        private ConnVariables conn = null;
+        private MQEndPoints points = null;
 
         private const String simpleMessage = "This is a simple message from XMS.NET producer";
         private JsonMessage xmsJson = new JsonMessage("This is a simple publisher and your lucky number is ");
@@ -107,6 +108,7 @@ namespace ibmmq_samples
 
             // Create destination
             destination = sessionWMQ.CreateTopic(conn.topic_name);
+            destination.SetIntProperty(XMSC.WMQ_TARGET_CLIENT, XMSC.WMQ_TARGET_DEST_MQ);
             Console.WriteLine("Destination created");
 
             // Create producer
@@ -132,6 +134,7 @@ namespace ibmmq_samples
 
         bool EnvironmentIsSet()
         {
+            bool isSet = false;
             try
             {
                 Console.WriteLine("Looking for file");
@@ -139,20 +142,29 @@ namespace ibmmq_samples
                 {
                     Console.WriteLine("File found");
                     string json = r.ReadToEnd();
-                    conn = JsonConvert.DeserializeObject<ConnVariables>(json);
-                    conn.dump();
-                    Console.WriteLine("");
 
+                    points = JsonConvert.DeserializeObject<MQEndPoints>(json);
+
+                    if (points != null && points.mq_endpoints != null && points.mq_endpoints.Count > 0)
+                    {
+                        conn = points.mq_endpoints[0];
+                        conn.dump();
+                        isSet = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("MQ Settings not found, unable to determine connection variables");
+                    }
+                    Console.WriteLine("");
                 }
-                return true;
+                return isSet;
             }
             catch (Exception e)
             {
                 Console.WriteLine("Exception caught: {0}", e);
                 Console.WriteLine(e.GetBaseException());
-                return false;
+                return isSet;
             }
-
         }
 
         public class JsonMessage
@@ -169,6 +181,10 @@ namespace ibmmq_samples
             {
                 return JsonConvert.SerializeObject(this);
             }
+        }
+        public class MQEndPoints
+        {
+            public List<ConnVariables> mq_endpoints;
         }
 
         public class ConnVariables

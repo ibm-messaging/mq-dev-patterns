@@ -149,6 +149,7 @@ def respondToRequest(md, msgObject):
         'Greeting': "Reply from Python! " + str(datetime.datetime.now()),
         'value': random.randint(1, 101)
     }
+
     replyQueue = getQueue(md.ReplyToQ, False)
     if (msgObject['value']):
         msgReply['value'] = performCalc(msgObject['value'])

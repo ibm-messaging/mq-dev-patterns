@@ -18,13 +18,15 @@ using System;
 using System.IO;
 using Newtonsoft.Json;
 using IBM.XMS;
-
+using System.Collections.Generic;
 
 namespace ibmmq_samples
 {
     class SimpleSubscriber
     {
-        ConnVariables conn = null;
+        private ConnVariables conn = null;
+        private MQEndPoints points = null;
+
         private const int TIMEOUTTIME = 30000;
 
         private static bool keepRunning = true;
@@ -59,7 +61,6 @@ namespace ibmmq_samples
             }
             Console.WriteLine("===> END of Simple Subscriber sample for WMQ transport <===\n\n");
         }
-
 
         void ReceiveMessages()
         {
@@ -147,6 +148,7 @@ namespace ibmmq_samples
 
         bool EnvironmentIsSet()
         {
+            bool isSet = false;
             try
             {
                 Console.WriteLine("Looking for file");
@@ -154,20 +156,29 @@ namespace ibmmq_samples
                 {
                     Console.WriteLine("File found");
                     string json = r.ReadToEnd();
-                    conn = JsonConvert.DeserializeObject<ConnVariables>(json);
-                    conn.dump();
-                    Console.WriteLine("");
 
+                    points = JsonConvert.DeserializeObject<MQEndPoints>(json);
+
+                    if (points != null && points.mq_endpoints != null && points.mq_endpoints.Count > 0)
+                    {
+                        conn = points.mq_endpoints[0];
+                        conn.dump();
+                        isSet = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("MQ Settings not found, unable to determine connection variables");
+                    }
+                    Console.WriteLine("");
                 }
-                return true;
+                return isSet;
             }
             catch (Exception e)
             {
                 Console.WriteLine("Exception caught: {0}", e);
                 Console.WriteLine(e.GetBaseException());
-                return false;
+                return isSet;
             }
-
         }
 
         public class JsonMessage
@@ -183,6 +194,11 @@ namespace ibmmq_samples
             {
                 return JsonConvert.SerializeObject(this);
             }
+        }
+
+        public class MQEndPoints
+        {
+            public List<ConnVariables> mq_endpoints;
         }
 
         public class ConnVariables
