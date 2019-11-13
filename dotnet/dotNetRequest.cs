@@ -215,32 +215,5 @@ namespace ibmmq_samples
                 return Encoding.Default.GetBytes(s);
             }
         }
-
-        public class ConnVariables
-        {
-            public string host = null;
-            public string qmgr = null;
-            public int port = 0;
-            public string channel = null;
-            public string queue_name = null;
-            public string app_user = null;
-            public string app_password = null;
-            public string model_queue_name = null;
-            public string cipher_suite = null;
-            public string key_repository = null;
-            public void dump()
-            {
-                Console.WriteLine("hostname{0} ", host);
-                Console.WriteLine("port{0} ", port);
-                Console.WriteLine("qmgr{0} ", qmgr);
-                Console.WriteLine("channel{0} ", channel);
-                Console.WriteLine("queue{0} ", queue_name);
-                Console.WriteLine("app_user{0} ", app_user);
-                //Console.WriteLine("app_password{0} ", app_password);
-                Console.WriteLine("model_queue_name{0}", model_queue_name);
-                Console.WriteLine("cipherSpec{0} ", cipher_suite);
-                Console.WriteLine("sslKeyRepository{0} ", key_repository);
-            }
-        }
     }
 }
