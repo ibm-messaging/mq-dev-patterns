@@ -15,8 +15,6 @@
 */
 
 using System;
-using System.IO;
-using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 using IBM.XMS;
@@ -26,8 +24,7 @@ namespace ibmmq_samples
 {
     class SimpleRequest
     {
-        private ConnVariables conn = null;
-        private MQEndPoints points = null;
+        private Env env = new Env();
 
         private const int TIMEOUTTIME = 30000;
         private const String simpleMessage = "This is a request message from XMS.NET";
@@ -39,7 +36,7 @@ namespace ibmmq_samples
             try
             {
                 SimpleRequest request = new SimpleRequest();
-                if (request.EnvironmentIsSet())
+                if (request.env.EnvironmentIsSet())
                 {
                     request.SendMessage();
                 }
@@ -71,6 +68,8 @@ namespace ibmmq_samples
             IDestination temporaryDestination;
             IMessageProducer producer;
             ITextMessage textMessage;
+
+            Env.ConnVariables conn = env.Conn;
 
             // Get an instance of factory.
             factoryFactory = XMSFactoryFactory.GetInstance(XMSC.CT_WMQ);
@@ -166,42 +165,6 @@ namespace ibmmq_samples
             connectionWMQ.Close();
         }
 
-        bool EnvironmentIsSet()
-        {
-            bool isSet = false;
-            try
-            {
-                Console.WriteLine("Looking for file");
-                using (StreamReader r = new StreamReader("env.json"))
-                {
-                    Console.WriteLine("File found");
-                    string json = r.ReadToEnd();
-
-                    points = JsonConvert.DeserializeObject<MQEndPoints>(json);
-
-                    if (points != null && points.mq_endpoints != null && points.mq_endpoints.Count > 0)
-                    {
-                        conn = points.mq_endpoints[0];
-                        conn.dump();
-                        isSet = true;
-                    }
-                    else
-                    {
-                        Console.WriteLine("MQ Settings not found, unable to determine connection variables");
-                    }
-                    Console.WriteLine("");
-                }
-                return isSet;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Exception caught: {0}", e);
-                Console.WriteLine(e.GetBaseException());
-                return isSet;
-            }
-
-        }
-
         public class JsonMessage
         {
             public string msg;
@@ -251,11 +214,6 @@ namespace ibmmq_samples
             {
                 return Encoding.Default.GetBytes(s);
             }
-        }
-
-        public class MQEndPoints
-        {
-            public List<ConnVariables> mq_endpoints;
         }
 
         public class ConnVariables

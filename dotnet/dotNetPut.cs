@@ -15,17 +15,14 @@
 */
 
 using System;
-using System.IO;
 using Newtonsoft.Json;
 using IBM.XMS;
-using System.Collections.Generic;
 
 namespace ibmmq_samples
 {
     class SimpleProducer
     {
-        private ConnVariables conn = null;
-        private MQEndPoints points = null;
+        private Env env = new Env();
 
         private const String simpleMessage = "This is a simple message from XMS.NET producer";
         private JsonMessage xmsJson = new JsonMessage("This is a simple put and your lucky number is ");
@@ -36,7 +33,7 @@ namespace ibmmq_samples
             try
             {
                 SimpleProducer simpleProducer = new SimpleProducer();
-                if (simpleProducer.EnvironmentIsSet())
+                if (simpleProducer.env.EnvironmentIsSet())
                     simpleProducer.SendMessage();
             }
             catch (XMSException ex)
@@ -65,6 +62,8 @@ namespace ibmmq_samples
             IDestination destination;
             IMessageProducer producer;
             ITextMessage textMessage;
+
+            Env.ConnVariables conn = env.Conn;
 
             // Get an instance of factory.
             factoryFactory = XMSFactoryFactory.GetInstance(XMSC.CT_WMQ);
@@ -131,42 +130,6 @@ namespace ibmmq_samples
             connectionWMQ.Close();
         }
 
-        bool EnvironmentIsSet()
-        {
-            bool isSet = false;
-            try
-            {
-                Console.WriteLine("Looking for file");
-                using (StreamReader r = new StreamReader("env.json"))
-                {
-                    Console.WriteLine("File found");
-                    string json = r.ReadToEnd();
-
-                    points = JsonConvert.DeserializeObject<MQEndPoints>(json);
-
-                    if ( points != null && points.mq_endpoints != null && points.mq_endpoints.Count > 0)
-                    {
-                        conn = points.mq_endpoints[0];
-                        conn.dump();
-                        isSet = true;
-                    }
-                    else
-                    {
-                        Console.WriteLine("MQ Settings not found, unable to determine connection variables");
-                    }
-                    Console.WriteLine("");
-                }
-                return isSet;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Exception caught: {0}", e);
-                Console.WriteLine(e.GetBaseException());
-                return isSet;
-            }
-
-        }
-
         public class JsonMessage
         {
             public string msg;
@@ -180,36 +143,6 @@ namespace ibmmq_samples
             public string toJsonString()
             {
                 return JsonConvert.SerializeObject(this);
-            }
-        }
-
-        public class MQEndPoints
-        {
-            public List<ConnVariables> mq_endpoints;
-        }
-
-        public class ConnVariables
-        {
-            public string host;
-            public string qmgr;
-            public int port;
-            public string channel;
-            public string queue_name;
-            public string app_user;
-            public string app_password;
-            public string cipher_suite;
-            public string key_repository;
-            public void dump()
-            {
-                Console.WriteLine("hostname {0} ", host);
-                Console.WriteLine("port {0} ", port);
-                Console.WriteLine("qmgr {0} ", qmgr);
-                Console.WriteLine("channel {0} ", channel);
-                Console.WriteLine("queue {0} ", queue_name);
-                Console.WriteLine("app_user {0} ", app_user);
-                //Console.WriteLine("app_password {0} ", app_password);
-                Console.WriteLine("cipherSpec {0} ", cipher_suite);
-                Console.WriteLine("sslKeyRepository{0} ", key_repository);
             }
         }
     }
