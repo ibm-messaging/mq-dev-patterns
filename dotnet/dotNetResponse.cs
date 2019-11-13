@@ -168,21 +168,6 @@ namespace ibmmq_samples
             }
         }
 
-        public class JsonMessage
-        {
-            public string msg;
-            public int random;
-            public JsonMessage(string s, int n)
-            {
-                msg = s;
-                random = n;
-            }
-            public string toJsonString()
-            {
-                return JsonConvert.SerializeObject(this);
-            }
-        }
-
         public class MessageValue
         {
             public string message;

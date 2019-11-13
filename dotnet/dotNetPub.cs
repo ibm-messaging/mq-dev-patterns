@@ -15,7 +15,6 @@
 */
 
 using System;
-using Newtonsoft.Json;
 using IBM.XMS;
 
 namespace ibmmq_samples
@@ -130,22 +129,5 @@ namespace ibmmq_samples
             sessionWMQ.Dispose();
             connectionWMQ.Close();
         }
-
-        public class JsonMessage
-        {
-            public string msg;
-            public int value;
-            private static Random random = new Random();
-            public JsonMessage(string s)
-            {
-                msg = s;
-                value = random.Next();
-            }
-            public string toJsonString()
-            {
-                return JsonConvert.SerializeObject(this);
-            }
-        }
-
     }
 }
