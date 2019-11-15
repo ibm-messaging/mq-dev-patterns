@@ -59,9 +59,56 @@ namespace ibmmq_samples
         }
 
         private MQEndPoints points = null;
-        private Env.ConnVariables conn = null;
+        private ConnVariables conn = null;
 
         internal ConnVariables Conn { get => conn; set => conn = value; }
+
+        private bool AtLeast(int i)
+        {
+            if (i >= 0 && points != null && points.mq_endpoints != null && points.mq_endpoints.Count >= i)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public int NumberOfConnections()
+        {
+            if (AtLeast(1))
+            {
+                return points.mq_endpoints.Count;
+            }
+            return 0;
+        }
+
+        private ConnVariables EndPoint(int i)
+        {
+            if (AtLeast(i))
+            {
+                return points.mq_endpoints[i];
+            }
+            return null;
+        }
+
+        public string BuildConnectionString()
+        {
+            List<string> connList = new List<string>();
+
+            if (AtLeast(1))
+            {
+                foreach (var c in points.mq_endpoints)
+                {
+                    if (c.host != null && c.port != 0)
+                    {
+                        connList.Add(c.host + "(" + c.port.ToString() + ")");
+                    }
+                }
+                return string.Join(",", connList);
+            }
+
+            //return "192.168.252.1(1414),192.168.252.1(1416)";
+            return "";
+        }
 
         public bool EnvironmentIsSet()
         {

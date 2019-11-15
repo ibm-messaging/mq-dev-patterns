@@ -65,6 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="connPropBuilder.cs" />
     <Compile Include="dotNetGet.cs" />
     <Compile Include="dotNetPub.cs" />
     <Compile Include="dotNetPut.cs" />

@@ -59,8 +59,24 @@ class EnvStore(object):
                 os.environ[e] = EnvStore.env['MQ_ENDPOINTS'][0][e]
                 if 'PASSWORD' not in e:
                     logger.info('Checking %s value is %s ' % (e, EnvStore.env['MQ_ENDPOINTS'][0][e]))
+            # Check if there are multiple endpoints defined
+            if len(EnvStore.env['MQ_ENDPOINTS']) > 0:
+               os.environ['CONN_STRING'] = self.buildConnectionString(EnvStore.env['MQ_ENDPOINTS'])
         else:
             logger.info('No envrionment variables to set')
+
+    def buildConnectionString(self, points):
+      logger.info('Building a connection string')
+      l = []
+      for point in points:
+          if 'HOST' in point and 'PORT' in point:
+              p = '%s(%s)' % (point['HOST'], point['PORT'])
+              logger.info('endpoint is %s' % p)
+              l.append(p)
+      s = ','.join(l)
+      logger.info('Connection string is %s' % s)
+      return s
+
 
     # function to retrieve variable from Envrionment
     @staticmethod
@@ -72,7 +88,9 @@ class EnvStore(object):
 
     @staticmethod
     def getConnection(host, port):
-        info = "%s(%s)" % (os.getenv(host), os.getenv(port))
+        info = os.getenv('CONN_STRING')
+        if not info:
+            info =  "%s(%s)" % (os.getenv(host), os.getenv(port))
         if sys.version_info[0] < 3:
             return str(info)
         else:

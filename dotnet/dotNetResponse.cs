@@ -79,31 +79,7 @@ namespace ibmmq_samples
             cf = factoryFactory.CreateConnectionFactory();
 
             // Set the properties
-            cf.SetStringProperty(XMSC.WMQ_HOST_NAME, conn.host);
-            Console.WriteLine("hostName is set {0, -20 }", conn.host);
-            cf.SetIntProperty(XMSC.WMQ_PORT, conn.port);
-            cf.SetStringProperty(XMSC.WMQ_CHANNEL, conn.channel);
-            if (conn.key_repository != null && (conn.key_repository.Contains("*SYSTEM") || conn.key_repository.Contains("*USER")))
-            {
-                cf.SetIntProperty(XMSC.WMQ_CONNECTION_MODE, XMSC.WMQ_CM_CLIENT);
-            }
-            else
-            {
-                cf.SetIntProperty(XMSC.WMQ_CONNECTION_MODE, XMSC.WMQ_CM_CLIENT_UNMANAGED);
-            }
-            //            cf.SetIntProperty(XMSC.WMQ_CONNECTION_MODE, XMSC.WMQ_CM_CLIENT);
-            cf.SetStringProperty(XMSC.WMQ_QUEUE_MANAGER, conn.qmgr);
-            cf.SetStringProperty(XMSC.USERID, conn.app_user);
-            cf.SetStringProperty(XMSC.PASSWORD, conn.app_password);
-
-            if (conn.key_repository != null && conn.cipher_suite != null)
-            {
-                cf.SetStringProperty(XMSC.WMQ_SSL_KEY_REPOSITORY, conn.key_repository);
-            }
-            if (conn.cipher_suite != null)
-            {
-                cf.SetStringProperty(XMSC.WMQ_SSL_CIPHER_SPEC, conn.cipher_suite);
-            }
+            ConnectionPropertyBuilder.SetConnectionProperties(cf, env);
 
             // Create connection.
             connectionWMQ = cf.CreateConnection();
