@@ -89,7 +89,7 @@ def getMessages():
     # Get Message Options
     # MQGMO_NO_PROPERTIES indicates that JMS headers are to be stripped
     # off the message during the get. This can also be done by calling
-    # .get_no_jms on the queue instead of .get 
+    # .get_no_jms on the queue instead of .get
     gmo = pymqi.GMO()
     gmo.Options = pymqi.CMQC.MQGMO_WAIT | \
                        pymqi.CMQC.MQGMO_FAIL_IF_QUIESCING | \
@@ -117,8 +117,9 @@ def getMessages():
 
         except pymqi.MQMIError as e:
             if e.comp == pymqi.CMQC.MQCC_FAILED and e.reason == pymqi.CMQC.MQRC_NO_MSG_AVAILABLE:
-                # No messages, that's OK, we can ignore it.
-                pass
+                # No messages, we should more on to next connection endpoint if there is one.
+                logger.info('No more messages found on this connection')
+                keep_running = False
             else:
                 # Some other error condition.
                 raise
@@ -158,19 +159,25 @@ logger.info('Credentials are set')
 #logger.info(credentials)
 
 #conn_info = "%s(%s)" % (MQDetails['HOST'], MQDetails['PORT'])
-conn_info = EnvStore.getConnection('HOST', 'PORT')
+#conn_info = EnvStore.getConnection('HOST', 'PORT')
 
 qmgr = None
 queue = None
 
-qmgr = connect()
-if (qmgr):
-    queue = getQueue()
-if (queue):
-    getMessages()
-    queue.close()
+numEndPoints = envStore.getEndpointCount()
+logger.info('There are %d connections' % numEndPoints)
 
-if (qmgr):
-    qmgr.disconnect()
+for conn_info in envStore.getNextConnectionString():
+    logger.info('Using Connection String %s' % conn_info)
+
+    qmgr = connect()
+    if (qmgr):
+        queue = getQueue()
+    if (queue):
+        getMessages()
+        queue.close()
+
+    if (qmgr):
+        qmgr.disconnect()
 
 logger.info("Application is closing")
