@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 )
 
 var logger = log.New(os.Stdout, "Env: ", log.LstdFlags)
@@ -74,8 +75,6 @@ func envrionmentOverides() {
 	logger.Println("Looking for Envrionment Overrides")
 	var s string
 
-
-
 	overrides := map[string]*string{
 		"APP_USER":             &EnvSettings.User,
 		"APP_PASSWORD":         &EnvSettings.Password,
@@ -101,7 +100,11 @@ func envrionmentOverides() {
 }
 
 func (Env) GetConnection() string {
-	return EnvSettings.Host + "(" + EnvSettings.Port + ")"
+	var connections []string
+	for _, p := range MQ_ENDPOINTS.Points {
+		connections = append(connections, p.Host + "(" + p.Port + ")")
+	}
+  return strings.Join(connections[:], ",")
 }
 
 func (Env) LogSettings() {
