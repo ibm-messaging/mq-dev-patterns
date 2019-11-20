@@ -22,6 +22,20 @@ namespace ibmmq_samples
                 cf.SetIntProperty(XMSC.WMQ_PORT, conn.port);
             }
 
+            SetRemConnectionProperties(cf, conn);
+        }
+
+        static public void SetConnectionProperties(IConnectionFactory cf, Env.ConnVariables conn)
+        {
+            cf.SetStringProperty(XMSC.WMQ_HOST_NAME, conn.host);
+            Console.WriteLine("hostName is set {0, -20 }", conn.host);
+            cf.SetIntProperty(XMSC.WMQ_PORT, conn.port);
+
+            SetRemConnectionProperties(cf, conn);
+        }
+
+        static private void SetRemConnectionProperties(IConnectionFactory cf, Env.ConnVariables conn)
+        {
             cf.SetStringProperty(XMSC.WMQ_CHANNEL, conn.channel);
             if (conn.key_repository != null && (conn.key_repository.Contains("*SYSTEM") || conn.key_repository.Contains("*USER")))
             {

@@ -90,6 +90,15 @@ namespace ibmmq_samples
             return null;
         }
 
+        public IEnumerable<ConnVariables> GetEndpoints()
+        {
+            int count = NumberOfConnections();
+            for (int i = 0; i < count; i++)
+            {
+                yield return points.mq_endpoints[i];
+            }
+        }
+
         public string BuildConnectionString()
         {
             List<string> connList = new List<string>();

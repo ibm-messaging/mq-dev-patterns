@@ -57,15 +57,10 @@ namespace ibmmq_samples
             Console.WriteLine("===> END of Simple Consumer sample for WMQ transport <===\n\n");
         }
 
-        void ReceiveMessages()
+        private void ReceiveMessages()
         {
             XMSFactoryFactory factoryFactory;
             IConnectionFactory cf;
-            IConnection connectionWMQ;
-            ISession sessionWMQ;
-            IDestination destination;
-            IMessageConsumer consumer;
-            ITextMessage textMessage;
 
             // Get an instance of factory.
             factoryFactory = XMSFactoryFactory.GetInstance(XMSC.CT_WMQ);
@@ -73,8 +68,33 @@ namespace ibmmq_samples
             // Create WMQ Connection Factory.
             cf = factoryFactory.CreateConnectionFactory();
 
-            // Set the properties
-            ConnectionPropertyBuilder.SetConnectionProperties(cf, env);
+            foreach (Env.ConnVariables e in env.GetEndpoints())
+            {
+                Console.WriteLine("Consuming messages from endpoint {0}({1})", e.host, e.port);
+
+                // Set the properties
+                ConnectionPropertyBuilder.SetConnectionProperties(cf, e);
+
+                try
+                {
+                    ReceiveMessagesFromEndpoint(cf);
+                }
+                catch (XMSException ex)
+                {
+                    Console.WriteLine("XMSException caught: {0}", ex);
+                    Console.WriteLine("Error Code: {0}", ex.ErrorCode);
+                    Console.WriteLine("Error Message: {0}", ex.Message);
+                }
+            }
+        }
+
+        private void ReceiveMessagesFromEndpoint(IConnectionFactory cf)
+        {
+            IConnection connectionWMQ;
+            ISession sessionWMQ;
+            IDestination destination;
+            IMessageConsumer consumer;
+            ITextMessage textMessage;
 
             // Create connection.
             connectionWMQ = cf.CreateConnection();
@@ -108,8 +128,13 @@ namespace ibmmq_samples
                     Console.WriteLine("\n");
                 }
                 else
+                {
                     Console.WriteLine("Wait timed out.");
+                    SimpleConsumer.keepRunning = false;
+                }
+
             }
+
             // Cleanup
             consumer.Close();
             destination.Dispose();
