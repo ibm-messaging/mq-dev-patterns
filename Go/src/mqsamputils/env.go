@@ -48,6 +48,8 @@ type MQEndpoints struct {
 var EnvSettings Env
 var MQ_ENDPOINTS MQEndpoints
 
+const FULL_STRING = -1
+
 func init() {
 	jsonFile, err := os.Open("../../env.json")
 	defer jsonFile.Close()
@@ -99,12 +101,21 @@ func envrionmentOverides() {
 	}
 }
 
-func (Env) GetConnection() string {
-	var connections []string
-	for _, p := range MQ_ENDPOINTS.Points {
-		connections = append(connections, p.Host + "(" + p.Port + ")")
+func (Env) GetConnection(index int) string {
+	if (index == FULL_STRING) {
+		var connections []string
+		for _, p := range MQ_ENDPOINTS.Points {
+			connections = append(connections, p.Host + "(" + p.Port + ")")
+		}
+	  return strings.Join(connections[:], ",")
+	} else {
+		p := MQ_ENDPOINTS.Points[index]
+		return p.Host + "(" + p.Port + ")" 
 	}
-  return strings.Join(connections[:], ",")
+}
+
+func (Env) GetConnectionCount() int {
+	return len(MQ_ENDPOINTS.Points)
 }
 
 func (Env) LogSettings() {
@@ -116,7 +127,7 @@ func (Env) LogSettings() {
 	logger.Printf("ModelQueue Name is (%s)\n", EnvSettings.ModelQueueName)
 	logger.Printf("Host is (%s)\n", EnvSettings.Host)
 	logger.Printf("Port is (%s)\n", EnvSettings.Port)
-	logger.Printf("Connection is (%s)\n", EnvSettings.GetConnection())
+	logger.Printf("Connection is (%s)\n", EnvSettings.GetConnection(FULL_STRING))
 	logger.Printf("Channel is (%s)\n", EnvSettings.Channel)
 	logger.Printf("Topic is (%s)\n", EnvSettings.Topic)
 	logger.Printf("Key Respository is (%s)\n", EnvSettings.KeyRepository)

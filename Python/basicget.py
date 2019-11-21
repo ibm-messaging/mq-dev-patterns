@@ -135,10 +135,15 @@ def getMessages():
             keep_running = False
 
 
-def buildMQDetails():
+def buildMQDetails(index):
     for key in ['QMGR', 'QUEUE_NAME', 'CHANNEL', 'HOST',
                 'PORT', 'KEY_REPOSITORY', 'CIPHER']:
-        MQDetails[key] = EnvStore.getEnvValue(key)
+        MQDetails[key] = EnvStore.getEnvValue(key, index)
+
+
+def setCredentials(index):
+    credentials['USER'] = EnvStore.getEnvValue('APP_USER', index)
+    credentials['PASSWORD'] = EnvStore.getEnvValue('APP_PASSWORD', index)
 
 
 # Application Logic starts here
@@ -148,12 +153,7 @@ envStore = EnvStore()
 envStore.setEnv()
 
 MQDetails = {}
-credentials = {
-    'USER': EnvStore.getEnvValue('APP_USER'),
-    'PASSWORD': EnvStore.getEnvValue('APP_PASSWORD')
-}
-
-buildMQDetails()
+credentials = {}
 
 logger.info('Credentials are set')
 #logger.info(credentials)
@@ -167,8 +167,12 @@ queue = None
 numEndPoints = envStore.getEndpointCount()
 logger.info('There are %d connections' % numEndPoints)
 
-for conn_info in envStore.getNextConnectionString():
+
+for index, conn_info in envStore.getNextConnectionString():
     logger.info('Using Connection String %s' % conn_info)
+
+    buildMQDetails(index)
+    setCredentials(index)
 
     qmgr = connect()
     if (qmgr):
@@ -179,5 +183,8 @@ for conn_info in envStore.getNextConnectionString():
 
     if (qmgr):
         qmgr.disconnect()
+
+    MQDetails.clear()
+    credentials.clear()
 
 logger.info("Application is closing")

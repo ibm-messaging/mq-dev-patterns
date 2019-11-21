@@ -40,21 +40,32 @@ func main() {
 	logSettings()
 	mqsamputils.EnvSettings.LogSettings()
 
-	qMgr, err := mqsamputils.CreateConnection()
-	if err != nil {
-		logger.Fatalln("Unable to Establish Connection to server")
-		os.Exit(1)
-	}
-	defer qMgr.Disc()
+	numConnections := mqsamputils.EnvSettings.GetConnectionCount()
+	logger.Printf("There are %d connections", numConnections)
 
-	qObject, err := mqsamputils.OpenQueue(qMgr, mqsamputils.Get)
-	if err != nil {
-		logger.Fatalln("Unable to Open Queue")
-		os.Exit(1)
-	}
-	defer qObject.Close(0)
+	for i := 0; i < numConnections; i++ {
+		qMgr, err := mqsamputils.CreateConnection(i)
+		defer qMgr.Disc()
+		if err != nil {
+			mqret := err.(*ibmmq.MQReturn)
+			if mqret.MQRC == ibmmq.MQRC_Q_MGR_NOT_AVAILABLE {
+				logger.Println("Queue Manager not available, skipping this endpoint")
+				continue
+			} else {
+				logger.Fatalln("Unable to Establish Connection to server")
+				os.Exit(1)
+			}
+		}
 
-	getMessage(qObject)
+		qObject, err := mqsamputils.OpenGetQueue(qMgr, mqsamputils.Get, i)
+		if err != nil {
+			logger.Fatalln("Unable to Open Queue")
+			os.Exit(1)
+		}
+		defer qObject.Close(0)
+
+		getMessage(qObject)
+	}
 
 	logger.Println("Application is Ending")
 }
@@ -107,8 +118,10 @@ func getMessage(qObject ibmmq.MQObject) {
 			if mqret.MQRC == ibmmq.MQRC_NO_MSG_AVAILABLE {
 				// If there's no message available, then don't treat that as a real error as
 				// it's an expected situation
-				msgAvail = true
+				// but do end loop so can pull messages from next endpoint
+				// msgAvail = true
 				err = nil
+				logger.Println("No more messages on this endpoint")
 			}
 		} else {
 			// Assume the message is a printable string

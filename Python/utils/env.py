@@ -88,21 +88,22 @@ class EnvStore(object):
         return 1
 
     def getNextConnectionString(self):
-        for p in EnvStore.env['MQ_ENDPOINTS']:
+        for i, p in enumerate(EnvStore.env['MQ_ENDPOINTS']):
             info =  "%s(%s)" % (p['HOST'], p['PORT'])
             if sys.version_info[0] < 3:
-                yield str(info)
+                yield i, str(info)
             else:
-                yield bytes(info, 'utf-8')
+                yield i, bytes(info, 'utf-8')
 
 
     # function to retrieve variable from Envrionment
     @staticmethod
-    def getEnvValue(key):
+    def getEnvValue(key, index = 0):
+        v = os.getenv(key) if index == 0 else EnvStore.env['MQ_ENDPOINTS'][index].get(key)        
         if sys.version_info[0] < 3:
-            return str(os.getenv(key)) if os.getenv(key) else None
+            return str(v) if v else None
         else:
-            return bytes(os.getenv(key), 'utf-8') if os.getenv(key) else None
+            return bytes(v, 'utf-8') if v else None
 
     @staticmethod
     def getConnection(host, port):
