@@ -93,16 +93,18 @@ public class ConnectionHelper {
 
     private void mqConnectionVariables() {
         SampleEnvSetter env = new SampleEnvSetter();
-        HOST = env.getEnvValue("HOST");
+        int index = 0;
+
+        HOST = env.getEnvValue("HOST", index);
         logger.info(HOST);
-        PORT = Integer.parseInt(env.getEnvValue("PORT"));
-        CHANNEL = env.getEnvValue("CHANNEL");
-        QMGR = env.getEnvValue("QMGR");
-        APP_USER = env.getEnvValue("APP_USER");
-        APP_PASSWORD = env.getEnvValue("APP_PASSWORD");
-        QUEUE_NAME = env.getEnvValue("QUEUE_NAME");
-        TOPIC_NAME = env.getEnvValue("TOPIC_NAME");
-        CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE");
+        PORT = Integer.parseInt(env.getEnvValue("PORT", index));
+        CHANNEL = env.getEnvValue("CHANNEL", index);
+        QMGR = env.getEnvValue("QMGR", index);
+        APP_USER = env.getEnvValue("APP_USER", index);
+        APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
+        QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
+        TOPIC_NAME = env.getEnvValue("TOPIC_NAME", index);
+        CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
     }
 
     private JmsConnectionFactory createJMSConnectionFactory() {

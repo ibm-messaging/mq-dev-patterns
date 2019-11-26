@@ -25,16 +25,18 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.lang.System;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SampleEnvSetter {
 
     private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
-    private JSONObject mqAppEnv;
+    private JSONArray mqEndPoints;
 
     public SampleEnvSetter() {
         JSONObject mqEnvSettings = null;
-        JSONArray  mqEndPoints = null;
-        mqAppEnv = null;
+
+        mqEndPoints = null;
 
         try {
             JSONParser parser = new JSONParser();
@@ -53,11 +55,7 @@ public class SampleEnvSetter {
                                  "will raise a null pointer exception");
             } else {
                 logger.info("There is at least one MQ endpoint in the .json file");
-                mqAppEnv = (JSONObject) mqEndPoints.get(0);
             }
-
-            String qm = (String) mqAppEnv.get("QMGR");
-            logger.info(qm);
 
         } catch (FileNotFoundException e) {
             logger.warning(e.getMessage());
@@ -68,14 +66,39 @@ public class SampleEnvSetter {
         }
     }
 
-    public String getEnvValue(String key) {
+    public String getEnvValue(String key, int index) {
+        JSONObject mqAppEnv = null;
         String value = System.getenv(key);
-        if ((value == null || value.isEmpty()) && mqAppEnv != null) {
+
+        if ((value == null || value.isEmpty()) &&
+                   mqEndPoints != null &&
+                   ! mqEndPoints.isEmpty()) {
+            mqAppEnv = (JSONObject) mqEndPoints.get(index);
             value = (String) mqAppEnv.get(key);
         }
+
         if (! key.contains("PASSWORD")) {
           logger.info("returning " + value + " for key " + key);
         }
         return value;
+    }
+
+    public String getConnectionString() {
+      List<String> coll = new ArrayList<String>();
+
+      for (Object o : mqEndPoints) {
+        JSONObject jo = (JSONObject) o;
+        String s = (String) jo.get("HOST") + "(" + (String) jo.get("PORT") + ")";
+        coll.add(s);
+      }
+
+      String connString = String.join(",", coll);
+      logger.info("Connection string will be " + connString);
+
+      return connString;
+    }
+
+    public int getCount() {
+      return mqEndPoints.size();
     }
 }
