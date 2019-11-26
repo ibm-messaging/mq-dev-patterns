@@ -36,8 +36,9 @@ public class ConnectionHelper {
     private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
 
     // Create variables for the connection to MQ
-    private String HOST; // Host name or IP address
-    private int PORT; // Listener port for your queue manager
+    private static String ConnectionString; //= "localhost(1414),localhost(1416)"
+    //private String HOST; // Host name or IP address
+    //private int PORT; // Listener port for your queue manager
     private String CHANNEL; // Channel name
     private String QMGR; // Queue manager name
     private String APP_USER; // User name that application uses to connect to MQ
@@ -95,9 +96,10 @@ public class ConnectionHelper {
         SampleEnvSetter env = new SampleEnvSetter();
         int index = 0;
 
-        HOST = env.getEnvValue("HOST", index);
-        logger.info(HOST);
-        PORT = Integer.parseInt(env.getEnvValue("PORT", index));
+        ConnectionString = env.getConnectionString();
+        //HOST = env.getEnvValue("HOST", index);
+        //logger.info(HOST);
+        //PORT = Integer.parseInt(env.getEnvValue("PORT", index));
         CHANNEL = env.getEnvValue("CHANNEL", index);
         QMGR = env.getEnvValue("QMGR", index);
         APP_USER = env.getEnvValue("APP_USER", index);
@@ -122,8 +124,9 @@ public class ConnectionHelper {
 
     private void setJMSProperties(JmsConnectionFactory cf, String id) {
         try {
-            cf.setStringProperty(WMQConstants.WMQ_HOST_NAME, HOST);
-            cf.setIntProperty(WMQConstants.WMQ_PORT, PORT);
+            cf.setStringProperty(WMQConstants.WMQ_CONNECTION_NAME_LIST, ConnectionString);
+            //cf.setStringProperty(WMQConstants.WMQ_HOST_NAME, HOST);
+            //cf.setIntProperty(WMQConstants.WMQ_PORT, PORT);
             cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
             cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);

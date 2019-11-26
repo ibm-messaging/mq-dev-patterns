@@ -44,7 +44,9 @@ public class RequestCalc {
             Object data = parser.parse(response);
             logger.info("Value retrieved from request");
             JSONObject obj = (JSONObject) data;
-            n = (long) obj.get("value");
+            if (null != obj.get("value")) {
+              n = (long) obj.get("value");
+            }
             n *= n;
 
         } catch (ParseException e) {

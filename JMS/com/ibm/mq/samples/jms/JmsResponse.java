@@ -30,7 +30,9 @@ import javax.jms.DeliveryMode;
 import com.ibm.msg.client.jms.JmsConnectionFactory;
 import com.ibm.msg.client.jms.JmsFactoryFactory;
 import com.ibm.msg.client.wmq.WMQConstants;
-
+import com.ibm.mq.constants.MQConstants;
+import com.ibm.mq.MQException;
+import com.ibm.msg.client.jms.DetailedInvalidDestinationException;
 import com.ibm.mq.jms.MQDestination;
 
 import com.ibm.mq.samples.jms.SampleEnvSetter;
@@ -116,10 +118,57 @@ public class JmsResponse {
                 producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
                 producer.send(destination, message);
             }
-        } catch (Exception jmsex) {
+        } catch (JMSException jmsex) {
+            logger.info("******** JMS Exception*********************");
+
+            if (null != jmsex.getCause() && jmsex.getCause() instanceof MQException) {
+                MQException innerException = (MQException) jmsex.getCause();
+
+                if (MQConstants.MQRC_UNKNOWN_OBJECT_NAME == innerException.getReason()) {
+                    logger.info("Reply to Queue no longer exists, skipping request");
+                    return;
+                }
+            }
+
+            logger.warning("Unexpected Expection replying to message");
             jmsex.printStackTrace();
 
+      } catch (JMSRuntimeException jmsex) {
+          // Get this exception when the message does not have a reply to queue.
+          if (null != jmsex.getCause()) {
+              MQException e = findMQException(jmsex);
+              if (null != e && e instanceof MQException) {
+                  if (MQConstants.MQRC_UNKNOWN_OBJECT_NAME == e.getReason()) {
+                      logger.info("Reply to Queue no longer exists, skipping request");
+                      return;
+                  }
+              }
+          }
+
+          // Get this exception when the reply to queue is no longer valid.
+          // eg. When app that posted the message is no longer running.
+          if (null != jmsex.getCause() && jmsex.getCause() instanceof DetailedInvalidDestinationException) {
+            logger.info("Reply to destination is invalid");
+            return;
+          }
+
+          logger.warning("Unexpected runtime error");
+          jmsex.printStackTrace();
         }
+    }
+
+    // recurse on the inner exceptions looking for a MQException.
+    private static MQException findMQException(Exception e) {
+        Exception inner = (Exception) e.getCause();
+        if (null != inner) {
+            if (inner instanceof MQException) {
+                logger.info("Found MQException");
+                return (MQException) inner;
+            } else {
+                return findMQException(inner);
+            }
+        }
+        return null;
     }
 
     private static void mqConnectionVariables() {
