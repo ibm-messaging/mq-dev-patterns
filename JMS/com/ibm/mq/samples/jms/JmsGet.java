@@ -106,9 +106,6 @@ public class JmsGet {
 
         context = connectionFactory.createContext();
 
-        logger.info("aaaa");
-        logger.info("bbbb");
-
         logger.info("context created");
         destination = context.createQueue("queue:///" + QUEUE_NAME);
         logger.info("destination created");

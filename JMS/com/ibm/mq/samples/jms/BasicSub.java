@@ -20,7 +20,7 @@ import com.ibm.mq.samples.jms.BasicConsumer;
 
 public class BasicSub {
     public static void main(String[] args) {
-        BasicConsumer bc = new BasicConsumer(BasicConsumer.CONSUMER_SUB);
+        BasicConsumer bc = new BasicConsumer(BasicConsumer.CONSUMER_SUB, ConnectionHelper.USE_CONNECTION_STRING);
         bc.receive();
         bc.close();
     }

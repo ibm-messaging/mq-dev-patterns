@@ -34,13 +34,14 @@ public class BasicConsumer {
 
     public static final String CONSUMER_SUB = "topic";
     public static final String CONSUMER_GET = "queue";
+    private static final long TIMEOUTTIME = 5000;
 
     private JMSContext context = null;
     private Destination destination = null;
     private JMSConsumer consumer = null;
     private ConnectionHelper ch = null;
 
-    public BasicConsumer(String type) {
+    public BasicConsumer(String type, int index) {
         String id = null;
 
         switch(type){
@@ -55,7 +56,7 @@ public class BasicConsumer {
         LoggingHelper.init(logger);
         logger.info("Sub application is starting");
 
-        ch = new ConnectionHelper(id);
+        ch = new ConnectionHelper(id, index);
         logger.info("created connection factory");
 
         context = ch.getContext();
@@ -74,15 +75,21 @@ public class BasicConsumer {
     }
 
     public void receive() {
+      boolean continueProcessing = true;
+      
       consumer = context.createConsumer(destination);
       logger.info("consumer created");
 
-      while (true) {
+      while (continueProcessing) {
           try {
-              Message receivedMessage = consumer.receive();
-              new ConsumerHelper(receivedMessage);
+              Message receivedMessage = consumer.receive(TIMEOUTTIME);
+              if (receivedMessage == null) {
+                  logger.info("No message received from this endpoint");
+                   continueProcessing = false;
+              } else {
+                new ConsumerHelper(receivedMessage);
+              }
           } catch (JMSRuntimeException jmsex) {
-
               jmsex.printStackTrace();
               try {
                   Thread.sleep(1000);

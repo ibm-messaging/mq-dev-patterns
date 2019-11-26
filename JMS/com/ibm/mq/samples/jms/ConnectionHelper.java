@@ -34,29 +34,30 @@ public class ConnectionHelper {
 
     private static final Level LOGLEVEL = Level.ALL;
     private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
+    public static final int USE_CONNECTION_STRING = -1;
 
     // Create variables for the connection to MQ
-    private static String ConnectionString; //= "localhost(1414),localhost(1416)"
-    //private String HOST; // Host name or IP address
-    //private int PORT; // Listener port for your queue manager
-    private String CHANNEL; // Channel name
-    private String QMGR; // Queue manager name
-    private String APP_USER; // User name that application uses to connect to MQ
-    private String APP_PASSWORD; // Password that the application uses to connect to MQ
-    private String QUEUE_NAME; // Queue that the application uses to put and get messages to and from
-    private static String TOPIC_NAME; // Topic that the application publishes to
-    private String CIPHER_SUITE;
+    private static String ConnectionString = null; //= "localhost(1414),localhost(1416)"
+    private String HOST = null; // Host name or IP address
+    private int PORT = 0; // Listener port for your queue manager
+    private String CHANNEL = null; // Channel name
+    private String QMGR = null; // Queue manager name
+    private String APP_USER = null; // User name that application uses to connect to MQ
+    private String APP_PASSWORD = null; // Password that the application uses to connect to MQ
+    private String QUEUE_NAME = null; // Queue that the application uses to put and get messages to and from
+    private String TOPIC_NAME = null; // Topic that the application publishes to
+    private String CIPHER_SUITE = null;
 
     JMSContext context;
 
-    public ConnectionHelper (String id) {
+    public ConnectionHelper (String id, int index) {
 
         //initialiseLogging();
-        mqConnectionVariables();
+        mqConnectionVariables(index);
         logger.info("Get application is starting");
 
         JmsConnectionFactory connectionFactory = createJMSConnectionFactory();
-        setJMSProperties(connectionFactory, id);
+        setJMSProperties(connectionFactory, id, index);
         logger.info("created connection factory");
 
         context = connectionFactory.createContext();
@@ -92,14 +93,18 @@ public class ConnectionHelper {
       }
     }
 
-    private void mqConnectionVariables() {
+    private void mqConnectionVariables(int index) {
         SampleEnvSetter env = new SampleEnvSetter();
-        int index = 0;
 
-        ConnectionString = env.getConnectionString();
-        //HOST = env.getEnvValue("HOST", index);
-        //logger.info(HOST);
-        //PORT = Integer.parseInt(env.getEnvValue("PORT", index));
+        if (USE_CONNECTION_STRING == index) {
+          ConnectionString = env.getConnectionString();
+          logger.info("Connecting to " + ConnectionString);
+          index = 0;
+        } else {
+          HOST = env.getEnvValue("HOST", index);
+          PORT = Integer.parseInt(env.getEnvValue("PORT", index));
+          logger.info("Connection to " + HOST + "(" + PORT + ")");
+        }
         CHANNEL = env.getEnvValue("CHANNEL", index);
         QMGR = env.getEnvValue("QMGR", index);
         APP_USER = env.getEnvValue("APP_USER", index);
@@ -122,11 +127,14 @@ public class ConnectionHelper {
         return cf;
     }
 
-    private void setJMSProperties(JmsConnectionFactory cf, String id) {
+    private void setJMSProperties(JmsConnectionFactory cf, String id, int index) {
         try {
-            cf.setStringProperty(WMQConstants.WMQ_CONNECTION_NAME_LIST, ConnectionString);
-            //cf.setStringProperty(WMQConstants.WMQ_HOST_NAME, HOST);
-            //cf.setIntProperty(WMQConstants.WMQ_PORT, PORT);
+            if (USE_CONNECTION_STRING == index) {
+              cf.setStringProperty(WMQConstants.WMQ_CONNECTION_NAME_LIST, ConnectionString);
+            } else {
+              cf.setStringProperty(WMQConstants.WMQ_HOST_NAME, HOST);
+              cf.setIntProperty(WMQConstants.WMQ_PORT, PORT);
+            }
             cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
             cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
@@ -143,7 +151,7 @@ public class ConnectionHelper {
         return;
     }
 
-    private static void recordFailure(Exception ex) {
+    public static void recordFailure(Exception ex) {
         if (ex != null) {
             if (ex instanceof JMSException) {
                 processJMSException((JMSException) ex);

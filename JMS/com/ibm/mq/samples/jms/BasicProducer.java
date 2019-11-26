@@ -55,7 +55,7 @@ public class BasicProducer {
         LoggingHelper.init(logger);
         logger.info("Sub application is starting");
 
-        ch = new ConnectionHelper(id);
+        ch = new ConnectionHelper(id, ConnectionHelper.USE_CONNECTION_STRING);
         logger.info("created connection factory");
 
         context = ch.getContext();
