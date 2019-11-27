@@ -28,6 +28,7 @@ import com.ibm.mq.samples.jms.SampleEnvSetter;
 
 public class BasicGet {
     private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
+    private static final int TIMEOUT = 5000; // 5 Seconnds
 
     public static void main(String[] args) {
         SampleEnvSetter env = new SampleEnvSetter();
@@ -37,7 +38,7 @@ public class BasicGet {
         for (int index = 0; index < limit; index++) {
             try {
                 BasicConsumer bc = new BasicConsumer(BasicConsumer.CONSUMER_GET, index);
-                bc.receive();
+                bc.receive(TIMEOUT);
                 bc.close();
             } catch (JMSRuntimeException ex) {
                 if (! canContinue(ex)) {

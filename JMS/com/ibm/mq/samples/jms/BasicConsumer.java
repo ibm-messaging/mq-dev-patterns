@@ -34,7 +34,6 @@ public class BasicConsumer {
 
     public static final String CONSUMER_SUB = "topic";
     public static final String CONSUMER_GET = "queue";
-    private static final long TIMEOUTTIME = 5000;
 
     private JMSContext context = null;
     private Destination destination = null;
@@ -74,15 +73,15 @@ public class BasicConsumer {
         logger.info("destination created");
     }
 
-    public void receive() {
+    public void receive(int requestTimeout) {
       boolean continueProcessing = true;
-      
+
       consumer = context.createConsumer(destination);
       logger.info("consumer created");
 
       while (continueProcessing) {
           try {
-              Message receivedMessage = consumer.receive(TIMEOUTTIME);
+              Message receivedMessage = consumer.receive(requestTimeout);
               if (receivedMessage == null) {
                   logger.info("No message received from this endpoint");
                    continueProcessing = false;
