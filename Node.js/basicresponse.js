@@ -91,6 +91,16 @@ function endOfObject(buf) {
   return pos;
 }
 
+function getConnection() {
+  let points = [];
+  env.MQ_ENDPOINTS.forEach((p) => {
+    if (p['HOST'] && p['PORT']) {
+      points.push(`${p.HOST}(${p.PORT})`)
+    }
+  });
+  return points.join(',');
+}
+
 // Define some functions that will be used from the main flow
 function getMessages(hConn, hObj) {
   while (ok) {
@@ -258,7 +268,9 @@ if (credentials.USER) {
 
 // And then fill in relevant fields for the MQCD
 var cd = new mq.MQCD();
-cd.ConnectionName = `${MQDetails.HOST}(${MQDetails.PORT})`;
+cd.ConnectionName = getConnection();
+debug_info('Connections string is ', cd.ConnectionName);
+
 cd.ChannelName = MQDetails.CHANNEL;
 
 if (MQDetails.KEY_REPOSITORY) {

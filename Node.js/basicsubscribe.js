@@ -42,8 +42,8 @@ var debug_warn = require('debug')('amqssub:warn');
 
 // Load the MQ Endpoint details either from the envrionment or from the
 // env.json file. The envrionment takes precedence. The json file allows for
-// mulitple endpoints ala a cluster, but for this sample only the first
-// endpoint in the arryay is used.
+// mulitple endpoints ala a cluster.
+// A connection string is built using each endpoint's HOST(PORT)
 var MQDetails = {};
 
 ['QMGR', 'TOPIC_NAME', 'HOST', 'PORT',
@@ -58,6 +58,18 @@ var credentials = {
 
 // Global variables
 var ok = true;
+
+
+function getConnection() {
+  let points = [];
+  env.MQ_ENDPOINTS.forEach((p) => {
+    if (p['HOST'] && p['PORT']) {
+      points.push(`${p.HOST}(${p.PORT})`)
+    }
+  });
+
+  return points.join(',');
+}
 
 // Define some functions that will be used from the main flow
 function getMessages(hObj) {
@@ -153,7 +165,9 @@ if (credentials.USER) {
 
 // And then fill in relevant fields for the MQCD
 var cd = new mq.MQCD();
-cd.ConnectionName = `${MQDetails.HOST}(${MQDetails.PORT})`;
+cd.ConnectionName = getConnection();
+debug_info('Connections string is ', cd.ConnectionName);
+
 cd.ChannelName = MQDetails.CHANNEL;
 
 if (MQDetails.KEY_REPOSITORY) {
@@ -191,7 +205,7 @@ mq.Connx(MQDetails.QMGR, cno, function(err, hConn) {
       if (err) {
         debug_warn("MQSUB ended with reason " + err.mqrc);
       } else {
-        debug_info("MQSUB to topic %s successful", MQDetails.TOPIC_NAME);
+        debug_info("MQSUB to topic %s successfull", MQDetails.TOPIC_NAME);
         // And loop getting messages until done.
         getMessages(hObjPubQ);
       }

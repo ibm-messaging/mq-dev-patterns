@@ -41,8 +41,11 @@ var debug_warn = require('debug')('amqsput:warn');
 
 
 // Load the MQ Endpoint details either from the envrionment or from the
-// env.json file. The envrionment takes precedence. The json file allows for
-// mulitple endpoints ala a cluster, but for this sample only the first
+// env.json file. The envrionment takes precedence.
+// The json file allows for
+// mulitple endpoints ala a cluster. The connection string is built
+// using the host(port) values for all the endpoints.
+// For all the other fields only the first
 // endpoint in the arryay is used.
 var MQDetails = {};
 
@@ -60,6 +63,16 @@ function toHexString(byteArray) {
   return byteArray.reduce((output, elem) =>
     (output + ('0' + elem.toString(16)).slice(-2)),
     '');
+}
+
+function getConnection() {
+  let points = [];
+  env.MQ_ENDPOINTS.forEach((p) => {
+    if (p['HOST'] && p['PORT']) {
+      points.push(`${p.HOST}(${p.PORT})`)
+    }
+  });
+  return points.join(',');
 }
 
 // Define some functions that will be used from the main flow
@@ -126,7 +139,9 @@ if (credentials.USER) {
 
 // And then fill in relevant fields for the MQCD
 var cd = new mq.MQCD();
-cd.ConnectionName = `${MQDetails.HOST}(${MQDetails.PORT})`;
+cd.ConnectionName = getConnection();
+debug_info('Connections string is ', cd.ConnectionName);
+
 cd.ChannelName = MQDetails.CHANNEL;
 
 if (MQDetails.KEY_REPOSITORY) {

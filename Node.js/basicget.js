@@ -42,41 +42,33 @@ var MQC = mq.MQC; // Want to refer to this export directly for simplicity
 var debug_info = require('debug')('amqsget:info');
 var debug_warn = require('debug')('amqsget:warn');
 
-// Load the MQ Endpoint details either from the envrionment or from the
-// env.json file. The envrionment takes precedence. The json file allows for
-// mulitple endpoints ala a cluster, but for this sample only the first
-// endpoint in the arryay is used.
-var MQDetails = {};
-['QMGR', 'QUEUE_NAME', 'HOST', 'PORT',
- 'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach(function(f) {
-  MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[0][f]
-});
-
-var credentials = {
-  USER: process.env.APP_USER || env.MQ_ENDPOINTS[0].APP_USER,
-  PASSWORD: process.env.APP_PASSWORD || env.MQ_ENDPOINTS[0].APP_PASSWORD
-}
-
-// The default queue manager and queue to be used
-//var qMgr = "QM1";
-//var qName = "SYSTEM.DEFAULT.LOCAL.QUEUE";
-
-// Global variables
-var ok = true;
 
 // Define some functions that will be used from the main flow
-function getMessages(hObj) {
-  while (ok) {
-    getMessage(hObj);
+
+function buildMQDetails(MQDetails, credentials, index) {
+  if (env.MQ_ENDPOINTS.length > index) {
+    ['QMGR', 'QUEUE_NAME', 'HOST', 'PORT',
+     'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach((f) => {
+      MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[index][f]
+    });
+    ['USER', 'PASSWORD'].forEach((f) => {
+      let pField = 'APP_' + f;
+      credentials[f] = process.env[pField] || env.MQ_ENDPOINTS[index][pField];
+    });
   }
+  return Promise.resolve();
+}
+
+function getMessages(hObj) {
+  while (getMessage(hObj));
 }
 
 // This function retrieves messages from the queue without waiting.
 function getMessage(hObj) {
-  var buf = Buffer.alloc(1024);
+  let buf = Buffer.alloc(1024);
 
-  var mqmd = new mq.MQMD();
-  var gmo = new mq.MQGMO();
+  let mqmd = new mq.MQMD();
+  let gmo = new mq.MQGMO();
 
   gmo.Options = MQC.MQGMO_NO_SYNCPOINT |
     MQC.MQGMO_NO_WAIT |
@@ -90,7 +82,7 @@ function getMessage(hObj) {
       } else {
         debug_warn('Error retrieving message', err);
       }
-      ok = false;
+      return false;
     } else if (mqmd.Format == "MQSTR") {
       // The Message from a Synchronouse GET is
       // a data buffer, which needs to be encoded
@@ -98,9 +90,9 @@ function getMessage(hObj) {
       // JSON object is extracted.
       // The stringify step is needed to truncate
       // the unitialised / empty part of the buffer.
-      var buffString = JSON.stringify(buf.toString('utf8'));
+      let buffString = JSON.stringify(buf.toString('utf8'));
 
-      var msgObject = null;
+      let msgObject = null;
       try {
         msgObject = JSON.parse(buffString);
         debug_info("Message Object found", msgObject);
@@ -110,6 +102,68 @@ function getMessage(hObj) {
     } else {
       debug_info("binary message: " + buf);
     }
+    return true;
+  });
+}
+
+function initialise(cno, MQDetails, credentials) {
+  // For no authentication, disable this block
+  if (credentials.USER) {
+    let csp = new mq.MQCSP();
+    csp.UserId = credentials.USER;
+    csp.Password = credentials.PASSWORD;
+    cno.SecurityParms = csp;
+  }
+
+  // And then fill in relevant fields for the MQCD
+  let cd = new mq.MQCD();
+  cd.ConnectionName = `${MQDetails.HOST}(${MQDetails.PORT})`;
+  cd.ChannelName = MQDetails.CHANNEL;
+
+  if (MQDetails.KEY_REPOSITORY) {
+    debug_info('Will be running in TLS Mode');
+    // *** For TLS ***
+    let sco = new mq.MQSCO();
+
+    cd.SSLCipherSpec = MQDetails.CIPHER; // 'TLS_RSA_WITH_AES_128_CBC_SHA256';
+    cd.SSLClientAuth = MQC.MQSCA_OPTIONAL;
+
+    sco.KeyRepository = MQDetails.KEY_REPOSITORY;
+    // And make the CNO refer to the SSL Connection Options
+    cno.SSLConfig = sco;
+  }
+
+  // Make the MQCNO refer to the MQCD
+  cno.ClientConn = cd;
+  return Promise.resolve();
+}
+
+function processConnection(cno, MQDetails) {
+  return new Promise(function resolver(resolve, reject){
+    // Do the connect, including a callback function
+    mq.Connx(MQDetails.QMGR, cno, function(err, hConn) {
+      if (err) {
+        debug_warn('Error Detected making Connection', err);
+      } else {
+        debug_info("MQCONN to %s successful ", MQDetails.QMGR);
+        // Define what we want to open, and how we want to open it.
+        let od = new mq.MQOD();
+        od.ObjectName = MQDetails.QUEUE_NAME;
+        od.ObjectType = MQC.MQOT_Q;
+        let openOptions = MQC.MQOO_INPUT_AS_Q_DEF;
+        mq.Open(hConn, od, openOptions, function(err, hObj) {
+          if (err) {
+            debug_warn('Error Detected Opening MQ Connection', err);
+          } else {
+            debug_info("MQOPEN of %s successful", MQDetails.QUEUE_NAME);
+            // And loop getting messages until done.
+            getMessages(hObj);
+          }
+          cleanup(hConn, hObj);
+          resolve();
+        });
+      }
+    });
   });
 }
 
@@ -131,66 +185,42 @@ function cleanup(hConn, hObj) {
   });
 }
 
+function cycleEndpoint(index) {
+  let p = new Promise(function resolver(resolve, reject) {
+    let MQDetails = {};
+    let credentials = {};
+    let endpointString = '';
+
+    let cno = new mq.MQCNO();
+    cno.Options = MQC.MQCNO_CLIENT_BINDING;
+
+    buildMQDetails(MQDetails, credentials, index)
+      .then(() => {
+        endpointString = `${MQDetails.HOST}(${MQDetails.PORT})`;
+        debug_info('Getting messages from ', endpointString);
+        return initialise(cno, MQDetails, credentials);
+      }).then(() => {
+        return processConnection(cno, MQDetails);
+      }).then(()=>{
+        debug_info('Endpoint processing complete for ', endpointString);
+        resolve();
+      });
+  });
+}
+
 // The program really starts here.
 // Connect to the queue manager. If that works, the callback function
 // opens the queue, and then we can start to retrieve messages.
 
 debug_info("Sample MQ GET application start");
 
-var cno = new mq.MQCNO();
-// use MQCNO_CLIENT_BINDING to connect as client
-// cno.Options = MQC.MQCNO_NONE;
-cno.Options = MQC.MQCNO_CLIENT_BINDING;
+var promises = [];
+// Process each endpoint in turn
+env.MQ_ENDPOINTS.forEach((point, index) => {
+  promises.push(cycleEndpoint(index));
+});
 
-// For no authentication, disable this block
-if (credentials.USER) {
-  var csp = new mq.MQCSP();
-  csp.UserId = credentials.USER;
-  csp.Password = credentials.PASSWORD;
-  cno.SecurityParms = csp;
-}
-
-// And then fill in relevant fields for the MQCD
-var cd = new mq.MQCD();
-cd.ConnectionName = `${MQDetails.HOST}(${MQDetails.PORT})`;
-cd.ChannelName = MQDetails.CHANNEL;
-
-if (MQDetails.KEY_REPOSITORY) {
-  debug_info('Will be running in TLS Mode');
-  // *** For TLS ***
-  var sco = new mq.MQSCO();
-
-  cd.SSLCipherSpec = MQDetails.CIPHER; // 'TLS_RSA_WITH_AES_128_CBC_SHA256';
-  cd.SSLClientAuth = MQC.MQSCA_OPTIONAL;
-
-  sco.KeyRepository = MQDetails.KEY_REPOSITORY;
-  // And make the CNO refer to the SSL Connection Options
-  cno.SSLConfig = sco;
-}
-
-// Make the MQCNO refer to the MQCD
-cno.ClientConn = cd;
-
-// Do the connect, including a callback function
-mq.Connx(MQDetails.QMGR, cno, function(err, hConn) {
-  if (err) {
-    debug_warn('Error Detected making Connection', err);
-  } else {
-    debug_info("MQCONN to %s successful ", MQDetails.QMGR);
-    // Define what we want to open, and how we want to open it.
-    var od = new mq.MQOD();
-    od.ObjectName = MQDetails.QUEUE_NAME;
-    od.ObjectType = MQC.MQOT_Q;
-    var openOptions = MQC.MQOO_INPUT_AS_Q_DEF;
-    mq.Open(hConn, od, openOptions, function(err, hObj) {
-      if (err) {
-        debug_warn('Error Detected Opening MQ Connection', err);
-      } else {
-        debug_info("MQOPEN of %s successful", MQDetails.QUEUE_NAME);
-        // And loop getting messages until done.
-        getMessages(hObj);
-      }
-      cleanup(hConn, hObj);
-    });
-  }
+// Wait for all the connections to the endpoints to report back
+Promise.all(promises).then(() => {
+  debug_info("Sample MQ GET application ending");
 });

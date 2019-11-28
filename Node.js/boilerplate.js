@@ -253,6 +253,16 @@ class MQBoilerPlate {
       '');
   }
 
+  static getConnection() {
+    let points = [];
+    env.MQ_ENDPOINTS.forEach((p) => {
+      if (p['HOST'] && p['PORT']) {
+        points.push(`${p.HOST}(${p.PORT})`)
+      }
+    });
+    return points.join(',');
+  }
+
   static buildMQCNO() {
     debug_info('Establishing connection details');
     var mqcno = new mq.MQCNO();
@@ -270,7 +280,9 @@ class MQBoilerPlate {
 
     // And then fill in relevant fields for the MQCD
     var cd = new mq.MQCD();
-    cd.ConnectionName = `${MQDetails.HOST}(${MQDetails.PORT})`;
+    cd.ConnectionName = MQBoilerPlate.getConnection();
+    debug_info('Connections string is ', cd.ConnectionName);
+
     cd.ChannelName = MQDetails.CHANNEL;
 
     if (MQDetails.KEY_REPOSITORY) {
@@ -432,7 +444,7 @@ class MQBoilerPlate {
         if (err) {
           reject(err);
         } else {
-          debug_info("MQOPEN of %s successful", MQDetails.QUEUE_NAME);
+          debug_info("MQSUB to topic of %s successfull", MQDetails.TOPIC_NAME);
           let data = {
             'hObj': hObj,
             'hObjSubscription': hObjSubscription
@@ -488,7 +500,6 @@ class MQBoilerPlate {
     });
   }
 
-
   /*
    * This function is the async callback. Parameters
    * include the message descriptor and the buffer containing
@@ -501,8 +512,8 @@ class MQBoilerPlate {
         debug_info("No more messages available.");
       } else {
         MQBoilerPlate.reportError(err);
-        canExit = true;
       }
+      canExit = true;
       // We don't need any more messages delivered, so cause the
       // callback to be deleted after this one has completed.
       //mq.GetDone(hObj);
