@@ -50,22 +50,18 @@ class MQBoilerPlate {
   }
 
   initialise(type, i = 0) {
-    debug_info("001");
     let me = this;
     me.modeType = type;
+    me.index = i;
     return new Promise(function resolver(resolve, reject) {
-      debug_info("002");
-      me.buildMQDetails(i)
+      me.buildMQDetails()
         .then(() => {
-          debug_info("003");
           return me.buildMQCNO();
         })
         .then((mqcno) => {
-          debug_info("004");
           return me.connectToMQ(mqcno);
         })
         .then((hConn) => {
-          debug_info("005");
           me.mqConn = hConn;
           if ('SUBSCRIBE' === me.modeType) {
             return me.openMQSubscription(me.mqConn, me.modeType);
@@ -73,7 +69,6 @@ class MQBoilerPlate {
           return me.openMQConnection(me.mqConn, me.modeType);
         })
         .then((data) => {
-          debug_info("006");
           if (data.hObj) {
             me.mqObj = data.hObj;
           }
@@ -83,7 +78,6 @@ class MQBoilerPlate {
           resolve();
         })
         .catch((err) => {
-          debug_info("007");
           MQBoilerPlate.reportError(err);
           reject();
         });
@@ -107,17 +101,18 @@ class MQBoilerPlate {
   // env.json file. The envrionment takes precedence. The json file allows for
   // mulitple endpoints ala a cluster, but for this sample only the first
   // endpoint in the arryay is used.
-  buildMQDetails(index) {
-    if (env.MQ_ENDPOINTS.length > index) {
+  buildMQDetails() {
+    let i = this.index;
+    if (env.MQ_ENDPOINTS.length > i) {
       ['QMGR', 'QUEUE_NAME', 'TOPIC_NAME',
        'MODEL_QUEUE_NAME', 'DYNAMIC_QUEUE_PREFIX',
        'HOST', 'PORT',
        'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach((f) => {
-        this.MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[index][f];
+        this.MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[i][f];
       });
       ['USER', 'PASSWORD'].forEach((f) => {
         let pField = 'APP_' + f;
-        this.credentials[f] = process.env[pField] || env.MQ_ENDPOINTS[index][pField];
+        this.credentials[f] = process.env[pField] || env.MQ_ENDPOINTS[i][pField];
       });
     }
     return Promise.resolve();
@@ -278,6 +273,14 @@ class MQBoilerPlate {
     return points.join(',');
   }
 
+  getConnectionAt() {
+    let i = this.index;
+    if (env.MQ_ENDPOINTS.length <= i) {
+      i = 0;
+    }
+    return `${env.MQ_ENDPOINTS[i].HOST}(${env.MQ_ENDPOINTS[i].PORT})`;
+  }
+
   buildMQCNO() {
     debug_info('Establishing connection details');
     var mqcno = new mq.MQCNO();
@@ -295,7 +298,12 @@ class MQBoilerPlate {
 
     // And then fill in relevant fields for the MQCD
     var cd = new mq.MQCD();
-    cd.ConnectionName = this.getConnection();
+    if ('GET' === this.modeType) {
+      cd.ConnectionName = this.getConnectionAt();
+    } else {
+      cd.ConnectionName = this.getConnection();
+    }
+
     debug_info('Connections string is ', cd.ConnectionName);
 
     cd.ChannelName = this.MQDetails.CHANNEL;
@@ -549,5 +557,6 @@ class MQBoilerPlate {
 
 }
 
-var mqboiler = new MQBoilerPlate();
-module.exports = mqboiler;
+//var mqboiler = new MQBoilerPlate();
+//module.exports = mqboiler;
+module.exports = MQBoilerPlate;
