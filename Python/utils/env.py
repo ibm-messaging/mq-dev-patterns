@@ -49,27 +49,67 @@ class EnvStore(object):
             # except FileNotFoundError:
             # logger.info("Envrionment File was not found")
 
+    def checkEndPointIsList(self):
+        if (EnvStore.env
+             and 'MQ_ENDPOINTS' in EnvStore.env
+             and isinstance( EnvStore.env['MQ_ENDPOINTS'], list)):
+               return True
+        return False
+
     def setEnv(self):
-        if EnvStore.env:
+        if self.checkEndPointIsList():
             logger.info('Have File so ready to set envrionment variables')
-            for e in EnvStore.env:
-                os.environ[e] = EnvStore.env[e]
+
+            for e in EnvStore.env['MQ_ENDPOINTS'][0]:
+                os.environ[e] = EnvStore.env['MQ_ENDPOINTS'][0][e]
                 if 'PASSWORD' not in e:
-                    logger.info('Checking %s value is %s ' % (e, EnvStore.env[e]))
+                    logger.info('Checking %s value is %s ' % (e, EnvStore.env['MQ_ENDPOINTS'][0][e]))
+            # Check if there are multiple endpoints defined
+            if len(EnvStore.env['MQ_ENDPOINTS']) > 0:
+               os.environ['CONN_STRING'] = self.buildConnectionString(EnvStore.env['MQ_ENDPOINTS'])
         else:
             logger.info('No envrionment variables to set')
 
+    def buildConnectionString(self, points):
+        logger.info('Building a connection string')
+        l = []
+        for point in points:
+            if 'HOST' in point and 'PORT' in point:
+                p = '%s(%s)' % (point['HOST'], point['PORT'])
+                logger.info('endpoint is %s' % p)
+                l.append(p)
+        s = ','.join(l)
+        logger.info('Connection string is %s' % s)
+        return s
+
+    def getEndpointCount(self):
+        if self.checkEndPointIsList():
+            return len(EnvStore.env['MQ_ENDPOINTS'])
+        return 1
+
+    def getNextConnectionString(self):
+        for i, p in enumerate(EnvStore.env['MQ_ENDPOINTS']):
+            info =  "%s(%s)" % (p['HOST'], p['PORT'])
+            if sys.version_info[0] < 3:
+                yield i, str(info)
+            else:
+                yield i, bytes(info, 'utf-8')
+
+
     # function to retrieve variable from Envrionment
     @staticmethod
-    def getEnvValue(key):
+    def getEnvValue(key, index = 0):
+        v = os.getenv(key) if index == 0 else EnvStore.env['MQ_ENDPOINTS'][index].get(key)        
         if sys.version_info[0] < 3:
-            return str(os.getenv(key)) if os.getenv(key) else None
+            return str(v) if v else None
         else:
-            return bytes(os.getenv(key), 'utf-8') if os.getenv(key) else None
+            return bytes(v, 'utf-8') if v else None
 
     @staticmethod
     def getConnection(host, port):
-        info = "%s(%s)" % (os.getenv(host), os.getenv(port))
+        info = os.getenv('CONN_STRING')
+        if not info:
+            info =  "%s(%s)" % (os.getenv(host), os.getenv(port))
         if sys.version_info[0] < 3:
             return str(info)
         else:

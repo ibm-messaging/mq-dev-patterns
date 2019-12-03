@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 def connect():
     logger.info('Establising Connection with MQ Server')
     try:
-        cd = pymqi.CD()
+        cd = pymqi.CD(Version=pymqi.CMQXC.MQCD_VERSION_11)
         cd.ChannelName = MQDetails['CHANNEL']
         cd.ConnectionName = conn_info
         cd.ChannelType = pymqi.CMQC.MQCHT_CLNTCONN
@@ -115,6 +115,7 @@ def putMessage():
         logger.info(dynamic['name'])
         md = pymqi.MD()
         md.ReplyToQ = dynamic['name']
+        md.MsgType = pymqi.CMQC.MQMT_REQUEST
         md.Format = pymqi.CMQC.MQFMT_STRING
 
         # Send the message.
@@ -124,6 +125,7 @@ def putMessage():
         # queue.put("Hello")
 
         logger.info("Put message successful")
+        #logger.info(md.CorrelID)
         return md.MsgId, md.CorrelId
         # return md.CorrelId
     except pymqi.MQMIError as e:
@@ -135,6 +137,7 @@ def putMessage():
 
 def awaitResponse(msgId, correlId):
     logger.info('Attempting get from Reply Queue')
+
     # Message Descriptor
     md = pymqi.MD()
     md.MsgId = msgId
@@ -142,10 +145,13 @@ def awaitResponse(msgId, correlId):
 
     # Get Message Options
     gmo = pymqi.GMO()
-    gmo.Options = pymqi.CMQC.MQGMO_WAIT | pymqi.CMQC.MQGMO_FAIL_IF_QUIESCING
+    gmo.Options = pymqi.CMQC.MQGMO_WAIT | \
+                       pymqi.CMQC.MQGMO_FAIL_IF_QUIESCING | \
+                       pymqi.CMQC.MQGMO_NO_PROPERTIES
     gmo.WaitInterval = 5000  # 5 seconds
     #gmo.MatchOptions = pymqi.CMQC.MQMO_MATCH_MSG_ID
     gmo.MatchOptions = pymqi.CMQC.MQMO_MATCH_CORREL_ID
+    gmo.Version = pymqi.CMQC.MQGMO_VERSION_2
 
     keep_running = True
     while keep_running:
@@ -168,6 +174,13 @@ def awaitResponse(msgId, correlId):
             else:
                 # Some other error condition.
                 raise
+
+        except (UnicodeDecodeError, ValueError) as e:
+            logger.info('Message is not valid json')
+            logger.info(e)
+            logger.info(message)
+            continue
+
         except KeyboardInterrupt:
             logger.info('Have received a keyboard interrupt')
             keep_running = False
@@ -195,7 +208,7 @@ credentials = {
 buildMQDetails()
 
 logger.info('Credentials are set')
-logger.info(credentials)
+#logger.info(credentials)
 
 #conn_info = "%s(%s)" % (MQDetails['HOST'], MQDetails['PORT'])
 conn_info = EnvStore.getConnection('HOST', 'PORT')

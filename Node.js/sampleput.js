@@ -25,10 +25,11 @@
 var debug_info = require('debug')('sampleput:info');
 var debug_warn = require('debug')('sampleput:warn');
 
-var mqBoilerPlate = require('./boilerplate');
+var MQBoilerPlate = require('./boilerplate');
 
 debug_info('Starting up Application');
 
+var mqBoilerPlate = new MQBoilerPlate();
 mqBoilerPlate.initialise('PUT')
   .then(() => {
     debug_info('MQ Connection is established');

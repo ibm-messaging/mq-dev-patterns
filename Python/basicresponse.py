@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 def connect():
     logger.info('Establising Connection with MQ Server')
     try:
-        cd = pymqi.CD()
+        cd = pymqi.CD(Version=pymqi.CMQXC.MQCD_VERSION_11)
         cd.ChannelName = MQDetails['CHANNEL']
         cd.ConnectionName = conn_info
         cd.ChannelType = pymqi.CMQC.MQCHT_CLNTCONN
@@ -102,6 +102,12 @@ def getMessages():
     keep_running = True
     while keep_running:
         try:
+            # Reset the MsgId, CorrelId & GroupId so that we can reuse
+            # the same 'md' object again.
+            md.MsgId = pymqi.CMQC.MQMI_NONE
+            md.CorrelId = pymqi.CMQC.MQCI_NONE
+            md.GroupId = pymqi.CMQC.MQGI_NONE
+
             # Wait up to to gmo.WaitInterval for a new message.
             message = queue.get(None, md, gmo)
 
@@ -112,12 +118,6 @@ def getMessages():
 
             respondToRequest(md, msgObject)
 
-            # Reset the MsgId, CorrelId & GroupId so that we can reuse
-            # the same 'md' object again.
-            md.MsgId = pymqi.CMQC.MQMI_NONE
-            md.CorrelId = pymqi.CMQC.MQCI_NONE
-            md.GroupId = pymqi.CMQC.MQGI_NONE
-
         except pymqi.MQMIError as e:
             if e.comp == pymqi.CMQC.MQCC_FAILED and e.reason == pymqi.CMQC.MQRC_NO_MSG_AVAILABLE:
                 # No messages, that's OK, we can ignore it.
@@ -125,6 +125,12 @@ def getMessages():
             else:
                 # Some other error condition.
                 raise
+
+        except (UnicodeDecodeError, ValueError) as e:
+            logger.info('Message is not valid json')
+            logger.info(e)
+            logger.info(message)
+            continue
 
         except KeyboardInterrupt:
             logger.info('Have received a keyboard interrupt')
@@ -137,11 +143,13 @@ def respondToRequest(md, msgObject):
     response_md = pymqi.MD()
     response_md.CorrelId = md.CorrelId
     response_md.MsgId = md.MsgId
+    response_md.Format = pymqi.CMQC.MQFMT_STRING
 
     msgReply = {
         'Greeting': "Reply from Python! " + str(datetime.datetime.now()),
         'value': random.randint(1, 101)
     }
+
     replyQueue = getQueue(md.ReplyToQ, False)
     if (msgObject['value']):
         msgReply['value'] = performCalc(msgObject['value'])
@@ -187,7 +195,7 @@ credentials = {
 buildMQDetails()
 
 logger.info('Credentials are set')
-logger.info(credentials)
+#logger.info(credentials)
 
 #conn_info = "%s(%s)" % (MQDetails['HOST'], MQDetails['PORT'])
 conn_info = EnvStore.getConnection('HOST', 'PORT')

@@ -15,16 +15,14 @@
 */
 
 using System;
-using System.IO;
-using Newtonsoft.Json;
 using IBM.XMS;
-
 
 namespace ibmmq_samples
 {
     class SimpleSubscriber
     {
-        ConnVariables conn = null;
+        private Env env = new Env();
+
         private const int TIMEOUTTIME = 30000;
 
         private static bool keepRunning = true;
@@ -40,7 +38,7 @@ namespace ibmmq_samples
             try
             {
                 SimpleSubscriber simpleSubscriber = new SimpleSubscriber();
-                if (simpleSubscriber.EnvironmentIsSet())
+                if (simpleSubscriber.env.EnvironmentIsSet())
                     simpleSubscriber.ReceiveMessages();
             }
             catch (XMSException ex)
@@ -60,7 +58,6 @@ namespace ibmmq_samples
             Console.WriteLine("===> END of Simple Subscriber sample for WMQ transport <===\n\n");
         }
 
-
         void ReceiveMessages()
         {
             XMSFactoryFactory factoryFactory;
@@ -71,6 +68,8 @@ namespace ibmmq_samples
             IMessageConsumer subscriber;
             ITextMessage textMessage;
 
+            Env.ConnVariables conn = env.Conn;
+
             // Get an instance of factory.
             factoryFactory = XMSFactoryFactory.GetInstance(XMSC.CT_WMQ);
 
@@ -78,31 +77,7 @@ namespace ibmmq_samples
             cf = factoryFactory.CreateConnectionFactory();
 
             // Set the properties
-            cf.SetStringProperty(XMSC.WMQ_HOST_NAME, conn.host);
-            Console.WriteLine("hostName is set {0, -20 }", conn.host);
-            cf.SetIntProperty(XMSC.WMQ_PORT, conn.port);
-            cf.SetStringProperty(XMSC.WMQ_CHANNEL, conn.channel);
-            if (conn.key_repository != null && (conn.key_repository.Contains("*SYSTEM") || conn.key_repository.Contains("*USER")))
-            {
-                cf.SetIntProperty(XMSC.WMQ_CONNECTION_MODE, XMSC.WMQ_CM_CLIENT);
-            }
-            else
-            {
-                cf.SetIntProperty(XMSC.WMQ_CONNECTION_MODE, XMSC.WMQ_CM_CLIENT_UNMANAGED);
-            }
-
-            cf.SetStringProperty(XMSC.WMQ_QUEUE_MANAGER, conn.qmgr);
-            cf.SetStringProperty(XMSC.USERID, conn.app_user);
-            cf.SetStringProperty(XMSC.PASSWORD, conn.app_password);
-
-            if (conn.key_repository != null && conn.cipher_suite != null)
-            {
-                cf.SetStringProperty(XMSC.WMQ_SSL_KEY_REPOSITORY, conn.key_repository);
-            }
-            if (conn.cipher_suite != null)
-            {
-                cf.SetStringProperty(XMSC.WMQ_SSL_CIPHER_SPEC, conn.cipher_suite);
-            }
+            ConnectionPropertyBuilder.SetConnectionProperties(cf, env);
 
             // Create connection.
             connectionWMQ = cf.CreateConnection();
@@ -143,71 +118,6 @@ namespace ibmmq_samples
             destination.Dispose();
             sessionWMQ.Dispose();
             connectionWMQ.Close();
-        }
-
-        bool EnvironmentIsSet()
-        {
-            try
-            {
-                Console.WriteLine("Looking for file");
-                using (StreamReader r = new StreamReader("env.json"))
-                {
-                    Console.WriteLine("File found");
-                    string json = r.ReadToEnd();
-                    conn = JsonConvert.DeserializeObject<ConnVariables>(json);
-                    conn.dump();
-                    Console.WriteLine("");
-
-                }
-                return true;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Exception caught: {0}", e);
-                Console.WriteLine(e.GetBaseException());
-                return false;
-            }
-
-        }
-
-        public class JsonMessage
-        {
-            public string msg;
-            public int random;
-            public JsonMessage(string s, int n)
-            {
-                msg = s;
-                random = n;
-            }
-            public string toJsonString()
-            {
-                return JsonConvert.SerializeObject(this);
-            }
-        }
-
-        public class ConnVariables
-        {
-            public string host;
-            public string qmgr;
-            public int port;
-            public string channel;
-            public string topic_name;
-            public string app_user;
-            public string app_password;
-            public string cipher_suite;
-            public string key_repository;
-            public void dump()
-            {
-                Console.WriteLine("hostname{0} ", host);
-                Console.WriteLine("port{0} ", port);
-                Console.WriteLine("qmgr{0} ", qmgr);
-                Console.WriteLine("channel{0} ", channel);
-                Console.WriteLine("topic{0} ", topic_name);
-                Console.WriteLine("app_user{0} ", app_user);
-                //Console.WriteLine("app_password{0} ", app_password);
-                Console.WriteLine("cipherSpec{0} ", cipher_suite);
-                Console.WriteLine("sslKeyRepository{0} ", key_repository);
-            }
         }
     }
 }

@@ -30,6 +30,10 @@ import javax.jms.JMSRuntimeException;
 import com.ibm.msg.client.jms.JmsConnectionFactory;
 import com.ibm.msg.client.jms.JmsFactoryFactory;
 import com.ibm.msg.client.wmq.WMQConstants;
+import com.ibm.mq.constants.MQConstants;
+import com.ibm.mq.MQException;
+
+import com.ibm.msg.client.jms.DetailedIllegalStateRuntimeException;
 
 import com.ibm.mq.samples.jms.SampleEnvSetter;
 
@@ -48,33 +52,77 @@ public class JmsGet {
     private static String QUEUE_NAME; // Queue that the application uses to put and get messages to and from
     private static String CIPHER_SUITE;
 
-    public static void main(String[] args) {
+    private static long TIMEOUTTIME = 5000;  // 5 Seconds
 
-        initialiseLogging();
-        mqConnectionVariables();
+    public static void main(String[] args) {
         logger.info("Get application is starting");
 
+        initialiseLogging();
+
+        SampleEnvSetter env = new SampleEnvSetter();
+        int limit = env.getCount();
+
+        logger.info("There are " + limit + " endpoints");
+
+        for (int index = 0; index < limit; index++) {
+            mqConnectionVariables(env, index);
+
+            logger.info("Retrieving message from endpoint " + HOST + "(" + PORT + ")");
+
+            try {
+                retrieveFromEndpoint();
+            } catch (JMSRuntimeException ex) {
+                if (! canContinue(ex)) {
+                    break;
+                }
+            }
+        }
+    }
+
+    private static boolean canContinue(JMSRuntimeException ex) {
+        if (null != ex.getCause() && ex.getCause() instanceof MQException) {
+            MQException innerException = (MQException) ex.getCause();
+
+            if (MQConstants.MQRC_HOST_NOT_AVAILABLE == innerException.getReason()) {
+                logger.info("Host not available, skipping message gets from this host");
+                return true;
+            }
+        }
+
+        logger.warning("Unexpected exception will be terminating process");
+        recordFailure(ex);
+        return false;
+    }
+
+    private static void retrieveFromEndpoint() {
         JMSContext context;
         Destination destination;
         JMSConsumer consumer;
+        boolean continueProcessing = true;
 
         JmsConnectionFactory connectionFactory = createJMSConnectionFactory();
         setJMSProperties(connectionFactory);
         logger.info("created connection factory");
 
         context = connectionFactory.createContext();
+
         logger.info("context created");
         destination = context.createQueue("queue:///" + QUEUE_NAME);
         logger.info("destination created");
         consumer = context.createConsumer(destination);
         logger.info("consumer created");
 
-        while (true) {
+        while (continueProcessing) {
             try {
-                Message receivedMessage = consumer.receive();
-                getAndDisplayMessageBody(receivedMessage);
-            } catch (JMSRuntimeException jmsex) {
+                Message receivedMessage = consumer.receive(TIMEOUTTIME);
 
+                if (receivedMessage == null) {
+                    logger.info("No message received from this endpoint");
+                     continueProcessing = false;
+                } else {
+                  getAndDisplayMessageBody(receivedMessage);
+                }
+            } catch (JMSRuntimeException jmsex) {
                 jmsex.printStackTrace();
                 try {
                     Thread.sleep(1000);
@@ -99,17 +147,16 @@ public class JmsGet {
         }
     }
 
-    private static void mqConnectionVariables() {
-        SampleEnvSetter env = new SampleEnvSetter();
-        HOST = env.getEnvValue("HOST");
+    private static void mqConnectionVariables(SampleEnvSetter env, int index) {
+        HOST = env.getEnvValue("HOST", index);
         logger.info(HOST);
-        PORT = Integer.parseInt(env.getEnvValue("PORT"));
-        CHANNEL = env.getEnvValue("CHANNEL");
-        QMGR = env.getEnvValue("QMGR");
-        APP_USER = env.getEnvValue("APP_USER");
-        APP_PASSWORD = env.getEnvValue("APP_PASSWORD");
-        QUEUE_NAME = env.getEnvValue("QUEUE_NAME");
-        CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE");
+        PORT = Integer.parseInt(env.getEnvValue("PORT", index));
+        CHANNEL = env.getEnvValue("CHANNEL", index);
+        QMGR = env.getEnvValue("QMGR", index);
+        APP_USER = env.getEnvValue("APP_USER", index);
+        APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
+        QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
+        CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
     }
 
     private static JmsConnectionFactory createJMSConnectionFactory() {

@@ -29,8 +29,8 @@
 // Import the MQ package
 var mq = require('ibmmq');
 
-// Load up missing envrionment variables from the .env settings file.
-require('dotenv').load();
+// Load up missing envrionment variables from the env.json file
+var env = require('../env.json');
 
 var MQC = mq.MQC; // Want to refer to this export directly for simplicity
 
@@ -38,25 +38,37 @@ var MQC = mq.MQC; // Want to refer to this export directly for simplicity
 var debug_info = require('debug')('amqspub:info');
 var debug_warn = require('debug')('amqspub:warn');
 
-var MQDetails = {
-  QMGR: process.env.QMGR,
-  TOPIC_NAME: process.env.TOPIC_NAME,
-  HOST: process.env.HOST,
-  PORT: process.env.PORT,
-  CHANNEL: process.env.CHANNEL,
-  KEY_REPOSITORY: process.env.KEY_REPOSITORY,
-  CIPHER: process.env.CIPHER
-}
+
+// Load the MQ Endpoint details either from the envrionment or from the
+// env.json file. The envrionment takes precedence. The json file allows for
+// mulitple endpoints ala a cluster. A Connection string is built using
+// HOST(PORT) values for all the specified endpoints.
+var MQDetails = {};
+['QMGR', 'TOPIC_NAME', 'HOST', 'PORT',
+ 'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach(function(f) {
+  MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[0][f]
+});
 
 var credentials = {
-  USER: process.env.APP_USER,
-  PASSWORD: process.env.APP_PASSWORD
+  USER: process.env.APP_USER || env.MQ_ENDPOINTS[0].APP_USER,
+  PASSWORD: process.env.APP_PASSWORD || env.MQ_ENDPOINTS[0].APP_PASSWORD
 }
 
 function toHexString(byteArray) {
   return byteArray.reduce((output, elem) =>
     (output + ('0' + elem.toString(16)).slice(-2)),
     '');
+}
+
+function getConnection() {
+  let points = [];
+  env.MQ_ENDPOINTS.forEach((p) => {
+    if (p['HOST'] && p['PORT']) {
+      points.push(`${p.HOST}(${p.PORT})`)
+    }
+  });
+
+  return points.join(',');
 }
 
 // Define some functions that will be used from the main flow
@@ -133,7 +145,9 @@ if (credentials.USER) {
 
 // And then fill in relevant fields for the MQCD
 var cd = new mq.MQCD();
-cd.ConnectionName = `${MQDetails.HOST}(${MQDetails.PORT})`;
+cd.ConnectionName = getConnection();
+debug_info('Connections string is ', cd.ConnectionName);
+
 cd.ChannelName = MQDetails.CHANNEL;
 
 if (MQDetails.KEY_REPOSITORY) {

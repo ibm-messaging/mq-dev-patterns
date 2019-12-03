@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 def connect():
     logger.info('Establising Connection with MQ Server')
     try:
-        cd = pymqi.CD()
+        cd = pymqi.CD(Version=pymqi.CMQXC.MQCD_VERSION_11)
         cd.ChannelName = MQDetails['CHANNEL']
         cd.ConnectionName = conn_info
         cd.ChannelType = pymqi.CMQC.MQCHT_CLNTCONN
@@ -83,7 +83,9 @@ def getMessages():
 
     subOptions = pymqi.CMQC.MQGMO_NO_SYNCPOINT + \
         pymqi.CMQC.MQGMO_FAIL_IF_QUIESCING + \
-        pymqi.CMQC.MQGMO_WAIT
+        pymqi.CMQC.MQGMO_WAIT + \
+        pymqi.CMQC.MQGMO_NO_PROPERTIES
+
     gmo = pymqi.GMO(Options=subOptions)
     gmo["WaitInterval"] = 30 * 1000
 
@@ -93,6 +95,12 @@ def getMessages():
     keep_running = True
     while keep_running:
         try:
+            # Reset the MsgId, CorrelId & GroupId so that we can reuse
+            # the same 'md' object again.
+            md.MsgId = pymqi.CMQC.MQMI_NONE
+            md.CorrelId = pymqi.CMQC.MQCI_NONE
+            md.GroupId = pymqi.CMQC.MQGI_NONE
+
             #message = subscription.get(None, pymqi.md(), gmo)
             message = subscription.get(None, md, gmo)
 
@@ -101,12 +109,6 @@ def getMessages():
             logger.info('Have message from Queue')
             logger.info(msgObject)
 
-            # Reset the MsgId, CorrelId & GroupId so that we can reuse
-            # the same 'md' object again.
-            md.MsgId = pymqi.CMQC.MQMI_NONE
-            md.CorrelId = pymqi.CMQC.MQCI_NONE
-            md.GroupId = pymqi.CMQC.MQGI_NONE
-
         except pymqi.MQMIError as e:
             if e.comp == pymqi.CMQC.MQCC_FAILED and e.reason == pymqi.CMQC.MQRC_NO_MSG_AVAILABLE:
                 # No messages, that's OK, we can ignore it.
@@ -114,6 +116,13 @@ def getMessages():
             else:
                 # Some other error condition.
                 raise
+
+        except (UnicodeDecodeError, ValueError)  as e:
+            logger.info('Message is not valid json')
+            logger.info(e)
+            logger.info(message)
+            continue
+
         except KeyboardInterrupt:
             logger.info('Have received a keyboard interrupt')
             keep_running = False
@@ -140,7 +149,7 @@ credentials = {
 buildMQDetails()
 
 logger.info('Credentials are set')
-logger.info(credentials)
+#logger.info(credentials)
 
 #conn_info = "%s(%s)" % (MQDetails['HOST'], MQDetails['PORT'])
 conn_info = EnvStore.getConnection('HOST', 'PORT')

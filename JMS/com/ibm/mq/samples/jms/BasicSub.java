@@ -19,9 +19,11 @@ package com.ibm.mq.samples.jms;
 import com.ibm.mq.samples.jms.BasicConsumer;
 
 public class BasicSub {
+    private static final int TIMEOUT = 10000; // 10 Seconnds
+
     public static void main(String[] args) {
-        BasicConsumer bc = new BasicConsumer(BasicConsumer.CONSUMER_SUB);
-        bc.receive();
+        BasicConsumer bc = new BasicConsumer(BasicConsumer.CONSUMER_SUB, ConnectionHelper.USE_CONNECTION_STRING);
+        bc.receive(TIMEOUT);
         bc.close();
     }
 }

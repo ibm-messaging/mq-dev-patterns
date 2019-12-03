@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 def connect():
     logger.info('Establising Connection with MQ Server')
     try:
-        cd = pymqi.CD()
+        cd = pymqi.CD(Version=pymqi.CMQXC.MQCD_VERSION_11)
         cd.ChannelName = MQDetails['CHANNEL']
         cd.ConnectionName = conn_info
         cd.ChannelType = pymqi.CMQC.MQCHT_CLNTCONN
@@ -75,10 +75,12 @@ def getTopic():
 def publishMessage():
     logger.info('Attempting publish to Topic')
     try:
+        md = pymqi.MD()
+        md.Format = pymqi.CMQC.MQFMT_STRING
         # queue.put(json.dumps(msgObject).encode())
         # queue.put(json.dumps(msgObject))
         # topic.pub(str(json.dumps(msgObject)))
-        topic.pub(EnvStore.stringForVersion(json.dumps(msgObject)))
+        topic.pub(EnvStore.stringForVersion(json.dumps(msgObject)), md)
 
         logger.info("Publish message successful")
     except pymqi.MQMIError as e:
@@ -107,7 +109,7 @@ credentials = {
 buildMQDetails()
 
 logger.info('Credentials are set')
-logger.info(credentials)
+#logger.info(credentials)
 
 #conn_info = "%s(%s)" % (MQDetails['HOST'], MQDetails['PORT'])
 conn_info = EnvStore.getConnection('HOST', 'PORT')

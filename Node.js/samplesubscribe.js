@@ -29,9 +29,10 @@ var decoder = new StringDecoder('utf8');
 var debug_info = require('debug')('sampleget:info');
 var debug_warn = require('debug')('sampleget:warn');
 
-var mqBoilerPlate = require('./boilerplate');
+var MQBoilerPlate = require('./boilerplate');
 
 debug_info('Starting up Application');
+var mqBoilerPlate = new MQBoilerPlate();
 
 function msgCB(md, buf) {
   debug_info('Message Received');

@@ -55,21 +55,27 @@ We've tried to make this easier by providing one `env.json` file in the main `sa
 
 ```JSON
 {
-"HOST":"localhost",
-"PORT":"1414",
-"CHANNEL":"DEV.APP.SVRCONN",
-"QMGR":"QM1",
-"APP_USER":"app",
-"APP_PASSWORD":"passw0rd",
-"QUEUE_NAME":"DEV.QUEUE.1",
-"MODEL_QUEUE_NAME":"DEV.APP.MODEL.QUEUE",
-"TOPIC_NAME":"dev/",
-"CIPHER_SUITE":"TLS_RSA_WITH_AES_128_CBC_SHA256",
-"KEY_REPOSITORY": "./keys/clientkey"
+  "MQ_ENDPOINTS": [{
+    "HOST":"localhost",
+    "PORT":"1414",
+    "CHANNEL":"DEV.APP.SVRCONN",
+    "QMGR":"QM1",
+    "APP_USER":"app",
+    "APP_PASSWORD":"passw0rd",
+    "QUEUE_NAME":"DEV.QUEUE.1",
+    "MODEL_QUEUE_NAME":"DEV.APP.MODEL.QUEUE",
+    "TOPIC_NAME":"dev/",
+    "CIPHER_SUITE":"TLS_RSA_WITH_AES_128_CBC_SHA256",
+    "KEY_REPOSITORY": "./keys/clientkey"
+    }]
 }
 ```
 
 You can use the `env.json` file to 'switch on' or 'switch off' parts of the code.
+
+## Endpoints Array
+Having the endpoints defined as an array allows us to define multiple endpoints
+for the sample applications to use.  
 
 ## TLS
 

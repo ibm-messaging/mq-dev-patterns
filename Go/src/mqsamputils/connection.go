@@ -31,35 +31,46 @@ const (
 // Package logging already set in the env.go module, so no need to
 // add it here also.
 
+func getEndPoint(index int) (Env) {
+	if (index == FULL_STRING) {
+		index = 0
+	}
+	return MQ_ENDPOINTS.Points[index]
+}
+
 // Establishes the connection to the MQ Server. Returns the
 // Queue Manager if successful
-func CreateConnection() (ibmmq.MQQueueManager, error) {
+func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 	logger.Println("Setting up Connection to MQ")
 	// Allocate the MQCNO and MQCD structures needed for the CONNX call.
 	cno := ibmmq.NewMQCNO()
 	cd := ibmmq.NewMQCD()
 
-	// Fill in required fields in the MQCD channel definition structure
-	cd.ChannelName = EnvSettings.Channel
-	cd.ConnectionName = EnvSettings.GetConnection()
+  env := getEndPoint(index)
 
-	if username := EnvSettings.User; username != "" {
+	// Fill in required fields in the MQCD channel definition structure
+	cd.ChannelName = env.Channel
+	cd.ConnectionName = env.GetConnection(index)
+	logger.Printf("Connecting to %s ", cd.ConnectionName)
+
+	if username := env.User; username != "" {
 		logger.Printf("User %s has been specified\n", username)
 		csp := ibmmq.NewMQCSP()
 		csp.AuthenticationType = ibmmq.MQCSP_AUTH_USER_ID_AND_PWD
 		csp.UserId = username
-		csp.Password = EnvSettings.Password
+		csp.Password = env.Password
 
 		// Make the CNO refer to the CSP structure so it gets used during the connection
 		cno.SecurityParms = csp
 	}
 
-	if EnvSettings.KeyRepository != "" {
-		logger.Println("Running in  Debug Mode")
+	if env.KeyRepository != "" {
+		logger.Println("Running in TLS Mode")
 		sco := ibmmq.NewMQSCO()
-		cd.SSLCipherSpec = EnvSettings.Cipher
+		cd.SSLCipherSpec = env.Cipher
 		cd.SSLClientAuth = ibmmq.MQSCA_OPTIONAL
-		sco.KeyRepository = EnvSettings.KeyRepository
+		sco.KeyRepository = env.KeyRepository
+
 		cno.SSLConfig = sco
 	}
 
@@ -69,8 +80,8 @@ func CreateConnection() (ibmmq.MQQueueManager, error) {
 	cno.Options = ibmmq.MQCNO_CLIENT_BINDING
 
 	// And now we can try to connect. Wait a short time before disconnecting.
-	logger.Printf("Attempting connection to %s", EnvSettings.QManager)
-	qMgr, err := ibmmq.Connx(EnvSettings.QManager, cno)
+	logger.Printf("Attempting connection to %s", env.QManager)
+	qMgr, err := ibmmq.Connx(env.QManager, cno)
 	if err == nil {
 		logger.Println("Connection succeeded")
 	} else {
@@ -79,22 +90,30 @@ func CreateConnection() (ibmmq.MQQueueManager, error) {
 	return qMgr, err
 }
 
+
 // Opens a Dynamic Queue as part of a response in a request / response pattern
 func OpenDynamicQueue(qMgrObject ibmmq.MQQueueManager, queueName string) (ibmmq.MQObject, error) {
-	return openQueue(qMgrObject, queueName, Response)
+	return openQueue(qMgrObject, queueName, Response, FULL_STRING)
 }
 
 // Opens the queue. No queueName is provided.
 func OpenQueue(qMgrObject ibmmq.MQQueueManager, msgStyle string) (ibmmq.MQObject, error) {
-	return openQueue(qMgrObject, "", msgStyle)
+	return openQueue(qMgrObject, "", msgStyle, FULL_STRING)
+}
+
+// Opens the queue. No queueName is provided.
+func OpenGetQueue(qMgrObject ibmmq.MQQueueManager, msgStyle string, index int) (ibmmq.MQObject, error) {
+	return openQueue(qMgrObject, "", msgStyle, index)
 }
 
 // Internal function to allow it to be modified, without affecting the callers.
-func openQueue(qMgrObject ibmmq.MQQueueManager, replyToQ string, msgStyle string)  (ibmmq.MQObject, error) {
+func openQueue(qMgrObject ibmmq.MQQueueManager, replyToQ string, msgStyle string, index int)  (ibmmq.MQObject, error) {
 	// Create the Object Descriptor that allows us to give the queue name
 	mqod := ibmmq.NewMQOD()
 	// We have to say how we are going to use this queue. In this case, to PUT
 	// messages. That is done in the openOptions parameter
+
+  env := getEndPoint(index)
 
 	openOptions := ibmmq.MQOO_OUTPUT
 
@@ -102,24 +121,24 @@ func openQueue(qMgrObject ibmmq.MQQueueManager, replyToQ string, msgStyle string
 	switch msgStyle {
 	case Put:
 		mqod.ObjectType = ibmmq.MQOT_Q
-		mqod.ObjectName = EnvSettings.QueueName
+		mqod.ObjectName = env.QueueName
 	case Get:
 		openOptions = ibmmq.MQOO_INPUT_EXCLUSIVE
 		mqod.ObjectType = ibmmq.MQOT_Q
-		mqod.ObjectName = EnvSettings.QueueName
+		mqod.ObjectName = env.QueueName
 	case Pub:
 		mqod.ObjectType = ibmmq.MQOT_TOPIC
-		mqod.ObjectString = EnvSettings.Topic
+		mqod.ObjectString = env.Topic
 	case Dynamic:
 		openOptions = ibmmq.MQOO_INPUT_EXCLUSIVE
-		mqod.ObjectName = EnvSettings.ModelQueueName
-		mqod.DynamicQName = EnvSettings.DynamicQueueName
+		mqod.ObjectName = env.ModelQueueName
+		mqod.DynamicQName = env.DynamicQueueName
 	case Response:
 		mqod.ObjectType = ibmmq.MQOT_Q
 		mqod.ObjectName = replyToQ
 	}
 
-	logger.Printf("Attempting open queue/topic %s", EnvSettings.QueueName)
+	logger.Printf("Attempting open queue/topic %s", env.QueueName)
 	qObject, err := qMgrObject.Open(mqod, openOptions)
 	if err != nil {
 		logError(err)

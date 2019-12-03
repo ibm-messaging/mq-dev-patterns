@@ -29,6 +29,10 @@ import com.ibm.msg.client.jms.JmsConnectionFactory;
 import com.ibm.msg.client.jms.JmsFactoryFactory;
 import com.ibm.msg.client.wmq.WMQConstants;
 
+import com.ibm.mq.jms.MQDestination;
+
+//import com.ibm.mq.jms.MQConnectionFactory;
+
 import com.ibm.mq.samples.jms.SampleEnvSetter;
 
 public class JmsPut {
@@ -37,15 +41,14 @@ public class JmsPut {
     private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
 
     // Create variables for the connection to MQ
-    private static String HOST; // = "localhost"; // Host name or IP address
-    private static int PORT; // = 1414; // Listener port for your queue manager
+    private static String ConnectionString; //= "localhost(1414),localhost(1416)"
     private static String CHANNEL; // = "DEV.APP.SVRCONN"; // Channel name
     private static String QMGR; // = "QM1"; //System.getenv("QMGR"); // Queue manager name
     private static String APP_USER; // = "app"; // User name that application uses to connect to MQ
     private static String APP_PASSWORD; // = "passw0rd"; // Password that the application uses to connect to MQ
     private static String QUEUE_NAME; // = "DEV.QUEUE.1"; // Queue that the application uses to put and get messages
                                       // to and from
-    private static String CIPHER_SUITE; 
+    private static String CIPHER_SUITE;
 
     public static void main(String[] args) {
         initialiseLogging();
@@ -62,8 +65,17 @@ public class JmsPut {
 
         context = connectionFactory.createContext();
         logger.info("context created");
-        destination = context.createQueue("queue:///" + QUEUE_NAME);
+
+        // Set targetClient to be non JMS, so no JMS headers are transmitted.
+        // Only one of these settings is required, but both shown here.
+        // 1. Add targetClient parameter to Queue uri
+        destination = context.createQueue("queue:///" + QUEUE_NAME + "?targetClient=1");
+        // destination = context.createQueue("queue:///" + QUEUE_NAME);
         logger.info("destination created");
+
+        // 2. Cast destination queue to underlying MQQueue and set target client
+        setTargetClient(destination);
+
         producer = context.createProducer();
         logger.info("producer created");
 
@@ -76,14 +88,15 @@ public class JmsPut {
 
     private static void mqConnectionVariables() {
         SampleEnvSetter env = new SampleEnvSetter();
-        HOST = env.getEnvValue("HOST");
-        PORT = Integer.parseInt(env.getEnvValue("PORT"));
-        CHANNEL = env.getEnvValue("CHANNEL");
-        QMGR = env.getEnvValue("QMGR");
-        APP_USER = env.getEnvValue("APP_USER");
-        APP_PASSWORD = env.getEnvValue("APP_PASSWORD");
-        QUEUE_NAME = env.getEnvValue("QUEUE_NAME");
-        CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE");
+        int index = 0;
+
+        ConnectionString = env.getConnectionString();
+        CHANNEL = env.getEnvValue("CHANNEL", index);
+        QMGR = env.getEnvValue("QMGR", index);
+        APP_USER = env.getEnvValue("APP_USER", index);
+        APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
+        QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
+        CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
     }
 
     private static JmsConnectionFactory createJMSConnectionFactory() {
@@ -101,8 +114,7 @@ public class JmsPut {
 
     private static void setJMSProperties(JmsConnectionFactory cf) {
         try {
-            cf.setStringProperty(WMQConstants.WMQ_HOST_NAME, HOST);
-            cf.setIntProperty(WMQConstants.WMQ_PORT, PORT);
+            cf.setStringProperty(WMQConstants.WMQ_CONNECTION_NAME_LIST, ConnectionString);
             cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
             cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
@@ -117,6 +129,15 @@ public class JmsPut {
             recordFailure(jmsex);
         }
         return;
+    }
+
+    private static void setTargetClient(Destination destination) {
+      try {
+          MQDestination mqDestination = (MQDestination) destination;
+          mqDestination.setTargetClient(WMQConstants.WMQ_CLIENT_NONJMS_MQ);
+      } catch (JMSException jmsex) {
+        logger.warning("Unable to set target destination to non JMS");
+      }
     }
 
     private static void recordFailure(Exception ex) {

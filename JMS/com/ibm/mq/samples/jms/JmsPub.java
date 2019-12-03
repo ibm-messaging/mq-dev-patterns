@@ -30,6 +30,8 @@ import com.ibm.msg.client.jms.JmsConnectionFactory;
 import com.ibm.msg.client.jms.JmsFactoryFactory;
 import com.ibm.msg.client.wmq.WMQConstants;
 
+import com.ibm.mq.jms.MQDestination;
+
 import com.ibm.mq.samples.jms.SampleEnvSetter;
 
 public class JmsPub {
@@ -37,8 +39,7 @@ public class JmsPub {
   private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
 
   // Create variables for the connection to MQ
-  private static String HOST; // Host name or IP address
-  private static int PORT; // Listener port for your queue manager
+  private static String ConnectionString; //= "localhost(1414),localhost(1416)"
   private static String CHANNEL; // Channel name
   private static String QMGR; // Queue manager name
   private static String APP_USER; // User name that application uses to connect to MQ
@@ -62,7 +63,15 @@ public class JmsPub {
     setJMSProperties(connectionFactory);
 
     context = connectionFactory.createContext();
+
+    // Set targetClient to be non JMS, so no JMS headers are transmitted.
+    // Either this line can be used or ...
+    //destination = context.createTopic("topic://" + TOPIC_NAME + "?targetClient=1");
     destination = context.createTopic("topic://" + TOPIC_NAME);
+
+    // ... this one.
+    setTargetClient(destination);
+
     publisher = context.createProducer();
 
     for (int i = 0; i < 20; i++) {
@@ -87,14 +96,15 @@ public class JmsPub {
 
   private static void mqConnectionVariables() {
     SampleEnvSetter env = new SampleEnvSetter();
-    HOST = env.getEnvValue("HOST");
-    PORT = Integer.parseInt(env.getEnvValue("PORT"));
-    CHANNEL = env.getEnvValue("CHANNEL");
-    QMGR = env.getEnvValue("QMGR");
-    APP_USER = env.getEnvValue("APP_USER");
-    APP_PASSWORD = env.getEnvValue("APP_PASSWORD");
-    TOPIC_NAME = env.getEnvValue("TOPIC_NAME");
-    CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE");
+    int index = 0;
+
+    ConnectionString = env.getConnectionString();
+    CHANNEL = env.getEnvValue("CHANNEL", index);
+    QMGR = env.getEnvValue("QMGR", index);
+    APP_USER = env.getEnvValue("APP_USER", index);
+    APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
+    TOPIC_NAME = env.getEnvValue("TOPIC_NAME", index);
+    CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
   }
 
   private static JmsConnectionFactory createJMSConnectionFactory() {
@@ -112,8 +122,7 @@ public class JmsPub {
 
   private static void setJMSProperties(JmsConnectionFactory cf) {
     try {
-      cf.setStringProperty(WMQConstants.WMQ_HOST_NAME, HOST);
-      cf.setIntProperty(WMQConstants.WMQ_PORT, PORT);
+      cf.setStringProperty(WMQConstants.WMQ_CONNECTION_NAME_LIST, ConnectionString);
       cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
       cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
       cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
@@ -129,6 +138,15 @@ public class JmsPub {
       recordFailure(jmsex);
     }
     return;
+  }
+
+  private static void setTargetClient(Destination destination) {
+    try {
+        MQDestination mqDestination = (MQDestination) destination;
+        mqDestination.setTargetClient(WMQConstants.WMQ_CLIENT_NONJMS_MQ);
+    } catch (JMSException jmsex) {
+      logger.warning("Unable to set target destination to non JMS");
+    }
   }
 
   private static void recordFailure(Exception ex) {

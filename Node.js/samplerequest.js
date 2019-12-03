@@ -27,8 +27,8 @@
 var debug_info = require('debug')('samplereq:info');
 var debug_warn = require('debug')('samplereq:warn');
 
-var mqBoilerPlate = require('./boilerplate');
-
+var MQBoilerPlate = require('./boilerplate');
+var mqBoilerPlate = new MQBoilerPlate();
 
 function msgCB(md, buf) {
   debug_info('Message Received');

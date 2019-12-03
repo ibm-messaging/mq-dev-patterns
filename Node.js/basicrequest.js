@@ -35,8 +35,8 @@ const mq = require('ibmmq');
 var StringDecoder = require('string_decoder').StringDecoder;
 var decoder = new StringDecoder('utf8');
 
-// Load up missing envrionment variables from the .env settings file.
-require('dotenv').load();
+// Load up missing envrionment variables from the env.json file
+var env = require('../env.json');
 
 var MQC = mq.MQC;
 var waitInterval = 5;
@@ -46,21 +46,23 @@ var debug_info = require('debug')('amqsreq:info');
 var debug_warn = require('debug')('amqsreq:warn');
 
 
-var MQDetails = {
-  QMGR: process.env.QMGR,
-  QUEUE_NAME: process.env.QUEUE_NAME,
-  MODEL_QUEUE_NAME: process.env.MODEL_QUEUE_NAME,
-  DYNAMIC_QUEUE_PREFIX: process.env.DYNAMIC_QUEUE_PREFIX,
-  HOST: process.env.HOST,
-  PORT: process.env.PORT,
-  CHANNEL: process.env.CHANNEL,
-  KEY_REPOSITORY: process.env.KEY_REPOSITORY,
-  CIPHER: process.env.CIPHER
-}
+// Load the MQ Endpoint details either from the envrionment or from the
+// env.json file. The envrionment takes precedence. The json file allows for
+// mulitple endpoints ala a cluster.
+// The Connection string is built using HOST(PORT) settings for all
+// the endpoints.
+var MQDetails = {};
+
+['QMGR', 'QUEUE_NAME',
+ 'MODEL_QUEUE_NAME', 'DYNAMIC_QUEUE_PREFIX',
+ 'HOST', 'PORT',
+ 'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach(function(f) {
+  MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[0][f]
+});
 
 var credentials = {
-  USER: process.env.APP_USER,
-  PASSWORD: process.env.APP_PASSWORD
+  USER: process.env.APP_USER || env.MQ_ENDPOINTS[0].APP_USER,
+  PASSWORD: process.env.APP_PASSWORD || env.MQ_ENDPOINTS[0].APP_PASSWORD
 }
 
 // Global variables
@@ -76,6 +78,17 @@ function hexToBytes(hex) {
   for (var bytes = [], c = 0; c < hex.length; c += 2)
     bytes.push(parseInt(hex.substr(c, 2), 16));
   return bytes;
+}
+
+function getConnection() {
+  let points = [];
+  env.MQ_ENDPOINTS.forEach((p) => {
+    if (p['HOST'] && p['PORT']) {
+      points.push(`${p.HOST}(${p.PORT})`)
+    }
+  });
+
+  return points.join(',');
 }
 
 // Define some functions that will be used from the main flow
@@ -208,7 +221,9 @@ if (credentials.USER) {
 
 // And then fill in relevant fields for the MQCD
 var cd = new mq.MQCD();
-cd.ConnectionName = `${MQDetails.HOST}(${MQDetails.PORT})`;
+cd.ConnectionName = getConnection();
+debug_info('Connections string is ', cd.ConnectionName);
+
 cd.ChannelName = MQDetails.CHANNEL;
 
 if (MQDetails.KEY_REPOSITORY) {
