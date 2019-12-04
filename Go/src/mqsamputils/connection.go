@@ -17,6 +17,8 @@
 package mqsamputils
 
 import (
+	"os"
+	"strings"
 	"mq-golang/ibmmq"
 )
 
@@ -26,32 +28,44 @@ const (
 	Pub      = "PUB"
 	Dynamic  = "Dynamic"
 	Response = "Response"
+	CCDT     = "MQCCDTURL"
+	FILEPREFIX = "file://"
 )
 
 // Package logging already set in the env.go module, so no need to
 // add it here also.
 
 func getEndPoint(index int) (Env) {
-	if (index == FULL_STRING) {
+	if index == FULL_STRING {
 		index = 0
 	}
 	return MQ_ENDPOINTS.Points[index]
 }
 
+
+func ccdtCheck() (bool) {
+	if fPath := os.Getenv(CCDT); "" != fPath {
+    ccdtFile, err := os.Open(strings.TrimPrefix(fPath, FILEPREFIX))
+		defer ccdtFile.Close()
+		if err == nil {
+			logger.Println("CCDT File found and will be used to configure connection")
+		  return true;
+		}
+		logger.Printf("CCDT File not found at %s", fPath)
+		logger.Println(err)
+	}
+	return false;
+}
+
+
 // Establishes the connection to the MQ Server. Returns the
 // Queue Manager if successful
 func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 	logger.Println("Setting up Connection to MQ")
-	// Allocate the MQCNO and MQCD structures needed for the CONNX call.
+
+	// Allocate the MQCNO structure needed for the CONNX call.
 	cno := ibmmq.NewMQCNO()
-	cd := ibmmq.NewMQCD()
-
   env := getEndPoint(index)
-
-	// Fill in required fields in the MQCD channel definition structure
-	cd.ChannelName = env.Channel
-	cd.ConnectionName = env.GetConnection(index)
-	logger.Printf("Connecting to %s ", cd.ConnectionName)
 
 	if username := env.User; username != "" {
 		logger.Printf("User %s has been specified\n", username)
@@ -64,20 +78,41 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 		cno.SecurityParms = csp
 	}
 
+	if ! ccdtCheck() {
+		logger.Println("CCDT URL export is not set, will be using building client connections settings");
+
+		cd := ibmmq.NewMQCD()
+
+		// Fill in required fields in the MQCD channel definition structure
+		cd.ChannelName = env.Channel
+		cd.ConnectionName = env.GetConnection(index)
+		logger.Printf("Connecting to %s ", cd.ConnectionName)
+
+		if env.KeyRepository != "" {
+			logger.Println("Running in TLS Mode")
+
+			cd.SSLCipherSpec = env.Cipher
+			cd.SSLClientAuth = ibmmq.MQSCA_OPTIONAL
+		}
+
+	  // Reference the CD structure from the CNO
+		cno.ClientConn = cd
+	}
+
+	// The location of the KeyRepository is not specified in the CCDT, so regardless
+	// of whether a CCDT is being used, need to specify the KeyRepository location
+	// if it has been provided in the environment json settings.
 	if env.KeyRepository != "" {
-		logger.Println("Running in TLS Mode")
-		sco := ibmmq.NewMQSCO()
-		cd.SSLCipherSpec = env.Cipher
-		cd.SSLClientAuth = ibmmq.MQSCA_OPTIONAL
+		logger.Println("Key Repository has been specified")
+
+	  sco := ibmmq.NewMQSCO()
 		sco.KeyRepository = env.KeyRepository
 
 		cno.SSLConfig = sco
 	}
 
-	// Reference the CD structure from the CNO and indicate that we definitely want to
-	// use the client connection method.
-	cno.ClientConn = cd
-	cno.Options = ibmmq.MQCNO_CLIENT_BINDING
+	// Indicate that we definitely want to use the client connection method.
+	cno.Options = ibmmq.MQCNO_CLIENT_BINDING 
 
 	// And now we can try to connect. Wait a short time before disconnecting.
 	logger.Printf("Attempting connection to %s", env.QManager)

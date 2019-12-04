@@ -65,6 +65,11 @@ func main() {
 		defer qObject.Close(0)
 
 		getMessage(qObject)
+
+		// Need to Close the Queue and Connection so can be reused for next iteration
+		qObject.Close(0)
+		qMgr.Disc()
+
 	}
 
 	logger.Println("Application is Ending")
