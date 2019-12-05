@@ -30,28 +30,36 @@ logger = logging.getLogger(__name__)
 def connect():
     logger.info('Establising Connection with MQ Server')
     try:
-        cd = pymqi.CD(Version=pymqi.CMQXC.MQCD_VERSION_11)
-        cd.ChannelName = MQDetails['CHANNEL']
-        cd.ConnectionName = conn_info
-        cd.ChannelType = pymqi.CMQC.MQCHT_CLNTCONN
-        cd.TransportType = pymqi.CMQC.MQXPT_TCP
+        cd = None
+        if not EnvStore.ccdtCheck():
+            logger.info('CCDT URL export is not set, will be using json envrionment client connections settings')
 
-        # Create an empty SCO object, and optionally set TLS settings
-        # if a cipher is set in the envrionment variables.
-        logger.info('Checking Cypher details')
+            cd = pymqi.CD(Version=pymqi.CMQXC.MQCD_VERSION_11)
+            cd.ChannelName = MQDetails[EnvStore.CHANNEL]
+            cd.ConnectionName = conn_info
+            cd.ChannelType = pymqi.CMQC.MQCHT_CLNTCONN
+            cd.TransportType = pymqi.CMQC.MQXPT_TCP
+
+            logger.info('Checking Cypher details')
+            # If a cipher is set then set the TLS settings
+            if MQDetails[EnvStore.CIPHER]:
+                logger.info('Making use of Cypher details')
+                cd.SSLCipherSpec = MQDetails[EnvStore.CIPHER]
+
+        # Key repository is not specified in CCDT so look in envrionment settings
+        # Create an empty SCO object
         sco = pymqi.SCO()
-        if MQDetails['CIPHER']:
-            logger.info('Making use of Cypher details')
-            cd.SSLCipherSpec = MQDetails['CIPHER']
-            sco.KeyRepository = MQDetails['KEY_REPOSITORY']
+        if MQDetails[EnvStore.KEY_REPOSITORY]:
+            logger.info('Setting Key repository')
+            sco.KeyRepository = MQDetails[EnvStore.KEY_REPOSITORY]
 
         #options = pymqi.CMQC.MQPMO_NO_SYNCPOINT | pymqi.CMQC.MQPMO_NEW_MSG_ID | pymqi.CMQC.MQPMO_NEW_CORREL_ID
         options = pymqi.CMQC.MQPMO_NEW_CORREL_ID
 
         qmgr = pymqi.QueueManager(None)
-        qmgr.connect_with_options(MQDetails['QMGR'],
-                                  user=credentials['USER'],
-                                  password=credentials['PASSWORD'],
+        qmgr.connect_with_options(MQDetails[EnvStore.QMGR],
+                                  user=credentials[EnvStore.USER],
+                                  password=credentials[EnvStore.PASSWORD],
                                   opts=options, cd=cd, sco=sco)
         return qmgr
 
@@ -67,11 +75,11 @@ def getQueue():
     try:
         # Can do this in one line, but with an Object Descriptor
         # can or in more options.
-        # q = pymqi.Queue(qmgr, MQDetails['QUEUE_NAME'])
+        # q = pymqi.Queue(qmgr, MQDetails[EnvStore.QUEUE_NAME])
         q = pymqi.Queue(qmgr)
 
         od = pymqi.OD()
-        od.ObjectName = MQDetails['QUEUE_NAME']
+        od.ObjectName = MQDetails[EnvStore.QUEUE_NAME]
         q.open(od, pymqi.CMQC.MQOO_OUTPUT)
 
         return q
@@ -100,8 +108,8 @@ def putMessage():
 
 
 def buildMQDetails():
-    for key in ['QMGR', 'QUEUE_NAME', 'CHANNEL', 'HOST',
-                'PORT', 'KEY_REPOSITORY', 'CIPHER']:
+    for key in [EnvStore.QMGR, EnvStore.QUEUE_NAME, EnvStore.CHANNEL, EnvStore.HOST,
+                EnvStore.PORT, EnvStore.KEY_REPOSITORY, EnvStore.CIPHER]:
         MQDetails[key] = EnvStore.getEnvValue(key)
 
 
@@ -113,8 +121,8 @@ envStore.setEnv()
 
 MQDetails = {}
 credentials = {
-    'USER': EnvStore.getEnvValue('APP_USER'),
-    'PASSWORD': EnvStore.getEnvValue('APP_PASSWORD')
+    EnvStore.USER: EnvStore.getEnvValue(EnvStore.APP_USER),
+    EnvStore.PASSWORD: EnvStore.getEnvValue(EnvStore.APP_PASSWORD)
 }
 
 buildMQDetails()
@@ -122,8 +130,8 @@ buildMQDetails()
 logger.info('Credentials are set')
 #logger.info(credentials)
 
-conn_info = EnvStore.getConnection('HOST', 'PORT')
-#conn_info = "%s(%s)" % (MQDetails['HOST'], MQDetails['PORT'])
+conn_info = EnvStore.getConnection(EnvStore.HOST, EnvStore.PORT)
+#conn_info = "%s(%s)" % (MQDetails[EnvStore.HOST], MQDetails[EnvStore.PORT])
 
 logger.info('Connection is %s' % conn_info)
 

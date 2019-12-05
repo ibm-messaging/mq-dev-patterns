@@ -79,7 +79,7 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 	}
 
 	if ! ccdtCheck() {
-		logger.Println("CCDT URL export is not set, will be using building client connections settings");
+		logger.Println("CCDT URL export is not set, will be using json envrionment client connections settings");
 
 		cd := ibmmq.NewMQCD()
 
@@ -112,7 +112,7 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 	}
 
 	// Indicate that we definitely want to use the client connection method.
-	cno.Options = ibmmq.MQCNO_CLIENT_BINDING 
+	cno.Options = ibmmq.MQCNO_CLIENT_BINDING
 
 	// And now we can try to connect. Wait a short time before disconnecting.
 	logger.Printf("Attempting connection to %s", env.QManager)
