@@ -17,6 +17,7 @@
 // This is a MQ boiler plate library making use of the
 // the MQI Node.js interface
 
+const fs = require('fs');
 // Import the MQ package
 const mq = require('ibmmq');
 
@@ -33,6 +34,10 @@ var LIMIT = 5;
 var waitInterval = 10; // max seconds to wait for a new message
 var canExit = false;
 var activeCB = null;
+
+// Set up Constants
+const CCDT = "MQCCDTURL";
+const	FILEPREFIX = "file://";
 
 
 class MQBoilerPlate {
@@ -296,31 +301,44 @@ class MQBoilerPlate {
       mqcno.SecurityParms = csp;
     }
 
-    // And then fill in relevant fields for the MQCD
-    var cd = new mq.MQCD();
-    if ('GET' === this.modeType) {
-      cd.ConnectionName = this.getConnectionAt();
-    } else {
-      cd.ConnectionName = this.getConnection();
+    if (! MQBoilerPlate.ccdtCheck()) {
+      debug_info('CCDT URL export is not set, will be using json envrionment client connections settings');
+      // And then fill in relevant fields for the MQCD
+      var cd = new mq.MQCD();
+      cd.ChannelName = this.MQDetails.CHANNEL;
+
+      if ('GET' === this.modeType) {
+        cd.ConnectionName = this.getConnectionAt();
+      } else {
+        cd.ConnectionName = this.getConnection();
+      }
+
+      debug_info('Connections string is ', cd.ConnectionName);
+
+      if (this.MQDetails.KEY_REPOSITORY) {
+        debug_info('Will be running in TLS Mode');
+
+        // *** For TLS ***
+        // The TLS parameters are the minimal set needed here. You might
+        // want more control such as SSLPEER values.
+        // This SSLClientAuth setting means that this program does not need to
+        // present a certificate to the server - but it must match how the
+        // SVRCONN is defined on the queue manager.
+        cd.SSLCipherSpec = this.MQDetails.CIPHER;
+        cd.SSLClientAuth = MQC.MQSCA_OPTIONAL;
+
+        // And make the CNO refer to the SSL Connection Options
+        mqcno.SSLConfig = sco;
+      }
+
+      // Make the MQCNO refer to the MQCD
+      mqcno.ClientConn = cd;
     }
 
-    debug_info('Connections string is ', cd.ConnectionName);
-
-    cd.ChannelName = this.MQDetails.CHANNEL;
-
     if (this.MQDetails.KEY_REPOSITORY) {
-      debug_info('Will be running in TLS Mode');
+      debug_info('Key Repository has been specified');
       // *** For TLS ***
       var sco = new mq.MQSCO();
-
-      // *** For TLS ***
-      // The TLS parameters are the minimal set needed here. You might
-      // want more control such as SSLPEER values.
-      // This SSLClientAuth setting means that this program does not need to
-      // present a certificate to the server - but it must match how the
-      // SVRCONN is defined on the queue manager.
-      cd.SSLCipherSpec = this.MQDetails.CIPHER;
-      cd.SSLClientAuth = MQC.MQSCA_OPTIONAL;
 
       // *** For TLS ***
       // Set the SSL/TLS Configuration Options structure field that
@@ -332,9 +350,6 @@ class MQBoilerPlate {
       // And make the CNO refer to the SSL Connection Options
       mqcno.SSLConfig = sco;
     }
-
-    // Make the MQCNO refer to the MQCD
-    mqcno.ClientConn = cd;
 
     return Promise.resolve(mqcno);
   }
@@ -553,6 +568,19 @@ class MQBoilerPlate {
   static reportError(err) {
     var errMsg = err.message ? err.message : err;
     debug_warn("MQ call failed with error : " + errMsg);
+  }
+
+
+  static ccdtCheck () {
+    if (CCDT in process.env) {
+      let ccdtFile = process.env[CCDT].replace(FILEPREFIX, '');
+      debug_info(ccdtFile);
+      if (fs.existsSync(ccdtFile)) {
+        debug_info("CCDT File found at ", ccdtFile);
+        return true;
+      }
+    }
+    return false;
   }
 
 }

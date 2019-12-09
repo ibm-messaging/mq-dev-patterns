@@ -26,6 +26,7 @@
 // Values for Queue Manager, Topic, Host, Port and Channel are
 // passed in as envrionment variables.
 
+const fs = require('fs');
 // Import the MQ package
 var mq = require('ibmmq');
 
@@ -38,6 +39,9 @@ var MQC = mq.MQC; // Want to refer to this export directly for simplicity
 var debug_info = require('debug')('amqspub:info');
 var debug_warn = require('debug')('amqspub:warn');
 
+// Set up Constants
+const CCDT = "MQCCDTURL";
+const	FILEPREFIX = "file://";
 
 // Load the MQ Endpoint details either from the envrionment or from the
 // env.json file. The envrionment takes precedence. The json file allows for
@@ -124,10 +128,23 @@ function cleanup(hConn, hObj) {
   });
 }
 
+function ccdtCheck () {
+  if (CCDT in process.env) {
+    let ccdtFile = process.env[CCDT].replace(FILEPREFIX, '');
+    debug_info(ccdtFile);
+    if (fs.existsSync(ccdtFile)) {
+      debug_info("CCDT File found at ", ccdtFile);
+      return true;
+    }
+  }
+  return false;
+}
+
 // The program really starts here.
 // Connect to the queue manager. If that works, the callback function
 // opens the topic, and then we can put a message.
 
+debug_info('Running on ', process.platform);
 debug_info('Starting up Application');
 
 var cno = new mq.MQCNO();
@@ -143,28 +160,37 @@ if (credentials.USER) {
   cno.SecurityParms = csp;
 }
 
-// And then fill in relevant fields for the MQCD
-var cd = new mq.MQCD();
-cd.ConnectionName = getConnection();
-debug_info('Connections string is ', cd.ConnectionName);
+if (! ccdtCheck()) {
+  debug_info('CCDT URL export is not set, will be using json envrionment client connections settings');
 
-cd.ChannelName = MQDetails.CHANNEL;
+  // And then fill in relevant fields for the MQCD
+  var cd = new mq.MQCD();
+
+  cd.ChannelName = MQDetails.CHANNEL;
+  cd.ConnectionName = getConnection();
+  debug_info('Connections string is ', cd.ConnectionName);
+
+  if (MQDetails.KEY_REPOSITORY) {
+    debug_info('Will be running in TLS Mode');
+
+    cd.SSLCipherSpec = MQDetails.CIPHER;
+    cd.SSLClientAuth = MQC.MQSCA_OPTIONAL;
+  }
+
+  // Make the MQCNO refer to the MQCD
+  cno.ClientConn = cd;
+}
 
 if (MQDetails.KEY_REPOSITORY) {
-  debug_info('Will be running in TLS Mode');
+  debug_info('Key Repository has been specified');
   // *** For TLS ***
   var sco = new mq.MQSCO();
-
-  cd.SSLCipherSpec = MQDetails.CIPHER;
-  cd.SSLClientAuth = MQC.MQSCA_OPTIONAL;
 
   sco.KeyRepository = MQDetails.KEY_REPOSITORY;
   // And make the CNO refer to the SSL Connection Options
   cno.SSLConfig = sco;
 }
 
-// Make the MQCNO refer to the MQCD
-cno.ClientConn = cd;
 
 debug_info('Attempting Connection to MQ Server');
 mq.Connx(MQDetails.QMGR, cno, function(err, hConn) {
