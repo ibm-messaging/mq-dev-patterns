@@ -47,6 +47,7 @@ public class JmsPub {
   private static String TOPIC_NAME; // Topic that the application publishes to
   private static String PUBLICATION_NAME = "JmsPub - SamplePublisher"; //
   private static String CIPHER_SUITE;
+  private static String CCDTURL;
 
   public static void main(String[] args) {
     initialiseLogging();
@@ -105,6 +106,8 @@ public class JmsPub {
     APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
     TOPIC_NAME = env.getEnvValue("TOPIC_NAME", index);
     CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
+
+    CCDTURL = env.getCheckForCCDT();
   }
 
   private static JmsConnectionFactory createJMSConnectionFactory() {
@@ -122,8 +125,14 @@ public class JmsPub {
 
   private static void setJMSProperties(JmsConnectionFactory cf) {
     try {
-      cf.setStringProperty(WMQConstants.WMQ_CONNECTION_NAME_LIST, ConnectionString);
-      cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
+      if (null == CCDTURL) {
+          cf.setStringProperty(WMQConstants.WMQ_CONNECTION_NAME_LIST, ConnectionString);
+          cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
+      } else {
+          logger.info("Will be making use of CCDT File " + CCDTURL);
+          cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
+      }
+
       cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
       cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
       cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "SimplePub (JMS)");

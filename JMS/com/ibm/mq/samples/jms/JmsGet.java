@@ -52,6 +52,8 @@ public class JmsGet {
     private static String QUEUE_NAME; // Queue that the application uses to put and get messages to and from
     private static String CIPHER_SUITE;
 
+    private static String CCDTURL;
+
     private static long TIMEOUTTIME = 5000;  // 5 Seconds
 
     public static void main(String[] args) {
@@ -157,6 +159,10 @@ public class JmsGet {
         APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
         QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
+
+        if (null == CCDTURL) {
+          CCDTURL = env.getCheckForCCDT();
+        }
     }
 
     private static JmsConnectionFactory createJMSConnectionFactory() {
@@ -174,9 +180,15 @@ public class JmsGet {
 
     private static void setJMSProperties(JmsConnectionFactory cf) {
         try {
-            cf.setStringProperty(WMQConstants.WMQ_HOST_NAME, HOST);
-            cf.setIntProperty(WMQConstants.WMQ_PORT, PORT);
-            cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
+            if (null == CCDTURL) {
+                cf.setStringProperty(WMQConstants.WMQ_HOST_NAME, HOST);
+                cf.setIntProperty(WMQConstants.WMQ_PORT, PORT);
+                cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
+            } else {
+                logger.info("Will be making use of CCDT File " + CCDTURL);
+                cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
+            }
+
             cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
             cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "JmsGet (JMS)");

@@ -24,6 +24,7 @@ import org.json.simple.JSONArray;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.io.File;
 import java.lang.System;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,9 @@ public class SampleEnvSetter {
 
     private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
     private JSONArray mqEndPoints;
+
+    private static final String CCDT = "MQCCDTURL";
+    private static final String FILEPREFIX = "file://";
 
     public SampleEnvSetter() {
         JSONObject mqEnvSettings = null;
@@ -79,6 +83,25 @@ public class SampleEnvSetter {
 
         if (! key.contains("PASSWORD")) {
           logger.info("returning " + value + " for key " + key);
+        }
+        return value;
+    }
+
+    public String getCheckForCCDT() {
+        String value = System.getenv(CCDT);
+
+        if (value != null && ! value.isEmpty()) {
+          String ccdtFile = value;
+          if (ccdtFile.startsWith(FILEPREFIX)) {
+            ccdtFile = ccdtFile.split(FILEPREFIX)[1];
+            logger.info("Checking for existance of file " + ccdtFile);
+
+            File tmp = new File(ccdtFile);
+            if (! tmp.exists()) {
+              value = null;
+            }
+
+          }
         }
         return value;
     }
