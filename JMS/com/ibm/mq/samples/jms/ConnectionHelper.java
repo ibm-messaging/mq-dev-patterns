@@ -47,6 +47,7 @@ public class ConnectionHelper {
     private String QUEUE_NAME = null; // Queue that the application uses to put and get messages to and from
     private String TOPIC_NAME = null; // Topic that the application publishes to
     private String CIPHER_SUITE = null;
+    private static String CCDTURL;
 
     JMSContext context;
 
@@ -112,6 +113,8 @@ public class ConnectionHelper {
         QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
         TOPIC_NAME = env.getEnvValue("TOPIC_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
+
+        CCDTURL = env.getCheckForCCDT();
     }
 
     private JmsConnectionFactory createJMSConnectionFactory() {
@@ -129,13 +132,19 @@ public class ConnectionHelper {
 
     private void setJMSProperties(JmsConnectionFactory cf, String id, int index) {
         try {
-            if (USE_CONNECTION_STRING == index) {
-              cf.setStringProperty(WMQConstants.WMQ_CONNECTION_NAME_LIST, ConnectionString);
+            if (null == CCDTURL) {
+                if (USE_CONNECTION_STRING == index) {
+                    cf.setStringProperty(WMQConstants.WMQ_CONNECTION_NAME_LIST, ConnectionString);
+                } else {
+                    cf.setStringProperty(WMQConstants.WMQ_HOST_NAME, HOST);
+                    cf.setIntProperty(WMQConstants.WMQ_PORT, PORT);
+                }
+                cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
             } else {
-              cf.setStringProperty(WMQConstants.WMQ_HOST_NAME, HOST);
-              cf.setIntProperty(WMQConstants.WMQ_PORT, PORT);
+                logger.info("Will be making use of CCDT File " + CCDTURL);
+                cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
             }
-            cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
+
             cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
             cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, id);

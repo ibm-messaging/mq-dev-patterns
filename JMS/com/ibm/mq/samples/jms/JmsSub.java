@@ -45,6 +45,7 @@ public class JmsSub {
     private static String TOPIC_NAME; // Queue that the application uses to put and get messages to and from
     private static String SUBSCRIPTION_NAME = "JmsSub - SampleSubscriber";
     private static String CIPHER_SUITE;
+    private static String CCDTURL;
 
     public static void main(String[] args) {
         initialiseLogging();
@@ -107,6 +108,8 @@ public class JmsSub {
         APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
         TOPIC_NAME = env.getEnvValue("TOPIC_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
+
+        CCDTURL = env.getCheckForCCDT();
     }
 
     private static JmsConnectionFactory createJMSConnectionFactory() {
@@ -124,8 +127,14 @@ public class JmsSub {
 
     private static void setJMSProperties(JmsConnectionFactory cf) {
         try {
-            cf.setStringProperty(WMQConstants.WMQ_CONNECTION_NAME_LIST, ConnectionString);
-            cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
+            if (null == CCDTURL) {
+                cf.setStringProperty(WMQConstants.WMQ_CONNECTION_NAME_LIST, ConnectionString);
+                cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
+            } else {
+                logger.info("Will be making use of CCDT File " + CCDTURL);
+                cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
+            }
+                  
             cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
             cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "SimpleSub (JMS)");
