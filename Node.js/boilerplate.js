@@ -210,8 +210,10 @@ class MQBoilerPlate {
         MQC.MQGMO_CONVERT |
         MQC.MQGMO_FAIL_IF_QUIESCING;
 
-      if ('GET' === me.modeType) {
-        gmo.MatchOptions = MQC.MQMO_NONE;
+      switch (me.modeType) {
+        case 'GET':
+        case 'SUBSCRIBE':
+          gmo.MatchOptions = MQC.MQMO_NONE;
       }
 
       gmo.WaitInterval = waitInterval * 1000; //
