@@ -31,26 +31,36 @@ logger = logging.getLogger(__name__)
 def connect():
     logger.info('Establising Connection with MQ Server')
     try:
-        cd = pymqi.CD()
-        cd.ChannelName = MQDetails['CHANNEL']
-        cd.ConnectionName = conn_info
-        cd.ChannelType = pymqi.CMQC.MQCHT_CLNTCONN
-        cd.TransportType = pymqi.CMQC.MQXPT_TCP
+        cd = None
+        if not EnvStore.ccdtCheck():
+            logger.info('CCDT URL export is not set, will be using json envrionment client connections settings')
 
-        # Create an empty SCO object, and optionally set TLS settings
-        # if a cipher is set in the envrionment variables.
+            cd = pymqi.CD(Version=pymqi.CMQXC.MQCD_VERSION_11)
+            cd.ChannelName = MQDetails[EnvStore.CHANNEL]
+            cd.ConnectionName = conn_info
+            cd.ChannelType = pymqi.CMQC.MQCHT_CLNTCONN
+            cd.TransportType = pymqi.CMQC.MQXPT_TCP
+
+            logger.info('Checking Cypher details')
+            # If a cipher is set then set the TLS settings
+            if MQDetails[EnvStore.CIPHER]:
+                logger.info('Making use of Cypher details')
+                cd.SSLCipherSpec = MQDetails[EnvStore.CIPHER]
+
+        # Key repository is not specified in CCDT so look in envrionment settings
+        # Create an empty SCO object
         sco = pymqi.SCO()
-        if MQDetails['CIPHER']:
-            cd.SSLCipherSpec = MQDetails['CIPHER']
-            sco.KeyRepository = MQDetails['KEY_REPOSITORY']
+        if MQDetails[EnvStore.KEY_REPOSITORY]:
+            logger.info('Setting Key repository')
+            sco.KeyRepository = MQDetails[EnvStore.KEY_REPOSITORY]
 
         #options = pymqi.CMQC.MQPMO_NO_SYNCPOINT | pymqi.CMQC.MQPMO_NEW_MSG_ID | pymqi.CMQC.MQPMO_NEW_CORREL_ID
         options = pymqi.CMQC.MQPMO_NEW_CORREL_ID
 
         qmgr = pymqi.QueueManager(None)
-        qmgr.connect_with_options(MQDetails['QMGR'],
-                                  user=credentials['USER'],
-                                  password=credentials['PASSWORD'],
+        qmgr.connect_with_options(MQDetails[EnvStore.QMGR],
+                                  user=credentials[EnvStore.USER],
+                                  password=credentials[EnvStore.PASSWORD],
                                   opts=options, cd=cd, sco=sco)
         return qmgr
     except pymqi.MQMIError as e:
@@ -66,7 +76,7 @@ def getQueue(queueName, forInput):
     try:
         # Works with single call, but object Descriptor
         # provides other options
-        # q = pymqi.Queue(qmgr, MQDetails['QUEUE_NAME'])
+        # q = pymqi.Queue(qmgr, MQDetails[EnvStore.QUEUE_NAME])
         q = pymqi.Queue(qmgr)
 
         od = pymqi.OD()
@@ -102,6 +112,12 @@ def getMessages():
     keep_running = True
     while keep_running:
         try:
+            # Reset the MsgId, CorrelId & GroupId so that we can reuse
+            # the same 'md' object again.
+            md.MsgId = pymqi.CMQC.MQMI_NONE
+            md.CorrelId = pymqi.CMQC.MQCI_NONE
+            md.GroupId = pymqi.CMQC.MQGI_NONE
+
             # Wait up to to gmo.WaitInterval for a new message.
             message = queue.get(None, md, gmo)
 
@@ -112,12 +128,6 @@ def getMessages():
 
             respondToRequest(md, msgObject)
 
-            # Reset the MsgId, CorrelId & GroupId so that we can reuse
-            # the same 'md' object again.
-            md.MsgId = pymqi.CMQC.MQMI_NONE
-            md.CorrelId = pymqi.CMQC.MQCI_NONE
-            md.GroupId = pymqi.CMQC.MQGI_NONE
-
         except pymqi.MQMIError as e:
             if e.comp == pymqi.CMQC.MQCC_FAILED and e.reason == pymqi.CMQC.MQRC_NO_MSG_AVAILABLE:
                 # No messages, that's OK, we can ignore it.
@@ -125,6 +135,12 @@ def getMessages():
             else:
                 # Some other error condition.
                 raise
+
+        except (UnicodeDecodeError, ValueError) as e:
+            logger.info('Message is not valid json')
+            logger.info(e)
+            logger.info(message)
+            continue
 
         except KeyboardInterrupt:
             logger.info('Have received a keyboard interrupt')
@@ -137,11 +153,13 @@ def respondToRequest(md, msgObject):
     response_md = pymqi.MD()
     response_md.CorrelId = md.CorrelId
     response_md.MsgId = md.MsgId
+    response_md.Format = pymqi.CMQC.MQFMT_STRING
 
     msgReply = {
         'Greeting': "Reply from Python! " + str(datetime.datetime.now()),
         'value': random.randint(1, 101)
     }
+
     replyQueue = getQueue(md.ReplyToQ, False)
     if (msgObject['value']):
         msgReply['value'] = performCalc(msgObject['value'])
@@ -167,8 +185,8 @@ def performCalc(n):
 
 
 def buildMQDetails():
-    for key in ['QMGR', 'QUEUE_NAME', 'CHANNEL', 'HOST',
-                'PORT', 'KEY_REPOSITORY', 'CIPHER']:
+    for key in [EnvStore.QMGR, EnvStore.QUEUE_NAME, EnvStore.CHANNEL, EnvStore.HOST,
+                EnvStore.PORT, EnvStore.KEY_REPOSITORY, EnvStore.CIPHER]:
         MQDetails[key] = EnvStore.getEnvValue(key)
 
 
@@ -180,24 +198,24 @@ envStore.setEnv()
 
 MQDetails = {}
 credentials = {
-    'USER': EnvStore.getEnvValue('APP_USER'),
-    'PASSWORD': EnvStore.getEnvValue('APP_PASSWORD')
+    EnvStore.USER: EnvStore.getEnvValue(EnvStore.APP_USER),
+    EnvStore.PASSWORD: EnvStore.getEnvValue(EnvStore.APP_PASSWORD)
 }
 
 buildMQDetails()
 
 logger.info('Credentials are set')
-logger.info(credentials)
+#logger.info(credentials)
 
-#conn_info = "%s(%s)" % (MQDetails['HOST'], MQDetails['PORT'])
-conn_info = EnvStore.getConnection('HOST', 'PORT')
+#conn_info = "%s(%s)" % (MQDetails[EnvStore.HOST], MQDetails[EnvStore.PORT])
+conn_info = EnvStore.getConnection(EnvStore.HOST, EnvStore.PORT)
 
 qmgr = None
 queue = None
 
 qmgr = connect()
 if (qmgr):
-    queue = getQueue(MQDetails['QUEUE_NAME'], True)
+    queue = getQueue(MQDetails[EnvStore.QUEUE_NAME], True)
 if (queue):
     getMessages()
     queue.close()

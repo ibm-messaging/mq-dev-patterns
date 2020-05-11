@@ -19,6 +19,7 @@ package com.ibm.mq.samples.jms;
 import java.util.logging.*;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.Random;
 
 import javax.jms.Destination;
 import javax.jms.JMSConsumer;
@@ -42,8 +43,7 @@ public class JmsRequest {
     private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
 
     // Create variables for the connection to MQ
-    private static String HOST; // Host name or IP address
-    private static int PORT; // Listener port for your queue manager
+    private static String ConnectionString; //= "localhost(1414),localhost(1416)"
     private static String CHANNEL; // Channel name
     private static String QMGR; // Queue manager name
     private static String APP_USER; // User name that application uses to connect to MQ
@@ -51,6 +51,9 @@ public class JmsRequest {
     private static String QUEUE_NAME; // Queue that the application uses to put and get messages to and from
     private static String MODEL_QUEUE_NAME; //
     private static String CIPHER_SUITE;
+    private static String CCDTURL;
+
+    private static Random random = new Random();
 
     public static void main(String[] args) {
         initialiseLogging();
@@ -77,7 +80,7 @@ public class JmsRequest {
         producer = context.createProducer();
         logger.info("producer created");
 
-        TextMessage message = context.createTextMessage(RequestCalc.buildStringForRequest(3));
+        TextMessage message = context.createTextMessage(RequestCalc.buildStringForRequest(random.nextInt(101)));
         try {
             String correlationID = String.format("%24.24s", UUID.randomUUID().toString());
             byte[] b = null;
@@ -138,15 +141,18 @@ public class JmsRequest {
 
     private static void mqConnectionVariables() {
         SampleEnvSetter env = new SampleEnvSetter();
-        HOST = env.getEnvValue("HOST");
-        PORT = Integer.parseInt(env.getEnvValue("PORT"));
-        CHANNEL = env.getEnvValue("CHANNEL");
-        QMGR = env.getEnvValue("QMGR");
-        APP_USER = env.getEnvValue("APP_USER");
-        APP_PASSWORD = env.getEnvValue("APP_PASSWORD");
-        QUEUE_NAME = env.getEnvValue("QUEUE_NAME");
-        MODEL_QUEUE_NAME = env.getEnvValue("MODEL_QUEUE_NAME");
-        CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE");
+        int index = 0;
+
+        ConnectionString = env.getConnectionString();
+        CHANNEL = env.getEnvValue("CHANNEL", index);
+        QMGR = env.getEnvValue("QMGR", index);
+        APP_USER = env.getEnvValue("APP_USER", index);
+        APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
+        QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
+        MODEL_QUEUE_NAME = env.getEnvValue("MODEL_QUEUE_NAME", index);
+        CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
+
+        CCDTURL = env.getCheckForCCDT();
     }
 
     private static JmsConnectionFactory createJMSConnectionFactory() {
@@ -164,9 +170,13 @@ public class JmsRequest {
 
     private static void setJMSProperties(JmsConnectionFactory cf) {
         try {
-            cf.setStringProperty(WMQConstants.WMQ_HOST_NAME, HOST);
-            cf.setIntProperty(WMQConstants.WMQ_PORT, PORT);
-            cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
+            if (null == CCDTURL) {
+                cf.setStringProperty(WMQConstants.WMQ_CONNECTION_NAME_LIST, ConnectionString);
+                cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
+            } else {
+                logger.info("Will be making use of CCDT File " + CCDTURL);
+                cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
+            }
             cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
             cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "JmsRequest");

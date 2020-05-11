@@ -26,12 +26,12 @@
 // Values for Queue Manager, Queue, Host, Port and Channel are
 // passed in as envrionment variables.
 
-
+const fs = require('fs');
 // Import the MQ package
 const mq = require('ibmmq');
 
-// Load up missing envrionment variables from the .env settings file.
-require('dotenv').load();
+// Load up missing envrionment variables from the env.json file
+var env = require('../env.json');
 
 var MQC = mq.MQC;
 
@@ -39,27 +39,43 @@ var MQC = mq.MQC;
 var debug_info = require('debug')('amqsput:info');
 var debug_warn = require('debug')('amqsput:warn');
 
+// Set up Constants
+const CCDT = "MQCCDTURL";
+const	FILEPREFIX = "file://";
 
-var MQDetails = {
-  QMGR: process.env.QMGR,
-  QUEUE_NAME: process.env.QUEUE_NAME,
-  HOST: process.env.HOST,
-  PORT: process.env.PORT,
-  CHANNEL: process.env.CHANNEL,
-  KEY_REPOSITORY: process.env.KEY_REPOSITORY,
-  CIPHER: process.env.CIPHER
-}
+// Load the MQ Endpoint details either from the envrionment or from the
+// env.json file. The envrionment takes precedence.
+// The json file allows for
+// mulitple endpoints ala a cluster. The connection string is built
+// using the host(port) values for all the endpoints.
+// For all the other fields only the first
+// endpoint in the arryay is used.
+var MQDetails = {};
+
+['QMGR', 'QUEUE_NAME', 'HOST', 'PORT',
+ 'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach(function(f) {
+  MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[0][f]
+});
 
 var credentials = {
-  USER: process.env.APP_USER,
-  PASSWORD: process.env.APP_PASSWORD
-}
-
+  USER: process.env.APP_USER || env.MQ_ENDPOINTS[0].APP_USER,
+  PASSWORD: process.env.APP_PASSWORD || env.MQ_ENDPOINTS[0].APP_PASSWORD
+};
 
 function toHexString(byteArray) {
   return byteArray.reduce((output, elem) =>
     (output + ('0' + elem.toString(16)).slice(-2)),
     '');
+}
+
+function getConnection() {
+  let points = [];
+  env.MQ_ENDPOINTS.forEach((p) => {
+    if (p['HOST'] && p['PORT']) {
+      points.push(`${p.HOST}(${p.PORT})`)
+    }
+  });
+  return points.join(',');
 }
 
 // Define some functions that will be used from the main flow
@@ -107,6 +123,18 @@ function cleanup(hConn, hObj) {
   });
 }
 
+function ccdtCheck () {
+  if (CCDT in process.env) {
+    let ccdtFile = process.env[CCDT].replace(FILEPREFIX, '');
+    debug_info(ccdtFile);
+    if (fs.existsSync(ccdtFile)) {
+      debug_info("CCDT File found at ", ccdtFile);
+      return true;
+    }
+  }
+  return false;
+}
+
 
 debug_info('Running on ', process.platform);
 debug_info('Starting up Application');
@@ -124,26 +152,40 @@ if (credentials.USER) {
   cno.SecurityParms = csp;
 }
 
-// And then fill in relevant fields for the MQCD
-var cd = new mq.MQCD();
-cd.ConnectionName = `${MQDetails.HOST}(${MQDetails.PORT})`;
-cd.ChannelName = MQDetails.CHANNEL;
+if (! ccdtCheck()) {
+  debug_info('CCDT URL export is not set, will be using json envrionment client connections settings');
 
+  // And then fill in relevant fields for the MQCD
+  var cd = new mq.MQCD();
+
+  cd.ChannelName = MQDetails.CHANNEL;
+  cd.ConnectionName = getConnection();
+  debug_info('Connections string is ', cd.ConnectionName);
+
+  if (MQDetails.KEY_REPOSITORY) {
+    debug_info('Will be running in TLS Mode');
+
+    cd.SSLCipherSpec = MQDetails.CIPHER;
+    cd.SSLClientAuth = MQC.MQSCA_OPTIONAL;
+  }
+
+  // Make the MQCNO refer to the MQCD
+  cno.ClientConn = cd;
+}
+
+// The location of the KeyRepository is not specified in the CCDT, so regardless
+// of whether a CCDT is being used, need to specify the KeyRepository location
+// if it has been provided in the environment json settings.
 if (MQDetails.KEY_REPOSITORY) {
-  debug_info('Will be running in TLS Mode');
+  debug_info('Key Repository has been specified');
   // *** For TLS ***
   var sco = new mq.MQSCO();
-
-  cd.SSLCipherSpec = MQDetails.CIPHER;
-  cd.SSLClientAuth = MQC.MQSCA_OPTIONAL;
 
   sco.KeyRepository = MQDetails.KEY_REPOSITORY;
   // And make the CNO refer to the SSL Connection Options
   cno.SSLConfig = sco;
 }
 
-// Make the MQCNO refer to the MQCD
-cno.ClientConn = cd;
 
 debug_info('Attempting Connection to MQ Server');
 mq.Connx(MQDetails.QMGR, cno, function(err, hConn) {

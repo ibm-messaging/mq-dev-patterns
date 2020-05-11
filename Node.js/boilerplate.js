@@ -17,11 +17,12 @@
 // This is a MQ boiler plate library making use of the
 // the MQI Node.js interface
 
+const fs = require('fs');
 // Import the MQ package
 const mq = require('ibmmq');
 
-// Load up missing envrionment variables from the .env settings file.
-require('dotenv').load();
+// Load up missing envrionment variables from the env.json file
+var env = require('../env.json');
 
 // Set up debug logging options
 var debug_info = require('debug')('boiler:info');
@@ -34,23 +35,10 @@ var waitInterval = 10; // max seconds to wait for a new message
 var canExit = false;
 var activeCB = null;
 
-var MQDetails = {
-  QMGR: process.env.QMGR,
-  QUEUE_NAME: process.env.QUEUE_NAME,
-  MODEL_QUEUE_NAME: process.env.MODEL_QUEUE_NAME,
-  DYNAMIC_QUEUE_PREFIX: process.env.DYNAMIC_QUEUE_PREFIX,
-  TOPIC_NAME: process.env.TOPIC_NAME,
-  HOST: process.env.HOST,
-  PORT: process.env.PORT,
-  CHANNEL: process.env.CHANNEL,
-  KEY_REPOSITORY: process.env.KEY_REPOSITORY,
-  CIPHER: process.env.CIPHER
-}
+// Set up Constants
+const CCDT = "MQCCDTURL";
+const	FILEPREFIX = "file://";
 
-var credentials = {
-  USER: process.env.APP_USER,
-  PASSWORD: process.env.APP_PASSWORD
-}
 
 class MQBoilerPlate {
   constructor() {
@@ -60,23 +48,30 @@ class MQBoilerPlate {
     this.mqDynReplyObj = null;
     this.hObjSubscription = null;
     this.modeType = null;
+    this.index = 0;
+    this.MQDetails = {};
+    this.credentials = {};
     debug_info('MQi Boilerplate constructed');
   }
 
-  initialise(type) {
-    var me = this;
+  initialise(type, i = 0) {
+    let me = this;
     me.modeType = type;
+    me.index = i;
     return new Promise(function resolver(resolve, reject) {
-      MQBoilerPlate.buildMQCNO()
+      me.buildMQDetails()
+        .then(() => {
+          return me.buildMQCNO();
+        })
         .then((mqcno) => {
-          return MQBoilerPlate.connectToMQ(mqcno);
+          return me.connectToMQ(mqcno);
         })
         .then((hConn) => {
           me.mqConn = hConn;
           if ('SUBSCRIBE' === me.modeType) {
-            return MQBoilerPlate.openMQSubscription(me.mqConn, me.modeType);
+            return me.openMQSubscription(me.mqConn, me.modeType);
           }
-          return MQBoilerPlate.openMQConnection(me.mqConn, me.modeType);
+          return me.openMQConnection(me.mqConn, me.modeType);
         })
         .then((data) => {
           if (data.hObj) {
@@ -105,6 +100,27 @@ class MQBoilerPlate {
       .then(() => {
         this.mqConn = null;
       })
+  }
+
+  // Load the MQ Endpoint details either from the envrionment or from the
+  // env.json file. The envrionment takes precedence. The json file allows for
+  // mulitple endpoints ala a cluster, but for this sample only the first
+  // endpoint in the arryay is used.
+  buildMQDetails() {
+    let i = this.index;
+    if (env.MQ_ENDPOINTS.length > i) {
+      ['QMGR', 'QUEUE_NAME', 'TOPIC_NAME',
+       'MODEL_QUEUE_NAME', 'DYNAMIC_QUEUE_PREFIX',
+       'HOST', 'PORT',
+       'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach((f) => {
+        this.MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[i][f];
+      });
+      ['USER', 'PASSWORD'].forEach((f) => {
+        let pField = 'APP_' + f;
+        this.credentials[f] = process.env[pField] || env.MQ_ENDPOINTS[i][pField];
+      });
+    }
+    return Promise.resolve();
   }
 
   putRequest(msg) {
@@ -212,6 +228,7 @@ class MQBoilerPlate {
       mq.setTuningParameters({
         getLoopPollTimeMs: 500
       });
+
       mq.Get(queueObj, md, gmo, me.getCallback);
       resolve();
     });
@@ -251,7 +268,25 @@ class MQBoilerPlate {
       '');
   }
 
-  static buildMQCNO() {
+  getConnection() {
+    let points = [];
+    env.MQ_ENDPOINTS.forEach((p) => {
+      if (p['HOST'] && p['PORT']) {
+        points.push(`${p.HOST}(${p.PORT})`)
+      }
+    });
+    return points.join(',');
+  }
+
+  getConnectionAt() {
+    let i = this.index;
+    if (env.MQ_ENDPOINTS.length <= i) {
+      i = 0;
+    }
+    return `${env.MQ_ENDPOINTS[i].HOST}(${env.MQ_ENDPOINTS[i].PORT})`;
+  }
+
+  buildMQCNO() {
     debug_info('Establishing connection details');
     var mqcno = new mq.MQCNO();
     // use MQCNO_CLIENT_BINDING to connect as client
@@ -259,31 +294,51 @@ class MQBoilerPlate {
     mqcno.Options = MQC.MQCNO_CLIENT_BINDING;
 
     // For no authentication, disable this block
-    if (credentials.USER) {
+    if (this.credentials.USER) {
       var csp = new mq.MQCSP();
-      csp.UserId = credentials.USER;
-      csp.Password = credentials.PASSWORD;
+      csp.UserId = this.credentials.USER;
+      csp.Password = this.credentials.PASSWORD;
       mqcno.SecurityParms = csp;
     }
 
-    // And then fill in relevant fields for the MQCD
-    var cd = new mq.MQCD();
-    cd.ConnectionName = `${MQDetails.HOST}(${MQDetails.PORT})`;
-    cd.ChannelName = MQDetails.CHANNEL;
+    if (! MQBoilerPlate.ccdtCheck()) {
+      debug_info('CCDT URL export is not set, will be using json envrionment client connections settings');
+      // And then fill in relevant fields for the MQCD
+      var cd = new mq.MQCD();
+      cd.ChannelName = this.MQDetails.CHANNEL;
 
-    if (MQDetails.KEY_REPOSITORY) {
-      debug_info('Will be running in TLS Mode');
+      if ('GET' === this.modeType) {
+        cd.ConnectionName = this.getConnectionAt();
+      } else {
+        cd.ConnectionName = this.getConnection();
+      }
+
+      debug_info('Connections string is ', cd.ConnectionName);
+
+      if (this.MQDetails.KEY_REPOSITORY) {
+        debug_info('Will be running in TLS Mode');
+
+        // *** For TLS ***
+        // The TLS parameters are the minimal set needed here. You might
+        // want more control such as SSLPEER values.
+        // This SSLClientAuth setting means that this program does not need to
+        // present a certificate to the server - but it must match how the
+        // SVRCONN is defined on the queue manager.
+        cd.SSLCipherSpec = this.MQDetails.CIPHER;
+        cd.SSLClientAuth = MQC.MQSCA_OPTIONAL;
+
+        // And make the CNO refer to the SSL Connection Options
+        mqcno.SSLConfig = sco;
+      }
+
+      // Make the MQCNO refer to the MQCD
+      mqcno.ClientConn = cd;
+    }
+
+    if (this.MQDetails.KEY_REPOSITORY) {
+      debug_info('Key Repository has been specified');
       // *** For TLS ***
       var sco = new mq.MQSCO();
-
-      // *** For TLS ***
-      // The TLS parameters are the minimal set needed here. You might
-      // want more control such as SSLPEER values.
-      // This SSLClientAuth setting means that this program does not need to
-      // present a certificate to the server - but it must match how the
-      // SVRCONN is defined on the queue manager.
-      cd.SSLCipherSpec = MQDetails.CIPHER;
-      cd.SSLClientAuth = MQC.MQSCA_OPTIONAL;
 
       // *** For TLS ***
       // Set the SSL/TLS Configuration Options structure field that
@@ -291,26 +346,24 @@ class MQBoilerPlate {
       // with the same root name). For this program, all we need is for
       // the keystore to contain the signing information for the queue manager's
       // cert.
-      sco.KeyRepository = MQDetails.KEY_REPOSITORY;
+      sco.KeyRepository = this.MQDetails.KEY_REPOSITORY;
       // And make the CNO refer to the SSL Connection Options
       mqcno.SSLConfig = sco;
     }
 
-    // Make the MQCNO refer to the MQCD
-    mqcno.ClientConn = cd;
-
     return Promise.resolve(mqcno);
   }
 
-  static connectToMQ(cno) {
+  connectToMQ(cno) {
+    let me = this;
     return new Promise(function resolver(resolve, reject) {
       debug_info('Attempting Connection to MQ');
-      mq.Connx(MQDetails.QMGR, cno, function(err, hConn) {
+      mq.Connx(me.MQDetails.QMGR, cno, function(err, hConn) {
         debug_info('Inside Connection Callback function');
         if (err) {
           reject(err);
         } else {
-          debug_info("MQCONN to %s successful ", MQDetails.QMGR);
+          debug_info("MQCONN to %s successful ", me.MQDetails.QMGR);
           resolve(hConn);
         }
       });
@@ -322,7 +375,7 @@ class MQBoilerPlate {
     debug_info('About to build dynamic connection');
 
     return new Promise(function resolver(resolve, reject) {
-      MQBoilerPlate.openMQConnection(me.mqConn, 'DYNPUT')
+      me.openMQConnection(me.mqConn, 'DYNPUT')
         .then((data) => {
           if (data.hObj) {
             me.mqDynObj = data.hObj;
@@ -339,9 +392,9 @@ class MQBoilerPlate {
 
   openMQReplyToConnection(replyToQ) {
     let me = this;
-    MQDetails.ReplyQueue = replyToQ;
+    me.MQDetails.ReplyQueue = replyToQ;
     return new Promise(function resolver(resolve, reject) {
-      MQBoilerPlate.openMQConnection(me.mqConn, 'DYNREP')
+      me.openMQConnection(me.mqConn, 'DYNREP')
         .then((data) => {
           if (data.hObj) {
             me.mqDynReplyObj = data.hObj;
@@ -356,7 +409,8 @@ class MQBoilerPlate {
   }
 
 
-  static openMQConnection(hConn, type) {
+  openMQConnection(hConn, type) {
+    let me = this;
     return new Promise(function resolver(resolve, reject) {
       var od = new mq.MQOD();
 
@@ -365,19 +419,19 @@ class MQBoilerPlate {
       switch (type) {
         case 'PUT':
         case 'GET':
-          od.ObjectName = MQDetails.QUEUE_NAME;
+          od.ObjectName = me.MQDetails.QUEUE_NAME;
           od.ObjectType = MQC.MQOT_Q;
           break;
         case 'PUBLISH':
-          od.ObjectString = MQDetails.TOPIC_NAME;
+          od.ObjectString = me.MQDetails.TOPIC_NAME;
           od.ObjectType = MQC.MQOT_TOPIC;
           break;
         case 'DYNPUT':
-          od.ObjectName = MQDetails.MODEL_QUEUE_NAME;
-          od.DynamicQName = MQDetails.DYNAMIC_QUEUE_PREFIX;
+          od.ObjectName = me.MQDetails.MODEL_QUEUE_NAME;
+          od.DynamicQName = me.MQDetails.DYNAMIC_QUEUE_PREFIX;
           break;
         case 'DYNREP':
-          od.ObjectName = MQDetails.ReplyQueue;
+          od.ObjectName = me.MQDetails.ReplyQueue;
           od.ObjectType = MQC.MQOT_Q;
           break;
       }
@@ -403,7 +457,7 @@ class MQBoilerPlate {
         if (err) {
           reject(err);
         } else {
-          debug_info("MQOPEN of %s successful", MQDetails.QUEUE_NAME);
+          debug_info("MQOPEN of %s successful", me.MQDetails.QUEUE_NAME);
           let data = {
             'hObj': hObj
           };
@@ -413,11 +467,12 @@ class MQBoilerPlate {
     });
   }
 
-  static openMQSubscription(hConn, type) {
+  openMQSubscription(hConn, type) {
+    let me = this;
     return new Promise(function resolver(resolve, reject) {
       // Define what we want to open, and how we want to open it.
       var sd = new mq.MQSD();
-      sd.ObjectString = MQDetails.TOPIC_NAME;
+      sd.ObjectString = me.MQDetails.TOPIC_NAME;
       sd.Options = MQC.MQSO_CREATE |
         MQC.MQSO_NON_DURABLE |
         MQC.MQSO_FAIL_IF_QUIESCING |
@@ -430,7 +485,7 @@ class MQBoilerPlate {
         if (err) {
           reject(err);
         } else {
-          debug_info("MQOPEN of %s successful", MQDetails.QUEUE_NAME);
+          debug_info("MQSUB to topic of %s successfull", me.MQDetails.TOPIC_NAME);
           let data = {
             'hObj': hObj,
             'hObjSubscription': hObjSubscription
@@ -486,7 +541,6 @@ class MQBoilerPlate {
     });
   }
 
-
   /*
    * This function is the async callback. Parameters
    * include the message descriptor and the buffer containing
@@ -499,8 +553,8 @@ class MQBoilerPlate {
         debug_info("No more messages available.");
       } else {
         MQBoilerPlate.reportError(err);
-        canExit = true;
       }
+      canExit = true;
       // We don't need any more messages delivered, so cause the
       // callback to be deleted after this one has completed.
       //mq.GetDone(hObj);
@@ -516,7 +570,21 @@ class MQBoilerPlate {
     debug_warn("MQ call failed with error : " + errMsg);
   }
 
+
+  static ccdtCheck () {
+    if (CCDT in process.env) {
+      let ccdtFile = process.env[CCDT].replace(FILEPREFIX, '');
+      debug_info(ccdtFile);
+      if (fs.existsSync(ccdtFile)) {
+        debug_info("CCDT File found at ", ccdtFile);
+        return true;
+      }
+    }
+    return false;
+  }
+
 }
 
-var mqboiler = new MQBoilerPlate();
-module.exports = mqboiler;
+//var mqboiler = new MQBoilerPlate();
+//module.exports = mqboiler;
+module.exports = MQBoilerPlate;

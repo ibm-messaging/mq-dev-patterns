@@ -40,7 +40,7 @@ func main() {
 	logSettings()
 	mqsamputils.EnvSettings.LogSettings()
 
-	qMgr, err := mqsamputils.CreateConnection()
+	qMgr, err := mqsamputils.CreateConnection(mqsamputils.FULL_STRING)
 	if err != nil {
 		logger.Fatalln("Unable to Establish Connection to server")
 		os.Exit(1)

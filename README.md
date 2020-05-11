@@ -27,6 +27,20 @@ You can use your own MQ server, you'll just have to adjust the MQ objects accord
 * **CIPHER** - If present in the `env,json`, TLS Cipher specification to use
 * **KEY_REPOSITORY** - Path to the `keystore` `.kbd` and `.sth` files. If present in the `env.json`, TLS is enabled - this is on the app side.
 
+If instead you choose to provide a client channel definition table (CCDT) file,
+then the **Host**, **PORT**, **Channel** and **Cipher** are provided by the
+CCDT and you can leave them out of the `env.json`. All the samples check if the
+environment variable `MQCCDTURL` is set and that the file it is pointing at exists.
+If it does then the logic sets the connection definition or connection factory to
+for CCDT processing. For example
+
+```
+export MQCCDTURL=file:///Users/xyz/Documents/dev/mqsamples/mq-dev-patterns/ccdt.json
+```
+
+We give you a sample `ccdt.json` from which you can base your own.
+
+
 If you use our MQ server for developers in Docker, Linux or Windows, with the default config, you'll have the following MQ objects on the MQ server;
 
 ~~~Text
@@ -55,21 +69,27 @@ We've tried to make this easier by providing one `env.json` file in the main `sa
 
 ```JSON
 {
-"HOST":"localhost",
-"PORT":"1414",
-"CHANNEL":"DEV.APP.SVRCONN",
-"QMGR":"QM1",
-"APP_USER":"app",
-"APP_PASSWORD":"passw0rd",
-"QUEUE_NAME":"DEV.QUEUE.1",
-"MODEL_QUEUE_NAME":"DEV.APP.MODEL.QUEUE",
-"TOPIC_NAME":"dev/",
-"CIPHER_SUITE":"TLS_RSA_WITH_AES_128_CBC_SHA256",
-"KEY_REPOSITORY": "./keys/clientkey"
+  "MQ_ENDPOINTS": [{
+    "HOST":"localhost",
+    "PORT":"1414",
+    "CHANNEL":"DEV.APP.SVRCONN",
+    "QMGR":"QM1",
+    "APP_USER":"app",
+    "APP_PASSWORD":"passw0rd",
+    "QUEUE_NAME":"DEV.QUEUE.1",
+    "MODEL_QUEUE_NAME":"DEV.APP.MODEL.QUEUE",
+    "TOPIC_NAME":"dev/",
+    "CIPHER_SUITE":"TLS_RSA_WITH_AES_128_CBC_SHA256",
+    "KEY_REPOSITORY": "./keys/clientkey"
+    }]
 }
 ```
 
 You can use the `env.json` file to 'switch on' or 'switch off' parts of the code.
+
+## Endpoints Array
+Having the endpoints defined as an array allows us to define multiple endpoints
+for the sample applications to use.  
 
 ## TLS
 

@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 )
 
 var logger = log.New(os.Stdout, "Env: ", log.LstdFlags)
@@ -40,7 +41,14 @@ type Env struct {
 	Cipher           string `json:"CIPHER"`
 }
 
+type MQEndpoints struct {
+	Points []Env `json:"MQ_ENDPOINTS"`
+}
+
 var EnvSettings Env
+var MQ_ENDPOINTS MQEndpoints
+
+const FULL_STRING = -1
 
 func init() {
 	jsonFile, err := os.Open("../../env.json")
@@ -53,7 +61,14 @@ func init() {
 	logger.Println("Successfully Opened env.json")
 
 	byteValue, _ := ioutil.ReadAll(jsonFile)
-	json.Unmarshal(byteValue, &EnvSettings)
+	json.Unmarshal(byteValue, &MQ_ENDPOINTS)
+
+  // The .json should have supplied the MQ Endpoints as an array.
+	// If there are no elements, then EnvSettings will be default
+	// initialised to be empty.
+	if len(MQ_ENDPOINTS.Points) > 0 {
+		EnvSettings = MQ_ENDPOINTS.Points[0]
+	}
 
 	envrionmentOverides()
 }
@@ -86,8 +101,21 @@ func envrionmentOverides() {
 	}
 }
 
-func (Env) GetConnection() string {
-	return EnvSettings.Host + "(" + EnvSettings.Port + ")"
+func (Env) GetConnection(index int) string {
+	if (index == FULL_STRING) {
+		var connections []string
+		for _, p := range MQ_ENDPOINTS.Points {
+			connections = append(connections, p.Host + "(" + p.Port + ")")
+		}
+	  return strings.Join(connections[:], ",")
+	} else {
+		p := MQ_ENDPOINTS.Points[index]
+		return p.Host + "(" + p.Port + ")" 
+	}
+}
+
+func (Env) GetConnectionCount() int {
+	return len(MQ_ENDPOINTS.Points)
 }
 
 func (Env) LogSettings() {
@@ -99,7 +127,7 @@ func (Env) LogSettings() {
 	logger.Printf("ModelQueue Name is (%s)\n", EnvSettings.ModelQueueName)
 	logger.Printf("Host is (%s)\n", EnvSettings.Host)
 	logger.Printf("Port is (%s)\n", EnvSettings.Port)
-	logger.Printf("Connection is (%s)\n", EnvSettings.GetConnection())
+	logger.Printf("Connection is (%s)\n", EnvSettings.GetConnection(FULL_STRING))
 	logger.Printf("Channel is (%s)\n", EnvSettings.Channel)
 	logger.Printf("Topic is (%s)\n", EnvSettings.Topic)
 	logger.Printf("Key Respository is (%s)\n", EnvSettings.KeyRepository)

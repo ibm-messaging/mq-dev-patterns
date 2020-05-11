@@ -15,10 +15,6 @@
 */
 
 using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Text;
-using Newtonsoft.Json;
 using IBM.XMS;
 
 
@@ -26,7 +22,7 @@ namespace ibmmq_samples
 {
     class SimpleRequest
     {
-        ConnVariables conn = null;
+        private Env env = new Env();
 
         private const int TIMEOUTTIME = 30000;
         private const String simpleMessage = "This is a request message from XMS.NET";
@@ -38,7 +34,7 @@ namespace ibmmq_samples
             try
             {
                 SimpleRequest request = new SimpleRequest();
-                if (request.EnvironmentIsSet())
+                if (request.env.EnvironmentIsSet())
                 {
                     request.SendMessage();
                 }
@@ -71,6 +67,8 @@ namespace ibmmq_samples
             IMessageProducer producer;
             ITextMessage textMessage;
 
+            Env.ConnVariables conn = env.Conn;
+
             // Get an instance of factory.
             factoryFactory = XMSFactoryFactory.GetInstance(XMSC.CT_WMQ);
 
@@ -78,30 +76,8 @@ namespace ibmmq_samples
             cf = factoryFactory.CreateConnectionFactory();
 
             // Set the properties
-            cf.SetStringProperty(XMSC.WMQ_HOST_NAME, conn.host);
-            Console.WriteLine("hostName is set {0, -20 }", conn.host);
-            cf.SetIntProperty(XMSC.WMQ_PORT, conn.port);
-            cf.SetStringProperty(XMSC.WMQ_CHANNEL, conn.channel);
-            if (conn.key_repository != null && (conn.key_repository.Contains("*SYSTEM") || conn.key_repository.Contains("*USER")))
-            {
-                cf.SetIntProperty(XMSC.WMQ_CONNECTION_MODE, XMSC.WMQ_CM_CLIENT);
-            }
-            else
-            {
-                cf.SetIntProperty(XMSC.WMQ_CONNECTION_MODE, XMSC.WMQ_CM_CLIENT_UNMANAGED);
-            }
-            cf.SetStringProperty(XMSC.WMQ_QUEUE_MANAGER, conn.qmgr);
-            cf.SetStringProperty(XMSC.USERID, conn.app_user);
-            cf.SetStringProperty(XMSC.PASSWORD, conn.app_password);
+            ConnectionPropertyBuilder.SetConnectionProperties(cf, env);
             cf.SetStringProperty(XMSC.WMQ_TEMPORARY_MODEL, conn.model_queue_name);
-            if (conn.key_repository != null && conn.cipher_suite != null)
-            {
-                cf.SetStringProperty(XMSC.WMQ_SSL_KEY_REPOSITORY, conn.key_repository);
-            }
-            if (conn.cipher_suite != null)
-            {
-                cf.SetStringProperty(XMSC.WMQ_SSL_CIPHER_SPEC, conn.cipher_suite);
-            }
 
             // Create connection.
             connectionWMQ = cf.CreateConnection();
@@ -163,109 +139,6 @@ namespace ibmmq_samples
             destination.Dispose();
             sessionWMQ.Dispose();
             connectionWMQ.Close();
-        }
-
-        bool EnvironmentIsSet()
-        {
-            try
-            {
-                Console.WriteLine("Looking for file");
-                using (StreamReader r = new StreamReader("env.json"))
-                {
-                    Console.WriteLine("File found");
-                    string json = r.ReadToEnd();
-                    conn = JsonConvert.DeserializeObject<ConnVariables>(json);
-                    conn.dump();
-                    Console.WriteLine("");
-
-                }
-                return true;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Exception caught: {0}", e);
-                Console.WriteLine(e.GetBaseException());
-                return false;
-            }
-
-        }
-
-        public class JsonMessage
-        {
-            public string msg;
-            public int value;
-            public string correlationID;
-            private static Random random = new Random();
-            private const int CO_ID_LENGTH = 24;
-            public JsonMessage(string s)
-            {
-                msg = s;
-                value = random.Next();
-                correlationID = correlIdGenerator();
-            }
-            public string toJsonString()
-            {
-                return JsonConvert.SerializeObject(this);
-            }
-            private static String correlIdGenerator()
-            {
-                //JMS/XMS is forcing this to generate a 24byte hext string so we need to
-                //generate an ASCII string 1 char per byte of length 24 char and converting that into a hex string
-                return Guid.NewGuid().ToString().PadRight(CO_ID_LENGTH);
-            }
-
-            public static byte[] ToByteArray(String HexString)
-            {
-                int NumberChars = HexString.Length;
-                byte[] bytes = new byte[NumberChars / 2];
-                for (int i = 0; i < NumberChars; i += 2)
-                {
-                    bytes[i / 2] = Convert.ToByte(HexString.Substring(i, 2), 16);
-                }
-                return bytes;
-            }
-
-            public static String getCorrFilter(String s)
-            {
-                return JsonMessage.AsHexString(JsonMessage.AsBytes(s)).Replace("-", "").Substring(0, 2 * CO_ID_LENGTH);
-            }
-
-            private static String AsHexString(byte[] ba)
-            {
-                return BitConverter.ToString(ba);
-            }
-
-            private static byte[] AsBytes(String s)
-            {
-                return Encoding.Default.GetBytes(s);
-            }
-        }
-
-        public class ConnVariables
-        {
-            public string host = null;
-            public string qmgr = null;
-            public int port = 0;
-            public string channel = null;
-            public string queue_name = null;
-            public string app_user = null;
-            public string app_password = null;
-            public string model_queue_name = null;
-            public string cipher_suite = null;
-            public string key_repository = null;
-            public void dump()
-            {
-                Console.WriteLine("hostname{0} ", host);
-                Console.WriteLine("port{0} ", port);
-                Console.WriteLine("qmgr{0} ", qmgr);
-                Console.WriteLine("channel{0} ", channel);
-                Console.WriteLine("queue{0} ", queue_name);
-                Console.WriteLine("app_user{0} ", app_user);
-                //Console.WriteLine("app_password{0} ", app_password);
-                Console.WriteLine("model_queue_name{0}", model_queue_name);
-                Console.WriteLine("cipherSpec{0} ", cipher_suite);
-                Console.WriteLine("sslKeyRepository{0} ", key_repository);
-            }
         }
     }
 }

@@ -26,15 +26,15 @@
 // Values for Queue Manager, Queue, Host, Port and Channel are
 // passed in as envrionment variables.
 
-
+const fs = require('fs');
 // Import the MQ package
 var mq = require('ibmmq');
 // Import any other packages needed
 var StringDecoder = require('string_decoder').StringDecoder;
 var decoder = new StringDecoder('utf8');
 
-// Load up missing envrionment variables from the .env settings file.
-require('dotenv').load();
+// Load up missing envrionment variables from the env.json file
+var env = require('../env.json');
 
 var MQC = mq.MQC; // Want to refer to this export directly for simplicity
 
@@ -42,19 +42,24 @@ var MQC = mq.MQC; // Want to refer to this export directly for simplicity
 var debug_info = require('debug')('amqsrep:info');
 var debug_warn = require('debug')('amqsrep:warn');
 
-var MQDetails = {
-  QMGR: process.env.QMGR,
-  QUEUE_NAME: process.env.QUEUE_NAME,
-  HOST: process.env.HOST,
-  PORT: process.env.PORT,
-  CHANNEL: process.env.CHANNEL,
-  KEY_REPOSITORY: process.env.KEY_REPOSITORY,
-  CIPHER: process.env.CIPHER
-}
+// Set up Constants
+const CCDT = "MQCCDTURL";
+const	FILEPREFIX = "file://";
+
+// Load the MQ Endpoint details either from the envrionment or from the
+// env.json file. The envrionment takes precedence. The json file allows for
+// mulitple endpoints ala a cluster, but for this sample only the first
+// endpoint in the arryay is used.
+var MQDetails = {};
+
+['QMGR', 'QUEUE_NAME', 'HOST', 'PORT',
+ 'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach(function(f) {
+  MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[0][f]
+});
 
 var credentials = {
-  USER: process.env.APP_USER,
-  PASSWORD: process.env.APP_PASSWORD
+  USER: process.env.APP_USER || env.MQ_ENDPOINTS[0].APP_USER,
+  PASSWORD: process.env.APP_PASSWORD || env.MQ_ENDPOINTS[0].APP_PASSWORD
 }
 
 // The default queue manager and queue to be used
@@ -88,6 +93,16 @@ function endOfObject(buf) {
     }
   });
   return pos;
+}
+
+function getConnection() {
+  let points = [];
+  env.MQ_ENDPOINTS.forEach((p) => {
+    if (p['HOST'] && p['PORT']) {
+      points.push(`${p.HOST}(${p.PORT})`)
+    }
+  });
+  return points.join(',');
 }
 
 // Define some functions that will be used from the main flow
@@ -236,6 +251,18 @@ function cleanup(hConn, hObj) {
   });
 }
 
+function ccdtCheck () {
+  if (CCDT in process.env) {
+    let ccdtFile = process.env[CCDT].replace(FILEPREFIX, '');
+    debug_info(ccdtFile);
+    if (fs.existsSync(ccdtFile)) {
+      debug_info("CCDT File found at ", ccdtFile);
+      return true;
+    }
+  }
+  return false;
+}
+
 // The program really starts here.
 // Connect to the queue manager. If that works, the callback function
 // opens the queue, and then we can start to retrieve messages.
@@ -255,26 +282,39 @@ if (credentials.USER) {
   cno.SecurityParms = csp;
 }
 
-// And then fill in relevant fields for the MQCD
-var cd = new mq.MQCD();
-cd.ConnectionName = `${MQDetails.HOST}(${MQDetails.PORT})`;
-cd.ChannelName = MQDetails.CHANNEL;
+if (! ccdtCheck()) {
+  debug_info('CCDT URL export is not set, will be using json envrionment client connections settings');
 
+  // And then fill in relevant fields for the MQCD
+  var cd = new mq.MQCD();
+
+  cd.ChannelName = MQDetails.CHANNEL;
+  cd.ConnectionName = getConnection();
+  debug_info('Connections string is ', cd.ConnectionName);
+
+  if (MQDetails.KEY_REPOSITORY) {
+    debug_info('Will be running in TLS Mode');
+
+    cd.SSLCipherSpec = MQDetails.CIPHER;
+    cd.SSLClientAuth = MQC.MQSCA_OPTIONAL;
+  }
+
+  // Make the MQCNO refer to the MQCD
+  cno.ClientConn = cd;
+}
+
+// The location of the KeyRepository is not specified in the CCDT, so regardless
+// of whether a CCDT is being used, need to specify the KeyRepository location
+// if it has been provided in the environment json settings.
 if (MQDetails.KEY_REPOSITORY) {
-  debug_info('Will be running in TLS Mode');
+  debug_info('Key Repository has been specified');
   // *** For TLS ***
   var sco = new mq.MQSCO();
-
-  cd.SSLCipherSpec = MQDetails.CIPHER;
-  cd.SSLClientAuth = MQC.MQSCA_OPTIONAL;
 
   sco.KeyRepository = MQDetails.KEY_REPOSITORY;
   // And make the CNO refer to the SSL Connection Options
   cno.SSLConfig = sco;
 }
-
-// Make the MQCNO refer to the MQCD
-cno.ClientConn = cd;
 
 // Do the connect, including a callback function
 mq.Connx(MQDetails.QMGR, cno, function(err, hConn) {

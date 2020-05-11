@@ -30,6 +30,10 @@ import javax.jms.DeliveryMode;
 import com.ibm.msg.client.jms.JmsConnectionFactory;
 import com.ibm.msg.client.jms.JmsFactoryFactory;
 import com.ibm.msg.client.wmq.WMQConstants;
+import com.ibm.mq.constants.MQConstants;
+import com.ibm.mq.MQException;
+import com.ibm.msg.client.jms.DetailedInvalidDestinationException;
+import com.ibm.mq.jms.MQDestination;
 
 import com.ibm.mq.samples.jms.SampleEnvSetter;
 
@@ -39,14 +43,14 @@ public class JmsResponse {
     private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
 
     // Create variables for the connection to MQ
-    private static String HOST; // Host name or IP address
-    private static int PORT; // Listener port for your queue manager
+    private static String ConnectionString; //= "localhost(1414),localhost(1416)"
     private static String CHANNEL; // Channel name
     private static String QMGR; // Queue manager name
     private static String APP_USER; // User name that application uses to connect to MQ
     private static String APP_PASSWORD; // Password that the application uses to connect to MQ
     private static String QUEUE_NAME; // Queue that the application uses to put and get messages to and from
     private static String CIPHER_SUITE;
+    private static String CCDTURL;
 
     public static void main(String[] args) {
         initialiseLogging();
@@ -115,22 +119,71 @@ public class JmsResponse {
                 producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
                 producer.send(destination, message);
             }
-        } catch (Exception jmsex) {
+        } catch (JMSException jmsex) {
+            logger.info("******** JMS Exception*********************");
+
+            if (null != jmsex.getCause() && jmsex.getCause() instanceof MQException) {
+                MQException innerException = (MQException) jmsex.getCause();
+
+                if (MQConstants.MQRC_UNKNOWN_OBJECT_NAME == innerException.getReason()) {
+                    logger.info("Reply to Queue no longer exists, skipping request");
+                    return;
+                }
+            }
+
+            logger.warning("Unexpected Expection replying to message");
             jmsex.printStackTrace();
 
+      } catch (JMSRuntimeException jmsex) {
+          // Get this exception when the message does not have a reply to queue.
+          if (null != jmsex.getCause()) {
+              MQException e = findMQException(jmsex);
+              if (null != e && e instanceof MQException) {
+                  if (MQConstants.MQRC_UNKNOWN_OBJECT_NAME == e.getReason()) {
+                      logger.info("Reply to Queue no longer exists, skipping request");
+                      return;
+                  }
+              }
+          }
+
+          // Get this exception when the reply to queue is no longer valid.
+          // eg. When app that posted the message is no longer running.
+          if (null != jmsex.getCause() && jmsex.getCause() instanceof DetailedInvalidDestinationException) {
+            logger.info("Reply to destination is invalid");
+            return;
+          }
+
+          logger.warning("Unexpected runtime error");
+          jmsex.printStackTrace();
         }
+    }
+
+    // recurse on the inner exceptions looking for a MQException.
+    private static MQException findMQException(Exception e) {
+        Exception inner = (Exception) e.getCause();
+        if (null != inner) {
+            if (inner instanceof MQException) {
+                logger.info("Found MQException");
+                return (MQException) inner;
+            } else {
+                return findMQException(inner);
+            }
+        }
+        return null;
     }
 
     private static void mqConnectionVariables() {
         SampleEnvSetter env = new SampleEnvSetter();
-        HOST = env.getEnvValue("HOST");
-        PORT = Integer.parseInt(env.getEnvValue("PORT"));
-        CHANNEL = env.getEnvValue("CHANNEL");
-        QMGR = env.getEnvValue("QMGR");
-        APP_USER = env.getEnvValue("APP_USER");
-        APP_PASSWORD = env.getEnvValue("APP_PASSWORD");
-        QUEUE_NAME = env.getEnvValue("QUEUE_NAME");
-        CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE");
+        int index = 0;
+        ConnectionString = env.getConnectionString();
+        CHANNEL = env.getEnvValue("CHANNEL", index);
+        QMGR = env.getEnvValue("QMGR", index);
+        APP_USER = env.getEnvValue("APP_USER", index);
+        APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
+        QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
+        CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
+
+        CCDTURL = env.getCheckForCCDT();
     }
 
     private static JmsConnectionFactory createJMSConnectionFactory() {
@@ -148,9 +201,13 @@ public class JmsResponse {
 
     private static void setJMSProperties(JmsConnectionFactory cf) {
         try {
-            cf.setStringProperty(WMQConstants.WMQ_HOST_NAME, HOST);
-            cf.setIntProperty(WMQConstants.WMQ_PORT, PORT);
-            cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
+            if (null == CCDTURL) {
+                cf.setStringProperty(WMQConstants.WMQ_CONNECTION_NAME_LIST, ConnectionString);
+                cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
+            } else {
+                logger.info("Will be making use of CCDT File " + CCDTURL);
+                cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
+            }
             cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
             cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "JmsBasicResponse (JMS)");
