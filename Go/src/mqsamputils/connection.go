@@ -19,7 +19,7 @@ package mqsamputils
 import (
 	"os"
 	"strings"
-	"mq-golang/ibmmq"
+	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
 )
 
 const (

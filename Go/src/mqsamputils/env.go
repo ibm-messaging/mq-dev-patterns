@@ -70,11 +70,11 @@ func init() {
 		EnvSettings = MQ_ENDPOINTS.Points[0]
 	}
 
-	envrionmentOverides()
+	environmentOverides()
 }
 
-func envrionmentOverides() {
-	logger.Println("Looking for Envrionment Overrides")
+func environmentOverides() {
+	logger.Println("Looking for Environment Overrides")
 	var s string
 
 	overrides := map[string]*string{
@@ -119,7 +119,7 @@ func (Env) GetConnectionCount() int {
 }
 
 func (Env) LogSettings() {
-	logger.Println("Envrionment Settings are")
+	logger.Println("Environment Settings are")
 	logger.Printf("Username is (%s)\n", EnvSettings.User)
 	//logger.Printf("Password is (%s)\n", EnvSettings.Password)
 	logger.Printf("Queue Manager is (%s)\n", EnvSettings.QManager)

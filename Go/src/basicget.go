@@ -18,8 +18,8 @@ package main
 
 import (
 	"log"
-	"mq-golang/ibmmq"
-	"mqsamputils"
+	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
+	"mqdevpatterns/src/mqsamputils"
 	"os"
 	"strings"
 )
