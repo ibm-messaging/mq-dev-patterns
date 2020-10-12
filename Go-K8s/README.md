@@ -1,9 +1,9 @@
 
-# Running MQ with KEDA. 
+# Running IBM MQ with KEDA. 
 
 ## Contents
 1.  [Pre-Requisites](#pre-requisites)
-1.  [Install MQ on Cloud](#install-mq-on-cloud)
+1.  [Install MQ on Cloud](#install-ibm-mq-on-cloud)
 1.  [Setting up the Sample App](#setting-up-the-sample-app)
 1.  [Optional: Configure message numbers and sleep time](#optional-configure-message-numbers-and-sleep-time)
 1.  [Installing KEDA](#installing-keda)
@@ -14,7 +14,7 @@
 - A [docker hub](https://hub.docker.com/) account.
 - Docker desktop running with Kubernetes enabled
 
-## Install MQ on Cloud
+## Install IBM MQ on Cloud
 1. [Sign Up](https://cloud.ibm.com/registration) for an IBM Cloud Account.
 1. Create an [MQ on Cloud](https://cloud.ibm.com/catalog/services/mq?cm_sp=ibmdev-_-developer-tutorials-_-cloudreg) instance on your account.
 1. Follow [this guide](https://developer.ibm.com/tutorials/mq-connect-app-queue-manager-cloud/) to:
