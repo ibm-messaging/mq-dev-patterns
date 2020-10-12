@@ -79,6 +79,7 @@ spec:
         queueLength: '5' # Queue length target for HPA. Default: 5 messages
         host: 'https://web-qm1-6d0c.qm2.eu-gb.mq.appdomain.cloud/ibmmq/rest/v2/admin/action/qmgr/QM1/mqsc' # Your admin REST endpoint
         queueName: 'DEMO.QUEUE' # Your queue name
+        tlsDisabled: 'false' # Set 'true' to disable TLS. Default: false
       authenticationRef:
         name: ibmmq-consumer-trigger
 ---
