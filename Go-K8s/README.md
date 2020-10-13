@@ -3,7 +3,7 @@
 
 ## Contents
 1.  [Pre-Requisites](#pre-requisites)
-1.  [Install MQ on Cloud](#install-ibm-mq-on-cloud)
+1.  [Install IBM MQ on Cloud](#install-ibm-mq-on-cloud)
 1.  [Setting up the Sample App](#setting-up-the-sample-app)
 1.  [Optional: Configure message numbers and sleep time](#optional-configure-message-numbers-and-sleep-time)
 1.  [Installing KEDA](#installing-keda)
