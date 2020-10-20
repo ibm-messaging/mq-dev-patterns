@@ -15,7 +15,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: ibmmq-publisher
+  name: ibmmq-producer
 spec:
   template:
     spec:
@@ -26,7 +26,7 @@ spec:
           command:
             - "/src/send"
           args:
-            - "100" # Optional. Number of messages to send. Default: 100
+            - "75" # Optional. Number of messages to send. Default: 100
             - "1" # Optional. Number of seconds to sleep between sending a message. Default: 1
           env:
           - name: APP_USER

@@ -38,11 +38,12 @@
 	  ADMIN_USER: # Your MQ admin username
 	  ADMIN_PASSWORD: # Your MQ admin password
 	  ```
-1. Replace the `APP_USER` `APP_PASSWORD` `ADMIN_USER` and `ADMIN_PASSWORD` fields with the corresponding credentials from your IBM MQ application. The values need to be encoded in a Base64 format.
-1. In the `deploy-publisher.yaml` and `deploy-consumer.yaml` files, update the environment variables by supplying the `QMGR` `QUEUE_NAME` `HOST` `PORT` `CHANNEL` and `TOPIC_NAME` with the corresponding credentials from your IBM MQ application.
+
+1. Replace the `APP_USER` `APP_PASSWORD` `ADMIN_USER` and `ADMIN_PASSWORD` fields with the corresponding credentials from your MQ application. The values need to be encoded in a Base64 format.
+1. In the `deploy-producer.yaml` and `deploy-consumer.yaml` files, update the environment variables by supplying the `QMGR` `QUEUE_NAME` `HOST` `PORT` `CHANNEL` and `TOPIC_NAME` with the corresponding credentials from your MQ application.
 
 ## Optional: Configure message numbers and sleep time
-- You can change the number of messages to send by editing the `args` field in the `deploy-publisher.yaml` file.
+- You can change the number of messages to send by editing the `args` field in the `deploy-producer.yaml` file.
 - You can change the time each consumer sleeps before reading in the next message, this is useful for demonstrating scaling. To change the sleep time (in seconds) edit the `args` field in the `deploy-consumer.yaml` file.
 
 ## Installing KEDA
@@ -82,7 +83,7 @@
 	
 1. Run the producer:  
 	```
-	kubectl apply -f deploy/deploy-publisher.yaml
+	kubectl apply -f deploy/deploy-producer.yaml
 	```
 1. Watch as KEDA scales the consumers to handle the message load:
 	```
