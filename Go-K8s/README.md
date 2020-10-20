@@ -1,9 +1,9 @@
 
-# Running MQ with KEDA. 
+# Running IBM MQ with KEDA. 
 
 ## Contents
 1.  [Pre-Requisites](#pre-requisites)
-1.  [Install MQ on Cloud](#install-mq-on-cloud)
+1.  [Install IBM MQ on Cloud](#install-ibm-mq-on-cloud)
 1.  [Setting up the Sample App](#setting-up-the-sample-app)
 1.  [Optional: Configure message numbers and sleep time](#optional-configure-message-numbers-and-sleep-time)
 1.  [Installing KEDA](#installing-keda)
@@ -14,9 +14,9 @@
 - A [docker hub](https://hub.docker.com/) account.
 - Docker desktop running with Kubernetes enabled
 
-## Install MQ on Cloud
+## Install IBM MQ on Cloud
 1. [Sign Up](https://cloud.ibm.com/registration) for an IBM Cloud Account.
-1. Create an [MQ on Cloud](https://cloud.ibm.com/catalog/services/mq?cm_sp=ibmdev-_-developer-tutorials-_-cloudreg) instance on your account.
+1. Create an [IBM MQ on Cloud](https://cloud.ibm.com/catalog/services/mq?cm_sp=ibmdev-_-developer-tutorials-_-cloudreg) instance on your account.
 1. Follow [this guide](https://developer.ibm.com/tutorials/mq-connect-app-queue-manager-cloud/) to:
 	1. Create a Queue Manager
 	1. Register an application
@@ -38,6 +38,7 @@
 	  ADMIN_USER: # Your MQ admin username
 	  ADMIN_PASSWORD: # Your MQ admin password
 	  ```
+
 1. Replace the `APP_USER` `APP_PASSWORD` `ADMIN_USER` and `ADMIN_PASSWORD` fields with the corresponding credentials from your MQ application. The values need to be encoded in a Base64 format.
 1. In the `deploy-producer.yaml` and `deploy-consumer.yaml` files, update the environment variables by supplying the `QMGR` `QUEUE_NAME` `HOST` `PORT` `CHANNEL` and `TOPIC_NAME` with the corresponding credentials from your MQ application.
 
@@ -99,8 +100,8 @@
 
 ## Sample App Limitations 
 
-#### MQ Transactional Messaging
-This sample supports the basic Put/Get MQ paradigm. If you wish to support more stable message handling and execution involving multiple stages, the [**transactional support**](https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_9.0.0/com.ibm.mq.pro.doc/q023310_.htm) provided by MQ may be of use. Processing is broken down into units of work which are rolled back if errors occur. 
+#### IBM MQ Transactional Messaging
+This sample supports the basic Put/Get MQ paradigm. If you wish to support more stable message handling and execution involving multiple stages, the [**transactional support**](https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_9.0.0/com.ibm.mq.pro.doc/q023310_.htm) provided by IBM MQ may be of use. Processing is broken down into units of work which are rolled back if errors occur. 
 
 #### Long Running Executions 
 If your consumer application has long running or critical processes  that would be in danger of termination when scaling down, there are a number of options to guard against this. These include:
