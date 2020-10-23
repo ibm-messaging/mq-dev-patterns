@@ -81,6 +81,8 @@ spec:
         queueManager: 'QM1' # Your queue manager
         queueName: 'DEMO.QUEUE' # Your queue name
         tlsDisabled: 'false' # Set 'true' to disable TLS. Default: false
+        usernameFromEnv: # Optional: Provide admin username from env instead of as a secret
+        passwordFromEnv: # Optional: Provide admin password from env instead of as a secret
       authenticationRef:
         name: ibmmq-consumer-trigger
 ---
