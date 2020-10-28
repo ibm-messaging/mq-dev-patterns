@@ -73,15 +73,7 @@ namespace ibmmq_samples
 
         static private void SetRemConnectionProperties(IConnectionFactory cf, Env.ConnVariables conn)
         {
-            if (conn.key_repository != null && (conn.key_repository.Contains("*SYSTEM") || conn.key_repository.Contains("*USER")))
-            {
-                cf.SetIntProperty(XMSC.WMQ_CONNECTION_MODE, XMSC.WMQ_CM_CLIENT);
-            }
-            else
-            {
-                cf.SetIntProperty(XMSC.WMQ_CONNECTION_MODE, XMSC.WMQ_CM_CLIENT_UNMANAGED);
-            }
-
+            cf.SetIntProperty(XMSC.WMQ_CONNECTION_MODE, XMSC.WMQ_CM_CLIENT);
             cf.SetStringProperty(XMSC.WMQ_QUEUE_MANAGER, conn.qmgr);
             cf.SetStringProperty(XMSC.USERID, conn.app_user);
             cf.SetStringProperty(XMSC.PASSWORD, conn.app_password);
