@@ -48,9 +48,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="IBM.XMS, Version=9.1.2.0, Culture=neutral, PublicKeyToken=d2666ab12fca862b, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files\IBM\MQ\bin\IBM.XMS.dll</HintPath>
+    <Reference Include="amqmdnetstd, Version=9.2.0.1, Culture=neutral, PublicKeyToken=23d6cb914eeaac0e, processorArchitecture=MSIL">
+      <HintPath>packages\IBMXMSDotnetClient.9.2.0.1\lib\netstandard2.0\amqmdnetstd.dll</HintPath>
+    </Reference>
+    <Reference Include="amqmxmsstd, Version=9.2.0.1, Culture=neutral, PublicKeyToken=d2666ab12fca862b, processorArchitecture=MSIL">
+      <HintPath>packages\IBMXMSDotnetClient.9.2.0.1\lib\netstandard2.0\amqmxmsstd.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
