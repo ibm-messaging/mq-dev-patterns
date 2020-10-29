@@ -5,15 +5,13 @@ The XMS samples are based on the the existing samples shipped with IBM MQ Server
 
 [Windows MQ client v 9.1.2.0 download](https://www-945.ibm.com/support/fixcentral/swg/selectFixes?parent=ibm~WebSphere&product=ibm/WebSphere/WebSphere+MQ&release=9.1.2&platform=Windows+64-bit,+x86&function=fixId&fixids=9.1.2.0-IBM-MQC-Win64+&useReleaseAsTarget=true&includeSupersedes=0)
 
-Reference the 'IBM.XMS' library through Visual Studio Solution References option, right click and browse to [MQ default install location](C:\Program Files\IBM\MQ\bin\IBM.XMS.dll).
-
-You can also get the 'IBM.XMS' library from the IBM MQ Redistributable Client zip for Windows - for example [9.1.2.0-IBM-MQC-Redist-Win64.zip] (http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist/). You don't need to install it, just unzip and use.
-
 We have included '.sln', '.csproj', 'packages.config' and 'AssemblyInfo.cs' files. These were created with the Visual Studio Community 2019. We've also added the copy of the 'env.json' file from the top level directory to the '/dotnet' project directory, you'll need to copy this again to '/bin/Debug' in your project directory and adjust the parameters to use your own queue manager.
 
-## Reference from Visual Studio
+## References from Visual Studio
 
 [Newtonsoft JSON package](https://www.nuget.org/packages/Newtonsoft.Json/)
+
+[IBM Message Service Client for .NET Standard (XMS .NET)](https://www.nuget.org/packages/IBMXMSDotnetClient/)
 
 Reference it through Solution Explorer NuGet Package installer
 
