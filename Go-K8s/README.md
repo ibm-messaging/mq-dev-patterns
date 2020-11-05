@@ -47,29 +47,11 @@
 - You can change the time each consumer sleeps before reading in the next message, this is useful for demonstrating scaling. To change the sleep time (in seconds) edit the `args` field in the `deploy-consumer.yaml` file.
 
 ## Installing KEDA
-1. Clone KEDA from the [mq-keda repository](https://github.com/ibm-messaging/mq-keda/tree/IBM-MQ-Scaler), using the ``IBM-MQ-Scaler branch``.
-2. Create the following repositories on Dockerhub:
+- Deploy KEDA 2.0.0 from GitHub:
 	```
-	keda-metrics-apiserver
-	```
-	```
-	keda
+	kubectl apply -f https://github.com/kedacore/keda/releases/download/v2.0.0/keda-2.0.0.yaml
 	```
 	
-3. In your Command Line, run the following commands - from the cloned repository - to set up and run KEDA:
-	```
-	IMAGE_REPO=<your docker username> make build
-	```  
-	
-	```
-	IMAGE_REPO=<your docker username> make publish
-	``` 
-	
-	```
-	IMAGE_REPO=<your docker username> make deploy
-	```  
-
-4. KEDA should now be set up and running within your kubernetes cluster.
 ## Running the Demo
 1. Apply the secret YAML file:  
 	```
