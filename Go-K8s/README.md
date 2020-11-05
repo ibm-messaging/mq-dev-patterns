@@ -48,9 +48,10 @@
 
 ## Installing KEDA
 - Deploy KEDA 2.0.0 from GitHub:
-    ```
-    kubectl apply -f https://github.com/kedacore/keda/releases/download/v2.0.0/keda-2.0.0.yaml
-    ```
+	```
+	kubectl apply -f https://github.com/kedacore/keda/releases/download/v2.0.0/keda-2.0.0.yaml
+	```
+	
 ## Running the Demo
 1. Apply the secret YAML file:  
 	```
