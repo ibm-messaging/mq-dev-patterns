@@ -47,7 +47,7 @@
 - You can change the time each consumer sleeps before reading in the next message, this is useful for demonstrating scaling. To change the sleep time (in seconds) edit the `args` field in the `deploy-consumer.yaml` file.
 
 ## Installing KEDA
-1. Run KEDA:
+- Deploy KEDA 2.0.0 from GitHub:
     ```
     kubectl apply -f https://github.com/kedacore/keda/releases/download/v2.0.0/keda-2.0.0.yaml
     ```
