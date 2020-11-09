@@ -7,23 +7,23 @@ Simple put transaction sample
 
 #### Point to point without a transaction
 
-![Point to point with IBM MQ](/images/ibm_mq_point_to_point.gif)
+![Point to point with IBM MQ](/transactions/JMS/SE/images/ibm_mq_point_to_point.gif)
 
 #### Point to point with a transaction
 
-![Point to point with a transaction](/images/ibm_mq_transaction_msg_b4_commit.png)
+![Point to point with a transaction](/transactions/JMS/SE/images/ibm_mq_transaction_msg_b4_commit.png)
 
 #### Point to point with a transaction - commit
 
-![Point to point with a transaction](/images/ibm_mq_transaction_msg_commited.png)
+![Point to point with a transaction](/transactions/JMS/SE/images/ibm_mq_transaction_msg_commited.png)
 
 #### Point to point with a transaction - rollback step 1
 
-![Point to point with a transaction](/images/ibm_mq_transaction_msg_rollback_step1.png)
+![Point to point with a transaction](/transactions/JMS/SE/images/ibm_mq_transaction_msg_rollback_step1.png)
 
 #### Point to point with a transaction - rollback step 2
 
-![Point to point with a transaction](/images/ibm_mq_transaction_msg_rollback_step2.png)
+![Point to point with a transaction](/transactions/JMS/SE/images/ibm_mq_transaction_msg_rollback_step2.png)
 
 
 
