@@ -6,12 +6,12 @@ Transaction in a request response scenario
 
 #### Request response without a transaction
 
-![Request response without transactions](/images/req_resp_animation_no_trans.gif)
+![Request response without transactions](/transactions/JMS/SE/images/req_resp_animation_no_trans.gif)
 
 
 #### Request response with a transaction
 
-  ![Point to point with IBM MQ](/images/req_resp_animation_trans.gif)
+  ![Point to point with IBM MQ](/transactions/JMS/SE/images/req_resp_animation_trans.gif)
 
 
 ## Steps

@@ -25,7 +25,7 @@ If something goes wrong with the actions inside the transaction, everything is r
 
 There are several concepts and features that will help you design a resilient solution that uses the benefits that MQ, JMS and transaction provide, in an optimal way. It is important to understand that these concepts are, how they interact and what they can do for you, first. Let’s have a look.
 
-![Point to point with IBM MQ](/images/ibm_mq_point_to_point.gif)
+![Point to point with IBM MQ](/transactions/JMS/SE/images/ibm_mq_point_to_point.gif)
 
 This is what a put and get operation looks like with one sender and one receiver connecting to the same queue. You can handle exceptions and errors in your apps programmatically and MQ will help you with reliability with auto-reconnect for example. But transactions give you a more fine grained control of what happens.
 
@@ -33,14 +33,14 @@ This is what a put and get operation looks like with one sender and one receiver
 
 When you add a transaction, for example on the put operation, this gives you more control and further options for what to do with the message if things don’t go according to plan. For example, the fact that a message is being sent might be logged to a file. Should the output stream fail because the disk full then the app might not call commit.
 
-![Put under a transaction - start](/images/put.png)
+![Put under a transaction - start](/transactions/JMS/SE/images/put.png)
 
 How can we use these building blocks to create a more sophisticated and intelligent messaging application?
 and what else should you think about as a developer?
 
 Transacted session - a JMS session with a transacted parameter, can include one or several actions ending with a commit to complete or a rollback in case something went wrong. While the actions are in progress, messages exchanged are not available on the queue. For example, if you’re sending three messages under a transaction, the first two messages will not be available on the queue to a consumer until the third message is put and the transaction committed. At this point, although the message is put to the queue, it is not available to other applications until commit is called.
 
-![Put under a transaction - put](/images/put_2.png)
+![Put under a transaction - put](/transactions/JMS/SE/images/put_2.png)
 
 Without the transaction:
 ```
@@ -59,17 +59,17 @@ With the transaction parameter:
 
 **Commit** - a point at which a synchronisation of state happens for all participants in a transaction. The JMS specification defines this as a method on the session. When you call commit, any operations, puts or gets, will be committed. When the commit is called, a put that is under a transaction will make the message available on the queue for other applications to consume.
 
-![Put under a transaction - commit](/images/put_commit.png)
+![Put under a transaction - commit](/transactions/JMS/SE/images/put_commit.png)
 
 **Rollback** -  a point at which, if a commit doesn’t happen, the state is rolled back to the previous point of synchronisation, either since the last commit or the start of the session (whichever is most recent). Any messages destined for queues will be deleted. You can easily test this by calling rollback instead of commit when putting a message.
 
 Step 1 - The put is under a transaction, the message gets to the queue but it is not yet available.
 
-![Put under a transaction - rollback](/images/put_rollback.png)
+![Put under a transaction - rollback](/transactions/JMS/SE/images/put_rollback.png)
 
 Step 2 - When the transaction is ended with rollback instead of a commit, the message is removed from the queue as the state is returned to the starting point before the transaction started.
 
-![Put under a transaction - rollback 2](/images/put_rollback_2.png)
+![Put under a transaction - rollback 2](/transactions/JMS/SE/images/put_rollback_2.png)
 
 All this transaction stuff is great, but it leaves us with a problem: what if you can’t complete a task because of a persistent error? We don’t want to be stuck in an endless loop of trying to do something that is going to fail. Messaging developers refer to this situation as the ‘poison message problem’. To help deal with this, two special queues are defined: a backout queue (a place to put messages that when processing fails beyond a set threshold) and a dead letter queue (a place to put messages as a last resort).
 
@@ -95,7 +95,7 @@ Everything we’ve looked so far applies to local transactions but what if the t
 
 **Global transactions** - transactions involving several messaging servers, databases or other transactional resources across a distributed topology.
 
-Find out more about [global transactions in the IBM MQ knowledge center here]( https://www.ibm.com/support/knowledgecenter/SSFKSJ_latest/com.ibm.mq.pro.doc/q023320_.htm). 
+Find out more about [global transactions in the IBM MQ knowledge center here]( https://www.ibm.com/support/knowledgecenter/SSFKSJ_latest/com.ibm.mq.pro.doc/q023320_.htm).
 From an MQ perspective, we talk about local and global units of work.
 
 

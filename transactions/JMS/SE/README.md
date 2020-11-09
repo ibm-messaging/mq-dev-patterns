@@ -13,7 +13,7 @@ Our transaction samples are based on a basic point to point scenario with a send
 
 #### Point to point without a transaction
 
-![Point to point with IBM MQ](/images/ibm_mq_point_to_point.gif)
+![Point to point with IBM MQ](/transactions/JMS/SE/images/ibm_mq_point_to_point.gif)
 
 More on building apps for IBM MQ at [LearnMQ](https://developer.ibm.com/components/ibm-mq/series/badge-ibm-mq-developer-essentials/).
 
@@ -21,7 +21,7 @@ We then add transactions.
 
 #### Point to point with a transaction on the sender side
 
-![Point to point with IBM MQ](/images/ibm_mq_transaction.png)
+![Point to point with IBM MQ](/transactions/JMS/SE/images/ibm_mq_transaction.png)
 
 ## Getting started with transactions
 
