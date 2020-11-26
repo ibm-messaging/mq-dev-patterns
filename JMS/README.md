@@ -63,11 +63,11 @@ A maven `pom.xml` is provided allowing you to use maven to download dependancies
 
 ### Downloading dependencies with maven
 Whenever you build the samples with maven the dependencies will be downloaded and stored in your local maven repository. You can override this location, but by
-default the location will be:
+default the repository location will be:
 
-- Windows: C:\Users\<User_Name>\.m2
-- Linux: /home/<User_Name>/.m2
-- Mac: /Users/<user_name>/.m2
+- Windows: C:\Users\<User_Name>\.m2\repository
+- Linux: /home/<User_Name>/.m2/repository
+- Mac: /Users/<user_name>/.m2/repository
 
 You will need to refer to the dependencies when you run any of the samples. To simplify this process you can download the dependencies by running the maven command:
 
