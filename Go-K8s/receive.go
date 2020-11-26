@@ -1,7 +1,7 @@
 /**
- * Copyright 2019, 2020 IBM Corp.
+ * © Copyright IBM Corporation 2020
  *
- * Licensed under the Apache License, Version 2.0 (the 'License');
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -12,16 +12,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **/
+**/
 
 package main
 
 import (
 	"log"
-	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
-	"mqdevpatterns/src/mqsamputils"
+	"mqdevpatterns/mqsamputils"
 	"os"
+	"strconv"
 	"strings"
+	"time"
+
+	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
 )
 
 var logger = log.New(os.Stdout, "MQ Get: ", log.LstdFlags)
@@ -45,7 +48,6 @@ func main() {
 
 	for i := 0; i < numConnections; i++ {
 		qMgr, err := mqsamputils.CreateConnection(i)
-		defer qMgr.Disc()
 		if err != nil {
 			mqret := err.(*ibmmq.MQReturn)
 			if mqret.MQRC == ibmmq.MQRC_Q_MGR_NOT_AVAILABLE {
@@ -62,13 +64,10 @@ func main() {
 			logger.Fatalln("Unable to Open Queue")
 			os.Exit(1)
 		}
-		defer qObject.Close(0)
+
+		log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
 
 		getMessage(qObject)
-
-		// Need to Close the Queue and Connection so can be reused for next iteration
-		qObject.Close(0)
-		qMgr.Disc()
 
 	}
 
@@ -87,7 +86,6 @@ func logError(err error) {
 }
 
 func getMessage(qObject ibmmq.MQObject) {
-	logger.Println("Getting Message from Queue")
 	var err error
 	msgAvail := true
 
@@ -106,7 +104,7 @@ func getMessage(qObject ibmmq.MQObject) {
 
 		// Set options to wait for a maximum of 3 seconds for any new message to arrive
 		gmo.Options |= ibmmq.MQGMO_WAIT
-		gmo.WaitInterval = 3 * 1000 // The WaitInterval is in milliseconds
+		gmo.WaitInterval = ibmmq.MQWI_UNLIMITED // Unlimited get
 
 		// Create a buffer for the message data. This one is large enough
 		// for the messages put by the amqsput sample.
@@ -119,20 +117,25 @@ func getMessage(qObject ibmmq.MQObject) {
 			msgAvail = false
 			logger.Println(err)
 			mqret := err.(*ibmmq.MQReturn)
-			logger.Printf("return code %d, expected %d,", mqret.MQRC, ibmmq.MQRC_NO_MSG_AVAILABLE)
 			if mqret.MQRC == ibmmq.MQRC_NO_MSG_AVAILABLE {
 				// If there's no message available, then don't treat that as a real error as
 				// it's an expected situation
 				// but do end loop so can pull messages from next endpoint
-				// msgAvail = true
 				err = nil
-				logger.Println("No more messages on this endpoint")
 			}
 		} else {
 			// Assume the message is a printable string
-			logger.Printf("Got message of length %d: ", datalen)
 			logger.Println(strings.TrimSpace(string(buffer[:datalen])))
 
+			// Sleep to demonstrate scaling
+			sleepTimeString := os.Args[1]
+			sleepTime, err := strconv.Atoi(sleepTimeString)
+
+			if err != nil {
+				sleepTime = 1
+			}
+
+			time.Sleep(time.Duration(sleepTime) * time.Second)
 		}
 	}
 }

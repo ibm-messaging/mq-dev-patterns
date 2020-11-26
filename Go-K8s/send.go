@@ -1,7 +1,7 @@
 /**
- * Copyright 2019, 2020 IBM Corp.
+ * © Copyright IBM Corporation 2020
  *
- * Licensed under the Apache License, Version 2.0 (the 'License');
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **/
+**/
 
 package main
 
@@ -20,12 +20,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"log"
-	"math/rand"
-	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
-	"mqdevpatterns/src/mqsamputils"
+	"mqdevpatterns/mqsamputils"
 	"os"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
 )
 
 var logger = log.New(os.Stdout, "MQ Put: ", log.LstdFlags)
@@ -58,7 +59,16 @@ func main() {
 	}
 	defer qObject.Close(0)
 
-	putMessage(qObject)
+	maxMessagesString := os.Args[1]
+	maxMessages, err := strconv.Atoi(maxMessagesString)
+
+	if err != nil {
+		maxMessages = 100
+	}
+
+	for i := 0; i < maxMessages; i++ {
+		putMessage(qObject, i+1)
+	}
 
 	logger.Println("Application is Ending")
 }
@@ -74,7 +84,7 @@ func logError(err error) {
 	logger.Println(err)
 }
 
-func putMessage(qObject ibmmq.MQObject) {
+func putMessage(qObject ibmmq.MQObject, count int) {
 	logger.Println("Writing Message to Queue")
 
 	// The PUT requires control structures, the Message Descriptor (MQMD)
@@ -92,8 +102,8 @@ func putMessage(qObject ibmmq.MQObject) {
 
 	// And create the contents to include a timestamp just to prove when it was created
 	msgData := &message{
-		Greeting: "Hello from Go at " + time.Now().Format(time.RFC3339),
-		Value:    rand.Intn(100)}
+		Greeting: "Message from Kazada at " + time.Now().Format(time.RFC3339),
+		Value:    count}
 
 	data, err := json.Marshal(msgData)
 	if err != nil {
@@ -114,5 +124,15 @@ func putMessage(qObject ibmmq.MQObject) {
 		logger.Println("Put message to", strings.TrimSpace(qObject.Name))
 		// Print the MsgId so it can be used as a parameter to amqsget
 		logger.Println("MsgId:" + hex.EncodeToString(putmqmd.MsgId))
+
+		// Sleep to demonstrate scaling
+		sleepTimeString := os.Args[2]
+		sleepTime, err := strconv.Atoi(sleepTimeString)
+
+		if err != nil {
+			sleepTime = 1
+		}
+
+		time.Sleep(time.Duration(sleepTime) * time.Second)
 	}
 }

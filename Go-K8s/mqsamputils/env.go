@@ -1,7 +1,7 @@
 /**
- * Copyright 2019 IBM Corp.
+ * © Copyright IBM Corporation 2020
  *
- * Licensed under the Apache License, Version 2.0 (the 'License');
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **/
+**/
 
 package mqsamputils
 
@@ -51,19 +51,19 @@ var MQ_ENDPOINTS MQEndpoints
 const FULL_STRING = -1
 
 func init() {
-	jsonFile, err := os.Open("../../env.json")
+	jsonFile, err := os.Open("env.json")
 	defer jsonFile.Close()
 
 	if err != nil {
 		logger.Println(err)
-		return
+		//return
+	} else {
+		logger.Println("Successfully Opened env.json")
+
+		byteValue, _ := ioutil.ReadAll(jsonFile)
+		json.Unmarshal(byteValue, &MQ_ENDPOINTS)
 	}
-	logger.Println("Successfully Opened env.json")
-
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-	json.Unmarshal(byteValue, &MQ_ENDPOINTS)
-
-  // The .json should have supplied the MQ Endpoints as an array.
+	// The .json should have supplied the MQ Endpoints as an array.
 	// If there are no elements, then EnvSettings will be default
 	// initialised to be empty.
 	if len(MQ_ENDPOINTS.Points) > 0 {
@@ -99,18 +99,21 @@ func environmentOverides() {
 			*v = s
 		}
 	}
+
+	MQ_ENDPOINTS.Points = make([]Env, 1)
+	MQ_ENDPOINTS.Points[0] = EnvSettings
 }
 
 func (Env) GetConnection(index int) string {
-	if (index == FULL_STRING) {
+	if index == FULL_STRING {
 		var connections []string
 		for _, p := range MQ_ENDPOINTS.Points {
-			connections = append(connections, p.Host + "(" + p.Port + ")")
+			connections = append(connections, p.Host+"("+p.Port+")")
 		}
-	  return strings.Join(connections[:], ",")
+		return strings.Join(connections[:], ",")
 	} else {
 		p := MQ_ENDPOINTS.Points[index]
-		return p.Host + "(" + p.Port + ")" 
+		return p.Host + "(" + p.Port + ")"
 	}
 }
 

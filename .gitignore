@@ -9,3 +9,4 @@
 **/Go/src/*
 !**/Go/src/*.go
 **/node_modules/*
+.idea

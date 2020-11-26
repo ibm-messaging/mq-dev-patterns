@@ -1,0 +1,55 @@
+# © Copyright IBM Corporation 2020
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ibmmq-producer
+spec:
+  template:
+    spec:
+      containers:
+        - name: ibmmq-client
+          image: mqkeda/sample-app:latest
+          imagePullPolicy: Always
+          command:
+            - "/src/send"
+          args:
+            - "75" # Optional. Number of messages to send. Default: 100
+            - "1" # Optional. Number of seconds to sleep between sending a message. Default: 1
+          env:
+          - name: APP_USER
+            valueFrom:
+              secretKeyRef:
+                name: ibmmq-secret
+                key: APP_USER
+          - name: APP_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: ibmmq-secret
+                key: APP_PASSWORD
+          - name: QMGR
+            value: 'QM1' # Your queue manager
+          - name: QUEUE_NAME
+            value: 'DEMO.QUEUE' # Your queue name
+          - name: HOST
+            value: 'qm1-6d0c.qm2.eu-gb.mq.appdomain.cloud' # Your hostname
+          - name: PORT
+            value: '31274' # Your port number
+          - name: CHANNEL
+            value: 'CLOUD.APP.SVRCONN' # Your channel name
+          - name: TOPIC_NAME
+            value: 'dev/' # Your topic name
+      restartPolicy: Never
+  backoffLimit: 1
