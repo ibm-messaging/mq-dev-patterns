@@ -87,6 +87,10 @@ The `clean` option will clear out any previous build.
 The build will create a ./target/mq-dev-patterns-0.1.0.jar file containing the
 compiled samples.
 
+The package phase in the `pom.xml` includes `maven-shade-plugin` which will
+create an uber `.jar` file including two of the dependencies. The `com.ibm.mq.allclient` dependency is excluded from the uber `jar`, as it is
+signed and its inclusion causes manifest exceptions.
+
 If you use maven to build the samples, you will not need to compile them separately.
 
 
@@ -94,7 +98,7 @@ If you use maven to build the samples, you will not need to compile them separat
 To run any of the samples you will need to add the dependencies and the samples `.jar` file to the classpath. EG. To run the JmsPut sample:
 
 ````
-java -cp target/mq-dev-patterns-0.1.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:./com.ibm.mq.allclient-9.2.0.0.jar com.ibm.mq.samples.jms.JmsPut
+java -cp target/mq-dev-patterns-0.1.0.jar:./com.ibm.mq.allclient-9.2.0.0.jar com.ibm.mq.samples.jms.JmsPut
 ````
 
 
