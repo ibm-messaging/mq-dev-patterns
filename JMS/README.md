@@ -98,7 +98,7 @@ If you use maven to build the samples, you will not need to compile them separat
 To run any of the samples you will need to add the dependencies and the samples `.jar` file to the classpath. EG. To run the JmsPut sample:
 
 ````
-java -cp target/mq-dev-patterns-0.1.0.jar:./com.ibm.mq.allclient-9.2.0.0.jar com.ibm.mq.samples.jms.JmsPut
+java -cp target/mq-dev-patterns-0.1.0.jar:./com.ibm.mq.allclient-9.2.0.1.jar com.ibm.mq.samples.jms.JmsPut
 ````
 
 

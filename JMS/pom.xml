@@ -27,7 +27,7 @@
     <dependency>
         <groupId>com.ibm.mq</groupId>
         <artifactId>com.ibm.mq.allclient</artifactId>
-        <version>9.2.0.0</version>
+        <version>9.2.0.1</version>
         <scope>provided</scope>
     </dependency>
     <dependency>
