@@ -69,7 +69,7 @@ default the repository location will be:
 - Linux: /home/<User_Name>/.m2/repository
 - Mac: /Users/<user_name>/.m2/repository
 
-You will need to refer to the dependencies when you run any of the samples. To simplify this process you can download the dependencies by running the maven command:
+The maven build has been configured to create an uber jar containing all dependencies, but if you need the jar files in a more convenient location you can run the maven command:
 
 ````
 mvn dependency:copy-dependencies -DoutputDirectory=.
@@ -88,17 +88,39 @@ The build will create a ./target/mq-dev-patterns-0.1.0.jar file containing the
 compiled samples.
 
 The package phase in the `pom.xml` includes `maven-shade-plugin` which will
-create an uber `.jar` file including two of the dependencies. The `com.ibm.mq.allclient` dependency is excluded from the uber `jar`, as it is
-signed and its inclusion causes manifest exceptions.
+create an uber `.jar` file containing all dependencies.
 
 If you use maven to build the samples, you will not need to compile them separately.
 
 
-### Running maven build samples.
-To run any of the samples you will need to add the dependencies and the samples `.jar` file to the classpath. EG. To run the JmsPut sample:
+### Running maven built samples.
+The main class in the uber jar is `com.ibm.mq.samples.jms.BasicSampleDriver`, which will run the basic put / get and pub / sub samples.
+
+To put 6 messages run:
+````
+java -jar target/mq-dev-patterns-0.1.0.jar put 6
+````
+
+To get the messages run:
+````
+java -jar target/mq-dev-patterns-0.1.0.jar get
+````
+
+To publish 5 messages run:
+````
+java -jar target/mq-dev-patterns-0.1.0.jar pub 5
+````
+
+To subscribe run:
+````
+java -jar target/mq-dev-patterns-0.1.0.jar sub 
+````
+
+To run any of the samples you can specify the `.jar` file as the classpath.
+EG. To run the JmsPut sample:
 
 ````
-java -cp target/mq-dev-patterns-0.1.0.jar:./com.ibm.mq.allclient-9.2.0.1.jar com.ibm.mq.samples.jms.JmsPut
+java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsPut
 ````
 
 
@@ -111,6 +133,11 @@ and run
 
 `java -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsPut`
 
+If you have used maven to build the samples, you can run
+
+`java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsPut`
+
+
 In a separate terminal, from the top level JMS folder, compile first
 
 `javac -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsGet.java`
@@ -119,6 +146,9 @@ and run
 
 `java -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsGet`
 
+If you have used maven to build the samples, you can run
+
+`java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsGet`
 
 ## Publish / Subscribe
 Open two terminals.
@@ -135,6 +165,10 @@ then run
 
 `java -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsSub`
 
+If you have used maven to build the samples, you can run
+
+`java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsSub`
+
 In the second terminal;
 
 Run the publisher sample
@@ -146,6 +180,10 @@ Compile first
 then run
 
 `java -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsPub`
+
+If you have used maven to build the samples, you can run
+
+`java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsPub`
 
 ## Request / Response
 Open two terminals.
@@ -162,6 +200,11 @@ then run
 
 `java -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsRequest`
 
+
+If you have used maven to build the samples, you can run
+
+`java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsRequest`
+
 The request sample will put a message and wait for a response until it either gets a response or you `ctrl+c` interrupt it.
 
 In the second terminal;
@@ -175,6 +218,10 @@ Compile first
 and run
 
 `java -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsResponse`
+
+If you have used maven to build the samples, you can run
+
+`java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsResponse`
 
 The response sample will get a message from the queue, process it and put the response on the reply to queue and keep looking for more messages to respond to till you ctrl+c interrupt it.
 
