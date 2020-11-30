@@ -58,6 +58,50 @@ Encapsulates the reading of MQ environment variables and allows all the samples 
 
 For TLS info, see the end of this document.
 
+## Maven
+A maven `pom.xml` is provided allowing you to use maven to download dependancies and build the samples. A symbolic link links the maven required `./src/main/java/com` directory to the `./com` directory.
+
+### Downloading dependencies with maven
+Whenever you build the samples with maven the dependencies will be downloaded and stored in your local maven repository. You can override this location, but by
+default the repository location will be:
+
+- Windows: C:\Users\<User_Name>\.m2\repository
+- Linux: /home/<User_Name>/.m2/repository
+- Mac: /Users/<user_name>/.m2/repository
+
+You will need to refer to the dependencies when you run any of the samples. To simplify this process you can download the dependencies by running the maven command:
+
+````
+mvn dependency:copy-dependencies -DoutputDirectory=.
+````
+Which will download and copy the dependencies into the current directory.
+
+
+### Building the samples with maven
+You can build the samples by running the command.
+
+````
+mvn clean package
+````
+The `clean` option will clear out any previous build.
+The build will create a ./target/mq-dev-patterns-0.1.0.jar file containing the
+compiled samples.
+
+The package phase in the `pom.xml` includes `maven-shade-plugin` which will
+create an uber `.jar` file including two of the dependencies. The `com.ibm.mq.allclient` dependency is excluded from the uber `jar`, as it is
+signed and its inclusion causes manifest exceptions.
+
+If you use maven to build the samples, you will not need to compile them separately.
+
+
+### Running maven build samples.
+To run any of the samples you will need to add the dependencies and the samples `.jar` file to the classpath. EG. To run the JmsPut sample:
+
+````
+java -cp target/mq-dev-patterns-0.1.0.jar:./com.ibm.mq.allclient-9.2.0.1.jar com.ibm.mq.samples.jms.JmsPut
+````
+
+
 ## Put / Get
 From the top level JMS folder, compile first
 
