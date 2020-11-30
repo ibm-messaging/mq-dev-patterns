@@ -113,7 +113,7 @@ java -jar target/mq-dev-patterns-0.1.0.jar pub 5
 
 To subscribe run:
 ````
-java -jar target/mq-dev-patterns-0.1.0.jar sub 5
+java -jar target/mq-dev-patterns-0.1.0.jar sub 
 ````
 
 To run any of the samples you can specify the `.jar` file as the classpath.
