@@ -96,17 +96,22 @@ If you use maven to build the samples, you will not need to compile them separat
 ### Running maven build samples.
 The main class in the uber jar is `com.ibm.mq.samples.jms.BasicSampleDriver`, which will run the put / get samples.
 
-For put for 6 messages run:
+To put 6 messages run:
 ````
 java -jar target/mq-dev-patterns-0.1.0.jar put 6
 ````
 
-For get run:
+To get the messages run:
 ````
 java -jar target/mq-dev-patterns-0.1.0.jar get
 ````
 
-For publish for 5 run:
+To publish 5 messages run:
+````
+java -jar target/mq-dev-patterns-0.1.0.jar pub 5
+````
+
+To subscribe run:
 ````
 java -jar target/mq-dev-patterns-0.1.0.jar pub 5
 ````

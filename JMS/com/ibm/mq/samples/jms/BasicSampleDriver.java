@@ -26,10 +26,12 @@ public class BasicSampleDriver {
   private static final String MODE_PUT = "put";
   private static final String MODE_GET = "get";
   private static final String MODE_PUBLISH = "pub";
+  private static final String MODE_SUBSCRIBE = "sub";
 
   private static final String MODE_DEFAULT = MODE_PUT;
 
   private static final int DEFAULT_PUT_COUNT = 10;
+  private static final int TIMEOUT = 10000; // 10 Seconnds
 
   private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
 
@@ -52,6 +54,7 @@ public class BasicSampleDriver {
         case MODE_PUT:
         case MODE_GET:
         case MODE_PUBLISH:
+        case MODE_SUBSCRIBE:
           mode = requestedMode;
           break;
         }
@@ -65,11 +68,12 @@ public class BasicSampleDriver {
     switch (mode) {
 
       case MODE_GET:
+      case MODE_SUBSCRIBE:
         break;
 
       case MODE_PUT:
       case MODE_PUBLISH:
-        logger.info("processing put options");
+        logger.info("processing put / publish options");
         if (args.length > 1) {
             try {
                 numberOfMessages = Integer.parseInt(args[1]);
@@ -93,6 +97,9 @@ public class BasicSampleDriver {
       case MODE_PUBLISH:
         doPutOrPublish(BasicProducer.PRODUCER_PUB);
         break;
+      case MODE_SUBSCRIBE:
+        doSubscribe();
+        break;
     }
     return this;
   }
@@ -107,6 +114,13 @@ public class BasicSampleDriver {
   public void doGet() {
     logger.info("Will be getting messages");
     BasicConsumerWrapper.performGet();
+  }
+
+  public void doSubscribe() {
+    logger.info("Will be subscribing to messages");
+    BasicConsumer bc = new BasicConsumer(BasicConsumer.CONSUMER_SUB, ConnectionHelper.USE_CONNECTION_STRING);
+    bc.receive(TIMEOUT);
+    bc.close();
   }
 
 }
