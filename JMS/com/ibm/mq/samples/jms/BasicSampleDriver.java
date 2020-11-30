@@ -25,6 +25,8 @@ import com.ibm.mq.samples.jms.BasicConsumerWrapper;
 public class BasicSampleDriver {
   private static final String MODE_PUT = "put";
   private static final String MODE_GET = "get";
+  private static final String MODE_PUBLISH = "pub";
+
   private static final String MODE_DEFAULT = MODE_PUT;
 
   private static final int DEFAULT_PUT_COUNT = 10;
@@ -49,6 +51,7 @@ public class BasicSampleDriver {
       switch(requestedMode) {
         case MODE_PUT:
         case MODE_GET:
+        case MODE_PUBLISH:
           mode = requestedMode;
           break;
         }
@@ -60,9 +63,12 @@ public class BasicSampleDriver {
 
   private BasicSampleDriver parseArguments(String[] args) {
     switch (mode) {
-      case MODE_PUT:
-        break;
+
       case MODE_GET:
+        break;
+
+      case MODE_PUT:
+      case MODE_PUBLISH:
         logger.info("processing put options");
         if (args.length > 1) {
             try {
@@ -71,6 +77,7 @@ public class BasicSampleDriver {
                 logger.info("Defaulting number of puts");
             }
         }
+
     }
     return this;
   }
@@ -78,19 +85,22 @@ public class BasicSampleDriver {
   public BasicSampleDriver runSample() {
     switch(mode) {
       case MODE_PUT:
-        doPut();
+        doPutOrPublish(BasicProducer.PRODUCER_PUT);
         break;
       case MODE_GET:
         doGet();
+        break;
+      case MODE_PUBLISH:
+        doPutOrPublish(BasicProducer.PRODUCER_PUB);
         break;
     }
     return this;
   }
 
-  public void doPut() {
-    logger.info("Will be putting " + numberOfMessages + " messages");
-    BasicProducer bp = new BasicProducer(BasicProducer.PRODUCER_PUT);
-    bp.send("This is a Put message from the sample driver", numberOfMessages);
+  public void doPutOrPublish(String putorpub) {
+    logger.info("Will be sending " + numberOfMessages + " messages");
+    BasicProducer bp = new BasicProducer(putorpub);
+    bp.send("This is a message from the sample driver", numberOfMessages);
     bp.close();
   }
 

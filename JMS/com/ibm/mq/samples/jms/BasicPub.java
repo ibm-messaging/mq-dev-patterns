@@ -21,7 +21,7 @@ import com.ibm.mq.samples.jms.BasicProducer;
 public class BasicPub {
     public static void main(String[] args) {
         BasicProducer bp = new BasicProducer(BasicProducer.PRODUCER_PUB);
-        bp.send("This is a published message from JMS Pub", 10);
+        bp.send("This is a published message from JMS Basic Pub", 10);
         bp.close();
     }
 }

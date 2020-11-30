@@ -106,6 +106,11 @@ For get run:
 java -jar target/mq-dev-patterns-0.1.0.jar get
 ````
 
+For publish for 5 run:
+````
+java -jar target/mq-dev-patterns-0.1.0.jar pub 5
+````
+
 To run any of the samples you can add the samples `.jar` file to the classpath. EG. To run the JmsPut sample:
 
 ````
