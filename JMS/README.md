@@ -69,7 +69,7 @@ default the repository location will be:
 - Linux: /home/<User_Name>/.m2/repository
 - Mac: /Users/<user_name>/.m2/repository
 
-You will need to refer to the dependencies when you run any of the samples. To simplify this process you can download the dependencies by running the maven command:
+The maven build has been configured to create an uber jar containing all dependencies, but if you need the jar files in a more convenient location you can run the maven command:
 
 ````
 mvn dependency:copy-dependencies -DoutputDirectory=.
@@ -88,13 +88,13 @@ The build will create a ./target/mq-dev-patterns-0.1.0.jar file containing the
 compiled samples.
 
 The package phase in the `pom.xml` includes `maven-shade-plugin` which will
-create an uber `.jar` file including all of the dependencies.
+create an uber `.jar` file containing all dependencies.
 
 If you use maven to build the samples, you will not need to compile them separately.
 
 
-### Running maven build samples.
-The main class in the uber jar is `com.ibm.mq.samples.jms.BasicSampleDriver`, which will run the put / get samples.
+### Running maven built samples.
+The main class in the uber jar is `com.ibm.mq.samples.jms.BasicSampleDriver`, which will run the basic put / get and pub / sub samples.
 
 To put 6 messages run:
 ````
@@ -116,7 +116,8 @@ To subscribe run:
 java -jar target/mq-dev-patterns-0.1.0.jar pub 5
 ````
 
-To run any of the samples you can add the samples `.jar` file to the classpath. EG. To run the JmsPut sample:
+To run any of the samples you can specify the `.jar` file as the classpath. 
+EG. To run the JmsPut sample:
 
 ````
 java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsPut
