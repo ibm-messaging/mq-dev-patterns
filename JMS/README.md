@@ -134,6 +134,7 @@ and run
 `java -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsPut`
 
 If you have used maven to build the samples, you can run
+
 `java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsPut`
 
 
@@ -146,6 +147,7 @@ and run
 `java -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsGet`
 
 If you have used maven to build the samples, you can run
+
 `java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsGet`
 
 ## Publish / Subscribe
@@ -164,6 +166,7 @@ then run
 `java -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsSub`
 
 If you have used maven to build the samples, you can run
+
 `java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsSub`
 
 In the second terminal;
@@ -179,6 +182,7 @@ then run
 `java -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsPub`
 
 If you have used maven to build the samples, you can run
+
 `java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsPub`
 
 ## Request / Response
@@ -198,6 +202,7 @@ then run
 
 
 If you have used maven to build the samples, you can run
+
 `java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsRequest`
 
 The request sample will put a message and wait for a response until it either gets a response or you `ctrl+c` interrupt it.
@@ -215,6 +220,7 @@ and run
 `java -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsResponse`
 
 If you have used maven to build the samples, you can run
+
 `java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsResponse`
 
 The response sample will get a message from the queue, process it and put the response on the reply to queue and keep looking for more messages to respond to till you ctrl+c interrupt it.
