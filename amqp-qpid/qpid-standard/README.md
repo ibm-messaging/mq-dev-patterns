@@ -50,4 +50,4 @@ Command line arguments can be used to control the sample mode. eg. for a request
 java -jar /target/mq-dev-patterns-qpid-0.1.0.jar put reply
 ````
 
-See [qpid samples page](/../README.md) for the full set of options
+See [qpid samples page](/amqp-qpid/README.md) for the full set of options
