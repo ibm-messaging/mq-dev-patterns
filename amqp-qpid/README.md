@@ -39,5 +39,56 @@ Each set of samples has its own mechanism for configuration.
   * [qpid-quarkus]((/qpid-quarkus/README.md)) uses
   a quarkus `src/main/resources/application.properties` file
 
-### Options
-The options are the same
+### Mode Options
+The mode options are the same for both set of applications. The difference is how
+they are specified.
+
+#### [qpid-standard](/qpid-standard/README.md)
+Specify as command line arguments, in any order
+
+#### Modes
+  * one of
+    * put (default)
+    * get
+    * browse
+      * this will run the sample as a put/pub, get/sub or browse. The put will put a set of TextMessage, BytesMessage, StreamMessage,
+      ObjectMessage and MapMessage.
+  * a integer number n
+    * if specified will repeat the put of messages set n times
+  * one of
+    * queue (default)
+    * topic
+      * directs the operation to a queue (put/get) or topic (pub/sub)
+  * one of
+    * sync (default)
+    * async
+      * for the get operations, runs either in synchronous or asynchronous mode
+  * selector
+    * if set will cause the get to use a selector.
+      * causes an exception to be thrown
+````
+Exception in thread "main" javax.jms.IllegalStateRuntimeException: The MessageConsumer was closed due to an unrecoverable error.
+````   
+
+  * reply
+    * if set the put will add a reply to queue to the message. The put will wait a short time for a response. This setting does
+    not directly affect the get. The get does, however check received messages for
+    a reply to queue, and if set, sends a reply.
+  * expire
+    * if specified will run the put with a message expiry.
+      * An exception is thrown if the sample is used to get as yet unexpired message with an expiry.  
+````      
+      javax.jms.JMSRuntimeException: AMQXR2101E:
+      ...
+      rejected the message because the state of the AMQP message was modified. [condition = amqp:not-implemented]
+````
+  * delay
+    * if specified will run the put with a message delay
+      * Causes an exception to be thrown
+````
+      javax.jms.JMSRuntimeException: Remote does not support delayed message delivery
+````
+  * persist
+    * if specified will put a persistent message.
+  * custom
+    * if specified the put adds custom properties to the header.
