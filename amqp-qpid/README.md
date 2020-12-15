@@ -12,9 +12,9 @@ To enable the IBM MQ AMQP service in the container image, you will need to custo
 
   . Edit the file `install-mq.sh` and set to enable AMQP
 
-    ````   
+````   
     export genmqpkg_incamqp=1
-    ````
+````
 
   . Add the contents of `add-dev.mqsc.tpl` from this repository to the bottom of the file `/incubating/mqadvanced-server-dev/10-dev.mqsc.tpl`.
 
