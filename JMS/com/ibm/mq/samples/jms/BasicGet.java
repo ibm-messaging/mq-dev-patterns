@@ -16,51 +16,8 @@
 
 package com.ibm.mq.samples.jms;
 
-import java.util.logging.*;
-import javax.jms.JMSRuntimeException;
-
-import com.ibm.mq.constants.MQConstants;
-import com.ibm.mq.MQException;
-
-import com.ibm.mq.samples.jms.BasicConsumer;
-import com.ibm.mq.samples.jms.SampleEnvSetter;
-
-
 public class BasicGet {
-    private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
-    private static final int TIMEOUT = 5000; // 5 Seconnds
-
     public static void main(String[] args) {
-        SampleEnvSetter env = new SampleEnvSetter();
-        int limit = env.getCount();
-        logger.info("There are " + limit + " endpoints");
-
-        for (int index = 0; index < limit; index++) {
-            try {
-                BasicConsumer bc = new BasicConsumer(BasicConsumer.CONSUMER_GET, index);
-                bc.receive(TIMEOUT);
-                bc.close();
-            } catch (JMSRuntimeException ex) {
-                if (! canContinue(ex)) {
-                    break;
-                }
-            }
-        }
+        BasicConsumerWrapper.performGet();
     }
-
-    private static boolean canContinue(JMSRuntimeException ex) {
-        if (null != ex.getCause() && ex.getCause() instanceof MQException) {
-            MQException innerException = (MQException) ex.getCause();
-
-            if (MQConstants.MQRC_HOST_NOT_AVAILABLE == innerException.getReason()) {
-                logger.info("Host not available, skipping message gets from this host");
-                return true;
-            }
-        }
-
-        logger.warning("Unexpected exception will be terminating process");
-        ConnectionHelper.recordFailure(ex);
-        return false;
-    }
-
 }

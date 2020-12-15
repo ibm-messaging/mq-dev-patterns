@@ -22,7 +22,7 @@ import com.ibm.mq.samples.jms.BasicProducer;
 public class BasicPut {
     public static void main(String[] args) {
         BasicProducer bp = new BasicProducer(BasicProducer.PRODUCER_PUT);
-        bp.send("This is a send from JMS Put", 10);
+        bp.send("This is a send from JMS Basic Put", 10);
         bp.close();
     }
 }

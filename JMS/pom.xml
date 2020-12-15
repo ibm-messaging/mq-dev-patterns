@@ -22,13 +22,11 @@
         <groupId>javax.jms</groupId>
         <artifactId>javax.jms-api</artifactId>
         <version>2.0.1</version>
-        <scope>compile</scope>
     </dependency>
     <dependency>
         <groupId>com.ibm.mq</groupId>
         <artifactId>com.ibm.mq.allclient</artifactId>
         <version>9.2.0.1</version>
-        <scope>provided</scope>
     </dependency>
     <dependency>
         <groupId>com.googlecode.json-simple</groupId>
@@ -97,14 +95,19 @@
             <configuration>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>com.ibm.mq.samples.jms.JmsPut</mainClass>
+                  <mainClass>com.ibm.mq.samples.jms.BasicSampleDriver</mainClass>
                 </transformer>
               </transformers>
-              <artifactSet>
-                <excludes>
-                  <exclude>com.ibm.mq:com.ibm.mq.allclient</exclude>
-                </excludes>
-              </artifactSet>
+              <filters>
+                  <filter>
+                      <artifact>*:*</artifact>
+                      <excludes>
+                          <exclude>META-INF/*.SF</exclude>
+                          <exclude>META-INF/*.DSA</exclude>
+                          <exclude>META-INF/*.RSA</exclude>
+                      </excludes>
+                  </filter>
+              </filters>
             </configuration>
           </execution>
         </executions>
