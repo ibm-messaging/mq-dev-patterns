@@ -8,19 +8,19 @@ both queues and topics IBM MQ must be at 9.2.1.0 or above.
 
 ### Container Image
 To enable the IBM MQ AMQP service in the container image, you will need to customise it.
-  . Clone the mq-container [GtiHub repository](https://github.com/ibm-messaging/mq-container)
+  * Clone the mq-container [GtiHub repository](https://github.com/ibm-messaging/mq-container)
 
-  . Edit the file `install-mq.sh` and set to enable AMQP
+  * Edit the file `install-mq.sh` and set to enable AMQP
 
 ````   
     export genmqpkg_incamqp=1
 ````
 
-  . Add the contents of `add-dev.mqsc.tpl` from this repository to the bottom of the file `/incubating/mqadvanced-server-dev/10-dev.mqsc.tpl`.
+  * Add the contents of `add-dev.mqsc.tpl` from this repository to the bottom of the file `/incubating/mqadvanced-server-dev/10-dev.mqsc.tpl`.
 
-  . Build a developer image following the instructions in the [mq-container repository](https://github.com/ibm-messaging/mq-container/blob/master/docs/building.md)
+  * Build a developer image following the instructions in the [mq-container repository](https://github.com/ibm-messaging/mq-container/blob/master/docs/building.md)
 
-  . Run the container. If you have tagged your image with `ibm-mqadvanced-server-dev:9.2.1.0-amd64` then you can run it with the command
+  * Run the container. If you have tagged your image with `ibm-mqadvanced-server-dev:9.2.1.0-amd64` then you can run it with the command
 
   ````
   docker run --env LICENSE=accept --env MQ_QMGR_NAME=QM1 --env MQ_APP_PASSWORD=passw0rd --publish 1414:1414 --publish 9443:9443 --publish 5672:5672 --detach ibm-mqadvanced-server-dev:9.2.1.0-amd64
