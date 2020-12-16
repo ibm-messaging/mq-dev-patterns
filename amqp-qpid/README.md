@@ -30,8 +30,9 @@ To enable the IBM MQ AMQP service in the container image, you will need to custo
 There are two sets of samples.
   * [qpid-standard](/amqp-qpid/qpid-standard/README.md)
   * [qpid-quarkus]((/amqp-qpid/qpid-quarkus/README.md))
+
 Most of the code is common, and shared through symbolic links. Each has its own
-maven `pom.xml` and build and run instructions.
+maven `pom.xml`, build and run instructions.
 
 ## Run configurations and options
 Each set of samples has its own mechanism for configuration.
@@ -101,4 +102,4 @@ Exception in thread "main" javax.jms.IllegalStateRuntimeException: The MessageCo
     * if specified the put adds custom properties to the header.
   * object
     * if specified adds an ObjectMessage to the message set.
-      * Hangs the application when specified and running native with GraalVM / Quarkus 
+      * Hangs the application when specified and running native with GraalVM / Quarkus

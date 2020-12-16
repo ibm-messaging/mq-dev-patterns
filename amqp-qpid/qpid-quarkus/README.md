@@ -40,13 +40,22 @@ To start the sample:
 ./mvnw compile quarkus:dev
 ````
 
-## Building native executable
+## Native executable
+
+### Building native executable
 You can build the native GraalVM executable with:
 ````
 ./mvnw package -Pnative
 ````
 
-## Running native executable
+### Running native executable
 ````
 ./target/mq-dev-patterns-quarkus-0.1.0-runner
+````
+
+You can override `application.properties` mode settings by adding the `-Damqp-mqtest.appargs` parameter.
+
+eg. To set the mode to put high priority messages:
+````
+./target/mq-dev-patterns-quarkus-0.1.0-runner -Damqp-mqtest.appargs=put,high
 ````
