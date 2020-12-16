@@ -1,4 +1,6 @@
-# Standard AMQP QPID to IBM MQ samples
+# Standard AMQP QPID to IBM MQ sample
+The main class for this sample is `JMS20Tester` which parses the arguments 
+and determines the mode and options for the run.
 
 ## MQ Connection properties
 The properties that the samples need to connect to MQ are in the

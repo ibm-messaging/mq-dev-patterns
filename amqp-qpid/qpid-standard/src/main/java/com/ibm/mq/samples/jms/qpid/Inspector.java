@@ -23,7 +23,6 @@ import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
-import java.io.UnsupportedEncodingException;
 import java.io.Serializable;
 
 import javax.jms.BytesMessage;
@@ -38,31 +37,6 @@ import javax.jms.TextMessage;
 public class Inspector {
   private static final Level LOGLEVEL = Level.ALL;
   private static final Logger logger = Logger.getLogger("com.ibm.jms.qpid");
-
-  /*
-  static final long SECOND = 1000;
-  static final long MINUTE = 60 * SECOND;
-
-  static final String TYPEA = "msgTypeA";
-  static final String TYPEB = "msgTypeB";
-
-  static final String DEST_QUEUE = "queue";
-  static final String DEST_TOPIC = "topic";
-
-  static final String MODE_PUT = "put";
-  static final String MODE_GET = "get";
-  static final String MODE_BROWSE = "browse";
-
-  static final String SYNC_ASYNC = "async";
-  static final String SYNC_SYNC = "sync";
-
-  static final String EXPIRE = "expire";
-  static final String EXPIRY = "expiry";
-  static final String NO_EXPIRY = "no expiry";
-
-  static final String DELAY = "delay";
-  static final String NO_DELAY = "no delay";
-*/
 
   Message message;
 

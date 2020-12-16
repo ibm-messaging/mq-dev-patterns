@@ -1,4 +1,6 @@
 # Quarkus AMQP QPID to IBM MQ samples
+The main class for this sample is `AMQPTester` which determines the mode and options for the run.
+
 The framework for this sample is based on the Quarkus getting started
 [USING JMS](https://quarkus.io/guides/jms) guide. The guide app has been replaced
 with a sample app that uses the Quarkus QPID AMQP JMS stack to put / get, put / sub
@@ -42,12 +44,6 @@ To start the sample:
 You can build the native GraalVM executable with:
 ````
 ./mvnw package -Pnative
-````
-
-Or, if you don’t have GraalVM installed, you can instead use Docker to build the native executable using:
-
-````
-./mvnw package -Pnative -Dquarkus.native.container-build=true
 ````
 
 ## Running native executable

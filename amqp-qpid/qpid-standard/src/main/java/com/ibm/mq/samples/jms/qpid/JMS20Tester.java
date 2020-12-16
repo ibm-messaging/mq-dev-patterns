@@ -18,22 +18,6 @@ package com.ibm.mq.samples.jms.qpid;
 
 import java.util.logging.*;
 
-//import javax.jms.*;
-import javax.naming.NamingException;
-import javax.naming.InitialContext;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
-import javax.jms.ExceptionListener;
-import javax.jms.JMSContext;
-import javax.jms.JMSException;
-import javax.jms.JMSProducer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-
 public class JMS20Tester {
   private static final Level LOGLEVEL = Level.ALL;
   private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms.qpid");
