@@ -37,7 +37,7 @@ A maven `pom.xml` is provided allowing you to use maven to download dependancies
 mvn clean package
 ````
 
-### Running sample.
+### Running the sample
 The main class in the uber jar is `com.ibm.mq.samples.jms.qpid.JMS20Tester`, which will run the sample in a put / get, request / response and pub / sub samples.
 
 To run:
