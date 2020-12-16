@@ -160,18 +160,23 @@ public class PutJMS20 extends BaseJMS20 {
     };
   }
 
-  private BytesMessage createBytesMessage(int place, String text) {
-    logger.info("Creating Bytes Message");
-    BytesMessage bm = context.createBytesMessage();
-    try {
-      bm.writeInt(place);
-      bm.writeUTF("😉 BytesMessage");
-      bm.writeUTF(text);
-    } catch (JMSException e) {
-      logger.warning("Error building BytesMessage " + e.getErrorCode());
+  private Message createBytesMessage(int place, String text) {
+    if (options.bytes()) {
+      logger.info("Creating Bytes Message");
+      BytesMessage bm = context.createBytesMessage();
+      try {
+        bm.writeInt(place);
+        bm.writeUTF("😉 BytesMessage");
+        bm.writeUTF(text);
+      } catch (JMSException e) {
+        logger.warning("Error building BytesMessage " + e.getErrorCode());
+      }
+      logger.info("Bytes Message created");
+      return bm;
+    } else {
+      return context.createTextMessage(place + " : in lieu of BytesMessage " + text);
     }
-    logger.info("Bytes Message created");
-    return bm;
+
   }
 
   private StreamMessage createStreamMessage(int place, String text) {

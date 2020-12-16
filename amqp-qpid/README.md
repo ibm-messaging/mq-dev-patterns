@@ -103,3 +103,9 @@ Exception in thread "main" javax.jms.IllegalStateRuntimeException: The MessageCo
   * object
     * if specified adds an ObjectMessage to the message set.
       * Hangs the application when specified and running native with GraalVM / Quarkus
+  * bytes
+    * if specified adds a BytesMessage to the message set.
+      * Raises an exception in MQI get applications
+````
+MQ call failed with error : GET: MQCC = MQCC_WARNING [1] MQRC = MQRC_FORMAT_ERROR [2110]
+````

@@ -54,6 +54,7 @@ public abstract class Constants {
   static final String LOW = "low";
 
   static final String OBJECT = "object";
+  static final String BYTES = "bytes";
 
   static final int LOW_PRIORITY = 2;
   static final int MID_PRIORITY = 4;
