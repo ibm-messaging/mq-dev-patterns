@@ -107,5 +107,5 @@ Exception in thread "main" javax.jms.IllegalStateRuntimeException: The MessageCo
     * if specified adds a BytesMessage to the message set.
       * Raises an exception in MQI get applications
 ````
-MQ call failed with error : GET: MQCC = MQCC_WARNING [1] MQRC = MQRC_FORMAT_ERROR [2110]
+      MQ call failed with error : GET: MQCC = MQCC_WARNING [1] MQRC = MQRC_FORMAT_ERROR [2110]
 ````
