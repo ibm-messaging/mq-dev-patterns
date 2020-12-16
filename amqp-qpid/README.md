@@ -57,6 +57,7 @@ Specify in `applications.properties` as `amqp-mqtest.appargs`
     * browse
       * this will run the sample as a put/pub, get/sub or browse. The put will put a set of TextMessage, BytesMessage, StreamMessage,
       ObjectMessage and MapMessage.
+      * in MQ 9.2.1.0 browse performs a destructive get on the message
   * a integer number n
     * if specified will repeat the put of messages set n times
   * one of
