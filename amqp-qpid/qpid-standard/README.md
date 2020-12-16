@@ -26,7 +26,7 @@ The properties that the samples need to connect to MQ are in the
 
 * `queue.myReplyQueueLookup`
   * reply queue to use when running put / get in request / response mode
-    * if left blank reply defaults to using temporary queues.
+    * if omitted reply defaults to using temporary queues.
 
 ## Building the sample application jar
 A maven `pom.xml` is provided allowing you to use maven to download dependancies and build the sample. You can build the samples by running the command.

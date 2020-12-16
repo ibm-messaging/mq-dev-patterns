@@ -46,6 +46,9 @@ they are specified.
 #### [qpid-standard](/amqp-qpid/qpid-standard/README.md)
 Specify as command line arguments, in any order
 
+#### [qpid-quarkus](/amqp-qpid/qpid-quarkus/README.md)
+Specify in `applications.properties` as `amqp-mqtest.appargs`
+
 #### Modes
   * one of
     * put (default)
