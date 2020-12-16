@@ -41,7 +41,7 @@ Each set of samples has its own mechanism for configuration.
   a quarkus `src/main/resources/application.properties` file
 
 ### Mode Options
-The mode options are the same for both set of applications. The difference is how
+The mode options are the same for both sets of applications. The difference is in how
 they are specified.
 
 #### [qpid-standard](/amqp-qpid/qpid-standard/README.md)
