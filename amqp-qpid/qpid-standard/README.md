@@ -31,7 +31,7 @@ The properties that the samples need to connect to MQ are in the
     * if omitted reply defaults to using temporary queues.
 
 ## Building the sample application jar
-A maven `pom.xml` is provided allowing you to use maven to download dependancies and build the sample. You can build the samples by running the command.
+A maven `pom.xml` is provided allowing you to use maven to download dependencies and build the sample. You can build the samples by running the command.
 
 ````
 mvn clean package
