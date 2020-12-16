@@ -41,7 +41,7 @@ The main class in the uber jar is `com.ibm.mq.samples.jms.qpid.JMS20Tester`, whi
 To run:
 
 ````
-java -jar /target/mq-dev-patterns-qpid-0.1.0.jar
+java -jar target/mq-dev-patterns-qpid-0.1.0.jar
 ````
 
 Command line arguments can be used to control the sample mode. eg. for a request, run  

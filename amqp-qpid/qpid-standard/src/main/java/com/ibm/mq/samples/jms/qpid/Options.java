@@ -33,7 +33,7 @@ public class Options  {
   private static final Boolean CUSTOM_DEFAULT = false;
   private static final Boolean REPLY_DEFAULT = false;
   private static final Boolean SELECTOR_DEFAULT = false;
-
+  private static final Boolean OBJECT_DEFAULT = false;
 
   private static final int DEFAULT_PUT_COUNT = 1;
 
@@ -49,6 +49,7 @@ public class Options  {
   private Boolean custom = CUSTOM_DEFAULT;
   private Boolean reply = REPLY_DEFAULT;
   private Boolean selector = SELECTOR_DEFAULT;
+  private Boolean object = OBJECT_DEFAULT;
 
   private int priority = PRIORITY_DEFAULT;
   private int numberOfMessages = DEFAULT_PUT_COUNT;
@@ -73,6 +74,7 @@ public class Options  {
   public Boolean custom() { return custom; }
   public Boolean reply() { return reply; }
   public Boolean selector() { return selector; }
+  public Boolean object() { return object; }
 
   public int priority() { return priority; }
   public int numberOfMessages() { return numberOfMessages; }
@@ -99,6 +101,7 @@ public class Options  {
       log.info("    message persistence : " + persist);
       log.info("    request / response : " + reply);
       log.info("    message priority : " + priority);
+      log.info("    include ObjectMessage : " + object);
     } else {
       log.info("    sync mode : " + syncMode);
       log.info("    get with selector : " + selector);
@@ -146,6 +149,9 @@ public class Options  {
       case Constants.SELECTER:
       case Constants.SELECT:
         selector = true;
+        break;
+      case Constants.OBJECT:
+        object = true;
         break;
       case Constants.HIGH:
         priority = Constants.HIGH_PRIORITY;

@@ -63,6 +63,10 @@ Specify in `applications.properties` as `amqp-mqtest.appargs`
     * topic
       * directs the operation to a queue (put/get) or topic (pub/sub)
   * one of
+    * high
+    * low
+      * if specified sets message priority to high (7) or low (2)
+  * one of
     * sync (default)
     * async
       * for the get operations, runs either in synchronous or asynchronous mode
@@ -95,3 +99,6 @@ Exception in thread "main" javax.jms.IllegalStateRuntimeException: The MessageCo
     * if specified will put a persistent message.
   * custom
     * if specified the put adds custom properties to the header.
+  * object
+    * if specified adds an ObjectMessage to the message set.
+      * Hangs the application when specified and running native with GraalVM / Quarkus 

@@ -102,7 +102,7 @@ public class PutJMS20 extends BaseJMS20 {
         for (int i = 0; i < quantity; i++) {
           int place = i + 1;
           logger.info("Sending message " + place + " of " + quantity);
-          logger.info("Creating Text Message");
+          logger.info("Creating Messages");
 
           //TextMessage message = context.createTextMessage(place + " : " + text);
           Message[] msgs = createMessages(place, text);
@@ -161,6 +161,7 @@ public class PutJMS20 extends BaseJMS20 {
   }
 
   private BytesMessage createBytesMessage(int place, String text) {
+    logger.info("Creating Bytes Message");
     BytesMessage bm = context.createBytesMessage();
     try {
       bm.writeInt(place);
@@ -169,10 +170,12 @@ public class PutJMS20 extends BaseJMS20 {
     } catch (JMSException e) {
       logger.warning("Error building BytesMessage " + e.getErrorCode());
     }
+    logger.info("Bytes Message created");
     return bm;
   }
 
   private StreamMessage createStreamMessage(int place, String text) {
+    logger.info("Creating Stream Message");
     StreamMessage sm = context.createStreamMessage();
     try {
       sm.writeInt(place);
@@ -181,20 +184,28 @@ public class PutJMS20 extends BaseJMS20 {
     } catch (JMSException e) {
       logger.warning("Error building BytesMessage " + e.getErrorCode());
     }
+    logger.info("Stream Message created");
     return sm;
   }
 
-  private ObjectMessage createObjectMessage(int place, String text) {
-    ObjectMessage om = context.createObjectMessage();
-    try {
-      om.setObject(new Data(place, "🦺 ObjectMessage", text));
-    } catch (JMSException e) {
-      logger.warning("Error building ObjectMessage " + e.getErrorCode());
+  private Message createObjectMessage(int place, String text) {
+    if (options.object()) {
+      logger.info("Creating Object Message");
+      ObjectMessage om = context.createObjectMessage();
+      try {
+        om.setObject(new Data(place, "🦺 ObjectMessage", text));
+      } catch (JMSException e) {
+        logger.warning("Error building ObjectMessage " + e.getErrorCode());
+      }
+      logger.info("Object Message created");
+      return om;
+    } else {
+      return context.createTextMessage(place + " : in lieu of ObjectMessage " + text);
     }
-    return om;
   }
 
   private MapMessage createMapMessage(int place, String text) {
+    logger.info("Creating Map Message");
     MapMessage mm = context.createMapMessage();
     try {
       mm.setInt("place", place);
@@ -203,6 +214,7 @@ public class PutJMS20 extends BaseJMS20 {
     } catch (JMSException e) {
       logger.warning("Error building MapMessage " + e.getErrorCode());
     }
+    logger.info("Map Message created");
     return mm;
   }
 

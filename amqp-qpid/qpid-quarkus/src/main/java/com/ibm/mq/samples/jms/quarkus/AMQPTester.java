@@ -49,7 +49,7 @@ public class AMQPTester implements Runnable {
   AMQPTestConfig appConfig;
 
   private static final Level LOGLEVEL = Level.ALL;
-  private static final Logger logger = Logger.getLogger("com.ibm.mq.jms");
+  private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms.quarkus");
 
   private final ExecutorService scheduler = Executors.newSingleThreadExecutor();
 
