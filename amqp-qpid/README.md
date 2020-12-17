@@ -85,10 +85,10 @@ Specify in `applications.properties` as `amqp-mqtest.appargs`
       * if set for the put, it also needs to be set for the get. Otherwise the get action does not remove the message from the queue.
     * transaction
       * if set will attempt to commit the first 2 messages in each batch put and rollback the remaining 3 messages.
-      * causes `createProducer()` in the get to thow an exception
+      * causes `createProducer()` in the get to throw an exception
 ````
-    javax.jms.JMSRuntimeException: AMQXR0025E: ClientIdentifier ...
-    used an invalid destination name 'null'. [condition = amqp:not-found]
+      javax.jms.JMSRuntimeException: AMQXR0025E: ClientIdentifier ...
+      used an invalid destination name 'null'. [condition = amqp:not-found]
 ````
   * durable
     * if set will cause the topic subscribe to be durable.
