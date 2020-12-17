@@ -22,6 +22,7 @@ import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSConsumer;
+import javax.jms.JMSException;
 import javax.jms.Message;
 
 public class GetJMS20 extends BaseJMS20 {
@@ -124,6 +125,10 @@ public class GetJMS20 extends BaseJMS20 {
         .showMessageBody()
         ;
 
+      if (options.acknowledge()) {
+        i.acknowledge();
+      }
+
       if (i.haveMessage()) {
         processResponse(i);
         logger.info("-----------------------------");
@@ -138,10 +143,20 @@ public class GetJMS20 extends BaseJMS20 {
   private void processResponse(Inspector i) {
     Destination replyDestination = i.getReplyDestination();
     if (null != replyDestination) {
+      Message message = context.createTextMessage("This is a reply to message id : " + i.getID());
       context.createProducer()
         .setDeliveryMode(DeliveryMode.NON_PERSISTENT)
         .setJMSCorrelationID(i.getID())
-        .send(replyDestination, context.createTextMessage("This is a reply to message id : " + i.getID()));
+        .send(replyDestination, message );
+
+      try {
+        if (options.acknowledge()) {
+          message.acknowledge();
+        }
+      } catch (JMSException e) {
+        logger.warning("client acknowledge failed : " + e.getMessage());
+      }
+
     }
   }
 

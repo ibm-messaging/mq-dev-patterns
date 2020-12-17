@@ -52,6 +52,17 @@ public class Inspector {
     return (null != message);
   }
 
+  public Inspector acknowledge() {
+    try {
+      if (haveMessage()) {
+        message.acknowledge();
+      }
+    } catch (JMSException e) {
+      logger.warning("client acknowledge failed : " + e.getMessage());
+    }
+    return this;
+  }
+
   public Destination getReplyDestination() {
     if (null == message) {
       return null;

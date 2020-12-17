@@ -36,6 +36,7 @@ public class Options  {
   private static final Boolean OBJECT_DEFAULT = false;
   private static final Boolean BYTES_DEFAULT = false;
   private static final Boolean DURABLE_DEFAULT = false;
+  private static final Boolean ACKNOWLEDGE_DEFAULT = false;
 
   private static final int DEFAULT_PUT_COUNT = 1;
 
@@ -54,6 +55,7 @@ public class Options  {
   private Boolean object = OBJECT_DEFAULT;
   private Boolean bytes = BYTES_DEFAULT;
   private Boolean durable = DURABLE_DEFAULT;
+  private Boolean acknowledge = ACKNOWLEDGE_DEFAULT;
 
   private int priority = PRIORITY_DEFAULT;
   private int numberOfMessages = DEFAULT_PUT_COUNT;
@@ -81,6 +83,7 @@ public class Options  {
   public Boolean object() { return object; }
   public Boolean bytes() { return bytes; }
   public Boolean durable() { return durable; }
+  public Boolean acknowledge() { return acknowledge; }
 
   public int priority() { return priority; }
   public int numberOfMessages() { return numberOfMessages; }
@@ -114,6 +117,7 @@ public class Options  {
       log.info("    get with selector : " + selector);
       log.info("    durable : " + durable);
     }
+    log.info("    client acknowledge : " + acknowledge);
     log.info("    destination type : " + destinationType);
     log.info("-----------------------------");
     return this;
@@ -166,6 +170,11 @@ public class Options  {
         break;
       case Constants.DURABLE:
         durable = true;
+        break;
+      case Constants.ACK:
+      case Constants.ACKNOWLEDGE:
+      case Constants.CLIENT_ACK:
+        acknowledge = true;
         break;
       case Constants.HIGH:
         priority = Constants.HIGH_PRIORITY;

@@ -78,6 +78,9 @@ Specify in `applications.properties` as `amqp-mqtest.appargs`
 ````
       Exception in thread "main" javax.jms.IllegalStateRuntimeException: The MessageConsumer was closed due to an unrecoverable error.
 ````  
+  * ack
+    * if set will switch the session to CLIENT_ACKNOWLEDGE mode.
+      * if set for the put, it also needs to be set for the get. Otherwise the get action does not remove the message from the queue. 
   * durable
     * if set will cause the topic subscribe to be durable.
       * needs the mode to be `get topic durable` to be actioned.

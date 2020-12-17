@@ -123,6 +123,9 @@ public class PutJMS20 extends BaseJMS20 {
                 destination.send(t, message);
                 break;
             }
+            if (options.acknowledge()) {
+              message.acknowledge();
+            }
 
             new Inspector(message)
               .showMessageType()
@@ -239,6 +242,9 @@ public class PutJMS20 extends BaseJMS20 {
       i.showMessageType()
         .showMessageBody()
         ;
+      if (options.acknowledge()) {
+        i.acknowledge();
+      }        
     } catch (Exception ex) {
       ex.printStackTrace();
     }
