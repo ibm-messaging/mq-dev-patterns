@@ -76,9 +76,8 @@ Specify in `applications.properties` as `amqp-mqtest.appargs`
     * if set will cause the get to use a selector.
       * causes an exception to be thrown
 ````
-Exception in thread "main" javax.jms.IllegalStateRuntimeException: The MessageConsumer was closed due to an unrecoverable error.
+      Exception in thread "main" javax.jms.IllegalStateRuntimeException: The MessageConsumer was closed due to an unrecoverable error.
 ````   
-
   * reply
     * if set the put will add a reply to queue to the message. The put will wait a short time for a response. This setting does
     not directly affect the get. The get does, however check received messages for
@@ -90,7 +89,7 @@ Exception in thread "main" javax.jms.IllegalStateRuntimeException: The MessageCo
       javax.jms.JMSRuntimeException: AMQXR2101E:
       ...
       rejected the message because the state of the AMQP message was modified. [condition = amqp:not-implemented]
-````
+````     
   * delay
     * if specified will run the put with a message delay
       * Causes an exception to be thrown
@@ -109,4 +108,10 @@ Exception in thread "main" javax.jms.IllegalStateRuntimeException: The MessageCo
       * Raises an exception in MQI get applications
 ````
       MQ call failed with error : GET: MQCC = MQCC_WARNING [1] MQRC = MQRC_FORMAT_ERROR [2110]
+````
+
+In quarkus all get `JMSRuntimeException`s manifest as
+````
+LogManager error of type FORMAT_FAILURE: Formatting error
+java.lang.IllegalArgumentException: can't parse argument number:
 ````
