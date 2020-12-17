@@ -37,6 +37,7 @@ public class Options  {
   private static final Boolean BYTES_DEFAULT = false;
   private static final Boolean DURABLE_DEFAULT = false;
   private static final Boolean ACKNOWLEDGE_DEFAULT = false;
+  private static final Boolean TRANSACTION_DEFAULT = false;
 
   private static final int DEFAULT_PUT_COUNT = 1;
 
@@ -56,6 +57,7 @@ public class Options  {
   private Boolean bytes = BYTES_DEFAULT;
   private Boolean durable = DURABLE_DEFAULT;
   private Boolean acknowledge = ACKNOWLEDGE_DEFAULT;
+  private Boolean transaction = TRANSACTION_DEFAULT;
 
   private int priority = PRIORITY_DEFAULT;
   private int numberOfMessages = DEFAULT_PUT_COUNT;
@@ -84,6 +86,7 @@ public class Options  {
   public Boolean bytes() { return bytes; }
   public Boolean durable() { return durable; }
   public Boolean acknowledge() { return acknowledge; }
+  public Boolean transaction() { return transaction; }
 
   public int priority() { return priority; }
   public int numberOfMessages() { return numberOfMessages; }
@@ -110,6 +113,7 @@ public class Options  {
       log.info("    message persistence : " + persist);
       log.info("    request / response : " + reply);
       log.info("    message priority : " + priority);
+      log.info("    session transacted : " + transaction);      
       log.info("    include ObjectMessage : " + object);
       log.info("    include BytesMessage : " + bytes);
     } else {
@@ -175,6 +179,13 @@ public class Options  {
       case Constants.ACKNOWLEDGE:
       case Constants.CLIENT_ACK:
         acknowledge = true;
+        transaction = false;
+        break;
+      case Constants.TRANSACT:
+      case Constants.TRANSACTION:
+      case Constants.TRANSATION:
+        transaction = true;
+        acknowledge = false;
         break;
       case Constants.HIGH:
         priority = Constants.HIGH_PRIORITY;

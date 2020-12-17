@@ -124,7 +124,11 @@ public class PutJMS20 extends BaseJMS20 {
                 break;
             }
             if (options.acknowledge()) {
+              logger.info("acknowledging messages");
               message.acknowledge();
+            } else if (options.transaction() && Constants.TRANS_LIMIT == i) {
+              logger.info("commiting messages");
+              context.commit();
             }
 
             new Inspector(message)
@@ -139,6 +143,10 @@ public class PutJMS20 extends BaseJMS20 {
             logger.info("Expecting some replies");
             processReplies();
           }
+        }
+        if (options.transaction()) {
+          logger.info("Rolling back messages");
+          context.rollback();
         }
       }
     } catch (Exception ex) {
@@ -244,7 +252,7 @@ public class PutJMS20 extends BaseJMS20 {
         ;
       if (options.acknowledge()) {
         i.acknowledge();
-      }        
+      }
     } catch (Exception ex) {
       ex.printStackTrace();
     }

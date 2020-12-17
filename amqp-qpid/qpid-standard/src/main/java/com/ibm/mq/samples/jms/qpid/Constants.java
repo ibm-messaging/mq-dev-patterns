@@ -63,7 +63,13 @@ public abstract class Constants {
   static final String ACK = "ack";
   static final String ACKNOWLEDGE = "acknowledge";
   static final String CLIENT_ACK = "clientack";
-  
+
+  static final String TRANSACT = "transact";
+  static final String TRANSACTION = "transaction";
+  static final String TRANSATION = "transation";
+
+  static final int TRANS_LIMIT = 2;
+
   static final int LOW_PRIORITY = 2;
   static final int MID_PRIORITY = 4;
   static final int HIGH_PRIORITY = 7;

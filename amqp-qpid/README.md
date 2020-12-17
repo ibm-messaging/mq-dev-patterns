@@ -78,9 +78,18 @@ Specify in `applications.properties` as `amqp-mqtest.appargs`
 ````
       Exception in thread "main" javax.jms.IllegalStateRuntimeException: The MessageConsumer was closed due to an unrecoverable error.
 ````  
-  * ack
-    * if set will switch the session to CLIENT_ACKNOWLEDGE mode.
-      * if set for the put, it also needs to be set for the get. Otherwise the get action does not remove the message from the queue. 
+  * one of
+    * if not set defaults the session to AUTO_ACKNOWLEDGE
+    * ack
+      * if set will switch the session to CLIENT_ACKNOWLEDGE mode.
+      * if set for the put, it also needs to be set for the get. Otherwise the get action does not remove the message from the queue.
+    * transaction
+      * if set will attempt to commit the first 2 messages in each batch put and rollback the remaining 3 messages.
+      * causes `createProducer()` in the get to thow an exception
+````
+    javax.jms.JMSRuntimeException: AMQXR0025E: ClientIdentifier ...
+    used an invalid destination name 'null'. [condition = amqp:not-found]
+````
   * durable
     * if set will cause the topic subscribe to be durable.
       * needs the mode to be `get topic durable` to be actioned.

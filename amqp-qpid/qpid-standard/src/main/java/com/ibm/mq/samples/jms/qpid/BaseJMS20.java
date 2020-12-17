@@ -99,9 +99,13 @@ public class BaseJMS20 {
 
   protected BaseJMS20 prep() {
     logger.info("Creating JMS context");
-    context = factory.createContext(options.acknowledge()
-                                      ? JMSContext.AUTO_ACKNOWLEDGE
-                                      : JMSContext.CLIENT_ACKNOWLEDGE);
+    int sessionType = JMSContext.AUTO_ACKNOWLEDGE;
+    if (options.acknowledge()) {
+      sessionType = JMSContext.CLIENT_ACKNOWLEDGE;
+    } else if (options.transaction()) {
+      sessionType = JMSContext.SESSION_TRANSACTED;
+    }
+    context = factory.createContext(sessionType);
 
     // For Quarkus the ClienID needs to be set here, as
     // soon as the context is obtained. So it is done here
