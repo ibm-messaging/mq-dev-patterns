@@ -101,6 +101,13 @@ public class BaseJMS20 {
     logger.info("Creating JMS context");
     context = factory.createContext();
 
+    // For Quarkus the ClienID needs to be set here, as
+    // soon as the context is obtained. So it is done here
+    // for both standard and quarkus runtimes.
+    if (options.durable() && Constants.DEST_TOPIC.equals(destinationType)) {
+        context.setClientID(Constants.CLIENTID);
+    }
+
     if (quarkusMode) {
       if (null != options.queueName()) {
         q = context.createQueue(options.queueName());

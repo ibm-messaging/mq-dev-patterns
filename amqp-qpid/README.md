@@ -77,7 +77,10 @@ Specify in `applications.properties` as `amqp-mqtest.appargs`
       * causes an exception to be thrown
 ````
       Exception in thread "main" javax.jms.IllegalStateRuntimeException: The MessageConsumer was closed due to an unrecoverable error.
-````   
+````  
+  * durable
+    * if set will cause the topic subscribe to be durable.
+      * needs the mode to be `get topic durable` to be actioned.
   * reply
     * if set the put will add a reply to queue to the message. The put will wait a short time for a response. This setting does
     not directly affect the get. The get does, however check received messages for

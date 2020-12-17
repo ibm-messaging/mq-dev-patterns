@@ -53,6 +53,10 @@ public abstract class Constants {
   static final String HIGH = "high";
   static final String LOW = "low";
 
+  static final String DURABLE = "durable";
+  static final String DURABLEID = "durableConsumerID";
+  static final String CLIENTID = "durableClientID";
+
   static final String OBJECT = "object";
   static final String BYTES = "bytes";
 

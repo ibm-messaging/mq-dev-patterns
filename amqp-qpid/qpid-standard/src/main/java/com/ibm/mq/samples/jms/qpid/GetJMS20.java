@@ -104,7 +104,12 @@ public class GetJMS20 extends BaseJMS20 {
         mc = context.createConsumer(q, selector);
         break;
       case Constants.DEST_TOPIC:
-        mc = context.createConsumer(t, selector);
+        if (options.durable()) {
+          // Client ID should already be set in BaseJMS20 prep()
+          mc = context.createDurableConsumer(t, Constants.DURABLEID, selector, false);
+        } else {
+          mc = context.createConsumer(t, selector);
+        }
         break;
     }
     return mc;

@@ -35,6 +35,7 @@ public class Options  {
   private static final Boolean SELECTOR_DEFAULT = false;
   private static final Boolean OBJECT_DEFAULT = false;
   private static final Boolean BYTES_DEFAULT = false;
+  private static final Boolean DURABLE_DEFAULT = false;
 
   private static final int DEFAULT_PUT_COUNT = 1;
 
@@ -52,6 +53,7 @@ public class Options  {
   private Boolean selector = SELECTOR_DEFAULT;
   private Boolean object = OBJECT_DEFAULT;
   private Boolean bytes = BYTES_DEFAULT;
+  private Boolean durable = DURABLE_DEFAULT;
 
   private int priority = PRIORITY_DEFAULT;
   private int numberOfMessages = DEFAULT_PUT_COUNT;
@@ -78,6 +80,7 @@ public class Options  {
   public Boolean selector() { return selector; }
   public Boolean object() { return object; }
   public Boolean bytes() { return bytes; }
+  public Boolean durable() { return durable; }
 
   public int priority() { return priority; }
   public int numberOfMessages() { return numberOfMessages; }
@@ -109,6 +112,7 @@ public class Options  {
     } else {
       log.info("    sync mode : " + syncMode);
       log.info("    get with selector : " + selector);
+      log.info("    durable : " + durable);
     }
     log.info("    destination type : " + destinationType);
     log.info("-----------------------------");
@@ -159,6 +163,9 @@ public class Options  {
         break;
       case Constants.BYTES:
         bytes = true;
+        break;
+      case Constants.DURABLE:
+        durable = true;
         break;
       case Constants.HIGH:
         priority = Constants.HIGH_PRIORITY;
