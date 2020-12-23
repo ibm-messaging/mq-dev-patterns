@@ -3,7 +3,7 @@ Transactions with Spring and IBM MQ
 
 ## Working with transactions in app server environments
 
-Read [this article](transactionsAppSvrs.md) for an intro.
+Read [this article](transactionsAppServers.md) for an intro.
 
 As we mentioned before, transactions give you special powers as a developer but to get the most out of transactions in your applications, you should understand how to use the app server or framework to your best advantage. The article should help with that.
 
@@ -28,7 +28,6 @@ We’ve provided you with some basic building blocks to help you on your way.
 - [Open MQ Console](#open-mq-console)
 - [Set up a backout queue](#set-up-a-backout-queue)
 - [Clone this repo](#clone-this-repo)
-<!-- - [Copy samples in](#copy-samples-in) -->
 - [Build with Maven](#build-with-maven)
 - [Try out the samples](#try-out-the-samples)
 
