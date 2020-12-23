@@ -36,7 +36,8 @@ In this diagram we have the Liberty app server working with a resource adapter t
 
 
 ![Java EE 7 Architecture](/transactions/JMS/Spring/images/liberty_mq_ra_mdb.png)
-Figure 1 Applications using Liberty app server resources and MQ Resource adapter to connect to a queue manager and send/receive messages
+
+*Figure 1 Applications using Liberty app server resources and MQ Resource adapter to connect to a queue manager and send/receive messages*
 
 In the previous article we saw that a in a Java SE scenario, the transaction was coordinated between MQ as the messaging provider and the JMS API.
 
@@ -82,7 +83,8 @@ Spring promises a more developer friendly approach to using the resources that a
 
 
 ![Spring framework components](/transactions/JMS/Spring/images/spring-overview.png)
-Figure 2 Overview of the [Spring framework modules]( https://docs.spring.io/spring-framework/docs/4.3.20.RELEASE/spring-framework-reference/html/overview.html )
+
+*Figure 2 Overview of the [Spring framework modules]( https://docs.spring.io/spring-framework/docs/4.3.20.RELEASE/spring-framework-reference/html/overview.html )*
 
 ## Is Spring better?
 
@@ -114,7 +116,7 @@ We provide two sets of simple transacted samples.
 
 They are designed to work with the IBM MQ container with the default developer configuration.
 
-## How do I get the samples
+## How do I get the samples?
 
 We give you a couple of options for exploring the samples.
 
