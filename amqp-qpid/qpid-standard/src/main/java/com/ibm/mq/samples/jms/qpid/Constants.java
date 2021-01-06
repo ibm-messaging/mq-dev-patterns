@@ -68,6 +68,8 @@ public abstract class Constants {
   static final String TRANSACTION = "transaction";
   static final String TRANSATION = "transation";
 
+  static final String COMMA = ",";
+
   static final int TRANS_LIMIT = 2;
 
   static final int LOW_PRIORITY = 2;

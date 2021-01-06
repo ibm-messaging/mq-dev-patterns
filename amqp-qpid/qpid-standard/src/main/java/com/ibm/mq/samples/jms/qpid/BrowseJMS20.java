@@ -42,9 +42,6 @@ public class BrowseJMS20 extends BaseJMS20 {
     return this;
   }
 
-  static final String SYNC_ASYNC = "async";
-  static final String SYNC_SYNC = "sync";
-
   public BrowseJMS20 browse() {
     if (! verify()) {
       logger.severe("Not able to run sample");
