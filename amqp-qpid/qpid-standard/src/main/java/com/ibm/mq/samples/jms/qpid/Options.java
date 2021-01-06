@@ -113,7 +113,7 @@ public class Options  {
       log.info("    message persistence : " + persist);
       log.info("    request / response : " + reply);
       log.info("    message priority : " + priority);
-      log.info("    session transacted : " + transaction);      
+      log.info("    session transacted : " + transaction);
       log.info("    include ObjectMessage : " + object);
       log.info("    include BytesMessage : " + bytes);
     } else {
@@ -213,7 +213,11 @@ public class Options  {
   public Options parseArguments(String[] args) {
     if (args.length > 0) {
       for (String a : args) {
-        setSetting(a);
+        if (a.contains(Constants.COMMA)) {
+          parseArguments(a.split(Constants.COMMA));
+        } else {
+          setSetting(a);
+        }
       }
     }
     return this;
