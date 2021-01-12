@@ -37,7 +37,7 @@ The properties that the samples need to connect to MQ are in the
 ## Running the sample
 To start the sample:
 ````
-./mvnw compile quarkus:dev
+mvn compile quarkus:dev
 ````
 
 ## Native executable
@@ -45,7 +45,7 @@ To start the sample:
 ### Building native executable
 You can build the native GraalVM executable with:
 ````
-./mvnw package -Pnative
+mvn package -Pnative
 ````
 
 ### Running native executable
