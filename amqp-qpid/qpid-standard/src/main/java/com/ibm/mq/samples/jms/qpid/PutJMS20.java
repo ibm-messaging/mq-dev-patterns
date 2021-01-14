@@ -163,7 +163,7 @@ public class PutJMS20 extends BaseJMS20 {
 
   private Message[] createMessages(int place, String text) {
     return new Message[] {
-      context.createTextMessage(place + " : " + text)
+      context.createTextMessage(place + Constants.TEXT_SYMBOL + text)
       ,createBytesMessage(place, text)
       ,createStreamMessage(place, text)
       ,createObjectMessage(place, text)
@@ -177,7 +177,7 @@ public class PutJMS20 extends BaseJMS20 {
       BytesMessage bm = context.createBytesMessage();
       try {
         bm.writeInt(place);
-        bm.writeUTF("😉 BytesMessage");
+        bm.writeUTF(Constants.BYTES_SYMBOL);
         bm.writeUTF(text);
       } catch (JMSException e) {
         logger.warning("Error building BytesMessage " + e.getErrorCode());
@@ -185,7 +185,9 @@ public class PutJMS20 extends BaseJMS20 {
       logger.info("Bytes Message created");
       return bm;
     } else {
-      return context.createTextMessage(place + " : in lieu of BytesMessage " + text);
+      return context.createTextMessage(place + Constants.TEXT_SYMBOL +
+                                          ": in lieu of " + Constants.BYTES_SYMBOL +
+                                          text);
     }
 
   }
@@ -195,10 +197,10 @@ public class PutJMS20 extends BaseJMS20 {
     StreamMessage sm = context.createStreamMessage();
     try {
       sm.writeInt(place);
-      sm.writeString("🤓 StreamMessage");
+      sm.writeString(Constants.STREAM_SYMBOL);
       sm.writeString(text);
     } catch (JMSException e) {
-      logger.warning("Error building BytesMessage " + e.getErrorCode());
+      logger.warning("Error building StreamMessage " + e.getErrorCode());
     }
     logger.info("Stream Message created");
     return sm;
@@ -209,15 +211,23 @@ public class PutJMS20 extends BaseJMS20 {
       logger.info("Creating Object Message");
       ObjectMessage om = context.createObjectMessage();
       try {
-        om.setObject(new Data(place, "🦺 ObjectMessage", text));
+        logger.info("Setting Object");
+        om.setObject(new Data(place, Constants.OBJECT_SYMBOL, text));
+        return om;
       } catch (JMSException e) {
-        logger.warning("Error building ObjectMessage " + e.getErrorCode());
+        logger.warning("JMS Exception building ObjectMessage " + e.getErrorCode());
+      } catch (Exception e) {
+        logger.warning("Exception building ObjectMessage " + e.getCause());
+      } catch (Error e) {
+        logger.warning("Error building ObjectMessage " + e.getMessage());
+        e.printStackTrace();
       }
       logger.info("Object Message created");
-      return om;
-    } else {
-      return context.createTextMessage(place + " : in lieu of ObjectMessage " + text);
     }
+    // If we get to here then an ObjectMessage creation failed.
+    return context.createTextMessage(place + Constants.TEXT_SYMBOL +
+                                      ": in lieu of " + Constants.OBJECT_SYMBOL +
+                                      text);
   }
 
   private MapMessage createMapMessage(int place, String text) {
@@ -225,7 +235,7 @@ public class PutJMS20 extends BaseJMS20 {
     MapMessage mm = context.createMapMessage();
     try {
       mm.setInt("place", place);
-      mm.setString("utf string", "🛄 MapMessage");
+      mm.setString("utf string", Constants.MAP_SYMBOL);
       mm.setString("message text", text);
     } catch (JMSException e) {
       logger.warning("Error building MapMessage " + e.getErrorCode());

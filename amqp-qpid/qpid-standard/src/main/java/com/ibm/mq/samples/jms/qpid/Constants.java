@@ -76,5 +76,11 @@ public abstract class Constants {
   static final int MID_PRIORITY = 4;
   static final int HIGH_PRIORITY = 7;
 
+  static final String TEXT_SYMBOL = " 🗒 TextMessage ";
+  static final String BYTES_SYMBOL = " 🦁 BytesMessage ";
+  static final String STREAM_SYMBOL = " 🏊 StreamMessage ";
+  static final String OBJECT_SYMBOL = " 🦺 ObjectMessage ";
+  static final String MAP_SYMBOL = " 🛄 MapMessage ";
+
   private Constants() {};
 }
