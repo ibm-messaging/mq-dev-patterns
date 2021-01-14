@@ -117,7 +117,15 @@ Specify in `applications.properties` as `amqp-mqtest.appargs`
     * if specified the put adds custom properties to the header.
   * object
     * if specified adds an ObjectMessage to the message set.
-      * Hangs the application when specified and running native with GraalVM / Quarkus
+      * When specified and running native with GraalVM / Quarkus, causes an Error to be
+        thrown
+````
+com.oracle.svm.core.jdk.UnsupportedFeatureError: ObjectOutputStream.writeObject()
+	at com.oracle.svm.core.util.VMError.unsupportedFeature(VMError.java:86)
+	at java.io.ObjectOutputStream.writeObject(ObjectOutputStream.java:68)
+	at org.apache.qpid.jms.provider.amqp.message.AmqpSerializedObjectDelegate.getSerializedBytes(AmqpSerializedObjectDelegate.java:76)
+
+````
   * bytes
     * if specified adds a BytesMessage to the message set.
       * Raises an exception in MQI get applications
