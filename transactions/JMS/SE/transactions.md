@@ -65,11 +65,11 @@ With the transaction parameter:
 
 Step 1 - The put is under a transaction, the message gets to the queue but it is not yet available.
 
-![Put under a transaction - rollback](/transactions/JMS/SE/images/put_rollback.png)
+![Put under a transaction - rollback](/transactions/JMS/SE/images/ibm_mq_transaction_msg_rollback.png)
 
 Step 2 - When the transaction is ended with rollback instead of a commit, the message is removed from the queue as the state is returned to the starting point before the transaction started.
 
-![Put under a transaction - rollback 2](/transactions/JMS/SE/images/put_rollback_2.png)
+![Put under a transaction - rollback 2](/transactions/JMS/SE/images/ibm_mq_transaction_MSG_rollback_2.png)
 
 All this transaction stuff is great, but it leaves us with a problem: what if you can’t complete a task because of a persistent error? We don’t want to be stuck in an endless loop of trying to do something that is going to fail. Messaging developers refer to this situation as the ‘poison message problem’. To help deal with this, two special queues are defined: a backout queue (a place to put messages that when processing fails beyond a set threshold) and a dead letter queue (a place to put messages as a last resort).
 
