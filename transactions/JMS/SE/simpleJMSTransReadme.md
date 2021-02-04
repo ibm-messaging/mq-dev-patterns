@@ -19,11 +19,11 @@ Simple put transaction sample
 
 #### Point to point with a transaction - rollback step 1
 
-![Point to point with a transaction](/transactions/JMS/SE/images/ibm_mq_transaction_msg_rollback_step1.png)
+![Point to point with a transaction](/transactions/JMS/SE/images/ibm_mq_transaction_msg_rollback.png)
 
 #### Point to point with a transaction - rollback step 2
 
-![Point to point with a transaction](/transactions/JMS/SE/images/ibm_mq_transaction_msg_rollback_step2.png)
+![Point to point with a transaction](/transactions/JMS/SE/images/ibm_mq_transaction_MSG_rollback_2.png)
 
 
 
