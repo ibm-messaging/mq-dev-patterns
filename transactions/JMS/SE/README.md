@@ -3,15 +3,16 @@ Transactions with JMS and IBM MQ
 
 ## What are Transactions
 
-Read [this transactions article](transactions.md) for an intro to transactions.
+Read [this transactions article](https://github.com/ibm-messaging/mq-dev-patterns/blob/master/transactions/JMS/SE/README.md) for an intro to transactions. If you've just come from there, you're in the right place, continue reading and explore the samples.
 
 Transactions give you special powers but as a developer, it is down to you to understand enough of the concepts and features that the JMS API and IBM MQ provide, to get the most out of transactions in your applications.
 
 We’ve provided you with some basic building blocks to help you on your way.
 
-Our transaction samples are based on a basic point to point scenario with a sender and a receiver. But no transaction yet.
+Our transaction samples are based on a basic point to point scenario with a sender and a receiver. 
 
 #### Point to point without a transaction
+
 
 ![Point to point with IBM MQ](/transactions/JMS/SE/images/ibm_mq_point_to_point.gif)
 
