@@ -3,7 +3,7 @@ Transactions with JMS and IBM MQ
 
 ## What are Transactions
 
-Read [this transactions article](https://github.com/ibm-messaging/mq-dev-patterns/blob/master/transactions/JMS/SE/README.md) for an intro to transactions. If you've just come from there, you're in the right place, continue reading and explore the samples.
+Read [this transactions article](https://developer.ibm.com/components/ibm-mq/articles/an-introduction-to-local-transactions-using-mq-and-jms/) for an intro to transactions. If you've just come from there, you're in the right place, continue reading and explore the samples.
 
 Transactions give you special powers but as a developer, it is down to you to understand enough of the concepts and features that the JMS API and IBM MQ provide, to get the most out of transactions in your applications.
 
