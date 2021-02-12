@@ -3,7 +3,7 @@ Local transactions in application servers with JMS and IBM MQ
 ## Are you onMessage?
 
 
-In the [first article](https://github.com/ibm-messaging/mq-dev-patterns/blob/master/transactions/JMS/SE/transactions.md) in this series on transactions, we looked at what transactions are, how they are defined in JMS and in IBM MQ and shared a few samples for simple usage in stand-alone Java SE applications.
+In the [first article](https://developer.ibm.com/components/ibm-mq/articles/an-introduction-to-local-transactions-using-mq-and-jms/) in this series on transactions, we looked at what transactions are, how they are defined in JMS and in IBM MQ and shared a few samples for simple usage in stand-alone Java SE applications.
 
 In this article we look at what you need to know to write applications for enterprise application servers.
 
