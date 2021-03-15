@@ -23,6 +23,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+// When enabled this component ensures that the application keeps running, until interrupted.
 @Component
 @EnableScheduling
 public class HeartBeat {
