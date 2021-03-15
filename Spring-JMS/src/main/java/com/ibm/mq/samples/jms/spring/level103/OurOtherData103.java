@@ -14,21 +14,28 @@
  * limitations under the License.
  */
 
-package com.ibm.mq.samples.jms.spring.level101;
+package com.ibm.mq.samples.jms.spring.level103;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.jms.annotation.JmsListener;
-import org.springframework.stereotype.Component;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-//@Component
-public class MessageConsumer101 {
-    protected final Log logger = LogFactory.getLog(getClass());
+import java.io.Serializable;
+import java.util.UUID;
 
-    @JmsListener(destination = "${app.l101.dest.name2}")
-    public void receive(String message) {
-        logger.info("");
-        logger.info( this.getClass().getSimpleName());
-        logger.info("Received message is: " + message);
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class OurOtherData103 implements Serializable {
+    private String id = UUID.randomUUID().toString();
+    private String greeting = "";
+
+    public OurOtherData103(String greeting) {
+        this.greeting = greeting;
     }
 }
+
+
+

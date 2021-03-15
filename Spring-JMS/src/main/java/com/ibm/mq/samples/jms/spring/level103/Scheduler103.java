@@ -14,21 +14,41 @@
  * limitations under the License.
  */
 
-package com.ibm.mq.samples.jms.spring.level101;
+package com.ibm.mq.samples.jms.spring.level103;
 
+import com.ibm.mq.samples.jms.spring.globals.Constants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.jms.annotation.JmsListener;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 //@Component
-public class MessageConsumer101 {
+@EnableScheduling
+public class Scheduler103 {
     protected final Log logger = LogFactory.getLog(getClass());
 
-    @JmsListener(destination = "${app.l101.dest.name2}")
-    public void receive(String message) {
+    private final SendMessageService103 service;
+    static private int i = 0;
+
+    Scheduler103(SendMessageService103 service) {
+        this.service = service;
+    }
+
+    @Scheduled(initialDelay = 40 * Constants.SECOND, fixedRate = 2 * Constants.MINUTE)
+    public void run() {
+        String greeting = "Sending data in cycle :" + i++;
+        OurData103 msg1 = new OurData103(greeting);
+        OurOtherData103 msg2 = new OurOtherData103(greeting);
+
         logger.info("");
         logger.info( this.getClass().getSimpleName());
-        logger.info("Received message is: " + message);
+        logger.info("Sending messages");
+
+        logger.info(msg1);
+        service.send(msg1);
+
+        logger.info(msg2);
+        service.send(msg2);
     }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ibm.mq.samples.jms.spring.level101;
+package com.ibm.mq.samples.jms.spring.level103;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -22,13 +22,23 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
 //@Component
-public class MessageConsumer101 {
+public class MessageConsumer103 {
     protected final Log logger = LogFactory.getLog(getClass());
 
-    @JmsListener(destination = "${app.l101.dest.name2}")
-    public void receive(String message) {
+    @JmsListener(destination = "${app.l103.queue.name2}")
+    public void receiveData(OurData103 message) {
         logger.info("");
         logger.info( this.getClass().getSimpleName());
-        logger.info("Received message is: " + message);
+        logger.info("Received message of type: " + message.getClass().getSimpleName());
+        logger.info("Received message :" + message);
     }
+
+    @JmsListener(destination = "${app.l103.queue.name2}")
+    public void receiveOther(OurOtherData103 message) {
+        logger.info("");
+        logger.info( this.getClass().getSimpleName());
+        logger.info("Received message of type: " + message.getClass().getSimpleName());
+        logger.info("Received message :" + message);
+    }
+
 }

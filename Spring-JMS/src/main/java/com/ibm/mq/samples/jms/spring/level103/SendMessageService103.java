@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ibm.mq.samples.jms.spring.level102;
+package com.ibm.mq.samples.jms.spring.level103;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.JmsTemplate;
@@ -22,27 +22,23 @@ import org.springframework.stereotype.Service;
 
 
 @Service
-public class SendMessageService102 {
+public class SendMessageService103 {
 
-    @Value("${app.l102.queue.name1}")
+    @Value("${app.l103.queue.name1}")
     public String sendQueue;
 
-    @Value("${app.l102.topic.name1}")
-    public String sendTopic;
+    final private JmsTemplate jmsTemplate;
 
-    final private JmsTemplate myPutGetTemplate;
-    final private JmsTemplate myPubSubTemplate;
-
-    SendMessageService102(JmsTemplate myPutGetTemplate, JmsTemplate myPubSubTemplate) {
-        this.myPutGetTemplate = myPutGetTemplate;
-        this.myPubSubTemplate = myPubSubTemplate;
+    SendMessageService103(JmsTemplate jmsTemplate) {
+        this.jmsTemplate = jmsTemplate;
     }
 
-    public void put(String msg) {
-        myPutGetTemplate.convertAndSend(sendQueue, msg);
+    public void send(OurData103 msg) {
+        jmsTemplate.convertAndSend(sendQueue, msg);
     }
-    public void publish(String msg) {
-        myPubSubTemplate.convertAndSend(sendTopic, msg);
+
+    public void send(OurOtherData103 msg) {
+        jmsTemplate.convertAndSend(sendQueue, msg);
     }
 
 }

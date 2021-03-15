@@ -80,3 +80,25 @@ and `SendMessageService102`.
 * **app.l102.queue.name2** - Queue name used by the application to get messages. 
 * **app.l102.topic.name1** - Queue name used by the application to publish messages.
 * **app.l102.topic.name2** - Queue name used by the application to subscribe to.
+
+
+### Level 103 Samples
+The Level 103 samples show marshalling of application data objects into and from 
+JMS Messages.
+
+It consists of 5 modules.
+* **OurData103** - Data POJO
+* **OurOtherData103** - Another data POJO  
+* **MessageConsumer103** - which sets up listeners for queue 2 for OurData103 and OurOtherData103
+* **SendMessageService103** - which provides methods to put messages that wrap OurData103 
+  and OurOtherData103 to  queue 1 
+* **Scheduler103** - which sets up a scheduler to put messages every two minutes.
+
+
+To enable the 103 samples uncomment the `@Component` lines in
+`MessageConsumer103`
+and `SendMessageService103`.
+
+#### Level 103 application.properties
+* **app.l103.queue.name1** - Queue name used by the application to put messages.
+* **app.l103.queue.name2** - Queue name used by the application to get messages. 
