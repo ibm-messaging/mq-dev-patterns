@@ -30,7 +30,9 @@ starting from the simple no customisation needed in level101,
 and increasing in complexity and customisation working up the levels.
 
 Each sample level is initially disabled. The only component that is initially enabled is
-`schedules/HeartBeat`. This ensures that when the application is started then
+`schedules/HeartBeat`. This ensures that when the application is started it continues
+to run until interrupted.
+
 
 You can enable any number of levels.
 
@@ -60,4 +62,21 @@ Switch to running in default pub/sub mode by setting
 spring.jms.pub-sub-domain=true
 ````
 
+### Level 102 Samples
+The Level 102 samples show an application that is performing both
+put/get point to point messaging as well as pub/sub.
+
+It consists of 4 modules.
+* **MQConfiguration102** - which creates two JMS template and two JMS Listener 
+  container beans. Configured to allow both put/get and pub/sub. 
+* **MessageConsumer102** - which sets up listeners for queue 2 and topic 2.
+* **SendMessageService102** - which provides methods to put to queue 1 and publish to topic 1.
+* **Scheduler102** - which sets up a scheduler to put and pub a message every two minutes.
+
+To enable the 102 samples uncomment the `@Component` lines in `MessageConsumer102` 
+and `SendMessageService102`.
+
+To enable the 102 samples uncomment the 
+
+#### Level 102 application.properties
 
