@@ -53,7 +53,6 @@ and `SendMessageService101`.
 #### Level 101 application.properties
 * **app.l101.dest.name1** - Queue name used by the application to put messages. This will become 
   the publication topic when running in default pub/sub mode.
-
 * **app.l101.dest.name2** - Queue name used by the application to get messages. This will become 
   the subscription topic names when runninbg in default pub/sub mode.
   
@@ -76,7 +75,8 @@ It consists of 4 modules.
 To enable the 102 samples uncomment the `@Component` lines in `MessageConsumer102` 
 and `SendMessageService102`.
 
-To enable the 102 samples uncomment the 
-
 #### Level 102 application.properties
-
+* **app.l102.queue.name1** - Queue name used by the application to put messages.
+* **app.l102.queue.name2** - Queue name used by the application to get messages. 
+* **app.l102.topic.name1** - Queue name used by the application to publish messages.
+* **app.l102.topic.name2** - Queue name used by the application to subscribe to.
