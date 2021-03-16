@@ -38,6 +38,8 @@ You can enable any number of levels.
 
 
 ### Level 101 Sample
+**Letting Spring do the work**
+
 The Level 101 sample is the lightest sample, making maximum use of the spring-jms and 
 `mq-jms-spring-boot-starter` default boiler plate.
 
@@ -62,6 +64,8 @@ spring.jms.pub-sub-domain=true
 ````
 
 ### Level 102 Sample
+**An app that does both Point/Point and Pub/Sub**
+
 The Level 102 sample show an application that is performing both
 put/get point to point messaging as well as pub/sub.
 
@@ -83,6 +87,8 @@ and `SendMessageService102`.
 
 
 ### Level 103 Sample
+**Data marshalling**
+
 The Level 103 sample shows marshalling of application data objects into and from 
 JMS Messages.
 
@@ -102,8 +108,10 @@ and `SendMessageService103`.
 * **app.l103.queue.name2** - Queue name used by the application to get messages. 
 
 ### Level 104 Sample
+**Message Selectors**
+
 Whereas the level 103 sample is listening for all messages on queue 2. 
-The level 104 sample makes use of message headers as a filter.
+The level 104 sample makes use of message headers as a selector.
 The issue with the level 103 sample is that there is an attempt 
 to consume all messages, some of which will be rejected when 
 marshalling fails.
@@ -120,21 +128,39 @@ To enable the 104 sample uncomment the `@Component` lines in
 `MessageConsumer104`
 and `SendMessageService104`.
 
-
 #### Level 104 application.properties
 * **app.l104.queue.name1** - Queue name used by the application to put messages.
 * **app.l104.queue.name2** - Queue name used by the application to get messages.
 
 
-
 ### Level 105 Sample
-Read as JMS Message
+**Getting JMS Messages**
+
+The level 105 sample overrides the default Spring marshalling 
+and listens for JMS Messages
+
+It consists of 1 module.
+* **MessageConsumer105** - which sets up a listener on queue 2.
+
+To enable the 105 sample uncomment the `@Component` line in
+`MessageConsumer105`.
+
+#### Level 105 application.properties
+* **app.l105.queue.name2** - Queue name used by the application to get messages.
+
+
 
 ### Level 106 Sample
 The Level 106 sample shows non JMS compliance - so can be read 
 
-### Level 107 Samples
-Stopping starting listeners
+### Level 107 Sample
+Replies to reply queue
+
+### Level 108 Sample
+Audit / Copy queues
 
 ### Level 108 Samples
+Stopping starting listeners
+
+### Level 109 Samples
 Connection throtling 
