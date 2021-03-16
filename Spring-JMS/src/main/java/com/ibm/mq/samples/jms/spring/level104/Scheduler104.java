@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ibm.mq.samples.jms.spring.level103;
+package com.ibm.mq.samples.jms.spring.level104;
 
 import com.ibm.mq.samples.jms.spring.globals.Constants;
 import com.ibm.mq.samples.jms.spring.globals.OurData;
@@ -27,17 +27,17 @@ import org.springframework.stereotype.Component;
 
 //@Component
 @EnableScheduling
-public class Scheduler103 {
+public class Scheduler104 {
     protected final Log logger = LogFactory.getLog(getClass());
 
-    private final SendMessageService103 service;
+    private final SendMessageService104 service;
     static private int i = 0;
 
-    Scheduler103(SendMessageService103 service) {
+    Scheduler104(SendMessageService104 service) {
         this.service = service;
     }
 
-    @Scheduled(initialDelay = 40 * Constants.SECOND, fixedRate = 2 * Constants.MINUTE)
+    @Scheduled(initialDelay = 50 * Constants.SECOND, fixedRate = 2 * Constants.MINUTE)
     public void run() {
         String greeting = "Sending data in cycle :" + i++;
         OurData msg1 = new OurData(greeting);

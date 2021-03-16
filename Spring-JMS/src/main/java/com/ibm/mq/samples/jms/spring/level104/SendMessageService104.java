@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.ibm.mq.samples.jms.spring.level103;
+package com.ibm.mq.samples.jms.spring.level104;
 
+import com.ibm.mq.samples.jms.spring.globals.Constants;
 import com.ibm.mq.samples.jms.spring.globals.OurData;
 import com.ibm.mq.samples.jms.spring.globals.OurOtherData;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,26 +25,37 @@ import org.springframework.stereotype.Service;
 
 
 @Service
-public class SendMessageService103 {
+public class SendMessageService104 {
 
-    @Value("${app.l103.queue.name1}")
+    @Value("${app.l104.queue.name1}")
     public String sendQueue;
 
     final private JmsTemplate jmsTemplate;
 
-    SendMessageService103(JmsTemplate jmsTemplate) {
+    SendMessageService104(JmsTemplate jmsTemplate) {
         this.jmsTemplate = jmsTemplate;
     }
 
+    // Adding MessagePostProcess to add message headers
     public void send(OurData msg) {
-        jmsTemplate.convertAndSend(sendQueue, msg);
+        jmsTemplate.convertAndSend(sendQueue, msg,
+                                    message -> {
+                                        message.setIntProperty(Constants.DATATYPE, Constants.DataTypes.OURDATATYPE.getValue());
+                                        return message;
+                                    });
     }
 
     public void send(OurOtherData msg) {
-        jmsTemplate.convertAndSend(sendQueue, msg);
+        jmsTemplate.convertAndSend(sendQueue, msg,
+                                    message -> {
+                                        message.setIntProperty(Constants.DATATYPE, Constants.DataTypes.OUROTHERDATATYPE.getValue());
+                                        return message;
+                                    });
     }
 
 }
+
+
 
 
 

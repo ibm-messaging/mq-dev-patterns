@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ibm.mq.samples.jms.spring.level103;
+package com.ibm.mq.samples.jms.spring.globals;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
@@ -22,23 +22,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.Random;
 import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OurData103 implements Serializable {
-    private static Random r = new Random();
+public class OurOtherData implements Serializable {
 
     private String id = UUID.randomUUID().toString();
     private String greeting = "";
-    private int value = r.nextInt(100);
-    private Date date = new Date();
 
-    public OurData103(String greeting) {
+    public OurOtherData(String greeting) {
         this.greeting = greeting;
     }
 }

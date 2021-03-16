@@ -37,8 +37,8 @@ to run until interrupted.
 You can enable any number of levels.
 
 
-### Level 101 Samples
-The Level 101 samples are the lightest samples, making maximum use of the spring-jms and 
+### Level 101 Sample
+The Level 101 sample is the lightest sample, making maximum use of the spring-jms and 
 `mq-jms-spring-boot-starter` default boiler plate.
 
 It consists of 3 modules. 
@@ -46,7 +46,7 @@ It consists of 3 modules.
 * **SendMessageService101** - which provides methods to send to destination 1 
 * **Scheduler101** - which sets up a scheduler to put or pub two messages every two minutes.
 
-To enable the 101 samples uncomment the `@Component` lines in `MessageConsumer101`
+To enable the 101 sample uncomment the `@Component` lines in `MessageConsumer101`
 and `SendMessageService101`.
 
 
@@ -61,8 +61,8 @@ Switch to running in default pub/sub mode by setting
 spring.jms.pub-sub-domain=true
 ````
 
-### Level 102 Samples
-The Level 102 samples show an application that is performing both
+### Level 102 Sample
+The Level 102 sample show an application that is performing both
 put/get point to point messaging as well as pub/sub.
 
 It consists of 4 modules.
@@ -72,7 +72,7 @@ It consists of 4 modules.
 * **SendMessageService102** - which provides methods to put to queue 1 and publish to topic 1.
 * **Scheduler102** - which sets up a scheduler to put and pub a message every two minutes.
 
-To enable the 102 samples uncomment the `@Component` lines in `MessageConsumer102` 
+To enable the 102 sample uncomment the `@Component` lines in `MessageConsumer102` 
 and `SendMessageService102`.
 
 #### Level 102 application.properties
@@ -82,23 +82,59 @@ and `SendMessageService102`.
 * **app.l102.topic.name2** - Queue name used by the application to subscribe to.
 
 
-### Level 103 Samples
-The Level 103 samples show marshalling of application data objects into and from 
+### Level 103 Sample
+The Level 103 sample shows marshalling of application data objects into and from 
 JMS Messages.
 
-It consists of 5 modules.
-* **OurData103** - Data POJO
-* **OurOtherData103** - Another data POJO  
-* **MessageConsumer103** - which sets up listeners for queue 2 for OurData103 and OurOtherData103
-* **SendMessageService103** - which provides methods to put messages that wrap OurData103 
-  and OurOtherData103 to  queue 1 
+It consists of 3 modules.
+* **MessageConsumer103** - which sets up listeners for queue 2 for OurData and OurOtherData POJOs.
+* **SendMessageService103** - which provides methods to put messages that wrap OurData
+  and OurOtherData to queue 1 
 * **Scheduler103** - which sets up a scheduler to put messages every two minutes.
 
 
-To enable the 103 samples uncomment the `@Component` lines in
+To enable the 103 sample uncomment the `@Component` lines in
 `MessageConsumer103`
 and `SendMessageService103`.
 
 #### Level 103 application.properties
 * **app.l103.queue.name1** - Queue name used by the application to put messages.
 * **app.l103.queue.name2** - Queue name used by the application to get messages. 
+
+### Level 104 Sample
+Whereas the level 103 sample is listening for all messages on queue 2. 
+The level 104 sample makes use of message headers as a filter.
+The issue with the level 103 sample is that there is an attempt 
+to consume all messages, some of which will be rejected when 
+marshalling fails.
+
+It consists of 3 modules.
+* **MessageConsumer104** - which sets up listeners with selectors for queue 2 
+  for OurData and OurOtherData POJOs.
+* **SendMessageService104** - which provides methods to put messages that wrap 
+  OurData and OurOtherData to queue 1 with additional header information.
+* **Scheduler104** - which sets up a scheduler to put messages every two minutes.
+
+
+To enable the 104 sample uncomment the `@Component` lines in
+`MessageConsumer104`
+and `SendMessageService104`.
+
+
+#### Level 104 application.properties
+* **app.l104.queue.name1** - Queue name used by the application to put messages.
+* **app.l104.queue.name2** - Queue name used by the application to get messages.
+
+
+
+### Level 105 Sample
+Read as JMS Message
+
+### Level 106 Sample
+The Level 106 sample shows non JMS compliance - so can be read 
+
+### Level 107 Samples
+Stopping starting listeners
+
+### Level 108 Samples
+Connection throtling 

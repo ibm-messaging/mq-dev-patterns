@@ -16,6 +16,8 @@
 
 package com.ibm.mq.samples.jms.spring.level103;
 
+import com.ibm.mq.samples.jms.spring.globals.OurData;
+import com.ibm.mq.samples.jms.spring.globals.OurOtherData;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jms.annotation.JmsListener;
@@ -26,7 +28,7 @@ public class MessageConsumer103 {
     protected final Log logger = LogFactory.getLog(getClass());
 
     @JmsListener(destination = "${app.l103.queue.name2}")
-    public void receiveData(OurData103 message) {
+    public void receiveData(OurData message) {
         logger.info("");
         logger.info( this.getClass().getSimpleName());
         logger.info("Received message of type: " + message.getClass().getSimpleName());
@@ -34,11 +36,18 @@ public class MessageConsumer103 {
     }
 
     @JmsListener(destination = "${app.l103.queue.name2}")
-    public void receiveOther(OurOtherData103 message) {
+    public void receiveOther(OurOtherData message) {
         logger.info("");
         logger.info( this.getClass().getSimpleName());
         logger.info("Received message of type: " + message.getClass().getSimpleName());
         logger.info("Received message :" + message);
     }
 
+    @JmsListener(destination = "${app.l103.queue.name2}")
+    public void receiveOther(String message) {
+        logger.info("");
+        logger.info( this.getClass().getSimpleName());
+        logger.info("Received message of type: " + message.getClass().getSimpleName());
+        logger.info("Received message :" + message);
+    }
 }
