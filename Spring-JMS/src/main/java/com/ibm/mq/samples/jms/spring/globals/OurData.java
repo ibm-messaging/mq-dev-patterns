@@ -16,6 +16,7 @@
 
 package com.ibm.mq.samples.jms.spring.globals;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,7 +35,10 @@ public class OurData implements Serializable {
     private static Random r = new Random();
 
     private String id = UUID.randomUUID().toString();
+
+    @JsonAlias("Greeting")
     private String greeting = "";
+
     private int value = r.nextInt(100);
     private Date date = new Date();
 

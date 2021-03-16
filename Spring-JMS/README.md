@@ -148,10 +148,35 @@ To enable the 105 sample uncomment the `@Component` line in
 #### Level 105 application.properties
 * **app.l105.queue.name2** - Queue name used by the application to get messages.
 
-
-
 ### Level 106 Sample
-The Level 106 sample shows non JMS compliance - so can be read 
+**Communicating with non-JMS applications**
+The Level 106 sample shows how to use a DestinationResolver to
+take control of how JMS destinations are created. In this way the 
+target client can be set to `WMQConstants.WMQ_CLIENT_NONJMS_MQ`
+
+The sample uses a custom MessageConverter to marshall data objects to and from
+json, to use as the JMS TextMessage payload.
+
+It consists of 6 modules.
+* **DesinationResolver106** - which creates the destination and sets the target client.
+* **MessageConverter** - which provides data marshalling to allow desconstruction and 
+  construction of data objects into and from JSON.
+* **MQConfiguration106** - which creates a non JMS template, setting the MessageConverter and
+  the DestinationResolver.
+* **MessageConsumer106** - which sets up a string listener for queue 2.
+* **SendMessageService106** - which provides methods to put to queue 1.
+* **Scheduler106** - which sets up a scheduler to put messages every two minutes.
+
+To enable the 102 sample uncomment the `@Component` lines in `MessageConsumer102`
+and `SendMessageService102`.
+
+#### Level 102 application.properties
+* **app.l102.queue.name1** - Queue name used by the application to put messages.
+* **app.l102.queue.name2** - Queue name used by the application to get messages.
+* **app.l102.topic.name1** - Queue name used by the application to publish messages.
+* **app.l102.topic.name2** - Queue name used by the application to subscribe to.
+
+
 
 ### Level 107 Sample
 Replies to reply queue
