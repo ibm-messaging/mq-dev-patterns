@@ -19,12 +19,11 @@ package com.ibm.mq.samples.jms.spring.level105;
 import javax.jms.*;
 
 import com.ibm.mq.samples.jms.spring.globals.Constants;
-import com.ibm.mq.samples.jms.spring.globals.OurData;
-import com.ibm.mq.samples.jms.spring.globals.OurOtherData;
+import com.ibm.mq.samples.jms.spring.globals.data.OurData;
+import com.ibm.mq.samples.jms.spring.globals.data.OurOtherData;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jms.annotation.JmsListener;
-import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 

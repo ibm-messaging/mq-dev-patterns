@@ -16,23 +16,18 @@
 
 package com.ibm.mq.samples.jms.spring.level106;
 
-import com.ibm.mq.samples.jms.spring.globals.OurData;
-import com.ibm.mq.samples.jms.spring.globals.OurOtherData;
+import com.ibm.mq.samples.jms.spring.globals.data.OurData;
+import com.ibm.mq.samples.jms.spring.globals.handlers.OurMessageConverter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jms.annotation.JmsListener;
-import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.Headers;
-import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 
-@Component
+//@Component
 public class MessageConsumer106 {
     protected final Log logger = LogFactory.getLog(getClass());
 
-    final private MessageConverter106 converter = new MessageConverter106();
+    final private OurMessageConverter converter = new OurMessageConverter();
 
     @JmsListener(destination = "${app.l106.queue.name2}")
     public void receiveOther(String message) {

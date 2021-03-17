@@ -20,6 +20,7 @@ The following settings are required for MQ
 * **ibm.mq.user** - User name that the application uses to connect to MQ
 * **ibm.mq.password** - Password that application uses to connect to MQ
 
+
 ### Application Settings
 The following setting are required for MQ
 
@@ -34,7 +35,8 @@ Each sample level is initially disabled. The only component that is initially en
 to run until interrupted.
 
 
-You can enable any number of levels.
+You can enable any number of levels, although multiple message consumers 
+may compete with each other.
 
 
 ### Level 101 Sample
@@ -157,35 +159,60 @@ target client can be set to `WMQConstants.WMQ_CLIENT_NONJMS_MQ`
 The sample uses a custom MessageConverter to marshall data objects to and from
 json, to use as the JMS TextMessage payload.
 
-It consists of 6 modules.
-* **DesinationResolver106** - which creates the destination and sets the target client.
-* **MessageConverter** - which provides data marshalling to allow desconstruction and 
-  construction of data objects into and from JSON.
+It consists of 4 modules.
 * **MQConfiguration106** - which creates a non JMS template, setting the MessageConverter and
   the DestinationResolver.
 * **MessageConsumer106** - which sets up a string listener for queue 2.
 * **SendMessageService106** - which provides methods to put to queue 1.
 * **Scheduler106** - which sets up a scheduler to put messages every two minutes.
 
-To enable the 102 sample uncomment the `@Component` lines in `MessageConsumer102`
-and `SendMessageService102`.
+It also makes use of 2 global modules.
+* **OurDesinationResolver** - which creates the destination and sets the target client.
+* **OurMessageConverter** - which provides data marshalling to allow desconstruction and
+  construction of data objects into and from JSON.
+  
+To enable the 106 sample uncomment the `@Component` lines in `MessageConsumer106`
+and `SendMessageService106`.
 
-#### Level 102 application.properties
-* **app.l102.queue.name1** - Queue name used by the application to put messages.
-* **app.l102.queue.name2** - Queue name used by the application to get messages.
-* **app.l102.topic.name1** - Queue name used by the application to publish messages.
-* **app.l102.topic.name2** - Queue name used by the application to subscribe to.
-
+#### Level 106 application.properties
+* **app.l106.queue.name1** - Queue name used by the application to put messages.
+* **app.l106.queue.name2** - Queue name used by the application to get messages.
 
 
 ### Level 107 Sample
-Replies to reply queue
+**Request / Response**
+The Level 107 sample sends two message requests. For one there is an
+asynchronous listener. For the other there is a blocking synchronous wait.
+
+The sample uses a custom MessageConverter to marshall data objects to and from
+json, to use as the JMS TextMessage payload.
+
+It consists of 4 modules.
+* **MQConfiguration107** - which creates a non JMS template, setting the MessageConverter and
+  the DestinationResolver.
+* **MessageConsumer107** - which sets up a string listener for the asynchronous response on queue 2.
+* **SendMessageService107** - which provides methods to put a requests to queue 1. For 
+  the synchronous request, the reply is expected on a temporary queue.
+* **Scheduler107** - which sets up a scheduler to put messages every two minutes.
+
+
+To enable the 107 sample uncomment the `@Component` lines in `MessageConsumer107`
+and `SendMessageService107`.
+
+#### Level 107 application.properties
+* **app.l107.queue.name1** - Queue name used by the application to put requests.
+* **app.l107.queue.name2** - Queue name used by the application to get asynchronous responses.
+
+
+
+
+
 
 ### Level 108 Sample
 Audit / Copy queues
 
-### Level 108 Samples
+### Level 109 Samples
 Stopping starting listeners
 
-### Level 109 Samples
-Connection throtling 
+### Level 110 Samples
+Connection throttling 

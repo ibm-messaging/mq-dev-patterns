@@ -16,8 +16,8 @@
 
 package com.ibm.mq.samples.jms.spring.level103;
 
-import com.ibm.mq.samples.jms.spring.globals.OurData;
-import com.ibm.mq.samples.jms.spring.globals.OurOtherData;
+import com.ibm.mq.samples.jms.spring.globals.data.OurData;
+import com.ibm.mq.samples.jms.spring.globals.data.OurOtherData;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;

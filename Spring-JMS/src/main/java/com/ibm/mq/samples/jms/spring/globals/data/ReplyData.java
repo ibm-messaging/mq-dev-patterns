@@ -1,0 +1,26 @@
+package com.ibm.mq.samples.jms.spring.globals.data;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class ReplyData {
+    protected final Log logger = LogFactory.getLog(getClass());
+
+    private String greeting;
+    private int result[];
+
+    public void logResult() {
+        logger.info("Factors in reply are:");
+        for (int i : result) {
+            logger.info(i);
+        }
+    }
+}

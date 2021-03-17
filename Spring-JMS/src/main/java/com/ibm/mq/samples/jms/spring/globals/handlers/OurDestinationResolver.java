@@ -1,4 +1,4 @@
-package com.ibm.mq.samples.jms.spring.level106;
+package com.ibm.mq.samples.jms.spring.globals.handlers;
 
 import com.ibm.mq.jms.MQDestination;
 import com.ibm.msg.client.wmq.WMQConstants;
@@ -8,7 +8,7 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Session;
 
-public class DestinationResolver106 implements DestinationResolver {
+public class OurDestinationResolver implements DestinationResolver {
     @Override
     public Destination resolveDestinationName(Session session, String dest, boolean pubSub) throws JMSException {
         Destination destination = null;

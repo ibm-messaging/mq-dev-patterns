@@ -14,39 +14,36 @@
  * limitations under the License.
  */
 
-package com.ibm.mq.samples.jms.spring.level103;
+package com.ibm.mq.samples.jms.spring.level107;
 
 import com.ibm.mq.samples.jms.spring.globals.data.OurData;
-import com.ibm.mq.samples.jms.spring.globals.data.OurOtherData;
+import com.ibm.mq.samples.jms.spring.globals.data.ReplyData;
+import com.ibm.mq.samples.jms.spring.globals.handlers.OurMessageConverter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jms.annotation.JmsListener;
+import org.springframework.stereotype.Component;
+
+import javax.jms.Message;
 
 //@Component
-public class MessageConsumer103 {
+public class MessageConsumer107 {
     protected final Log logger = LogFactory.getLog(getClass());
 
-    @JmsListener(destination = "${app.l103.queue.name2}")
-    public void receiveData(OurData message) {
+    final private OurMessageConverter converter = new OurMessageConverter();
+
+    @JmsListener(destination = "${app.l107.queue.name2}")
+    public void receiveOther(Message message) {
         logger.info("");
         logger.info( this.getClass().getSimpleName());
         logger.info("Received message of type: " + message.getClass().getSimpleName());
-        logger.info("Received message :" + message);
+        ReplyData reply = converter.replyFromMessage(message);
+        if (null != reply) {
+            logger.info("Message was JSON Compliant");
+            reply.logResult();
+        } else {
+            logger.warn("Message string was not JSON");
+        }
     }
 
-    @JmsListener(destination = "${app.l103.queue.name2}")
-    public void receiveOther(OurOtherData message) {
-        logger.info("");
-        logger.info( this.getClass().getSimpleName());
-        logger.info("Received message of type: " + message.getClass().getSimpleName());
-        logger.info("Received message :" + message);
-    }
-
-    @JmsListener(destination = "${app.l103.queue.name2}")
-    public void receiveOther(String message) {
-        logger.info("");
-        logger.info( this.getClass().getSimpleName());
-        logger.info("Received message of type: " + message.getClass().getSimpleName());
-        logger.info("Received message :" + message);
-    }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ibm.mq.samples.jms.spring.globals;
+package com.ibm.mq.samples.jms.spring.globals.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;

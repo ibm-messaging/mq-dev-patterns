@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ibm.mq.samples.jms.spring.level106;
+package com.ibm.mq.samples.jms.spring.level107;
 
 import com.ibm.mq.samples.jms.spring.globals.handlers.OurDestinationResolver;
 import com.ibm.mq.samples.jms.spring.globals.handlers.OurMessageConverter;
@@ -28,13 +28,13 @@ import org.springframework.jms.core.JmsTemplate;
 import javax.jms.ConnectionFactory;
 
 @Configuration
-public class MQConfiguration106 {
+public class MQConfiguration107 {
     protected final Log logger = LogFactory.getLog(getClass());
 
     @Autowired
     private ConnectionFactory connectionFactory;
 
-    @Bean("myNonJmsTemplate")
+    @Bean("myNonJmsTemplate107")
     public JmsTemplate myNonJmsTemplate() {
         JmsTemplate jmsTemplate = new JmsTemplate(connectionFactory);
         jmsTemplate.setDestinationResolver(new OurDestinationResolver());

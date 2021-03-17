@@ -1,10 +1,10 @@
-package com.ibm.mq.samples.jms.spring.level106;
+package com.ibm.mq.samples.jms.spring.globals.handlers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ibm.jms.JMSTextMessage;
-import com.ibm.mq.samples.jms.spring.globals.OurData;
-import com.ibm.mq.samples.jms.spring.globals.OurOtherData;
+import com.ibm.mq.samples.jms.spring.globals.data.OurData;
+import com.ibm.mq.samples.jms.spring.globals.data.OurOtherData;
+import com.ibm.mq.samples.jms.spring.globals.data.ReplyData;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jms.support.converter.MessageConversionException;
@@ -12,7 +12,7 @@ import org.springframework.jms.support.converter.MessageConverter;
 
 import javax.jms.*;
 
-public class MessageConverter106 implements MessageConverter {
+public class OurMessageConverter implements MessageConverter {
     protected final Log logger = LogFactory.getLog(getClass());
 
     private static ObjectMapper mapper = new ObjectMapper();
@@ -82,37 +82,13 @@ public class MessageConverter106 implements MessageConverter {
         }
         return null;
     }
-}
 
-/*
-
-    @Override
-    public Object fromMessage(Message message) throws JMSException, MessageConversionException {
-        logger.info("In fromMessage converter");
-        if (message instanceof MapMessage) {
-            logger.info("Have a MapMessage");
-        } else if (message instanceof TextMessage) {
-            try {
-                logger.info("Have a TextMessage");
-                TextMessage txtmsg = (TextMessage) message;
-                String payload = txtmsg.getText();
-                logger.info("payload is : " + payload);
-                Comment c = mapper.readValue(payload, Comment.class);
-                return c;
-            } catch (JsonProcessingException e) {
-                logger.warn("Unable to parse json into object");
-                logger.warn(e.getMessage());
-            }
-        }
-        return new Comment("hmm!");
-    }
-
-    public RequestReply replyFromMessage(Message message) {
+    public ReplyData replyFromMessage(Message message) {
         try {
             if (message instanceof TextMessage) {
                 TextMessage txtmsg = (TextMessage) message;
                 String payload = txtmsg.getText();
-                RequestReply rr = mapper.readValue(payload, RequestReply.class);
+                ReplyData rr = mapper.readValue(payload, ReplyData.class);
                 return rr;
             }
         } catch (JsonProcessingException e) {
@@ -122,10 +98,10 @@ public class MessageConverter106 implements MessageConverter {
             logger.warn("Unable to process JMS Message");
             logger.warn(e.getMessage());
         }
-        return new RequestReply();
+        return null;
 
     }
-
-
 }
- */
+
+
+
