@@ -180,7 +180,7 @@ and `SendMessageService106`.
 
 
 ### Level 107 Sample
-**Request / Response**
+**Requesting a response**
 The Level 107 sample sends two message requests. For one there is an
 asynchronous listener. For the other there is a blocking synchronous wait.
 
@@ -204,15 +204,37 @@ and `SendMessageService107`.
 * **app.l107.queue.name2** - Queue name used by the application to get asynchronous responses.
 
 
-
-
-
-
 ### Level 108 Sample
+**Replying to a request**
+The Level 108 sample listens for a request and sends a reply to 
+the reply to queue specified in the request. 
+
+The sample uses a custom MessageConverter to marshall data objects to and from
+json, to use as the JMS TextMessage payload.
+
+It consists of 2 modules.
+* **MessageConsumer108** - which sets up a JMS Message listener for
+  the request on queue 2. The correlation from the request is used as the
+  correlation in the response.
+* **SendMessageService108** - which provides methods to send a response
+  to the replyto queue. A Spring JmsTemplate is *not* used as setting 
+  `setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT)`, which is required for
+  temporary queues, does not take effect either with JmsTemplate nor with 
+  replyTo returns on `@JmsListeners`.
+
+To enable the 108 sample uncomment the `@Component` lines in `MessageConsumer108`.
+
+
+#### Level 108 application.properties* **app.l107.queue.name1** - Queue name used by the application to put requests.
+* **app.l108.queue.name2** - Queue name used by the application to get requests.
+
+
+
+### Level 109 Sample
 Audit / Copy queues
 
-### Level 109 Samples
+### Level 110 Samples
 Stopping starting listeners
 
-### Level 110 Samples
+### Level 111 Samples
 Connection throttling 

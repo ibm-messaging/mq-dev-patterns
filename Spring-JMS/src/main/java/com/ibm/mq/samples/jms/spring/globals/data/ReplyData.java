@@ -23,4 +23,10 @@ public class ReplyData {
             logger.info(i);
         }
     }
+
+    public void  calcResponse(int value) {
+        // Should send some meaningful data, but for now.
+        result = new int[] {1,2,3};
+    }
+
 }

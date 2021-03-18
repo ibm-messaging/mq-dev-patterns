@@ -35,6 +35,11 @@ public class OurMessageConverter implements MessageConverter {
                 OurOtherData data = (OurOtherData) o;
                 payload = mapper.writeValueAsString(data);
                 message = session.createTextMessage(payload);
+            } else if (o instanceof ReplyData) {
+                logger.info("Marshalling ReplyData");
+                ReplyData data = (ReplyData) o;
+                payload = mapper.writeValueAsString(data);
+                message = session.createTextMessage(payload);
             } else if (o instanceof String) {
                 logger.info("Marshalling String");
                 message = session.createTextMessage((String)o);
@@ -44,11 +49,14 @@ public class OurMessageConverter implements MessageConverter {
         }
 
         if (null != message) {
+            logger.warn("****************************");
+            message.setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT);
             return message;
         } else {
             throw new MessageConversionException("Object wasn't what we were expecting");
         }
     }
+
 
     @Override
     public Object fromMessage(Message message) throws JMSException, MessageConversionException {
@@ -99,7 +107,16 @@ public class OurMessageConverter implements MessageConverter {
             logger.warn(e.getMessage());
         }
         return null;
+    }
 
+    public String toJsonString(ReplyData data) {
+        try {
+            return mapper.writeValueAsString(data);
+        } catch (JsonProcessingException e) {
+            logger.warn("Unable to parse json from object");
+            logger.warn(e.getMessage());
+            return null;
+        }
     }
 }
 

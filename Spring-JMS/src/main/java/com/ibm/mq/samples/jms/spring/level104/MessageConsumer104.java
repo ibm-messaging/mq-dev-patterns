@@ -20,6 +20,7 @@ import java.util.Map;
 
 import com.ibm.mq.samples.jms.spring.globals.data.OurData;
 import com.ibm.mq.samples.jms.spring.globals.data.OurOtherData;
+import com.ibm.mq.samples.jms.spring.globals.utils.MessageUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jms.annotation.JmsListener;
@@ -74,14 +75,7 @@ public class MessageConsumer104 {
     private void logHeaders(Map<String, Object> msgHeaders,
                             Integer msgType,
                             Integer deliveryCount) {
-
-        if (! msgHeaders.isEmpty() ) {
-            logger.info("");
-            logger.info("Headers found");
-            msgHeaders.forEach((k, v) -> {
-                logger.info(k + ": is of type" + v.getClass());
-            });
-        }
+        MessageUtils.logHeaders(msgHeaders);
         logger.info("");
         logger.info("Message Type is " + msgType.toString());
         logger.info("Delivery Count  is " + deliveryCount.toString());
