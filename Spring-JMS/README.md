@@ -225,16 +225,48 @@ It consists of 2 modules.
 To enable the 108 sample uncomment the `@Component` lines in `MessageConsumer108`.
 
 
-#### Level 108 application.properties* **app.l107.queue.name1** - Queue name used by the application to put requests.
+#### Level 108 application.properties
+* **app.l108.queue.name1** - Queue name used by the application to put requests.
 * **app.l108.queue.name2** - Queue name used by the application to get requests.
 
 
-
 ### Level 109 Sample
-Audit / Copy queues
+**Permanent reply / audit queues**
+The Level 108 sample listens for a request and sends a reply to
+a queue set up as an audit of messages received. 
+
+The sample uses a custom MessageConverter to marshall data objects to and from
+json, to use as the JMS TextMessage payload.
+
+It consists of 1 module.
+* **MessageConsumer109** - which sets up a JMS Message listener for
+  the request on queue 2. An audit of the message is sent to queue 3. As 
+  a `@SendTo` annotation is used, the audit will get sent to the reply to 
+  destination, if one is provided in the incoming request. If this is 
+  a temporary queue, then the audit will be rejected with a `MQRC_PERSISTENT_NOT_ALLOWED` 
+  error.
+  
+To enable the 109 sample uncomment the `@Component` lines in `MessageConsumer109`.
+
+
+#### Level 109 application.properties
+* **app.l109.queue.name2** - Queue name used by the application to get requests.
+* **app.l109.queue.name3** - Queue name used by the application to send the audit / reply.
+
+
+
 
 ### Level 110 Samples
-Stopping starting listeners
+Connection throttling
 
 ### Level 111 Samples
-Connection throttling 
+Stopping starting listeners
+
+### Level 201 Samples
+MQ Input into DSL Integration Flows
+
+### Level 202 Samples
+MQ Input into multiple DSL Channels
+
+### Level 203 Samples
+MQ Output from DSL Integration Flows

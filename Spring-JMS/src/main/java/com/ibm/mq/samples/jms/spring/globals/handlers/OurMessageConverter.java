@@ -109,7 +109,7 @@ public class OurMessageConverter implements MessageConverter {
         return null;
     }
 
-    public String toJsonString(ReplyData data) {
+    public <T> String toJsonString(T data) {
         try {
             return mapper.writeValueAsString(data);
         } catch (JsonProcessingException e) {
@@ -118,6 +118,17 @@ public class OurMessageConverter implements MessageConverter {
             return null;
         }
     }
+
+
+//    public String toJsonString(ReplyData data) {
+//        try {
+//            return mapper.writeValueAsString(data);
+//        } catch (JsonProcessingException e) {
+//            logger.warn("Unable to parse json from object");
+//            logger.warn(e.getMessage());
+//            return null;
+//        }
+//    }
 }
 
 

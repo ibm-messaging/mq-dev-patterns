@@ -41,6 +41,9 @@ public class OurData implements Serializable {
 
     private int value = r.nextInt(100);
     private Date date = new Date();
+    private Date received = null;
+    private String correlation = null;
+    private String requestedReplyDest = null;
 
     public OurData(String greeting) {
         this.greeting = greeting;
