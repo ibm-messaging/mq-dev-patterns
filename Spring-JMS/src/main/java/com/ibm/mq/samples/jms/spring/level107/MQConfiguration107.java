@@ -41,6 +41,4 @@ public class MQConfiguration107 {
         jmsTemplate.setMessageConverter(new OurMessageConverter());
         return jmsTemplate;
     }
-
-
 }

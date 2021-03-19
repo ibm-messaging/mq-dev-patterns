@@ -341,15 +341,33 @@ line in `MQConfiguration113`.
 listeners in other samples. If you don't want this listener to consume
 messages, then the `@Configuration` must be disabled.
 
-
-#### Level 112 application.properties
-* **app.l112.queue.name2** - Queue name used by the application to get messages.
-
-
+#### Level 113 application.properties
+* **app.l113.queue.name2** - Queue name used by the application to get messages.
 
 
 ### Level 114 Sample
 **Custom connection beans**
+
+The Level 114 sample creates a custom connection factory. Have two or more custom
+factories allows an application to create connection to multiple MQ 
+host / port / channel combinations.
+
+It consists of 4 modules.
+* **MQConfiguration114** - which creates a custom connection factory, which 
+  in turn is used by the listener and JMS Template.
+* **MessageConsumer114** - which sets up a listener on queue 2.
+* **SendMessageService114** - which provides a method to put a requests to queue 1. 
+* **Scheduler114** - which sets up a scheduler to put messages every two minutes.
+
+
+To enable the 114 sample uncomment the `@Component` lines in `MessageConsumer114`
+and `SendMessageService114`.
+
+#### Level 114 application.properties
+* **app.l114.queue.name1** - Queue name used by the application to put requests.
+* **app.l114.queue.name2** - Queue name used by the application to get asynchronous responses.
+
+
 
 ### Level 201 Sample
 MQ Input into DSL Integration Flows
