@@ -321,11 +321,35 @@ To enable the 112 sample uncomment the `@Component`
 lines in `MessageConsumer112` and `Scheduler112`.
 
 
-#### Level 111 application.properties
-* **app.l111.queue.name2** - Queue name used by the application to get messages.
+#### Level 112 application.properties
+* **app.l112.queue.name2** - Queue name used by the application to get messages.
+
+
+### Level 113 Sample
+**Registering Listeners**
+
+
+The Level 113 sample makes use of `JmsListenerEndpointRegistrar` 
+to register its own message listener. 
+
+It consists of 1 module.
+* **MQConfiguration113** - which creates an registers a listener on  queue 2.
+
+To enable the 113 sample uncomment the `@Configuration`
+line in `MQConfiguration113`. 
+*Note*: The configuration registrers a listener, which may compete with
+listeners in other samples. If you don't want this listener to consume
+messages, then the `@Configuration` must be disabled.
+
+
+#### Level 112 application.properties
+* **app.l112.queue.name2** - Queue name used by the application to get messages.
 
 
 
+
+### Level 114 Sample
+**Custom connection beans**
 
 ### Level 201 Sample
 MQ Input into DSL Integration Flows
