@@ -25,6 +25,9 @@ public class OurMessageConverter implements MessageConverter {
         Message message = null;
 
         try {
+            if (o instanceof Message) {
+                message = (Message) o;
+            }
             if (o instanceof OurData) {
                 logger.info("Marshalling OurData");
                 OurData data = (OurData) o;

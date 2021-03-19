@@ -14,31 +14,34 @@
  * limitations under the License.
  */
 
-package com.ibm.mq.samples.jms.spring.level108;
+package com.ibm.mq.samples.jms.spring.level110;
 
 import com.ibm.mq.samples.jms.spring.globals.data.OurData;
-import com.ibm.mq.samples.jms.spring.globals.data.ReplyData;
 import com.ibm.mq.samples.jms.spring.globals.handlers.OurMessageConverter;
 import com.ibm.mq.samples.jms.spring.globals.utils.MessageUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Component;
 
-import javax.jms.*;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import java.util.Date;
 
 
-//@Component
-public class MessageConsumer108 {
+@Component
+@SendTo( "${app.l110.queue.name3}" )
+public class MessageConsumer110 {
     protected final Log logger = LogFactory.getLog(getClass());
 
     final private OurMessageConverter converter = new OurMessageConverter();
 
-    @JmsListener(destination = "${app.l108.queue.name2}", containerFactory = "myContainerFactory108")
-    public Message receiveRequest(Message message,
-                                  Session jmsSession,
-                               @Header("JMSXDeliveryCount") Integer deliveryCount) {
+    @JmsListener(destination = "${app.l110.queue.name2}", containerFactory = "myContainerFactory110")
+    public String receiveRequest(Message message,
+                                @Header("JMSXDeliveryCount") Integer deliveryCount) {
         logger.info("");
         logger.info( this.getClass().getSimpleName());
         logger.info("Received message of type: " + message.getClass().getSimpleName());
@@ -47,12 +50,11 @@ public class MessageConsumer108 {
 
         try {
             Destination replyDest = message.getJMSReplyTo();
-            //String correlation = message.getJMSCorrelationID();
-            String correlation = message.getJMSMessageID();
+            String correlation = message.getJMSCorrelationID();
             logger.info("Attempting Json parsing");
             Object obj = converter.fromMessage(message);
-            // If the deliveryCount >=3 then perhaps the temp reply queue is broken,
-            // ideally should dead letter queue the request.
+            // If the deliveryCount >=3 then perhaps we have a poison message
+            // ideally should dead letter queue the message.
             if (3 <= deliveryCount) {
                 logger.warn("Message delivered " + deliveryCount + " times.");
                 logger.warn("Message should be dead letter queued, as it might be poisoned");
@@ -62,38 +64,19 @@ public class MessageConsumer108 {
                 OurData data = (OurData) obj;
                 logger.info("Message was JSON Compliant");
                 logger.info(data);
-                return createResponse(jmsSession, replyDest, data, correlation);
+                if (null != replyDest) {
+                    data.setRequestedReplyDest(replyDest.toString());
+                }
+                data.setCorrelation(correlation);
+                data.setReceived(new Date());
+                return converter.toJsonString(data);
             } else {
                 logger.warn("Unexpected result from data conversion");
             }
         } catch (JMSException e) {
             logger.warn("JMSException processing request");
         }
-
         return null;
     }
 
-
-
-    private Message createResponse(Session jmsSession, Destination replyDest, OurData data, String correlation) {
-        try {
-            if (null == replyDest) {
-                logger.warn("No Reply destination");
-            } else {
-                logger.info("Sending reply with correlation id : " + correlation);
-                ReplyData reply = new ReplyData();
-                reply.calcResponse(data.getValue());
-
-                TextMessage message = jmsSession.createTextMessage("TBD");
-                message.setJMSCorrelationID(correlation);
-                message.setText(converter.toJsonString(reply));
-
-                return message;
-            }
-        } catch (JMSException e) {
-            logger.warn("JMS Exception attempting to create and send reply");
-            logger.warn(e.getMessage());
-        }
-        return null;
-    }
 }

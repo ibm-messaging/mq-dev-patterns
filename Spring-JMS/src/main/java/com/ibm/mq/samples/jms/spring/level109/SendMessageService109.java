@@ -14,13 +14,8 @@
  * limitations under the License.
  */
 
-package com.ibm.mq.samples.jms.spring.level108;
+package com.ibm.mq.samples.jms.spring.level109;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.ibm.jms.JMSTextMessage;
-import com.ibm.mq.samples.jms.spring.globals.Constants;
-import com.ibm.mq.samples.jms.spring.globals.data.OurData;
-import com.ibm.mq.samples.jms.spring.globals.data.OurOtherData;
 import com.ibm.mq.samples.jms.spring.globals.data.ReplyData;
 import com.ibm.mq.samples.jms.spring.globals.handlers.OurMessageConverter;
 import org.apache.commons.logging.Log;
@@ -32,7 +27,7 @@ import javax.jms.*;
 
 
 @Service
-public class SendMessageService108 {
+public class SendMessageService109 {
     protected final Log logger = LogFactory.getLog(getClass());
 
     @Autowired

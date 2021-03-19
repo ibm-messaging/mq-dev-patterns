@@ -17,31 +17,35 @@
 package com.ibm.mq.samples.jms.spring.level109;
 
 import com.ibm.mq.samples.jms.spring.globals.data.OurData;
+import com.ibm.mq.samples.jms.spring.globals.data.ReplyData;
 import com.ibm.mq.samples.jms.spring.globals.handlers.OurMessageConverter;
 import com.ibm.mq.samples.jms.spring.globals.utils.MessageUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Component;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import java.util.Date;
 
 
 //@Component
-@SendTo( "${app.l109.queue.name3}" )
 public class MessageConsumer109 {
     protected final Log logger = LogFactory.getLog(getClass());
 
+    final private SendMessageService109 service;
+
     final private OurMessageConverter converter = new OurMessageConverter();
 
+    MessageConsumer109(SendMessageService109 service) {
+        this.service = service;
+    }
+
     @JmsListener(destination = "${app.l109.queue.name2}")
-    public String receiveRequest(Message message,
-                                @Header("JMSXDeliveryCount") Integer deliveryCount) {
+    public void receiveRequest(Message message,
+                               @Header("JMSXDeliveryCount") Integer deliveryCount) {
         logger.info("");
         logger.info( this.getClass().getSimpleName());
         logger.info("Received message of type: " + message.getClass().getSimpleName());
@@ -50,11 +54,12 @@ public class MessageConsumer109 {
 
         try {
             Destination replyDest = message.getJMSReplyTo();
-            String correlation = message.getJMSCorrelationID();
+            //String correlation = message.getJMSCorrelationID();
+            String correlation = message.getJMSMessageID();
             logger.info("Attempting Json parsing");
             Object obj = converter.fromMessage(message);
-            // If the deliveryCount >=3 then perhaps we have a poison message
-            // ideally should dead letter queue the message.
+            // If the deliveryCount >=3 then perhaps the temp reply queue is broken,
+            // ideally should dead letter queue the request.
             if (3 <= deliveryCount) {
                 logger.warn("Message delivered " + deliveryCount + " times.");
                 logger.warn("Message should be dead letter queued, as it might be poisoned");
@@ -64,19 +69,24 @@ public class MessageConsumer109 {
                 OurData data = (OurData) obj;
                 logger.info("Message was JSON Compliant");
                 logger.info(data);
-                if (null != replyDest) {
-                    data.setRequestedReplyDest(replyDest.toString());
-                }
-                data.setCorrelation(correlation);
-                data.setReceived(new Date());
-                return converter.toJsonString(data);
+                createResponse(replyDest, data, correlation);
             } else {
                 logger.warn("Unexpected result from data conversion");
             }
         } catch (JMSException e) {
             logger.warn("JMSException processing request");
         }
-        return null;
+    }
+
+    private void createResponse(Destination replyDest, OurData data, String correlation) {
+        if (null == replyDest) {
+            logger.warn("No Reply destination");
+        } else {
+            logger.info("Sending reply with correlation id : " + correlation);
+            ReplyData reply = new ReplyData();
+            reply.calcResponse(data.getValue());
+            service.reply(replyDest, reply, correlation);
+        }
     }
 
 }

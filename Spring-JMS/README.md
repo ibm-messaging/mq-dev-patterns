@@ -152,6 +152,7 @@ To enable the 105 sample uncomment the `@Component` line in
 
 ### Level 106 Sample
 **Communicating with non-JMS applications**
+
 The Level 106 sample shows how to use a DestinationResolver to
 take control of how JMS destinations are created. In this way the 
 target client can be set to `WMQConstants.WMQ_CLIENT_NONJMS_MQ`
@@ -181,6 +182,7 @@ and `SendMessageService106`.
 
 ### Level 107 Sample
 **Requesting a response**
+
 The Level 107 sample sends two message requests. For one there is an
 asynchronous listener. For the other there is a blocking synchronous wait.
 
@@ -206,6 +208,7 @@ and `SendMessageService107`.
 
 ### Level 108 Sample
 **Replying to a request**
+
 The Level 108 sample listens for a request and sends a reply to 
 the reply to queue specified in the request. 
 
@@ -216,50 +219,69 @@ It consists of 2 modules.
 * **MessageConsumer108** - which sets up a JMS Message listener for
   the request on queue 2. The correlation from the request is used as the
   correlation in the response.
-* **SendMessageService108** - which provides methods to send a response
-  to the replyto queue. A Spring JmsTemplate is *not* used as setting 
-  `setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT)`, which is required for
-  temporary queues, does not take effect either with JmsTemplate nor with 
-  replyTo returns on `@JmsListeners`.
+* **MQConfiguration108** - which sets up a customised listener factory, which 
+  sets up reply options.
 
 To enable the 108 sample uncomment the `@Component` lines in `MessageConsumer108`.
 
 
 #### Level 108 application.properties
-* **app.l108.queue.name1** - Queue name used by the application to put requests.
 * **app.l108.queue.name2** - Queue name used by the application to get requests.
 
 
 ### Level 109 Sample
+**Replying to a request with context**
+
+The Level 109 is an alternative to the Level 109 sample. 
+
+The sample doesn't make use of a listener reply, but instead sends a reply
+using a JMS template.
+
+It consists of 2 modules.
+* **MessageConsumer108** - which sets up a JMS Message listener for the request on queue 2. The correlation from the request is used as the correlation in the response.
+* **SendMessageService108** - which provides methods to send a response to the replyto queue. A Spring JmsTemplate is not used as setting setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT), which is required for temporary queues, does not take effect either with JmsTemplate nor with replyTo returns on @JmsListeners.
+
+To enable the 109 sample uncomment the `@Component` 
+lines in `MessageConsumer109`.
+
+
+#### Level 109 application.properties
+* **app.l109.queue.name2** - Queue name used by the application to get requests.
+
+
+
+### Level 110 Sample
 **Permanent reply / audit queues**
-The Level 108 sample listens for a request and sends a reply to
+
+The Level 110 sample listens for a request and sends a reply to
 a queue set up as an audit of messages received. 
 
 The sample uses a custom MessageConverter to marshall data objects to and from
 json, to use as the JMS TextMessage payload.
 
-It consists of 1 module.
-* **MessageConsumer109** - which sets up a JMS Message listener for
+It consists of 2 modules.
+* **MQConfiguration110** - which sets up a customised listener factory, which
+  sets up reply options.
+* **MessageConsumer110** - which sets up a JMS Message listener for
   the request on queue 2. An audit of the message is sent to queue 3. As 
   a `@SendTo` annotation is used, the audit will get sent to the reply to 
-  destination, if one is provided in the incoming request. If this is 
-  a temporary queue, then the audit will be rejected with a `MQRC_PERSISTENT_NOT_ALLOWED` 
-  error.
+  destination, if one is provided in the incoming request.
   
-To enable the 109 sample uncomment the `@Component` lines in `MessageConsumer109`.
+To enable the 110 sample uncomment the `@Component` 
+line in `MessageConsumer110`.
 
 
-#### Level 109 application.properties
-* **app.l109.queue.name2** - Queue name used by the application to get requests.
-* **app.l109.queue.name3** - Queue name used by the application to send the audit / reply.
+#### Level 110 application.properties
+* **app.l110.queue.name2** - Queue name used by the application to get requests.
+* **app.l110.queue.name3** - Queue name used by the application to send the audit / reply.
 
-
-
-
-### Level 110 Samples
-Connection throttling
 
 ### Level 111 Samples
+Connection throttling
+
+
+
+### Level 112 Samples
 Stopping starting listeners
 
 ### Level 201 Samples
