@@ -277,7 +277,22 @@ line in `MessageConsumer110`.
 
 
 ### Level 111 Samples
-Connection throttling
+**Concurrency and throttling** 
+
+The Level 111 sample sets up a single listener with concurrency set to 
+minimum of 2 and maximum of 3. Each cycle pauses to lock the current thread,
+during which new threads could be launched.
+
+It consists of 1 modules.
+* **MessageConsumer111** - which sets up a JMS Message listener for
+  the request on queue 2. 
+
+To enable the 111 sample uncomment the `@Component`
+line in `MessageConsumer111`.
+
+
+#### Level 111 application.properties
+* **app.l111.queue.name2** - Queue name used by the application to get messages.
 
 
 

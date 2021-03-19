@@ -32,7 +32,7 @@ import javax.jms.Message;
 import java.util.Date;
 
 
-@Component
+//@Component
 @SendTo( "${app.l110.queue.name3}" )
 public class MessageConsumer110 {
     protected final Log logger = LogFactory.getLog(getClass());
