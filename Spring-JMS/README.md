@@ -276,7 +276,7 @@ line in `MessageConsumer110`.
 * **app.l110.queue.name3** - Queue name used by the application to send the audit / reply.
 
 
-### Level 111 Samples
+### Level 111 Sample
 **Concurrency and throttling** 
 
 The Level 111 sample sets up a single listener with concurrency set to 
@@ -296,14 +296,42 @@ line in `MessageConsumer111`.
 
 
 
-### Level 112 Samples
-Stopping starting listeners
+### Level 112 Sample
+**Stop and start of listeners**
 
-### Level 201 Samples
+The Level 112 sample sets up a single listener and a scheduler that once a 
+minute checks the status of the listener, and toggles its state between 
+running and stopped. 
+
+If you want the listener status to be stopped at startup then uncomment the line
+
+````
+spring.jms.listener.auto-startup=false
+````
+
+in `application.properties`.
+
+It consists of 2 modules.
+* **MessageConsumer112** - which sets up a JMS Message listener for
+  the request on queue 2.
+* **Scheduler112** - which once a minute checks the status of the 112 
+  listener and toggles its status.
+
+To enable the 112 sample uncomment the `@Component`
+lines in `MessageConsumer112` and `Scheduler112`.
+
+
+#### Level 111 application.properties
+* **app.l111.queue.name2** - Queue name used by the application to get messages.
+
+
+
+
+### Level 201 Sample
 MQ Input into DSL Integration Flows
 
-### Level 202 Samples
+### Level 202 Sample
 MQ Input into multiple DSL Channels
 
-### Level 203 Samples
+### Level 203 Sample
 MQ Output from DSL Integration Flows
