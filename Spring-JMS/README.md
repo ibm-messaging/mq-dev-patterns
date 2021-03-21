@@ -364,16 +364,27 @@ To enable the 114 sample uncomment the `@Component` lines in `MessageConsumer114
 and `SendMessageService114`.
 
 #### Level 114 application.properties
-* **app.l114.queue.name1** - Queue name used by the application to put requests.
-* **app.l114.queue.name2** - Queue name used by the application to get asynchronous responses.
-
+* **app.l114.queue.name1** - Queue name used by the application to put messages.
+* **app.l114.queue.name2** - Queue name used by the application to get messages.
 
 
 ### Level 201 Sample
-MQ Input into DSL Integration Flows
+**MQ adaptor and gateway for DSL Integration Flows**
 
-### Level 202 Sample
-MQ Input into multiple DSL Channels
+The Level 201 creates two DSL defined integration flows. In one a 
+Jms inbound adaptor in used to enable MQ as the input. 
+In the second MQ is used as the output from the integration flow.
 
-### Level 203 Sample
-MQ Output from DSL Integration Flows
+It consists of 2 modules.
+* **MessageConsumer201** - which sets up an integration flow listening on 
+  Queue 2.
+* **MessageProducer201** - which sets up an integration flow sending to 
+  Queue 1.
+
+
+To enable the 201 sample uncomment the `@Component` lines in `MessageConsumer201`
+and `MessageProducer201`.
+
+#### Level 201 application.properties
+* **app.l201.queue.name1** - Queue name used by the application to put messages.
+* **app.l201.queue.name2** - Queue name used by the application to get messages.
