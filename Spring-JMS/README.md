@@ -395,7 +395,8 @@ and `MessageProducer201`.
 **MQ gateway for request / response in middle of a DSL Integration Flow**
 
 The Level 202 creates a DSL defined integration flow, which sends a  
-request to MQ and waits for a response. 
+request to MQ and waits for a response. The flows have sample do nothing
+filters and handlers showing where added functionality could be placed.
 
 It consists of 1 module.
 * **MessageProducer201** - which sets up an integration flow in the middle of which, 
