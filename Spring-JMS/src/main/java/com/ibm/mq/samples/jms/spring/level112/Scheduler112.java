@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ibm.mq.samples.jms.spring.Level112;
+package com.ibm.mq.samples.jms.spring.level112;
 
 import com.ibm.mq.samples.jms.spring.globals.Constants;
 import org.apache.commons.logging.Log;
@@ -23,7 +23,6 @@ import org.springframework.jms.config.JmsListenerEndpointRegistry;
 import org.springframework.jms.listener.MessageListenerContainer;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 //@Component
 @EnableScheduling

@@ -32,7 +32,7 @@ import org.springframework.stereotype.Component;
 import javax.jms.ConnectionFactory;
 
 
-@Component
+//@Component
 public class MessageConsumer201 {
     protected final Log logger = LogFactory.getLog(getClass());
 

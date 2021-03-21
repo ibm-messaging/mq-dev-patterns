@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ibm.mq.samples.jms.spring.Level114;
+package com.ibm.mq.samples.jms.spring.level114;
 
 import com.ibm.mq.samples.jms.spring.globals.data.OurData;
 import com.ibm.mq.samples.jms.spring.globals.handlers.OurMessageConverter;

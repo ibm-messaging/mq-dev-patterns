@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ibm.mq.samples.jms.spring.Level111;
+package com.ibm.mq.samples.jms.spring.level111;
 
 import com.ibm.mq.samples.jms.spring.globals.Constants;
 import com.ibm.mq.samples.jms.spring.globals.data.OurData;
@@ -22,7 +22,6 @@ import com.ibm.mq.samples.jms.spring.globals.data.OurData;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jms.annotation.JmsListener;
-import org.springframework.stereotype.Component;
 
 
 //@Component

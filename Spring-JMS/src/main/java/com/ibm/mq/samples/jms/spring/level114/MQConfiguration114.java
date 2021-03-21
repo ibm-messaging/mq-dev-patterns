@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ibm.mq.samples.jms.spring.Level114;
+package com.ibm.mq.samples.jms.spring.level114;
 
 import com.ibm.mq.jms.MQConnectionFactory;
 import com.ibm.mq.samples.jms.spring.globals.handlers.OurDestinationResolver;
@@ -73,6 +73,7 @@ public class MQConfiguration114 {
         JmsTemplate jmsTemplate = new JmsTemplate(mqConnectionFactory());
         jmsTemplate.setDestinationResolver(new OurDestinationResolver());
         jmsTemplate.setMessageConverter(new OurMessageConverter());
+
         return jmsTemplate;
     }
 

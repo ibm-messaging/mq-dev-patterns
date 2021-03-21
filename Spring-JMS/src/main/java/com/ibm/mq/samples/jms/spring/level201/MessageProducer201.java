@@ -18,7 +18,7 @@ import javax.jms.ConnectionFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-@Component
+// @Component
 public class MessageProducer201 {
     protected final Log logger = LogFactory.getLog(getClass());
 
@@ -57,11 +57,9 @@ public class MessageProducer201 {
                     logger.info("Letting Spring take care of the conversion : " + payload);
                     return payload;
                 })
-                //.handle(System.out::println)
-                .handle(Jms.outboundGateway(this.connectionFactory)
-                        .requestDestination(sendQueue)
-                        .destinationResolver(new OurDestinationResolver())
-                        .receiveTimeout(5000L))
+                .handle(Jms.outboundAdapter(connectionFactory)
+                            .destination(sendQueue)
+                            .configureJmsTemplate(c -> c.destinationResolver(new OurDestinationResolver())))
                 .get();
     }
 

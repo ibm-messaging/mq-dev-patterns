@@ -14,23 +14,37 @@
  * limitations under the License.
  */
 
-package com.ibm.mq.samples.jms.spring.Level114;
+package com.ibm.mq.samples.jms.spring.level114;
 
+import com.ibm.mq.samples.jms.spring.globals.Constants;
 import com.ibm.mq.samples.jms.spring.globals.data.OurData;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.jms.annotation.JmsListener;
-import org.springframework.stereotype.Component;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 
 //@Component
-public class MessageConsumer114 {
+@EnableScheduling
+public class Scheduler114 {
     protected final Log logger = LogFactory.getLog(getClass());
 
-    @JmsListener(destination = "${app.l114.queue.name2}", containerFactory = "myContainerFactory114")
-    public void receiveRequest(OurData message) {
+    private final SendMessageService114 service;
+    static private int i = 0;
+
+    Scheduler114(SendMessageService114 service) {
+        this.service = service;
+    }
+
+    @Scheduled(initialDelay = 55 * Constants.SECOND, fixedRate = 2 * Constants.MINUTE)
+    public void run() {
+        String greeting = "Sending data in cycle :" + i++;
+        OurData msg1 = new OurData(greeting);
+
         logger.info("");
         logger.info( this.getClass().getSimpleName());
-        logger.info("Received message of type: " + message.getClass().getSimpleName());
-        logger.info("Received message :" + message);
+        logger.info("Sending messages");
+
+        logger.info(msg1);
+        service.send(msg1);
     }
 }
