@@ -232,14 +232,14 @@ To enable the 108 sample uncomment the `@Component` lines in `MessageConsumer108
 ### Level 109 Sample
 **Replying to a request with context**
 
-The Level 109 is an alternative to the Level 109 sample. 
+The Level 109 is an alternative to the Level 108 sample. 
 
 The sample doesn't make use of a listener reply, but instead sends a reply
 using a JMS template.
 
 It consists of 2 modules.
-* **MessageConsumer108** - which sets up a JMS Message listener for the request on queue 2. The correlation from the request is used as the correlation in the response.
-* **SendMessageService108** - which provides methods to send a response to the replyto queue. A Spring JmsTemplate is not used as setting setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT), which is required for temporary queues, does not take effect either with JmsTemplate nor with replyTo returns on @JmsListeners.
+* **MessageConsumer109** - which sets up a JMS Message listener for the request on queue 2. The correlation from the request is used as the correlation in the response.
+* **SendMessageService109** - which provides methods to send a response to the replyto queue. A Spring JmsTemplate is not used as setting setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT), which is required for temporary queues, does not take effect either with JmsTemplate nor with replyTo returns on @JmsListeners.
 
 To enable the 109 sample uncomment the `@Component` 
 lines in `MessageConsumer109`.
