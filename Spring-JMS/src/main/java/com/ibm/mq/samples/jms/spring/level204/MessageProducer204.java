@@ -14,45 +14,40 @@
  * limitations under the License.
  */
 
-package com.ibm.mq.samples.jms.spring.level202;
+package com.ibm.mq.samples.jms.spring.level204;
 
-import com.ibm.mq.samples.jms.spring.globals.Constants;
-import com.ibm.mq.samples.jms.spring.globals.data.DataSource;
 import com.ibm.mq.samples.jms.spring.globals.data.OurData;
 import com.ibm.mq.samples.jms.spring.globals.handlers.OurDestinationResolver;
-import com.ibm.mq.samples.jms.spring.globals.handlers.OurMessageConverter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
-import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.dsl.IntegrationFlows;
-import org.springframework.integration.dsl.Pollers;
-import org.springframework.integration.dsl.Transformers;
+import org.springframework.integration.dsl.*;
 import org.springframework.integration.jms.dsl.Jms;
+import org.springframework.integration.support.MessageBuilder;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageChannel;
 import org.springframework.stereotype.Component;
 
 import javax.jms.ConnectionFactory;
-import java.util.concurrent.TimeUnit;
 
 //@Component
-public class MessageProducer202 {
+public class MessageProducer204 {
     protected final Log logger = LogFactory.getLog(getClass());
 
     @Autowired
     private ConnectionFactory connectionFactory;
 
-    @Value("${app.l202.queue.name1}")
+    @Value("${app.l204.queue.name1}")
     public String sendQueue;
 
-    @Value("${app.l202.queue.name3}")
-    public String replyQueue;
-
+    public MessageChannel datainput = null;
 
     @Bean
     public IntegrationFlow myOurDataFlow() {
-        return IntegrationFlows.fromSupplier(new DataSource(), e -> e.poller(Pollers.fixedRate(120, TimeUnit.SECONDS, 60)))
+        return IntegrationFlows.from(MessageChannels.direct("ourdatainput"))
                 .log()
                 .transform(Transformers.toJson())
                 .log()
@@ -64,23 +59,31 @@ public class MessageProducer202 {
                     logger.info("Letting Spring take care of the conversion : " + payload);
                     return payload;
                 })
-                .handle(Jms.outboundGateway(this.connectionFactory)
-                        .requestDestination(sendQueue)
-                        .replyDestination(replyQueue)
-                        .destinationResolver(new OurDestinationResolver())
-                        .extractReplyPayload(true)
-                        .receiveTimeout(5 * Constants.SECOND))
-//                .handle(String.class, (payload, headers) -> {
-//                    logger.info("Converting into our Data object");
-//                    return (new OurMessageConverter()).fromString(payload);
-//                })
-                .transform(String.class, p -> (new OurMessageConverter()).fromString(p))
-                .handle(OurData.class, (payload, headers) -> {
-                    logger.info("Payload is now of type " + payload.getClass().getSimpleName());
-                    return payload;
-                })
-                .handle(System.out::println)
+                .handle(Jms.outboundAdapter(connectionFactory)
+                            .destination(sendQueue)
+                            .configureJmsTemplate(c -> c.destinationResolver(new OurDestinationResolver())))
                 .get();
+    }
+
+    public void send(Message<OurData> builtMessage) {
+        if (null != datainput) {
+            datainput.send(builtMessage);
+        } else {
+            logger.warn("Not ready to send messages");
+        }
+
+    }
+
+
+    @Bean
+    CommandLineRunner process(MessageChannel ourdatainput) {
+        return args -> {
+            logger.info("Sending initial message");
+            // Only way I could see of capturing the data input message channel
+            // Tried to create it as a bean, but that didn't work.
+            datainput = ourdatainput;
+            datainput.send(MessageBuilder.withPayload(new OurData("Initializer")).build());
+        };
     }
 
 }

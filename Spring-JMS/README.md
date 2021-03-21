@@ -421,8 +421,28 @@ It consists of 1 module.
   that subscribes to messages and forwards each message to two 
   bridged channels. 
 
-To enable the 203 sample uncomment the `@Component` line in `MessageProducer203`.
+To enable the 203 sample uncomment the `@Component` line in `MessageConsumer203`.
 
 #### Level 203 application.properties
 * **app.l203.topic.name2** - Topic used by the application to subscribe.
 
+
+### Level 204 Sample
+**Action driven DSL Integration Flows**
+
+The Level 204 sample is an alternative message send mechanism to the 
+leve 201 sample. A method is used to inject messages into a message
+direct channel, which is then put to Queue 1.
+
+It consists of 2 modules.
+* **MessageProducer204** - which sets up an integration flow sending to
+  Queue 1.
+* **Scheduler204** - which sets up a scheduler to post a message every two 
+  minutes.
+
+
+To enable the 204 sample uncomment the `@Component` lines in `MessageConsumer204`
+and `Scheduler204`.
+
+#### Level 204 application.properties
+* **app.l204.queue.name1** - Queue name used by the application to put messages.

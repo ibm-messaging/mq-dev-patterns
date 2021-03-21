@@ -16,7 +16,6 @@
 
 package com.ibm.mq.samples.jms.spring.level203;
 
-import com.ibm.mq.samples.jms.spring.globals.Constants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +33,7 @@ import javax.jms.ConnectionFactory;
 import java.util.concurrent.TimeUnit;
 
 
-@Component
+//@Component
 public class MessageConsumer203 {
     protected final Log logger = LogFactory.getLog(getClass());
 
