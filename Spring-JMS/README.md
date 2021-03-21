@@ -390,7 +390,6 @@ and `MessageProducer201`.
 * **app.l201.queue.name2** - Queue name used by the application to get messages.
 
 
-
 ### Level 202 Sample
 **MQ gateway for request / response in middle of a DSL Integration Flow**
 
