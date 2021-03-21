@@ -4,6 +4,7 @@ import com.ibm.mq.samples.jms.spring.globals.Constants;
 import com.ibm.mq.samples.jms.spring.globals.data.DataSource;
 import com.ibm.mq.samples.jms.spring.globals.data.OurData;
 import com.ibm.mq.samples.jms.spring.globals.handlers.OurDestinationResolver;
+import com.ibm.mq.samples.jms.spring.globals.handlers.OurMessageConverter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +53,17 @@ public class MessageProducer202 {
                         .requestDestination(sendQueue)
                         .replyDestination(replyQueue)
                         .destinationResolver(new OurDestinationResolver())
+                        .extractReplyPayload(true)
                         .receiveTimeout(5 * Constants.SECOND))
+//                .handle(String.class, (payload, headers) -> {
+//                    logger.info("Converting into our Data object");
+//                    return (new OurMessageConverter()).fromString(payload);
+//                })
+                .transform(String.class, p -> (new OurMessageConverter()).fromString(p))
+                .handle(OurData.class, (payload, headers) -> {
+                    logger.info("Payload is now of type " + payload.getClass().getSimpleName());
+                    return payload;
+                })
                 .handle(System.out::println)
                 .get();
     }
