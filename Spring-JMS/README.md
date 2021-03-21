@@ -402,8 +402,27 @@ It consists of 1 module.
   a request is send out to Queue 1 and the rest of the integration flow 
   continues with the response from Queue 2.
 
-To enable the 202 sample uncomment the `@Component` line in `MessageProducer201`.
+To enable the 202 sample uncomment the `@Component` line in `MessageProducer202`.
 
 #### Level 202 application.properties
 * **app.l202.queue.name1** - Queue name used by the application to put requests.
 * **app.l202.queue.name3** - Queue name used by the application to receive responses.
+
+
+
+### Level 203 Sample
+**Sub and divide DSL Integration Flow**
+
+The Level 203 creates a DSL defined integration flow, which subscribes to
+messages on Topic 2 and forwards the message onto two further channels. 
+
+It consists of 1 module.
+* **MessageConsumer203** - which sets up an integration flow 
+  that subscribes to messages and forwards each message to two 
+  bridged channels. 
+
+To enable the 203 sample uncomment the `@Component` line in `MessageProducer203`.
+
+#### Level 203 application.properties
+* **app.l203.topic.name2** - Topic used by the application to subscribe.
+
