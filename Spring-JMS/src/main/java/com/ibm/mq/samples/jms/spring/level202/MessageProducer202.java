@@ -1,5 +1,6 @@
 package com.ibm.mq.samples.jms.spring.level202;
 
+import com.ibm.mq.samples.jms.spring.globals.Constants;
 import com.ibm.mq.samples.jms.spring.globals.data.DataSource;
 import com.ibm.mq.samples.jms.spring.globals.data.OurData;
 import com.ibm.mq.samples.jms.spring.globals.handlers.OurDestinationResolver;
@@ -19,7 +20,7 @@ import javax.jms.ConnectionFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-//@Component
+@Component
 public class MessageProducer202 {
     protected final Log logger = LogFactory.getLog(getClass());
 
@@ -51,7 +52,7 @@ public class MessageProducer202 {
                         .requestDestination(sendQueue)
                         .replyDestination(replyQueue)
                         .destinationResolver(new OurDestinationResolver())
-                        .receiveTimeout(5000L))
+                        .receiveTimeout(5 * Constants.SECOND))
                 .handle(System.out::println)
                 .get();
     }
