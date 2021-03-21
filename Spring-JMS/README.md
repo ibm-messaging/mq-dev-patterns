@@ -397,7 +397,7 @@ and `MessageProducer201`.
 The Level 202 creates a DSL defined integration flow, which sends a  
 request to MQ and waits for a response. 
 
-It consists of 1 modules.
+It consists of 1 module.
 * **MessageProducer201** - which sets up an integration flow in the middle of which, 
   a request is send out to Queue 1 and the rest of the integration flow 
   continues with the response from Queue 2.
