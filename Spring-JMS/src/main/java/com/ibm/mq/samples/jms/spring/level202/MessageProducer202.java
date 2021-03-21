@@ -1,4 +1,4 @@
-package com.ibm.mq.samples.jms.spring.level201;
+package com.ibm.mq.samples.jms.spring.level202;
 
 import com.ibm.mq.samples.jms.spring.globals.data.DataSource;
 import com.ibm.mq.samples.jms.spring.globals.data.OurData;
@@ -19,15 +19,18 @@ import javax.jms.ConnectionFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-// @Component
-public class MessageProducer201 {
+//@Component
+public class MessageProducer202 {
     protected final Log logger = LogFactory.getLog(getClass());
 
     @Autowired
     private ConnectionFactory connectionFactory;
 
-    @Value("${app.l201.queue.name1}")
+    @Value("${app.l202.queue.name1}")
     public String sendQueue;
+
+    @Value("${app.l202.queue.name3}")
+    public String replyQueue;
 
 
     @Bean
@@ -44,9 +47,12 @@ public class MessageProducer201 {
                     logger.info("Letting Spring take care of the conversion : " + payload);
                     return payload;
                 })
-                .handle(Jms.outboundAdapter(connectionFactory)
-                            .destination(sendQueue)
-                            .configureJmsTemplate(c -> c.destinationResolver(new OurDestinationResolver())))
+                .handle(Jms.outboundGateway(this.connectionFactory)
+                        .requestDestination(sendQueue)
+                        .replyDestination(replyQueue)
+                        .destinationResolver(new OurDestinationResolver())
+                        .receiveTimeout(5000L))
+                .handle(System.out::println)
                 .get();
     }
 

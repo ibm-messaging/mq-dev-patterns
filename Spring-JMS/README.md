@@ -369,7 +369,7 @@ and `SendMessageService114`.
 
 
 ### Level 201 Sample
-**MQ adaptor and gateway for DSL Integration Flows**
+**MQ adaptors for DSL Integration Flows**
 
 The Level 201 creates two DSL defined integration flows. In one a 
 Jms inbound adaptor in used to enable MQ as the input. 
@@ -388,3 +388,22 @@ and `MessageProducer201`.
 #### Level 201 application.properties
 * **app.l201.queue.name1** - Queue name used by the application to put messages.
 * **app.l201.queue.name2** - Queue name used by the application to get messages.
+
+
+
+### Level 202 Sample
+**MQ gateway for request / response in middle of a DSL Integration Flow**
+
+The Level 202 creates a DSL defined integration flow, which sends a  
+request to MQ and waits for a response. 
+
+It consists of 1 modules.
+* **MessageProducer201** - which sets up an integration flow in the middle of which, 
+  a request is send out to Queue 1 and the rest of the integration flow 
+  continues with the response from Queue 2.
+
+To enable the 202 sample uncomment the `@Component` line in `MessageProducer201`.
+
+#### Level 202 application.properties
+* **app.l202.queue.name1** - Queue name used by the application to put requests.
+* **app.l202.queue.name3** - Queue name used by the application to receive responses.
