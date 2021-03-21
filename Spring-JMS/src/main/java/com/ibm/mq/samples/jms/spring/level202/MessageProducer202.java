@@ -19,9 +19,8 @@ import org.springframework.stereotype.Component;
 
 import javax.jms.ConnectionFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
-@Component
+//@Component
 public class MessageProducer202 {
     protected final Log logger = LogFactory.getLog(getClass());
 
