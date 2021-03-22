@@ -52,8 +52,8 @@ public class OurMessageConverter implements MessageConverter {
         }
 
         if (null != message) {
-            logger.warn("****************************");
             message.setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT);
+            logger.info("sending message ");
             return message;
         } else {
             throw new MessageConversionException("Object wasn't what we were expecting");
@@ -122,17 +122,4 @@ public class OurMessageConverter implements MessageConverter {
         }
     }
 
-
-//    public String toJsonString(ReplyData data) {
-//        try {
-//            return mapper.writeValueAsString(data);
-//        } catch (JsonProcessingException e) {
-//            logger.warn("Unable to parse json from object");
-//            logger.warn(e.getMessage());
-//            return null;
-//        }
-//    }
 }
-
-
-

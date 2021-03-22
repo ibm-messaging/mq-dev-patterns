@@ -18,9 +18,13 @@ public class ReplyData {
     private int result[];
 
     public void logResult() {
-        logger.info("Factors in reply are:");
-        for (int i : result) {
-            logger.info(i);
+        if (null != result) {
+            logger.info("Factors in reply are:");
+            for (int i : result) {
+                logger.info(i);
+            }
+        } else {
+            logger.warn("No factors found in reply");
         }
     }
 
