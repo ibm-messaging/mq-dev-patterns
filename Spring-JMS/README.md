@@ -448,7 +448,7 @@ To enable the 203 sample uncomment the `@Component` line in `MessageConsumer203`
 **Action driven DSL Integration Flows**
 
 The Level 204 sample is an alternative message send mechanism to the 
-leve 201 sample. A method is used to inject messages into a message
+level 201 sample. A method is used to inject messages into a message
 direct channel, which is then put to Queue 1.
 
 It consists of 2 modules.
