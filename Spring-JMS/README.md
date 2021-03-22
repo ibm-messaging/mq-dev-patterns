@@ -38,6 +38,7 @@ to run until interrupted.
 You can enable any number of levels, although multiple message consumers 
 may compete with each other.
 
+---
 
 ### Level 101 Sample
 **Letting Spring do the work**
@@ -65,6 +66,8 @@ Switch to running in default pub/sub mode by setting
 spring.jms.pub-sub-domain=true
 ````
 
+---
+
 ### Level 102 Sample
 **An app that does both Point/Point and Pub/Sub**
 
@@ -87,6 +90,7 @@ and `SendMessageService102`.
 * **app.l102.topic.name1** - Queue name used by the application to publish messages.
 * **app.l102.topic.name2** - Queue name used by the application to subscribe to.
 
+---
 
 ### Level 103 Sample
 **Data marshalling**
@@ -108,6 +112,8 @@ and `SendMessageService103`.
 #### Level 103 application.properties
 * **app.l103.queue.name1** - Queue name used by the application to put messages.
 * **app.l103.queue.name2** - Queue name used by the application to get messages. 
+
+---
 
 ### Level 104 Sample
 **Message Selectors**
@@ -134,6 +140,7 @@ and `SendMessageService104`.
 * **app.l104.queue.name1** - Queue name used by the application to put messages.
 * **app.l104.queue.name2** - Queue name used by the application to get messages.
 
+---
 
 ### Level 105 Sample
 **Getting JMS Messages**
@@ -149,6 +156,8 @@ To enable the 105 sample uncomment the `@Component` line in
 
 #### Level 105 application.properties
 * **app.l105.queue.name2** - Queue name used by the application to get messages.
+
+---
 
 ### Level 106 Sample
 **Communicating with non-JMS applications**
@@ -179,6 +188,7 @@ and `SendMessageService106`.
 * **app.l106.queue.name1** - Queue name used by the application to put messages.
 * **app.l106.queue.name2** - Queue name used by the application to get messages.
 
+---
 
 ### Level 107 Sample
 **Requesting a response**
@@ -205,6 +215,7 @@ and `SendMessageService107`.
 * **app.l107.queue.name1** - Queue name used by the application to put requests.
 * **app.l107.queue.name2** - Queue name used by the application to get asynchronous responses.
 
+---
 
 ### Level 108 Sample
 **Replying to a request**
@@ -224,10 +235,10 @@ It consists of 2 modules.
 
 To enable the 108 sample uncomment the `@Component` lines in `MessageConsumer108`.
 
-
 #### Level 108 application.properties
 * **app.l108.queue.name2** - Queue name used by the application to get requests.
 
+---
 
 ### Level 109 Sample
 **Replying to a request with context**
@@ -244,11 +255,10 @@ It consists of 2 modules.
 To enable the 109 sample uncomment the `@Component` 
 lines in `MessageConsumer109`.
 
-
 #### Level 109 application.properties
 * **app.l109.queue.name2** - Queue name used by the application to get requests.
 
-
+---
 
 ### Level 110 Sample
 **Permanent reply / audit queues**
@@ -270,11 +280,11 @@ It consists of 2 modules.
 To enable the 110 sample uncomment the `@Component` 
 line in `MessageConsumer110`.
 
-
 #### Level 110 application.properties
 * **app.l110.queue.name2** - Queue name used by the application to get requests.
 * **app.l110.queue.name3** - Queue name used by the application to send the audit / reply.
 
+---
 
 ### Level 111 Sample
 **Concurrency and throttling** 
@@ -290,11 +300,10 @@ It consists of 1 modules.
 To enable the 111 sample uncomment the `@Component`
 line in `MessageConsumer111`.
 
-
 #### Level 111 application.properties
 * **app.l111.queue.name2** - Queue name used by the application to get messages.
 
-
+---
 
 ### Level 112 Sample
 **Stop and start of listeners**
@@ -320,14 +329,13 @@ It consists of 2 modules.
 To enable the 112 sample uncomment the `@Component`
 lines in `MessageConsumer112` and `Scheduler112`.
 
-
 #### Level 112 application.properties
 * **app.l112.queue.name2** - Queue name used by the application to get messages.
 
+---
 
 ### Level 113 Sample
 **Registering Listeners**
-
 
 The Level 113 sample makes use of `JmsListenerEndpointRegistrar` 
 to register its own message listener. 
@@ -344,6 +352,7 @@ messages, then the `@Configuration` must be disabled.
 #### Level 113 application.properties
 * **app.l113.queue.name2** - Queue name used by the application to get messages.
 
+---
 
 ### Level 114 Sample
 **Custom connection beans**
@@ -359,7 +368,6 @@ It consists of 4 modules.
 * **SendMessageService114** - which provides a method to put a requests to queue 1. 
 * **Scheduler114** - which sets up a scheduler to put messages every two minutes.
 
-
 To enable the 114 sample uncomment the `@Component` lines in `MessageConsumer114`
 and `SendMessageService114`.
 
@@ -367,6 +375,7 @@ and `SendMessageService114`.
 * **app.l114.queue.name1** - Queue name used by the application to put messages.
 * **app.l114.queue.name2** - Queue name used by the application to get messages.
 
+---
 
 ### Level 201 Sample
 **MQ adaptors for DSL Integration Flows**
@@ -380,8 +389,7 @@ It consists of 2 modules.
   Queue 2.
 * **MessageProducer201** - which sets up an integration flow sending to 
   Queue 1.
-
-
+  
 To enable the 201 sample uncomment the `@Component` lines in `MessageConsumer201`
 and `MessageProducer201`.
 
@@ -389,6 +397,7 @@ and `MessageProducer201`.
 * **app.l201.queue.name1** - Queue name used by the application to put messages.
 * **app.l201.queue.name2** - Queue name used by the application to get messages.
 
+---
 
 ### Level 202 Sample
 **MQ gateway for request / response in middle of a DSL Integration Flow**
@@ -408,7 +417,7 @@ To enable the 202 sample uncomment the `@Component` line in `MessageProducer202`
 * **app.l202.queue.name1** - Queue name used by the application to put requests.
 * **app.l202.queue.name3** - Queue name used by the application to receive responses.
 
-
+---
 
 ### Level 203 Sample
 **Sub and divide DSL Integration Flow**
@@ -426,6 +435,7 @@ To enable the 203 sample uncomment the `@Component` line in `MessageConsumer203`
 #### Level 203 application.properties
 * **app.l203.topic.name2** - Topic used by the application to subscribe.
 
+---
 
 ### Level 204 Sample
 **Action driven DSL Integration Flows**
@@ -446,3 +456,5 @@ and `Scheduler204`.
 
 #### Level 204 application.properties
 * **app.l204.queue.name1** - Queue name used by the application to put messages.
+
+---
