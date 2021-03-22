@@ -49,7 +49,8 @@ public class Scheduler107 {
         logger.info("Sending messages");
 
         logger.info(msg1);
-        service.sendSyncReply(msg1);
         service.sendAsyncReply(msg2);
+        service.sendSyncReply(msg1);
+
     }
 }

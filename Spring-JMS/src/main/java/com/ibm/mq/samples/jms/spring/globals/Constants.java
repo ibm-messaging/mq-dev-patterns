@@ -22,6 +22,7 @@ public class Constants {
     static public final long HOUR = 60 * MINUTE;
 
     static public final String DATATYPE = "appdatatype";
+    static public final String TEMPQUEUEPREFIX = "AMQ.";
 
     public enum DataTypes {
         OURDATATYPE(10),

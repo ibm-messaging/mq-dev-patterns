@@ -25,7 +25,7 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 
-@Service
+//@Service
 public class SendMessageService114 {
     protected final Log logger = LogFactory.getLog(getClass());
 
