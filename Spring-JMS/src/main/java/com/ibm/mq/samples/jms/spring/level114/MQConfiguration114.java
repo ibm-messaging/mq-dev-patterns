@@ -34,7 +34,7 @@ import org.springframework.jms.support.QosSettings;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 
-@Configuration
+//@Configuration
 public class MQConfiguration114 {
     protected final Log logger = LogFactory.getLog(getClass());
 

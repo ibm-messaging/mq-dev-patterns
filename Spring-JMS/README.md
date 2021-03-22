@@ -376,7 +376,8 @@ It consists of 4 modules.
 * **Scheduler114** - which sets up a scheduler to put messages every two minutes.
 
 To enable the 114 sample uncomment the `@Component` lines in `MessageConsumer114`
-and `SendMessageService114`.
+and `SendMessageService114` and the `@Configuration` line in
+`MQConfiguration114`.
 
 #### Level 114 application.properties
 * **app.l114.queue.name1** - Queue name used by the application to put messages.
