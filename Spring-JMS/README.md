@@ -18,11 +18,18 @@ The following settings are required for MQ
 * **ibm.mq.channel** - MQ Channel name 
 * **ibm.mq.connName** - Host(Port) for the queue manager. eg `localhost(1414)`
 * **ibm.mq.user** - User name that the application uses to connect to MQ
-* **ibm.mq.password** - Password that application uses to connect to MQ
+* **ibm.mq.password** - Password that application uses to connect to MQ 
+* **ibm.mq.tempModel** - Model name for temporary reply queues 
 
+### Spring Settings
+The following setting is set
+* **spring.main.web-application-type=none** - To ensure that no web components are started
 
-### Application Settings
-The following setting are required for MQ
+The following are provided as commented out examples to use as directed
+by the samples.
+
+* **spring.jms.pub-sub-domain=true** - Set to true to enable pub/sub by default
+* **spring.jms.listener.auto-startup=false** - Set to true to prevent listener containers automatically starting on startup.
 
 
 ## Levels
