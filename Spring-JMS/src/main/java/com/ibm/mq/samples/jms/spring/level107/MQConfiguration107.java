@@ -35,7 +35,7 @@ public class MQConfiguration107 {
     private ConnectionFactory connectionFactory;
 
     @Bean("myNonJmsTemplate107")
-    public JmsTemplate myNonJmsTemplate() {
+    public JmsTemplate myNonJmsTemplate107() {
         JmsTemplate jmsTemplate = new JmsTemplate(connectionFactory);
         jmsTemplate.setDestinationResolver(new OurDestinationResolver());
         jmsTemplate.setMessageConverter(new OurMessageConverter());

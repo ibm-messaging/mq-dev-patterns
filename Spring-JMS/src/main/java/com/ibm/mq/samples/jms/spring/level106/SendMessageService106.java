@@ -29,17 +29,17 @@ public class SendMessageService106 {
     @Value("${app.l106.queue.name1}")
     public String sendQueue;
 
-    final private JmsTemplate myNonJmsTemplate;
+    final private JmsTemplate myNonJmsTemplate106;
 
-    SendMessageService106(JmsTemplate myNonJmsTemplate) {
-        this.myNonJmsTemplate = myNonJmsTemplate;
+    SendMessageService106(JmsTemplate myNonJmsTemplate106) {
+        this.myNonJmsTemplate106 = myNonJmsTemplate106;
     }
 
     public void send(OurData msg) {
-        myNonJmsTemplate.convertAndSend(sendQueue, msg);
+        myNonJmsTemplate106.convertAndSend(sendQueue, msg);
     }
     public void send(OurOtherData msg) {
-        myNonJmsTemplate.convertAndSend(sendQueue, msg);
+        myNonJmsTemplate106.convertAndSend(sendQueue, msg);
     }
 }
 
