@@ -34,13 +34,11 @@ public class MQConfiguration106 {
     @Autowired
     private ConnectionFactory connectionFactory;
 
-    @Bean("myNonJmsTemplate")
-    public JmsTemplate myNonJmsTemplate() {
+    @Bean("myNonJmsTemplate106")
+    public JmsTemplate myNonJmsTemplate106() {
         JmsTemplate jmsTemplate = new JmsTemplate(connectionFactory);
         jmsTemplate.setDestinationResolver(new OurDestinationResolver());
         jmsTemplate.setMessageConverter(new OurMessageConverter());
         return jmsTemplate;
     }
-
-
 }

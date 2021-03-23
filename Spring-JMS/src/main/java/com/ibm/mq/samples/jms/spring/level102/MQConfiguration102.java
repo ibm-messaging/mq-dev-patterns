@@ -16,9 +16,11 @@
 
 package com.ibm.mq.samples.jms.spring.level102;
 
+import com.ibm.mq.samples.jms.spring.globals.handlers.OurDestinationResolver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
@@ -34,6 +36,9 @@ public class MQConfiguration102 {
     @Autowired
     private ConnectionFactory connectionFactory;
 
+    @Value("${spring.jms.pub-sub-domain:false}")
+    public Boolean pubsub;
+
     @Bean("myPubSubTemplate")
     public JmsTemplate myPubSubJmsTemplate() {
         JmsTemplate jmsTemplate = new JmsTemplate(connectionFactory);
@@ -48,12 +53,6 @@ public class MQConfiguration102 {
         return jmsTemplate;
     }
 
-    // Need this bean to override default allowing Level 101 components to work in conjunction
-    // with Level 102 components.
-    @Bean("jmsTemplate")
-    public JmsTemplate jmsTemplate() {
-        return new JmsTemplate(connectionFactory);
-    }
 
     @Bean
     public JmsListenerContainerFactory<?> mySubContainerFactory102() {
@@ -69,6 +68,20 @@ public class MQConfiguration102 {
         factory.setConnectionFactory(connectionFactory);
         factory.setPubSubDomain(false);
         return factory;
+    }
+
+    // Need this bean to override default allowing Level 101 components to work in conjunction
+    // with subsequent components
+    @Bean("jmsTemplate")
+    public JmsTemplate jmsTemplate() {
+        //return new JmsTemplate(connectionFactory);
+        JmsTemplate jmsTemplate = new JmsTemplate(connectionFactory);
+        if (pubsub) {
+            jmsTemplate.setPubSubDomain(true);
+        } else {
+            jmsTemplate.setPubSubDomain(false);
+        }
+        return jmsTemplate;
     }
 
 }
