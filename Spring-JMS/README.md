@@ -385,6 +385,27 @@ and `SendMessageService114` and the `@Configuration` line in
 
 ---
 
+### Level 115 Sample
+**Backout Threshold**
+
+The Level 115 sample queries and logs the back out threshold for a queue.
+
+It consists of 2 modules.
+* **MQConfiguration115** - which creates a custom MQQueueManager using 
+  admin credentials and an admin channel 
+* **CmdRunner115** - which runs a queue inquiry using the custom MQQueueManager to 
+  log the queues backout threshold and backout queue name. 
+  
+The sample also makes use of `MQAdminProperties` to read app admin properties 
+from appliation.properties.
+
+To enable the 115 sample uncomment the `@Component` line in `CmdRunner115`.
+
+#### Level 115 application.properties
+* **app.l115.queue.name1** - Queue name used by the application to query.
+
+---
+
 ### Level 201 Sample
 **MQ adaptors for DSL Integration Flows**
 
