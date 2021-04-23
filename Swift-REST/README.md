@@ -52,7 +52,7 @@ or
 To get a message from the MQ Queue run:
 
 ````
-./mqtest get /opt/mqm/envrest.json
+./mqtest get ./envrest.json
 ````
 
 or
