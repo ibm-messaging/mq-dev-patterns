@@ -1,0 +1,11 @@
+{
+  "MQ_ENDPOINTS": [{
+    "HOST": "localhost",
+    "PORT" : "9443",
+    "CSRFTOKEN" : "",
+    "QMGR": "QM1",
+    "QUEUE_NAME": "DEV.QUEUE.1",
+    "APP_USER": "app",
+    "APP_PASSWORD": "passw0rd"
+  }]
+}
