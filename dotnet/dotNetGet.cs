@@ -77,7 +77,7 @@ namespace ibmmq_samples
 
                 try
                 {
-                    ReceiveMessagesFromEndpoint(cf);
+                    ReceiveMessagesFromEndpoint(cf,e);
                 }
                 catch (XMSException ex)
                 {
@@ -98,7 +98,7 @@ namespace ibmmq_samples
             }
         }
 
-        private void ReceiveMessagesFromEndpoint(IConnectionFactory cf)
+        private void ReceiveMessagesFromEndpoint(IConnectionFactory cf, Env.ConnVariables cv)
         {
             IConnection connectionWMQ;
             ISession sessionWMQ;
@@ -115,7 +115,7 @@ namespace ibmmq_samples
             Console.WriteLine("Session created");
 
             // Create destination
-            destination = sessionWMQ.CreateQueue(env.Conn.queue_name);
+            destination = sessionWMQ.CreateQueue(cv.queue_name);
             Console.WriteLine("Destination created");
 
             // Create consumer
