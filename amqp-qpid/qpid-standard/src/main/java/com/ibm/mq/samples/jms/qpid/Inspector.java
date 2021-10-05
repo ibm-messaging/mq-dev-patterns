@@ -120,8 +120,6 @@ public class Inspector {
         logger.info("Message matches StreamMessage");
       } else if (message instanceof ObjectMessage) {
         logger.info("Message matches ObjectMessage");
-      } else if (message instanceof MapMessage) {
-        logger.info("Message matches MapMessage");
       }
 
     }
