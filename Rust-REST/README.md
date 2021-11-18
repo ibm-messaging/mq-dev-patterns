@@ -2,6 +2,14 @@
 
 These samples have been tested on rust 1.56.1 and cargo 1.56.0.
 
+## Certification Warning
+
+This code example operates by allowing invalid certifications in order to make a connection.
+
+This practice is acceptable for code samples but not for general, practical use.
+
+Invalid certifications increase susceptibility to attacks and viruses whilst risking your encryption and mutual authentication.
+
 ## Building the samples
 
 The best way to build and compile these samples is to set up your environment with rustc and cargo installed. 
@@ -64,9 +72,14 @@ We are now ready to build our project.
 
 In your command line navigate to your project folder where your Cargo.toml file is. 
 
+Optional:
+If you do not have an active ssh-agent running on your machine run the two commands above 'cargo build'.
+
 To build the project run this command:
 
 ```bash
+$ eval 'ssh-agent -s'
+$ ssh-add
 $ cargo build
 ```
 
