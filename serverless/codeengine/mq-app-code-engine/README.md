@@ -33,6 +33,31 @@ This file sets up routes for 3 webpages and 3 APIs. The routes uses  `mqclient.j
 : API route that is used to get a message with a specific message id.
 
 
+## The Event Emitter
+The Event Emitter can be found in the folder [eventemitter](/eventemitter).
+
+As Code Engine applications will scale to zero when not used, they can be woken by invoking any route that they are listening to. Message processing apps need to be woken when there is a message for them to process. The Event Emitter browses for messages, and invokes the `/api/mqgetbyid` for its registered endpoint.
+
+It is possible to run the Event Emitter as a Code Engine application, but it is always running, and listening for messages, so best to run elsewhere.
+
+You can run it from the command line:
+
+````
+DEBUG=mqapp* REG_ENDPOINT=https://<your appendpoint> node server.js
+````
+
+### server.js
+This is the entry point to the application.
+
+### mqevents.js
+This sets up a 8 second loop, in which the next message on the queue is read. If a message is found an `mqevent` is signalled.
+
+### mqlistener.js
+This listens for a `mqevent`, when it invokes the registered endpoint.
+
+
+
+
 ## Code Engine Steps
 
 - Create QueueManager
