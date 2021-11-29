@@ -2,7 +2,7 @@
 The Code Engine sample apps are Node.js applications and have been tested with Node v12.16.3, and Code Engine buildpack.
 
 ## The Application
-The application can be found in the folder [clientapp](/codeengine/clientapp). The application structure is designed to run as a Code Engine buildpack app, but can be run locally.  
+The application can be found in the folder [clientapp](/codeengine/clientapp/). The application structure is designed to run as a Code Engine buildpack app, but can be run locally.  
 
 ### server.js
 This is the file that the Code Engine buildpack will run. It is largely Node.js HTTP app boilerplate, and pulls in `mqapp.js`
@@ -34,7 +34,7 @@ This file sets up routes for 3 webpages and 3 APIs. The routes uses  `mqclient.j
 
 
 ## The Event Emitter
-The Event Emitter can be found in the folder [eventemitter](/codeengine/eventemitter).
+The Event Emitter can be found in the folder [eventemitter](/codeengine/eventemitter/).
 
 As Code Engine applications will scale to zero when not used, they can be woken by invoking any route that they are listening to. Message processing apps need to be woken when there is a message for them to process. The Event Emitter browses for messages, and invokes the `/api/mqgetbyid` for its registered endpoint.
 
