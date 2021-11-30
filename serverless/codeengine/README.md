@@ -121,7 +121,7 @@ Once the build is complete, you will see a new image in your registry. Wait unti
 
 ### Application secrets and configmaps
 The application has a `env.json` file which it uses to read in the required MQ connection configuration. You can override these with secrets and configmaps.
-
+- Select your Code Engine project.
 - Select `Secrets and configmaps`
   * Secrets
     - Click on `Create`
@@ -142,7 +142,6 @@ The application has a `env.json` file which it uses to read in the required MQ c
 
 ### Application Create
 - Select your Code Engine project.
-- Select ``
 - Select `Applications`
 - Click on `Create`
 - Create a new application with the following settings:
