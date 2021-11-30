@@ -160,6 +160,7 @@ The application will scale down to zero instances, when there is no traffic. The
 ### Viewing application logs
 To view application logs from your desktop, you will need to [set up the cli](https://cloud.ibm.com/docs/codeengine?topic=codeengine-install-cli)
 
+Once the CLI is set up you:
 - Open a command line terminal
 - Login to IBM Cloud
   * `ibmcloud login`
