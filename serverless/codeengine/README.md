@@ -14,22 +14,22 @@ This file is largely Node.js Express boilerplate. Web and API routes are defined
 This file sets up routes for 3 webpages and 3 APIs. The routes uses  `mqclient.js` to make MQ calls.
 
 
-/ (Home Page)
+**/** (Home Page)
 : Shows application version.
 
-/mqput
+**/mqput**
 : Shows a form that puts a number of messages onto a queue.
 
-/mpget
+**/mpget**
 : Shows a form that gets a number of messages from a queue.
 
-/api/mqput
+**/api/mqput**
 : API route that the mqput page uses to put messages onto a queue.
 
-/api/mqgetby
+**/api/mqgetby**
 : API route that the mqget page uses to get messages from a queue.
 
-/api/mqgetbyid
+**/api/mqgetbyid**
 : API route that is used to get a message with a specific message id.
 
 ### mqclient.js
@@ -42,7 +42,7 @@ This file contains the class `MQClient` with nominally 4 public methods.
 
 The pattern for each of these methods is the same, using a series of common private methods
 
-- If there isn't one, connect to MQ
+- If there isn't an open connection, connect to MQ
 - Perform an action
 - Check for errors
 
@@ -156,7 +156,7 @@ From the Code Engine UI
 - Click on `Test application`
 - Click on `Application URL`
 
-The application will scale down to zero instances, when there is no traffic. The home URL opens up a home web page with a `Pages` menu option, where you can open up the put and get forms. 
+The application will scale down to zero instances, when there is no traffic. The home URL opens up a home web page with a `Pages` menu option, where you can open up the put and get forms.
 
 ### Viewing application logs
 To view application logs from your desktop, you will need to [set up the cli](https://cloud.ibm.com/docs/codeengine?topic=codeengine-install-cli)
