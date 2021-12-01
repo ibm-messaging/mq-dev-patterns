@@ -63,17 +63,19 @@ reqwest = { version = "0.11", features = ["blocking", "json"] }
 base64 = "0.13.0"
 http = "0.2.4"
 serde = { version = "1.0.104", features = ["derive"] }
-serde_json = "1.0.48"
+serde_json = "1.0.48
 ```
+*We have provided a Template.toml file to act as a template. This will look the same as the instructions above*
 
 We are now ready to build our project.
+
 
 ## Building our project
 
 In your command line navigate to your project folder where your Cargo.toml file is. 
 
-Optional:
-If you do not have an active ssh-agent running on your machine run the two commands above 'cargo build'.
+*Optional:
+If you do not have an active ssh-agent running on your machine run the two commands above 'cargo build'.*
 
 To build the project run this command:
 
@@ -111,26 +113,13 @@ We provide a default envrest.json file with the following settings:
 
 ## Running your project
 
-Move the "bin" file provided to your src folder then navigate there in terminal.
-
-```bash
-$ cd src/
-$ cd bin/
-```
-
-Once inside your bin folder, run the commands for either get or post.
-
-To put a message onto the MQ Queue run:
+Navigate to your "src" folder, once inside run this command to start the program.
 
 ```
-$ cargo run --bin rust_post
+$ cargo run
 ```
-User input will be required once the program is running.
+For the POST program user input will be required once the program is running.
 
-To get a message from the MQ Queue run:
 
-```
-$ cargo run --bin rust_get
-```
 
  
