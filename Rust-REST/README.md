@@ -63,7 +63,7 @@ reqwest = { version = "0.11", features = ["blocking", "json"] }
 base64 = "0.13.0"
 http = "0.2.4"
 serde = { version = "1.0.104", features = ["derive"] }
-serde_json = "1.0.48
+serde_json = "1.0.48"
 ```
 *We have provided a Template.toml file to act as a template. This will look the same as the instructions above*
 
