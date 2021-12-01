@@ -52,6 +52,7 @@ pub struct MQEndpoint {
     app_password: String,
 }
 
+//Struct to allow access to parsed JSON values
 #[derive(Deserialize, Debug, Clone)]
 pub struct ListMQEndpoint {
     #[serde(rename = "MQ_ENDPOINTS")]
@@ -157,6 +158,7 @@ impl Request {
         let content_type = "application/json".to_owned();
         return content_type;
     }
+    //Assigns token header
     fn csrftoken(mq: &ListMQEndpoint) -> String {
         let csrftoken = &mq.list_of_mq_endpoints[0].csrftoken;
         return csrftoken.to_string();
@@ -189,8 +191,6 @@ fn rest_get(
         .header("Authorization", get.base64)
         .header("ibm-mq-rest-csrf-token", get.csrftoken)
         .send();
-    //Prints Status and Headers sent
-    //Returns body
 
     return res
     
