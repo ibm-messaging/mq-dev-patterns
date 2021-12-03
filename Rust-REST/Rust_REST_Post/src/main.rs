@@ -21,6 +21,7 @@ use serde::Deserialize;
 
 use std::error::Error;
 use std::fs::File;
+use std::io;
 use std::io::BufReader;
 use std::path::Path;
 
@@ -64,7 +65,6 @@ pub struct ListMQEndpoint {
 struct Options {
     hostname: String,
     port: String,
-    csrftoken: String,
     qmgr: String,
     queue_name: String,
     app_user: String,
@@ -169,11 +169,11 @@ impl Request {
 fn rest_put(
     mq: ListMQEndpoint, //Function expecting Client Result
 ) -> Result<reqwest::blocking::Response, reqwest::Error> {
-    //Variable creation and cloning to avoid Copy error
+
     let message_load = body_input();
-    let body = message_load.clone();
+
     //Creates an instance of Request struct
-    //Calls Get functions passing variables in assigning to get.url/.base64/.content_type
+    //Calls functions passing variables in assigning to get.url/.base64/.content_type
     let put = Request {
         url: Request::url(&mq),
         base64: Request::base64(&mq),
@@ -198,16 +198,16 @@ fn rest_put(
     return res
 }
 
-fn read_mq_from_file<P: AsRef<Path>>(path: P) -> Result<ListMQEndpoint, Box<dyn Error>> {
+fn read_mq_config_from_file<P: AsRef<Path>>(path: P) -> Result<ListMQEndpoint, Box<dyn Error>> {
     // Open the file in read-only mode with buffer.
     let file = File::open(path)?;
     let reader = BufReader::new(file);
 
     // Read the JSON contents of the file as an instance of `User`.
-    let mq: ListMQEndpoint = serde_json::from_reader(reader)?;
+    let mq_config: ListMQEndpoint = serde_json::from_reader(reader)?;
 
     // Return the `User`.
-    Ok(mq)
+    Ok(mq_config)
 }
 
 //Takes user input to be added to the body of the API request
@@ -230,18 +230,18 @@ fn handler(e: reqwest::Error) {
 
 fn main() {
     //Runs parsing function
-    let mq = read_mq_from_file("../envrest.json").unwrap();
+    let mq_config= read_mq_config_from_file("../envrest.json").unwrap();
     //Starting Function
     //Throws errors such as connection if applicable
-    match rest_put(mq){
+    match rest_put(mq_config){
         Err(e) => handler(e),
         Ok(res) => {
             println!("Status: {}", res.status());
             println!("Headers: \n{:#?}\n", res.headers());
             let body = res.text_with_charset("utf-8");
             match body {
-                Ok(body) => {println!("Body:\n{:#?}\n", body)},
-                Err(_) => {println!("Cannot extract body from message.")},
+                Ok(body) => {println!("Returned data:\n{:#?}\n", body)},
+                Err(_) => {println!("Cannot extract message contents.")},
             }
             return;
         }

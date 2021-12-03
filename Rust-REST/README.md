@@ -2,19 +2,15 @@
 
 These samples have been tested on rust 1.56.1 and cargo 1.56.0.
 
-## Certification Warning
-
-This code example operates by allowing invalid certifications in order to make a connection.
-
-This practice is acceptable for code samples but not for general, practical use.
-
-Invalid certifications increase susceptibility to attacks and viruses whilst risking your encryption and mutual authentication.
 
 ## Building the samples
 
-The best way to build and compile these samples is to set up your environment with rustc and cargo installed. 
+The best way to build and compile these samples is to set up your environment with rustc and cargo installed. See
+https://doc.rust-lang.org/cargo/getting-started/installation.html for information on installing the compiler and associated
+tools for your platform.
 
-To run these files on the command line navigate to your chosen directory and run: 
+You can run the samples directly from this cloned github repository. The `RUNME.sh` script in the
+same directory as this README file can be executed.
 
 ```bash
 $ cargo new project_name
@@ -72,7 +68,7 @@ We are now ready to build our project.
 
 ## Building our project
 
-In your command line navigate to your project folder where your Cargo.toml file is. 
+In your command line navigate to your project folder where your Cargo.toml file is.
 
 *Optional:
 If you do not have an active ssh-agent running on your machine run the two commands above 'cargo build'.*
@@ -87,14 +83,14 @@ $ cargo build
 
 You should now be seeing all the crates you have added into Cargo.toml start to compile in your terminal.
 
-This will produce a Cargo.lock file in your project. 
+This will produce a Cargo.lock file in your project.
 
 This keeps track of the exact versions of the dependencies in your project.
 
 
 ## Sample envrest.json
 
-We provide a default envrest.json file with the following settings: 
+We provide a default envrest.json file with the following settings:
 
 * HOST - Host name or IP address of your queue manager
 
@@ -109,7 +105,7 @@ We provide a default envrest.json file with the following settings:
 * APP_USER - User name that application uses to connect to MQ
 
 * APP_PASSWORD - Password that the application uses to connect to MQ
- 
+
 
 ## Running your project
 
@@ -122,4 +118,8 @@ For the POST program user input will be required once the program is running.
 
 
 
- 
+## Certification Warning
+
+This code example operates by allowing invalid certifications in order to make a connection.
+This practice is acceptable for code samples but not for general, practical use.
+Invalid certifications increase susceptibility to attacks and viruses whilst risking your encryption and mutual authentication.

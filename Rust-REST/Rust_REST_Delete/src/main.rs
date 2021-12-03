@@ -14,11 +14,10 @@
 * limitations under the License.
 */
 
-//Removes unused function warnings in terminal
-#![allow(dead_code)]
+
 //Imports crates to allow program to utilise functions
 use reqwest;
-//use reqwest::Error;
+
 use serde::Deserialize;
 
 use std::error::Error;
@@ -53,6 +52,7 @@ pub struct MQEndpoint {
     app_password: String,
 }
 
+//Struct to allow access to parsed JSON values
 #[derive(Deserialize, Debug, Clone)]
 pub struct ListMQEndpoint {
     #[serde(rename = "MQ_ENDPOINTS")]
@@ -65,7 +65,6 @@ pub struct ListMQEndpoint {
 struct Options {
     hostname: String,
     port: String,
-    csrftoken: String,
     qmgr: String,
     queue_name: String,
     app_user: String,
@@ -82,27 +81,6 @@ struct Request {
 //Implements the structure Options
 //Creates setting functions - allocates values to variables below
 impl Options {
-    fn hostname(&self) -> &String {
-        &self.hostname
-    }
-    fn port(&self) -> &String {
-        &self.port
-    }
-    fn qmgr(&self) -> &String {
-        &self.qmgr
-    }
-
-    fn queue_name(&self) -> &String {
-        &self.queue_name
-    }
-
-    fn app_user(&self) -> &String {
-        &self.app_user
-    }
-
-    fn app_pass(&self) -> &String {
-        &self.app_pass
-    }
 
     fn hostname_mut(&mut self) -> &mut String {
         &mut self.hostname
@@ -129,7 +107,7 @@ impl Options {
 }
 
 //Implements the structure Request
-//Creates functions - Forms part of the Get Client below
+//Creates functions - Forms part of the Client below
 //base64 and content_type are both used within the headers for the API request
 impl Request {
     fn url(mq: &ListMQEndpoint) -> String {
@@ -180,23 +158,24 @@ impl Request {
         let content_type = "application/json".to_owned();
         return content_type;
     }
-    fn csrftoken() -> String {
-        let csrftoken = "".to_owned();
-        return csrftoken;
+    //Assigns token header
+    fn csrftoken(mq: &ListMQEndpoint) -> String {
+        let csrftoken = &mq.list_of_mq_endpoints[0].csrftoken;
+        return csrftoken.to_string();
     }
 }
 
-//Sends GET Request
+//Sends DELETE Request to destructively remove a message
 fn rest_get(
     mq: ListMQEndpoint, //Function expecting Client Result
-) -> Result<reqwest::blocking::Client, Box<dyn Error>> {
+) -> Result<reqwest::blocking::Response, reqwest::Error> {
     //Creates an instance of Request struct
-    //Calls Get functions passing variables in assigning to get.url/.base64/.content_type
+    //Calls functions passing borrowed variables in assigning to get.url/.base64/.content_type
     let get = Request {
         url: Request::url(&mq),
         base64: Request::base64(&mq),
         content_type: Request::content_type(),
-        csrftoken: Request::csrftoken(),
+        csrftoken: Request::csrftoken(&mq),
     };
     //Creates instance of ClientBuilder
     let client = reqwest::blocking::Client::builder()
@@ -211,29 +190,46 @@ fn rest_get(
         .header("Content-type", get.content_type)
         .header("Authorization", get.base64)
         .header("ibm-mq-rest-csrf-token", get.csrftoken)
-        .send()?;
-    //Prints Status and Headers sent
-    //Returns body
-    println!("Status: {}", res.status());
-    println!("Headers:\n{:#?}", res.headers());
+        .send();
 
-    Ok(client)
+    return res
+
 }
 
-fn read_mq_from_file<P: AsRef<Path>>(path: P) -> Result<ListMQEndpoint, Box<dyn Error>> {
+fn read_mq_config_from_file<P: AsRef<Path>>(path: P) -> Result<ListMQEndpoint, Box<dyn Error>> {
     // Open the file in read-only mode with buffer.
     let file = File::open(path)?;
+
     let reader = BufReader::new(file);
 
-    // Read the JSON contents of the file as an instance of `User`.
-    let mq: ListMQEndpoint = serde_json::from_reader(reader)?;
+    // Read the JSON contents of the file as an instance of `ListMQEndpoint`.
+    let mq_config: ListMQEndpoint = serde_json::from_reader(reader)?;
 
-    // Return the `User`.
-    Ok(mq)
+    // Return the `Vec`.
+    Ok(mq_config)
+}
+
+//Handles connection error through reqwest crate.
+fn handler(e: reqwest::Error) {
+    println!("Error is {}", e);
 }
 
 fn main() {
-    let mq = read_mq_from_file("./envrest.json").unwrap();
+    //Runs parsing function
+    let mq_config = read_mq_config_from_file("../envrest.json").unwrap();
     //Starting Function
-    rest_get(mq).ok();
+    //Throws errors such as connection if applicable
+    match rest_get(mq_config){
+        Err(e) => handler(e),
+        Ok(res) => {
+            println!("Status: {}", res.status());
+            println!("Headers: \n{:#?}\n", res.headers());
+            let body = res.text_with_charset("utf-8");
+            match body {
+                Ok(body) => {println!("Returned data:\n{:#?}\n", body)},
+                Err(_) => {println!("Cannot extract message contents.")},
+            }
+            return;
+        }
+    }
 }
