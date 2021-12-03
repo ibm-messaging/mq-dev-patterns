@@ -1,125 +1,53 @@
 # IBM MQ Rust REST samples
 
-These samples have been tested on rust 1.56.1 and cargo 1.56.0.
+These samples show how to call the IBM MQ REST messaging API from
+Rust programs. Two samples are provided, one to POST (Put) a message and
+the other to DELETE (Get destructively).
 
+They use the `reqwest` crate (dependency package) as the interface to make
+REST calls.
+
+These samples have been tested on rust 1.56.1 and cargo 1.56.0.
 
 ## Building the samples
 
-The best way to build and compile these samples is to set up your environment with rustc and cargo installed. See
-https://doc.rust-lang.org/cargo/getting-started/installation.html for information on installing the compiler and associated
-tools for your platform.
+You need an environment with rustc and cargo installed. See https://www.rust-lang.org/tools/install and
+https://doc.rust-lang.org/cargo/getting-started/installation.html for information on installing the
+compiler and associated tools for your platform.
 
-You can run the samples directly from this cloned github repository. The `RUNME.sh` script in the
-same directory as this README file can be executed.
+You can compile and run the samples directly from this github repository when cloned to
+a local directory. The `RUNME.sh` script in the
+same directory as this README file can be used as a trivial driver.
 
-```bash
-$ cargo new project_name
-$ cd project_name
-```
-This will create the directory “project_name”.
+The first time the programs are compiled, all the the dependency `crates` are downloaded are compiled. Subsequent
+executions will be a lot quicker.
 
-Inside the directory will be a folder called src and a Cargo.toml file.
-
-## Editing the Cargo.toml file
-
-Open cargo.toml in your text editor of choice, It should look like this:
-
-```c
-[package]
-name = “project_name”
-version  = “0.1.0”
-edition = “2021”
-
-[dependencies]
-```
-
-Underneath dependencies you will need to insert these crates for the code to work:
-```c
-- reqwest = { version = “0.11”, features = [“blocking”, “json”] }
-
-- base64 = “0.13.0”
-
-- http = “0.2.4”
-
-- serde = { version = “1.0.104”, features = [“derive”] }
-
-- serde_json = “1.0.48”
-```
-
-After this is done your Cargo.toml file should look like this:
-
-```c
-[package]
-name = "project_name"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-reqwest = { version = "0.11", features = ["blocking", "json"] }
-base64 = "0.13.0"
-http = "0.2.4"
-serde = { version = "1.0.104", features = ["derive"] }
-serde_json = "1.0.48"
-```
-*We have provided a Template.toml file to act as a template. This will look the same as the instructions above*
-
-We are now ready to build our project.
-
-
-## Building our project
-
-In your command line navigate to your project folder where your Cargo.toml file is.
-
-*Optional:
-If you do not have an active ssh-agent running on your machine run the two commands above 'cargo build'.*
-
-To build the project run this command:
-
-```bash
-$ eval 'ssh-agent -s'
-$ ssh-add
-$ cargo build
-```
-
-You should now be seeing all the crates you have added into Cargo.toml start to compile in your terminal.
-
-This will produce a Cargo.lock file in your project.
-
-This keeps track of the exact versions of the dependencies in your project.
-
+You can also use `cargo build` to compile the programs, and saving the output under the `target`
+directory for future executions.
 
 ## Sample envrest.json
 
 We provide a default envrest.json file with the following settings:
 
-* HOST - Host name or IP address of your queue manager
-
+* HOST - Host name or IP address of your queue manager's web server
 * PORT - HTTP Listener port for your queue manager
-
 * QMGR - Queue manager name
-
 * QUEUE_NAME - Queue name
-
-* CSRFTOKEN - MQ REST CSRF Token
-
+* CSRFTOKEN - MQ REST CSRF Token which can be any value
 * APP_USER - User name that application uses to connect to MQ
-
 * APP_PASSWORD - Password that the application uses to connect to MQ
 
+Edit the JSON file with your local configuration parameters. The defaults are based on the
+MQ Developer configuration.
 
-## Running your project
+The configuration file is assumed to be in the
+common directory, above the individual samples. If you try to run the program from the wrong directory, there will a
+"No such file or directory" error shown.
 
-Navigate to your "src" folder, once inside run this command to start the program.
+## Certificate Usage Warning
 
-```
-$ cargo run
-```
-For the POST program user input will be required once the program is running.
-
-
-
-## Certification Warning
-
-This code example operates by allowing invalid certifications in order to make a connection.
+Connections to the web server are made over HTTPS, but keystores or certificates are needed for these
+samples. This code permits any certificate to be presented by the web server; it is not validated - see the
+use of the `danger_accept_invalid_certs` function.
 This practice is acceptable for code samples but not for general, practical use.
-Invalid certifications increase susceptibility to attacks and viruses whilst risking your encryption and mutual authentication.
+Invalid certificates increase susceptibility to attacks and viruses whilst risking your encryption and mutual authentication.
