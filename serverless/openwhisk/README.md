@@ -183,7 +183,7 @@ Rules connect triggers to actions. The two rules in the manifest are:
 ## Application flow
 The flow for this OpenWhisk application is
 
-1. `/whisk.system/alarms/interval` firesevery two minutes.
+1. `/whisk.system/alarms/interval` fires once every two minutes.
 2. The trigger `mq-feedtimer-trigger` is tripped
 3. The rule `rule-mq-fire-trigger` is invoked
 4. The feed `mqfunctions/mqfeed` is awakened. If a message is found then
