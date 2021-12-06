@@ -187,10 +187,10 @@ The flow for this OpenWhisk application is
 2. The trigger `mq-feedtimer-trigger` is tripped
 3. The rule `rule-mq-fire-trigger` is invoked
 4. The feed `mqfunctions/mqfeed` is awakened. If a message is found then
-  * The trigger `mq-feedtest-trigger` is fired
-  * The sequence `mq-default-sequence` is started, whereby
-    - The action `mqfunctions/mqget` is invoked action followed by the
-    - The action `mqfunctions/mqpost`.
+    * The trigger `mq-feedtest-trigger` is fired
+    * The sequence `mq-default-sequence` is started, whereby
+        - The action `mqfunctions/mqget` is invoked action followed by the
+        - The action `mqfunctions/mqpost`.
 
 Note: If you deploy with `.deploy.sh` then the `rule-mq-fire-trigger` rule is disabled. If you want to enable the rule and the flow then run
 
