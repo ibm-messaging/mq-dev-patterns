@@ -228,4 +228,4 @@ To persist registered triggers the feed needs the following Cloudant configurati
 * **CLOUDANT_HOSTNAME** - Cloudant instance hostname
 * **CLOUDANT_USERNAME** - Username used to connect to Cloudant
 * **CLOUDANT_PASSWORD** - Password used to connect to Cloudant
-* **CLOUDANT_KEY** - IAM API Key for Cloudant".
+* **CLOUDANT_KEY** - IAM API Key for Cloudant.
