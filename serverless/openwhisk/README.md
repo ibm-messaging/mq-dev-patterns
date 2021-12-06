@@ -227,4 +227,5 @@ To persist registered triggers the feed needs the following Cloudant configurati
 * **MQ_DB_KEY** - The key that the feed will use to persist registred triggers
 * **CLOUDANT_HOSTNAME** - Cloudant instance hostname
 * **CLOUDANT_USERNAME** - Username used to connect to Cloudant
-* **CLOUDANT_PASSWORD** - Password used to connect to Cloudant.
+* **CLOUDANT_PASSWORD** - Password used to connect to Cloudant
+* **CLOUDANT_KEY** - IAM API Key for Cloudant".
