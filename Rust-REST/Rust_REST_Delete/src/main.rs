@@ -216,7 +216,7 @@ fn handler(e: reqwest::Error) {
 
 fn main() {
     //Runs parsing function
-    let mq_config = read_mq_config_from_file("../envrest.json").unwrap();
+    let mq_config = read_mq_config_from_file("../../envrest.json").unwrap();
     //Starting Function
     //Throws errors such as connection if applicable
     match rest_get(mq_config){
