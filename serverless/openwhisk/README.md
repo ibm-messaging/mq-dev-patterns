@@ -61,7 +61,7 @@ There are two actions defined in the manifest `mqfunctions/mqpost` and `mqfuncti
 
 The environment variables are used to set defaults, but can these can be overriden when invoking actions with -p or -P (json file) parameters.
 
-* **mqfunctions/mqpost** - Writes a message to a queue. If the input json contains `args.message`, then that message is written. Else a default timed message is posted.
+* **mqfunctions/mqpost** - Writes a message to a queue. If the input json contains `args.message`, then that message is written. Else a default message containing a timestamp is posted.
 * **mqfunctions/mqget** - Reads a specific message from a queue. Input json must contain `args.messageId`. It is this messageId that is used to fetch a message. Output json will contain the retrieved message, in the format:
 
 ```json
@@ -101,7 +101,7 @@ The logs should see something like
 "stdout: msgid is  414d5120514d3120202020202020202091fda061031f2740"
 ````
 
-To specify a queue name (eg. QM2) different from the manifest default run
+To specify a queue manager name (eg. QM2) different from the manifest default run
 
 ````
 ibmcloud fn action invoke mqfunctions/mqpost -p message "message posted from openwhisk action" -p qm_name "QM2" --blocking
@@ -138,7 +138,7 @@ A single sample sequence `mq-default-sequence` is provided, which in turn invoke
 ### Invoking sequence `mq-default-sequence`
 You can invoke the sequence from the command line by running
 ````
-ibmcloud fn action invoke mqfunctions/mq-default-sequence -p messageId "<your message id"--blocking
+ibmcloud fn action invoke mqfunctions/mq-default-sequence -p messageId "<your message id>" --blocking
 ````
 
 
@@ -147,7 +147,7 @@ Triggers are used to invoke actions when an event occurs. By themselves triggers
 
 The two triggers defined in the manfiest are:
 
-* **mq-feedtimer-trigger** - Which uses the OpenWhisk system `/whisk.system/alarms/interval` to fire up every two minutes.
+* **mq-feedtimer-trigger** - Which uses the OpenWhisk system `/whisk.system/alarms/interval` to trigger every two minutes.
 * **mq-feedtest-trigger** - Which registers to the feed mqfunctions/mqfeed as a subscribed trigger.
 
 
@@ -158,7 +158,7 @@ A feed listens for OpenWhisk lifecyle events from triggers.
 
 * `CREATE` indicates a new trigger registration.
 * `DELETE` indicates a trigger deregistration.
-* `TRIGGER` event is a psuedo event registered as a default in the manifest. This ensures that when the feed is triggered for anything other than a OpenWhisk lifecyle event, that it is seen as a TRIGGER event.
+* `TRIGGER` event is an application registered event. This ensures that when the feed is triggered for anything other than a OpenWhisk lifecyle event, that it is seen as a TRIGGER event.
 
 When the feed is invoked, it checks for registered triggers. If there are registered triggers then the feed browses for the next message on the queue. If a message if found the feed fires registered triggers sending the messageId of the next message on the queue as a parameter.
 
@@ -166,7 +166,8 @@ The feed uses Cloudant actions to persist the details of registered triggers.
 
 
 ### Pattern
-The supplied feed provides a simple *detect single message, inform all subscribers pattern*. Different patterns can be integrated into the feed.
+The supplied feed provides a simple *Informs all subscribers when it detects a message*.
+Different patterns can be integrated into the feed.
 
 ### Alternative patterns
 Alternative patterns (**Note** these are not included in this repository) that you may wish to consider for the feed are:
@@ -177,7 +178,7 @@ Alternative patterns (**Note** these are not included in this repository) that y
 ## Rules
 Rules connect triggers to actions. The two rules in the manifest are:
 
-* **rule-mq-fire-trigger** - Which connects the trigger `mq-feedtimer-trigger` to the feed `mqfunctions/mqfeed`. This invokes the feed every 2 minutes. Forcing the feed to check for registered triggers and firing them. This package registers the `mq-feedtest-trigger`, so that trigger will be fired if there is a message available on the message queue.
+* **rule-mq-fire-trigger** - Which connects the trigger `mq-feedtimer-trigger` to the feed `mqfunctions/mqfeed`. This invokes the feed every two minutes. Forcing the feed to check for registered triggers and firing them. This package registers the `mq-feedtest-trigger`, so that trigger will be fired if there is a message available on the message queue.
 * **rule-mq-default-sequence** - Which connects the `mq-feedtest-trigger` to the sequence `mq-default-sequence`. It will only be fired if a message is available on the queue, and the sequence will retrieve that message and post a fresh message on the queue.
 
 ## Application flow
@@ -190,7 +191,7 @@ The flow for this OpenWhisk application is
     * The trigger `mq-feedtest-trigger` is fired
     * The sequence `mq-default-sequence` is started, whereby
         - The action `mqfunctions/mqget` is invoked action followed by the
-        - The action `mqfunctions/mqpost`.
+        - The action `mqfunctions/mqpost`
 
 Note: If you deploy with `.deploy.sh` then the `rule-mq-fire-trigger` rule is disabled. If you want to enable the rule and the flow then run
 
@@ -226,6 +227,6 @@ To persist registered triggers the feed needs the following Cloudant configurati
 * **MQ_DB** - The name of the database created in Cloudant for the feed to use
 * **MQ_DB_KEY** - The key that the feed will use to persist registred triggers
 * **CLOUDANT_HOSTNAME** - Cloudant instance hostname
-* **CLOUDANT_USERNAME** - Username used to connect to Cloudant
+* **CLOUDANT_USERNAME** - User name used to connect to Cloudant
 * **CLOUDANT_PASSWORD** - Password used to connect to Cloudant
-* **CLOUDANT_KEY** - IAM API Key for Cloudant.
+* **CLOUDANT_KEY** - IAM API Key for Cloudant
