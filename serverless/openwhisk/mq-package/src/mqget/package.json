@@ -1,0 +1,10 @@
+{
+  "name": "mqget",
+  "version": "0.0.1",
+  "description": "Get Message by Message ID from MQ",
+  "main": "mqget.js",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "axios": "^0.21.1"
+  }
+}
