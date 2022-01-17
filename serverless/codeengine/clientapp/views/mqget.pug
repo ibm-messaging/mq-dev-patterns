@@ -1,0 +1,26 @@
+
+extends layout
+
+block content
+  body
+    p  &nbsp; Get status : &nbsp;
+      span#status
+    p   #{status}
+    form
+      div(class='container')
+        form
+          div(class="form-group row align-items-center")
+            label(for="notekey" class="col-2 col-form-label") Quantity:
+            div(class="col")
+              input#quantity(type='number' class="form-control" name='quantity')
+          div(class="form-group row align-items-center")
+            div(class='col-2')
+              button#mqgetbutton(class='btn btn-success float-right' type='submit') Get
+    hr
+    div#results(class='container')
+      table#messages
+        tr
+          th  Message
+          th  Count
+
+    hr#secondhr

@@ -1,0 +1,24 @@
+{
+  "author": "MQ Developer Experience",
+  "name": "sample",
+  "version": "0.0.1",
+  "description": "Sample Code Engine, Serverless, Node.js MQ Client app",
+  "main": "server.js",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ibm-messaging"
+  },
+  "dependencies": {
+    "ibmmq": "^0.9.17",
+    "axios": "^0.21.1",
+    "debug": "^4.3.3"
+  },
+  "scripts": {
+    "start": "DEBUG=mqapp* node server.js"
+  },
+  "engines": {
+    "node": ">=12.16.3"
+  },
+  "type": "commonjs"
+}
