@@ -6,15 +6,15 @@ Install/unzip IBM MQ client
 
 ## Mac
 
-[IBM MQ MacOS toolkit for developers v 9.1.1.0 download](https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/mactoolkit/)
+[IBM MQ MacOS toolkit for developers download](https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/mactoolkit/)
 
 Add
-`<unzip location>/IBM-MQ-Toolkit-Mac-x64-9.1.1.0/bin` and
-`<unzip location>/IBM-MQ-Toolkit-Mac-x64-9.1.1.0/samp/bin`, to the PATH by editing `/etc/paths`
+`/opt/mqm/bin` and
+`/opt/mqm/samp/bin`, to the PATH by editing `/etc/paths`
 
-`export DYLD_LIBRARY_PATH=<unzip location>/IBM-MQ-Toolkit-Mac-x64-9.1.1.0/lib64`
+`export DYLD_LIBRARY_PATH=/opt/mqm/lib64`
 
-`export MQ_INSTALLATION_PATH=<unzip location>/IBM-MQ-Toolkit-Mac-x64-9.1.1.0`
+`export MQ_INSTALLATION_PATH=/opt/mqm`
 
 ## Windows
 
