@@ -42,7 +42,7 @@ If you've already used Docker, just run these commands to get set up:
 Get the latest container image from Docker Hub:
 
 ```
-docker pull ibmcom/mq:latest
+docker pull icr.io/ibm-messaging/mq:latest
 ```
 
 Check you got the image:
@@ -54,7 +54,7 @@ docker images
 You'll see:
 ```
 REPOSITORY                               TAG                 IMAGE ID            CREATED             SIZE
-ibmcom/mq                                latest              6bd9802953a3        7 weeks ago         939MB
+icr.io/ibm-messaging/mq                  latest              a583b9db53a6        5 weeks ago         989MB
 ```
 
 Create a volume to preserve data separate from the container:
@@ -66,7 +66,7 @@ docker volume create qm1data
 Run the container:
 
 ```
-docker run --env LICENSE=accept --env MQ_QMGR_NAME=QM1 --volume qm1data:/mnt/mqm --publish 1414:1414 --publish 9443:9443 --detach --env MQ_APP_PASSWORD=passw0rd ibmcom/mq:latest
+docker run --env LICENSE=accept --env MQ_QMGR_NAME=QM1 --volume qm1data:/mnt/mqm --publish 1414:1414 --publish 9443:9443 --detach --env MQ_APP_PASSWORD=passw0rd icr.io/ibm-messaging/mq:latest
 ```
 
 Check the container is up and running:
@@ -78,8 +78,8 @@ docker ps
 You'll see:
 
 ```
-CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                                                      NAMES
-someID              ibmcom/mq:latest    "runmqdevserver"    2 days ago          Up 2 days           0.0.0.0:1414->1414/tcp, 0.0.0.0:9443->9443/tcp, 9157/tcp   cool_name
+CONTAINER ID        IMAGE                             COMMAND             CREATED             STATUS              PORTS                                                      NAMES
+someID              icr.io/ibm-messaging/mq:latest    "runmqdevserver"    2 days ago          Up 2 days           0.0.0.0:1414->1414/tcp, 0.0.0.0:9443->9443/tcp, 9157/tcp   cool_name
 ```
 
 
