@@ -155,7 +155,8 @@ def awaitResponse(msgId, correlId):
 
     # Get Message Options
     gmo = pymqi.GMO()
-    gmo.Options = pymqi.CMQC.MQGMO_WAIT | \
+    gmo.Options = pymqi.CMQC.MQGMO_SYNCPOINT | \
+                       pymqi.CMQC.MQGMO_WAIT | \
                        pymqi.CMQC.MQGMO_FAIL_IF_QUIESCING | \
                        pymqi.CMQC.MQGMO_NO_PROPERTIES
     gmo.WaitInterval = 5000  # 5 seconds

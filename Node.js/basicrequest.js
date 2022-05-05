@@ -48,7 +48,7 @@ var debug_warn = require('debug')('amqsreq:warn');
 
 // Set up Constants
 const CCDT = "MQCCDTURL";
-const	FILEPREFIX = "file://";
+const	FILEPREFIX = "file:///";
 
 // Load the MQ Endpoint details either from the envrionment or from the
 // env.json file. The envrionment takes precedence. The json file allows for
@@ -142,13 +142,14 @@ function getResponse(hObjDynamic, msgId, cb) {
   var mqmd = new mq.MQMD();
   var gmo = new mq.MQGMO();
 
-  gmo.Options = MQC.MQGMO_NO_SYNCPOINT |
-    MQC.MQGMO_NO_WAIT |
+  gmo.Options = MQC.MQGMO_SYNCPOINT |
+    MQC.MQGMO_WAIT |
     MQC.MQGMO_CONVERT |
     MQC.MQGMO_FAIL_IF_QUIESCING;
 
   gmo.MatchOptions = MQC.MQMO_MATCH_MSG_ID;
   mqmd.MsgId = hexToBytes(msgId);
+
 
   // gmo.MatchOptions = MQC.MQMO_MATCH_CORREL_ID
   // mqmd.CorrelId = hexToBytes(msgId);
@@ -173,6 +174,7 @@ function getResponse(hObjDynamic, msgId, cb) {
         cb(msgObject, null);
       } catch (err) {
         debug_info("message <%s>", decoder.write(buf));
+        buf, err = 
         cb(err, null);
       }
     } else {

@@ -150,7 +150,7 @@ You'll also have to point to the client keystore location from the `env.json` fi
 
     Give it a name, for example `mqtls` so you can differentiate it from your other MQ container when you `docker ps`, and point it at the location where you copied the server certificate.
 
-    `docker run --name mqtls --env LICENSE=accept --env MQ_QMGR_NAME=QM1 --volume ___PATH TO SERVER_KEY/CERTIFICATE DIRECTORY___:/etc/mqm/pki/keys/mykey --publish 1415:1414 --publish 9444:9443 --detach --env MQ_APP_PASSWORD=passw0rd icr.io/ibm-messaging/mq:latest`
+    `docker run --name mqtls --env LICENSE=accept --env MQ_QMGR_NAME=QM1 --volume ___PATH TO SERVER_KEY/CERTIFICATE DIRECTORY___:/etc/mqm/pki/keys/mykey --publish 1415:1414 --publish 9444:9443 --detach --env MQ_APP_PASSWORD=passw0rd ibmcom/mq:latest`
 
     Remember to use a secure password for `MQ_APP_PASSWORD`.
 

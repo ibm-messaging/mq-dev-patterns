@@ -37,6 +37,17 @@ namespace ibmmq_samples
                 e.Cancel = true;
                 SimpleResponse.keepRunning = false;
             };
+            var gmo = new MQGetMessageOptions();
+            gmo.Options += MQC.MQGMO_WAIT + MQC.MQGMO_SYNCPOINT;
+            gmo.WaitInterval = 20000;
+            Hashtable props = new Hashtable();
+            props.Add(MQC.HOST_NAME_PROPERTY, "");
+            props.Add(MQC.CHANNEL_PROPERTY, "CLOUD.APP.SVRCONN");
+            props.Add(MQC.PORT_PROPERTY, );
+            MQQueueManager qMgr = new MQQueueManager("QM1", props);
+            MQQueue queue = qMgr.AccessQueue("DEV.QUEUE.1", MQC.MQOO_INPUT_AS_Q_DEF);
+
+
             try
             {
                 SimpleResponse simpleConsumer = new SimpleResponse();
@@ -86,7 +97,7 @@ namespace ibmmq_samples
             Console.WriteLine("Connection created");
 
             // Create session
-            sessionWMQ = connectionWMQ.CreateSession(false, AcknowledgeMode.AutoAcknowledge);
+            sessionWMQ = connectionWMQ.CreateSession(true);
             Console.WriteLine("Session created");
 
             // Create destination
@@ -114,7 +125,10 @@ namespace ibmmq_samples
                     replyToMessage(textMessage, sessionWMQ);
                 }
                 else
+                {
                     Console.WriteLine("Wait timed out.");
+                    sessionWMQ.Rollback();
+                }
             }
 
             // Cleanup
@@ -140,6 +154,7 @@ namespace ibmmq_samples
                 replyMessage.Text = v.toJsonString();
                 producer.SetIntProperty(XMSC.DELIVERY_MODE, XMSC.DELIVERY_NOT_PERSISTENT);
                 producer.Send(replyMessage);
+                sessionWMQ.Commit();
                 Console.WriteLine("Message sent");
             }
         }

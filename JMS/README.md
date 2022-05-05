@@ -113,7 +113,7 @@ java -jar target/mq-dev-patterns-0.1.0.jar pub 5
 
 To subscribe run:
 ````
-java -jar target/mq-dev-patterns-0.1.0.jar sub
+java -jar target/mq-dev-patterns-0.1.0.jar sub 
 ````
 
 To run any of the samples you can specify the `.jar` file as the classpath.
@@ -127,11 +127,11 @@ java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsPut
 ## Put / Get
 From the top level JMS folder, compile first
 
-`javac -cp ./com.ibm.mq.allclient-9.2.5.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsPut.java`
+`javac -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsPut.java`
 
 and run
 
-`java -cp ./com.ibm.mq.allclient-9.2.5.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsPut`
+`java -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsPut`
 
 If you have used maven to build the samples, you can run
 
@@ -140,11 +140,11 @@ If you have used maven to build the samples, you can run
 
 In a separate terminal, from the top level JMS folder, compile first
 
-`javac -cp ./com.ibm.mq.allclient-9.2.5.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsGet.java`
+`javac -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsGet.java`
 
 and run
 
-`java -cp ./com.ibm.mq.allclient-9.2.5.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsGet`
+`java -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsGet`
 
 If you have used maven to build the samples, you can run
 
@@ -159,11 +159,11 @@ You have to run the subscriber sample first so it creates a subscription and wai
 
 Compile first
 
-`javac -cp ./com.ibm.mq.allclient-9.2.5.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsSub.java`
+`javac -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsSub.java`
 
 then run
 
-`java -cp ./com.ibm.mq.allclient-9.2.5.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsSub`
+`java -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsSub`
 
 If you have used maven to build the samples, you can run
 
@@ -175,11 +175,11 @@ Run the publisher sample
 
 Compile first
 
-`javac -cp ./com.ibm.mq.allclient-9.2.5.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsPub.java`
+`javac -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsPub.java`
 
 then run
 
-`java -cp ./com.ibm.mq.allclient-9.2.5.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsPub`
+`java -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsPub`
 
 If you have used maven to build the samples, you can run
 
@@ -194,11 +194,11 @@ Run the request sample
 
 Compile
 
-`javac -cp ./com.ibm.mq.allclient-9.2.5.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsRequest.java`
+`javac -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsRequest.java`
 
 then run
 
-`java -cp ./com.ibm.mq.allclient-9.2.5.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsRequest`
+`java -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsRequest`
 
 
 If you have used maven to build the samples, you can run
@@ -213,11 +213,11 @@ Run the response sample
 
 Compile first
 
-`javac -cp ./com.ibm.mq.allclient-9.2.5.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsResponse.java`
+`javac -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com/ibm/mq/samples/jms/JmsResponse.java`
 
 and run
 
-`java -cp ./com.ibm.mq.allclient-9.2.5.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsResponse`
+`java -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsResponse`
 
 If you have used maven to build the samples, you can run
 
@@ -242,7 +242,7 @@ Will be compiled when you compile either request / response samples.
 
 To run the samples with TLS you need to provide additional arguments;
 
-`java -Djavax.net.ssl.trustStoreType=jks -Djavax.net.ssl.trustStore=/your_key_directory/clientkey.jks -Djavax.net.ssl.trustStorePassword=<your_keystore_pw> -Dcom.ibm.mq.cfg.useIBMCipherMappings=false -cp ./com.ibm.mq.allclient-9.2.5.0.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsPut`
+`java -Djavax.net.ssl.trustStoreType=jks -Djavax.net.ssl.trustStore=/your_key_directory/clientkey.jks -Djavax.net.ssl.trustStorePassword=<your_keystore_pw> -Dcom.ibm.mq.cfg.useIBMCipherMappings=false -cp ./com.ibm.mq.allclient-9.2.0.1.jar:./javax.jms-api-2.0.1.jar:./json-simple-1.1.1.jar:. com.ibm.mq.samples.jms.JmsPut`
 
  *A note on the* `Dcom.ibm.mq.cfg.useIBMCipherMappings=false` property
 

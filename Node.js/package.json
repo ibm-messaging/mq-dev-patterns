@@ -4,7 +4,7 @@
   "description": "",
   "author": "",
   "dependencies": {
-    "ibmmq": "^0.9.13",
+    "ibmmq": "^0.9.22",
     "jsdoc": "^3.5.5"
   }
 }

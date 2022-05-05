@@ -65,7 +65,7 @@ public class JmsResponse {
         setJMSProperties(connectionFactory);
         logger.info("created connection factory");
 
-        context = connectionFactory.createContext();
+        context = connectionFactory.createContext(JMSContext.SESSION_TRANSACTED);
         logger.info("context created");
         destination = context.createQueue("queue:///" + QUEUE_NAME);
         logger.info("destination created");
@@ -118,6 +118,7 @@ public class JmsResponse {
                 // can get the message off the temp reply queue
                 producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
                 producer.send(destination, message);
+                context.commit();
             }
         } catch (JMSException jmsex) {
             logger.info("******** JMS Exception*********************");
@@ -127,10 +128,13 @@ public class JmsResponse {
 
                 if (MQConstants.MQRC_UNKNOWN_OBJECT_NAME == innerException.getReason()) {
                     logger.info("Reply to Queue no longer exists, skipping request");
+                    context.rollback();
                     return;
                 }
+
             }
 
+            context.rollback();
             logger.warning("Unexpected Expection replying to message");
             jmsex.printStackTrace();
 
@@ -141,6 +145,7 @@ public class JmsResponse {
               if (null != e && e instanceof MQException) {
                   if (MQConstants.MQRC_UNKNOWN_OBJECT_NAME == e.getReason()) {
                       logger.info("Reply to Queue no longer exists, skipping request");
+                      context.rollback();
                       return;
                   }
               }
@@ -150,9 +155,11 @@ public class JmsResponse {
           // eg. When app that posted the message is no longer running.
           if (null != jmsex.getCause() && jmsex.getCause() instanceof DetailedInvalidDestinationException) {
             logger.info("Reply to destination is invalid");
+            context.rollback();
             return;
           }
 
+          context.rollback();
           logger.warning("Unexpected runtime error");
           jmsex.printStackTrace();
         }

@@ -122,12 +122,15 @@ mqBoilerPlate.initialise('GET')
   })
   .then(() => {
     debug_info('Waiting for termination');
+    debug_info('Still Waiting...');
     return mqBoilerPlate.checkForTermination();
   })
   .then(() => {
+    debug_info('Normal Teardown');
     mqBoilerPlate.teardown();
   })
   .catch((err) => {
+    debug_info('Error Teardown');
     mqBoilerPlate.teardown();
   })
 

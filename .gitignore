@@ -11,3 +11,8 @@
 **/node_modules/*
 .idea
 amqp-vertx/target/*
+JMS/target/*
+JMS/clientkey.jks
+JMS/*.jar
+JMS/*.pem
+JMS/dependency-reduced-pom.xml
