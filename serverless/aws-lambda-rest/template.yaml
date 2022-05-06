@@ -32,9 +32,6 @@ Resources:
           Properties:
             Path: /putmessage
             Method: get
-      Environment:
-        Variables:
-          MQQueueManager: QM1
 
 Outputs:
   MQLamdaApi:
