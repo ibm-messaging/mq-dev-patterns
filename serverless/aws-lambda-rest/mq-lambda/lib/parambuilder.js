@@ -14,12 +14,6 @@
  * limitations under the License.
  **/
 
-// const USERSTRING = 'MQ_USER';
-// const PASSWORDSTRING = 'MQ_PASSWORD';
-// const QUEUESTRING = 'QUEUE';
-// const QMNAMESTRING = 'QM_NAME';
-// const HOSTSTRING = 'HOSTNAME';
-// const PORTSTRING = 'QM_PORT';
 
 // Mapping of environment options to how they are required by the REST Api
 // functions.
