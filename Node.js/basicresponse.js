@@ -258,13 +258,13 @@ function cleanup(hConn, hObj) {
     } else {
       debug_info("MQCLOSE successful");
     }
-    // mq.Disc(hConn, function(err) {
-    //   if (err) {
-    //     debug_warn('Error disconnecting', err);
-    //   } else {
-    //     debug_info("MQDISC successful");
-    //   }
-    // });
+    mq.Disc(hConn, function(err) {
+      if (err) {
+        debug_warn('Error disconnecting', err);
+      } else {
+        debug_info("MQDISC successful");
+      }
+    });
   });
 }
 
