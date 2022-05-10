@@ -41,14 +41,14 @@ public class JmsPut {
     private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
 
     // Create variables for the connection to MQ
-    private static String ConnectionString = "qmtest-f34d.qm.eu-gb.mq.appdomain.cloud"; //= "localhost(1414),localhost(1416)"
-    private static String CHANNEL = "CLOUD.APP.SVRCONN"; // = "DEV.APP.SVRCONN"; // Channel name
-    private static String QMGR = "QMTEST"; // = "QM1"; //System.getenv("QMGR"); // Queue manager name
-    private static String APP_USER = "app"; // = "app"; // User name that application uses to connect to MQ
-    private static String APP_PASSWORD = "V-fnuJQmVMHA95g6pNzuvOR4l2TnpKJXySDfWPzi91ty"; // = "passw0rd"; // Password that the application uses to connect to MQ
-    private static String QUEUE_NAME = "DEV.QUEUE.1"; // = "DEV.QUEUE.1"; // Queue that the application uses to put and get messages
+    private static String ConnectionString; //= "localhost(1414),localhost(1416)"
+    private static String CHANNEL; // = "DEV.APP.SVRCONN"; // Channel name
+    private static String QMGR; // = "QM1"; //System.getenv("QMGR"); // Queue manager name
+    private static String APP_USER; // = "app"; // User name that application uses to connect to MQ
+    private static String APP_PASSWORD; // = "passw0rd"; // Password that the application uses to connect to MQ
+    private static String QUEUE_NAME; // = "DEV.QUEUE.1"; // Queue that the application uses to put and get messages
                                       // to and from
-    private static String CIPHER_SUITE = "*TLS12ORHIGHER";
+    private static String CIPHER_SUITE;
     private static String CCDTURL;
 
     public static void main(String[] args) {
