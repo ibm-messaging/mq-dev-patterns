@@ -37,6 +37,7 @@ namespace ibmmq_samples
                 e.Cancel = true;
                 SimpleResponse.keepRunning = false;
             };
+
             try
             {
                 SimpleResponse simpleConsumer = new SimpleResponse();
@@ -86,7 +87,7 @@ namespace ibmmq_samples
             Console.WriteLine("Connection created");
 
             // Create session
-            sessionWMQ = connectionWMQ.CreateSession(false, AcknowledgeMode.AutoAcknowledge);
+            sessionWMQ = connectionWMQ.CreateSession(true, AcknowledgeMode.SessionTransacted);
             Console.WriteLine("Session created");
 
             // Create destination
@@ -114,7 +115,10 @@ namespace ibmmq_samples
                     replyToMessage(textMessage, sessionWMQ);
                 }
                 else
+                {
                     Console.WriteLine("Wait timed out.");
+                    sessionWMQ.Rollback();
+                }
             }
 
             // Cleanup
@@ -126,21 +130,37 @@ namespace ibmmq_samples
 
         void replyToMessage(ITextMessage textMessage, ISession sessionWMQ)
         {
-            IDestination replyDestination = textMessage.JMSReplyTo;
-            if (replyDestination != null)
+            try
             {
-                ITextMessage replyMessage = sessionWMQ.CreateTextMessage();
-                IMessageProducer producer = sessionWMQ.CreateProducer(replyDestination);
-                replyMessage.JMSCorrelationID = textMessage.JMSCorrelationID;
+                IDestination replyDestination = textMessage.JMSReplyTo;
+                if (replyDestination != null)
+                {
+                    ITextMessage replyMessage = sessionWMQ.CreateTextMessage();
+                    IMessageProducer producer = sessionWMQ.CreateProducer(replyDestination);
+                    replyMessage.JMSCorrelationID = textMessage.JMSCorrelationID;
 
-                MessageValue v = JsonConvert.DeserializeObject<MessageValue>(textMessage.Text);
-                Console.WriteLine(v.value);
-                v.message = "The squared number is: ";
-                v.value *= v.value;
-                replyMessage.Text = v.toJsonString();
-                producer.SetIntProperty(XMSC.DELIVERY_MODE, XMSC.DELIVERY_NOT_PERSISTENT);
-                producer.Send(replyMessage);
-                Console.WriteLine("Message sent");
+                    MessageValue v = JsonConvert.DeserializeObject<MessageValue>(textMessage.Text);
+                    Console.WriteLine(v.value);
+                    v.message = "The squared number is: ";
+                    v.value *= v.value;
+                    replyMessage.Text = v.toJsonString();
+                    producer.SetIntProperty(XMSC.DELIVERY_MODE, XMSC.DELIVERY_NOT_PERSISTENT);
+                    producer.Send(replyMessage);
+                    sessionWMQ.Commit();
+                    Console.WriteLine("Message sent");
+                }
+            }
+            catch (XMSException ex)
+            {
+                Console.WriteLine("**********XMS Exception**********");
+                Console.WriteLine("XMS Exception caught: ", ex);
+                sessionWMQ.Rollback();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("**********Exception**********");
+                Console.WriteLine("Exception caught: ", ex);
+                sessionWMQ.Rollback();
             }
         }
 

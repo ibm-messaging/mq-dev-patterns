@@ -119,10 +119,12 @@ function getMessage(hConn, hObj) {
   var mqmd = new mq.MQMD();
   var gmo = new mq.MQGMO();
 
-  gmo.Options = MQC.MQGMO_NO_SYNCPOINT |
+  gmo.Options = MQC.MQGMO_SYNCPOINT |
     MQC.MQGMO_NO_WAIT |
     MQC.MQGMO_CONVERT |
     MQC.MQGMO_FAIL_IF_QUIESCING;
+
+  gmo.WaitInterval = 3 * 1000;
 
   mq.GetSync(hObj, mqmd, gmo, buf, function(err, len) {
     if (err) {
@@ -217,14 +219,29 @@ function respondToRequest(hConn, hObj, msgObject, mqmdRequest) {
       mqmd.MsgId = mqmdRequest.MsgId;
 
       // Describe how the Put should behave
-      pmo.Options = MQC.MQPMO_NO_SYNCPOINT;
+      pmo.Options = MQC.MQPMO_SYNCPOINT;
 
+      //If you do not disconnect, the default is a commit; if you do not disconnect and commit then the default is a rollback
       mq.Put(hObjReply, mqmd, pmo, msg, function(err) {
         if (err) {
           debug_warn('Error Detected in Put operation', err);
+          mq.Back(hConn, function(err) {
+            if (err) {
+              debug_warn('Error on rollback', err);
+            } else {
+              debug_info('Rollback Successful');
+            }
+          });
         } else {
           debug_info('MsgId: ', toHexString(mqmd.MsgId));
           debug_info("MQPUT successful");
+          mq.Cmit(hConn, function(err) {
+          if (err) {
+            debug_warn('Error on commit', err);
+          } else {
+            debug_info('Commit Successful');
+          }
+        });
         }
       });
 

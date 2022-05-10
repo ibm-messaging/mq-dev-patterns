@@ -55,7 +55,7 @@ def connect():
             sco.KeyRepository = MQDetails[EnvStore.KEY_REPOSITORY]
 
         #options = pymqi.CMQC.MQPMO_NO_SYNCPOINT | pymqi.CMQC.MQPMO_NEW_MSG_ID | pymqi.CMQC.MQPMO_NEW_CORREL_ID
-        options = pymqi.CMQC.MQPMO_NEW_CORREL_ID
+        options = pymqi.CMQC.MQPMO_NEW_CORREL_ID 
 
         qmgr = pymqi.QueueManager(None)
         qmgr.connect_with_options(MQDetails[EnvStore.QMGR],
@@ -106,7 +106,7 @@ def getMessages():
 
     # Get Message Options
     gmo = pymqi.GMO()
-    gmo.Options = pymqi.CMQC.MQGMO_WAIT | pymqi.CMQC.MQGMO_FAIL_IF_QUIESCING
+    gmo.Options = pymqi.CMQC.MQGMO_WAIT | pymqi.CMQC.MQGMO_FAIL_IF_QUIESCING | pymqi.CMQC.MQGMO_SYNCPOINT
     gmo.WaitInterval = 5000  # 5 seconds
 
     keep_running = True
@@ -130,10 +130,13 @@ def getMessages():
 
         except pymqi.MQMIError as e:
             if e.comp == pymqi.CMQC.MQCC_FAILED and e.reason == pymqi.CMQC.MQRC_NO_MSG_AVAILABLE:
+                print("QM is empty")
                 # No messages, that's OK, we can ignore it.
                 pass
             else:
                 # Some other error condition.
+                qmgr.backout()
+                logger.log(e)
                 raise
 
         except (UnicodeDecodeError, ValueError) as e:
@@ -154,18 +157,26 @@ def respondToRequest(md, msgObject):
     response_md.CorrelId = md.CorrelId
     response_md.MsgId = md.MsgId
     response_md.Format = pymqi.CMQC.MQFMT_STRING
+    
+    try:
+        msgReply = {
+            'Greeting': "Reply from Python! " + str(datetime.datetime.now()),
+            'value': random.randint(1, 101)
+        }
 
-    msgReply = {
-        'Greeting': "Reply from Python! " + str(datetime.datetime.now()),
-        'value': random.randint(1, 101)
-    }
+        replyQueue = getQueue(md.ReplyToQ, False)
+        if (msgObject['value']):
+            msgReply['value'] = performCalc(msgObject['value'])
+        #replyQueue.put(str(json.dumps(msgReply)),response_md )
+        qmgr.commit()
+        replyQueue.put(EnvStore.stringForVersion(
+            json.dumps(msgReply)), response_md)
 
-    replyQueue = getQueue(md.ReplyToQ, False)
-    if (msgObject['value']):
-        msgReply['value'] = performCalc(msgObject['value'])
-    #replyQueue.put(str(json.dumps(msgReply)),response_md )
-    replyQueue.put(EnvStore.stringForVersion(
-        json.dumps(msgReply)), response_md)
+    except Exception as e:
+        qmgr.backout()
+        logger.exception(e)
+    finally:
+        replyQueue.close()
 
 
 def performCalc(n):

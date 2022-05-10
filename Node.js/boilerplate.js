@@ -156,7 +156,7 @@ class MQBoilerPlate {
       var queue = me.mqObj;
 
       // Describe how the Put should behave
-      pmo.Options = MQC.MQPMO_NO_SYNCPOINT;
+      pmo.Options = MQC.MQPMO_SYNCPOINT;
 
       if ('REPLY' === mode) {
         queue = me.mqDynReplyObj;
@@ -175,10 +175,24 @@ class MQBoilerPlate {
           debug_info('Publish unsuccessful because there are no subscribers', err.mqrcstr);
         } else if (err) {
           MQBoilerPlate.reportError(err);
+          mq.Back(me.mqConn, function(err) {
+            if (err) {
+              debug_warn('Error on rollback', err);
+            } else {
+              debug_info('Rollback Successful');
+            }
+          });
           reject();
         } else {
           debug_info("MQPUT successful ", me.modeType);
           var msgId = MQBoilerPlate.toHexString(mqmd.MsgId);
+          mq.Cmit(me.mqConn, function(err) {
+            if (err) {
+              debug_warn('Error on commit', err);
+            } else {
+              debug_info('Commit Successful');
+            }
+          });
           debug_info('MsgId: ', msgId);
           debug_info("MQPUT successful");
           resolve(msgId);
@@ -205,7 +219,7 @@ class MQBoilerPlate {
       var md = new mq.MQMD();
       var gmo = new mq.MQGMO();
 
-      gmo.Options = MQC.MQGMO_NO_SYNCPOINT |
+      gmo.Options = MQC.MQGMO_SYNCPOINT |
         MQC.MQGMO_WAIT |
         MQC.MQGMO_CONVERT |
         MQC.MQGMO_FAIL_IF_QUIESCING;

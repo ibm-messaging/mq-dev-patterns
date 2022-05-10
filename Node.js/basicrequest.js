@@ -142,7 +142,7 @@ function getResponse(hObjDynamic, msgId, cb) {
   var mqmd = new mq.MQMD();
   var gmo = new mq.MQGMO();
 
-  gmo.Options = MQC.MQGMO_NO_SYNCPOINT |
+  gmo.Options = MQC.MQGMO_SYNCPOINT |
     MQC.MQGMO_NO_WAIT |
     MQC.MQGMO_CONVERT |
     MQC.MQGMO_FAIL_IF_QUIESCING;

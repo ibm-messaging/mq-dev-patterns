@@ -125,9 +125,11 @@ mqBoilerPlate.initialise('GET')
     return mqBoilerPlate.checkForTermination();
   })
   .then(() => {
+    debug_info('Normal Teardown');
     mqBoilerPlate.teardown();
   })
   .catch((err) => {
+    debug_info('Error Teardown');
     mqBoilerPlate.teardown();
   })
 
