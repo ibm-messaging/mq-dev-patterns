@@ -130,9 +130,9 @@ def putMessage():
 
         # Send the message.
         #queue.put(str(json.dumps(msgObject)), md)
-        # queue.put(EnvStore.stringForVersion(json.dumps(msgObject)), md)
+        queue.put(EnvStore.stringForVersion(json.dumps(msgObject)), md)
         # queue.put(str(json.dumps(msgObject)), md)
-        queue.put("Hello")
+        # queue.put("Hello")
 
         logger.info("Put message successful")
         #logger.info(md.CorrelID)
