@@ -129,7 +129,7 @@ mqBoilerPlate.initialise('GET')
     mqBoilerPlate.teardown();
   })
   .catch((err) => {
-    debug_info('Error Teardown');
+    debug_warn('Error Teardown');
     mqBoilerPlate.teardown();
   })
 
