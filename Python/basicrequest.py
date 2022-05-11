@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2019 IBM
+# Copyright 2019, 2022 IBM
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -130,9 +130,9 @@ def putMessage():
 
         # Send the message.
         #queue.put(str(json.dumps(msgObject)), md)
-        # queue.put(EnvStore.stringForVersion(json.dumps(msgObject)), md)
+        queue.put(EnvStore.stringForVersion(json.dumps(msgObject)), md)
         # queue.put(str(json.dumps(msgObject)), md)
-        queue.put("Hello")
+        # queue.put("Hello")
 
         logger.info("Put message successful")
         #logger.info(md.CorrelID)

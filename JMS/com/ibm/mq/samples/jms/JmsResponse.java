@@ -130,7 +130,6 @@ public class JmsResponse {
                     logger.info("Reply to Queue no longer exists, skipping request");
                     return;
                 }
-
             }
 
             context.rollback();
