@@ -226,9 +226,9 @@ If you have used maven to build the samples, you can run
 The response sample will get a message from the queue, process it and put the response on the reply to queue and keep looking for more messages to respond to till you ctrl+c interrupt it.
 
 ### Poison Messages
-While running the request/response samples, if an error, such as "Reply to Queue no longer exists, skipping request" or "Reply to destination is invalid", is received then the message must be a Poison Message. This occurs when the message cannot get processed by the receiving application and gets sent back to the queue. The application will still keep trying to send the message and it will keep getting put back in the queue, like an endless loop.
+While running the request/response samples, if an error, such as "Reply to Queue no longer exists, skipping request" or "Reply to destination is invalid", is received then the message might be a Poison Message. This occurs when the message cannot get processed by the receiving application and gets sent back to the queue. The message will sit in the queue and the application will keep on seeing it until it's removed. This will become an endless loop.
 
-To solve this issue, we can put the message into a backout queue by configuring the queue to detect if the message has been sent more than a set threshold. The last resort is moving the message to a Dead Letter Queue.
+To solve this issue, we can put the message into a backout queue by configuring the queue to detect if there have been more than a set threshold number of attempts to read the message. The last resort is moving the message to a Dead Letter Queue.
 
 See the documentation here:
   - [Local Transactions in application servers with JMS and IBM MQ](https://developer.ibm.com/articles/local-transactions-in-application-servers-with-jms-and-ibm-mq/)
