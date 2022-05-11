@@ -230,7 +230,9 @@ While running the request/response samples, if an error, such as "Reply to Queue
 
 To solve this issue, we can put the message into a backout queue by configuring the queue to detect if the message has been sent more than a set threshold. The last resort is moving the message to a Dead Letter Queue.
 
-See the documentation here [Handling poison messages in IBM MQ classes for JMS](https://www.ibm.com/docs/en/ibm-mq/9.0?topic=applications-handling-poison-messages-in-mq-classes-jms). 
+See the documentation here:
+  - [Local Transactions in application servers with JMS and IBM MQ](https://developer.ibm.com/articles/local-transactions-in-application-servers-with-jms-and-ibm-mq/)
+  - [Handling poison messages in IBM MQ classes for JMS](https://www.ibm.com/docs/en/ibm-mq/9.0?topic=applications-handling-poison-messages-in-mq-classes-jms). 
 
 
 ## The SampleEnvSetter
