@@ -225,7 +225,7 @@ If you have used maven to build the samples, you can run
 
 The response sample will get a message from the queue, process it and put the response on the reply to queue and keep looking for more messages to respond to till you ctrl+c interrupt it.
 
-#### Poison Messages
+### Poison Messages
 While running the request/response samples, if an error, such as "Reply to Queue no longer exists, skipping request" or "Reply to destination is invalid", is received then the message must be a Poison Message. This occurs when the message cannot get processed by the receiving application and gets sent back to the queue. The application will still keep trying to send the message and it will keep getting put back in the queue, like an endless loop.
 
 To solve this issue, we can put the message into a backout queue by configuring the queue to detect if the message has been sent more than a set threshold. The last resort is moving the message to a Dead Letter Queue.
