@@ -1,5 +1,5 @@
 /*
-* (c) Copyright IBM Corporation 2019
+* (c) Copyright IBM Corporation 2019, 2022
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -100,6 +100,7 @@ public class JmsRequest {
             message.setJMSReplyTo(requestQueue);
             producer.send(destination, message);
             context.commit();
+
             logger.info("listening for response");
 
             logger.info(selector);
@@ -111,10 +112,12 @@ public class JmsRequest {
         } catch (JMSException e) {
             logger.warning("Got a JMS exception");
             logger.warning(e.getMessage());
+            
             context.rollback();
         } catch (Exception e) {
             logger.warning("Got an exception");
             logger.warning(e.getMessage());
+
             context.rollback();
         }
     }
