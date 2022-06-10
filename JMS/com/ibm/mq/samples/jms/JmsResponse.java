@@ -116,7 +116,7 @@ public class JmsResponse {
                 JMSProducer producer = context.createProducer();
                 // Make sure message put on a reply queue is non-persistent so non XMS/JMS apps
                 // can get the message off the temp reply queue
-                producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+                producer.setDeliveryMode(DeliveryMode.PERSISTENT);
                 producer.send(destination, message);
                 context.commit();
             }
@@ -128,7 +128,7 @@ public class JmsResponse {
 
                 if (MQConstants.MQRC_UNKNOWN_OBJECT_NAME == innerException.getReason()) {
                     logger.info("Reply to Queue no longer exists, skipping request");
-                    return;
+                    // return;
                 }
             }
 
@@ -143,7 +143,7 @@ public class JmsResponse {
               if (null != e && e instanceof MQException) {
                   if (MQConstants.MQRC_UNKNOWN_OBJECT_NAME == e.getReason()) {
                       logger.info("Reply to Queue no longer exists, skipping request");
-                      return;
+                    //   return;
                   }
               }
           }
@@ -152,7 +152,7 @@ public class JmsResponse {
           // eg. When app that posted the message is no longer running.
           if (null != jmsex.getCause() && jmsex.getCause() instanceof DetailedInvalidDestinationException) {
             logger.info("Reply to destination is invalid");
-            return;
+            // return;
           }
 
           context.rollback();

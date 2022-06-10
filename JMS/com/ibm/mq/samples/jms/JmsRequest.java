@@ -68,7 +68,7 @@ public class JmsRequest {
         setJMSProperties(connectionFactory);
         logger.info("created connection factory");
 
-        context = connectionFactory.createContext();
+        context = connectionFactory.createContext(JMSContext.SESSION_TRANSACTED);
         logger.info("context created");
         destination = context.createQueue("queue:///" + QUEUE_NAME);
         try {
@@ -99,6 +99,7 @@ public class JmsRequest {
             TemporaryQueue requestQueue = context.createTemporaryQueue();
             message.setJMSReplyTo(requestQueue);
             producer.send(destination, message);
+            context.commit();
             logger.info("listening for response");
 
             logger.info(selector);
@@ -110,8 +111,11 @@ public class JmsRequest {
         } catch (JMSException e) {
             logger.warning("Got a JMS exception");
             logger.warning(e.getMessage());
+            context.rollback();
         } catch (Exception e) {
-
+            logger.warning("Got an exception");
+            logger.warning(e.getMessage());
+            context.rollback();
         }
     }
 

@@ -49,7 +49,7 @@ function msgCB(md, buf) {
 
 debug_info('Starting up Application');
 
-mqBoilerPlate.initialise('PUT')
+mqBoilerPlate.initialise('REQUEST')
   .then(() => {
     debug_info('MQ Connection is established');
     return Promise.resolve();

@@ -169,35 +169,53 @@ class MQBoilerPlate {
         pmo.Options |= MQC.MQPMO_WARN_IF_NO_SUBS_MATCHED;
       }
 
-      debug_info('Putting Message on Queue in mode ', me.modeType);
-      mq.Put(queue, mqmd, pmo, msg, function(err) {
+      if ('RESPONSE' === me.modeType || 'REQUEST' === me.modeType){
+        debug_info('Putting Message on Queue in mode ', me.modeType);
+        mq.Put(queue, mqmd, pmo, msg, function(err) {
+          if (MQBoilerPlate.isPublishNoSubscriptions(me.modeType, err)) {
+            debug_info('Publish unsuccessful because there are no subscribers', err.mqrcstr);
+          } else if (err) {
+            MQBoilerPlate.reportError(err);
+            mq.Back(me.mqConn, function(err) {
+              if (err) {
+                debug_warn('Error on rollback', err);
+              } else {
+                debug_info('Rollback Successful');
+              }
+            });
+            reject();
+          } else {
+            debug_info("MQPUT successful ", me.modeType);
+            var msgId = MQBoilerPlate.toHexString(mqmd.MsgId);
+            mq.Cmit(me.mqConn, function(err) {
+              if (err) {
+                debug_warn('Error on commit', err);
+              } else {
+                debug_info('Commit Successful');
+              }
+            });
+            debug_info('MsgId: ', msgId);
+            debug_info("MQPUT successful");
+            resolve(msgId);
+          }
+        });
+      } else {
+        debug_info('Putting Message on Queue in mode ', me.modeType);
+        mq.Put(queue, mqmd, pmo, msg, function(err) {
         if (MQBoilerPlate.isPublishNoSubscriptions(me.modeType, err)) {
           debug_info('Publish unsuccessful because there are no subscribers', err.mqrcstr);
         } else if (err) {
           MQBoilerPlate.reportError(err);
-          mq.Back(me.mqConn, function(err) {
-            if (err) {
-              debug_warn('Error on rollback', err);
-            } else {
-              debug_info('Rollback Successful');
-            }
-          });
           reject();
         } else {
           debug_info("MQPUT successful ", me.modeType);
           var msgId = MQBoilerPlate.toHexString(mqmd.MsgId);
-          mq.Cmit(me.mqConn, function(err) {
-            if (err) {
-              debug_warn('Error on commit', err);
-            } else {
-              debug_info('Commit Successful');
-            }
-          });
           debug_info('MsgId: ', msgId);
           debug_info("MQPUT successful");
           resolve(msgId);
         }
       });
+      }
 
     });
   }
@@ -226,6 +244,7 @@ class MQBoilerPlate {
 
       switch (me.modeType) {
         case 'GET':
+        case 'RESPONSE':
         case 'SUBSCRIBE':
           gmo.MatchOptions = MQC.MQMO_NONE;
       }
@@ -434,6 +453,8 @@ class MQBoilerPlate {
 
       switch (type) {
         case 'PUT':
+        case 'REQUEST':
+        case 'RESPONSE':
         case 'GET':
           od.ObjectName = me.MQDetails.QUEUE_NAME;
           od.ObjectType = MQC.MQOT_Q;
@@ -456,9 +477,11 @@ class MQBoilerPlate {
       switch (type) {
         case 'PUT':
         case 'PUBLISH':
+        case 'REQUEST':
         case 'DYNREP':
           openOptions = MQC.MQOO_OUTPUT;
           break;
+        case 'RESPONSE':
         case 'GET':
           openOptions = MQC.MQOO_INPUT_AS_Q_DEF;
           break;

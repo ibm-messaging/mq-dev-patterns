@@ -111,7 +111,7 @@ function performCalc(n) {
   return a;
 }
 
-mqBoilerPlate.initialise('GET')
+mqBoilerPlate.initialise('RESPONSE')
   .then(() => {
     debug_info('MQ Connection is established');
     return Promise.resolve();

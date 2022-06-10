@@ -133,13 +133,14 @@ def putMessage():
         queue.put(EnvStore.stringForVersion(json.dumps(msgObject)), md)
         # queue.put(str(json.dumps(msgObject)), md)
         # queue.put("Hello")
-
+        qmgr.commit()
         logger.info("Put message successful")
         #logger.info(md.CorrelID)
         return md.MsgId, md.CorrelId
         # return md.CorrelId
     except pymqi.MQMIError as e:
         logger.error("Error in put to queue")
+        qmgr.backout()
         logger.error(e)
 
 # Function to wait for resonse on reply to Queue
@@ -180,10 +181,13 @@ def awaitResponse(msgId, correlId):
 
         except pymqi.MQMIError as e:
             if e.comp == pymqi.CMQC.MQCC_FAILED and e.reason == pymqi.CMQC.MQRC_NO_MSG_AVAILABLE:
+                print("QM is empty")
                 # No messages, that's OK, we can ignore it.
                 pass
             else:
                 # Some other error condition.
+                qmgr.backout()
+                logger.log(e)
                 raise
 
         except (UnicodeDecodeError, ValueError) as e:

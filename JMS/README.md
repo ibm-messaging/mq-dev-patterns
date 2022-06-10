@@ -226,11 +226,11 @@ If you have used maven to build the samples, you can run
 The response sample will get a message from the queue, process it and put the response on the reply to queue and keep looking for more messages to respond to till you ctrl+c interrupt it.
 
 #### Poison Messages
-While running the request/response samples, if an error, such as "Reply to Queue no longer exists, skipping request" or "Reply to destination is invalid", is received then the message must be a Poison Message. This occurs when the message cannot get processed by the receiving application and gets sent back to the queue. The application will still keep trying to send the message and it will keep getting put back in the queue, like an endless loop.
+If a message cannot be processed for some reason, for example where an error condition such as MQRC_UNKNOWN_OBJECT_NAME occurs, then the message will be returned to the queue for redelivery. If the problem is transient then the message will be processed when next delivered to a consuming application. However, if the error condition persists or is permanent, this can lead to a poison message scenario where the message is continually redelivered.
 
-To solve this issue, we can put the message into a backout queue by configuring the queue to detect if the message has been sent more than a set threshold. The last resort is moving the message to a Dead Letter Queue.
+Application developers should include logic to deal with poison message scenarios alongside other error handling. One approach is to check the redelivery count of the message and put to an alternate 'backout queue' should the redelivery count exceed some threshold. Should an error condition arise in putting the message to the assigned backout queue, then a strategy such as putting the message to a Dead Letter Queue or logging an error in a suitable log to alert an administrator.
 
-See the documentation here [Handling poison messages in IBM MQ classes for JMS](https://www.ibm.com/docs/en/ibm-mq/9.0?topic=applications-handling-poison-messages-in-mq-classes-jms). 
+IBM MQ can be configured to automatically put messages to a designated backout queue based on a redelivery threshold. See the documentation here [Handling poison messages in IBM MQ classes for JMS](https://www.ibm.com/docs/en/ibm-mq/9.0?topic=applications-handling-poison-messages-in-mq-classes-jms). 
 
 
 ## The SampleEnvSetter
