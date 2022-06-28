@@ -23,7 +23,7 @@ const pug = require('pug');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-var cors = require('cors');
+const cors = require('cors');
 
 const app = express();
 app.use(cors());
