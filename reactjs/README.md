@@ -5,7 +5,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Application Basics
 
-The application consists of a reactjs component `components\MQApp` that is added to a static web page via `index.js` and `App.js`. The component `MQApp`, after configuration, continously polls a web server for messages and displays the last 3 it found. The component makes use of the `serverless/codeengine` found in this repository, as the web server it polls. 
+The application consists of a reactjs component `components\MQApp` that is added to a static web page via `index.js` and `App.js`. The component `MQApp`, after configuration, continously polls a web server for messages and displays the last 3 it found. The component makes use of the `serverless/codeengine` app found in this repository, as the web server it polls. 
 
 ## Available Scripts
 
