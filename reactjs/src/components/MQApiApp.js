@@ -18,6 +18,8 @@ import { useEffect, useState } from "react";
 import MQMessageList from "./MQMessageList";
 import { useFetch } from "./useFetch";
 
+const MSGLIMIT = 3;
+
 
 export default function MQApiApp({
     endpoint, method,
@@ -25,11 +27,18 @@ export default function MQApiApp({
     onError = f => f
 }) {
 
+    // The useFetch component will poll the uri, letting this component
+    // know when there are new messages or if an error has occured. 
     const { loading, messages, error } 
         = useFetch(`https://${endpoint}${method}`);
 
     const [currMessages, setCurrMessages] = useState([]);
 
+    // This useEffect is invoked whenever new messages are retured from the 
+    // fetch. MSGLIMIT is 3, so we are expecting 0-3 messages to be returned
+    // from the fetch, and we will already have 0-3 messages. The logic in
+    // this useEffect determines which are the last 3 messages that need to 
+    // be shown.
     useEffect(() => {
         let newSet = [];
         if (messages && Array.isArray(messages) && messages.length > 0) {
@@ -39,8 +48,8 @@ export default function MQApiApp({
         console.log('New set of messages looks like : ');
         console.log(newSet);
 
-        if (newSet.length < 3 && currMessages.length > 0) {
-            let freeSpaces = 3 - newSet.length;
+        if (newSet.length < MSGLIMIT && currMessages.length > 0) {
+            let freeSpaces = MSGLIMIT - newSet.length;
             let available = currMessages.length;
             let start = available - freeSpaces;
 
@@ -59,7 +68,6 @@ export default function MQApiApp({
         console.log('Messages have changed');
     },[messages]);
 
-    // <div><button onClick={()=>onError('help!')}>Simulate Error</button></div>
 
     return (
         <>
