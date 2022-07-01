@@ -1,23 +1,24 @@
 # Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app), by running `npx create-react-app mqapp`, using Node v14.18.0
+
+
+## Application Basics
+
+The application consists of a reactjs component `components\MQApp` that is added to a static web page via `index.js` and `App.js`. The component `MQApp`, after configuration, continously polls a web server for messages and displays the last 3 it found. The component makes use of the `serverless/codeengine` found in this repository, as the web server it polls. 
 
 ## Available Scripts
 
-In the project directory, you can run:
+To try the application on your own machine, navigate to the directory in where this README is. From here, you can run:
 
 ### `npm start`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+This will runs the app in the development mode.\
+Open [http://localhost:3000/mq-dev-patterns](http://localhost:3000/mq-dev-patterns) to view it in your browser.
 
 The page will reload when you make changes.\
 You may also see any lint errors in the console.
 
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
 ### `npm run build`
 
@@ -28,6 +29,18 @@ The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+
+### `npm run deploy`
+
+This app has been configured so that is will deploy as a [git hub page] (https://create-react-app.dev/docs/deployment/#github-pages). The steps involed are:
+* Fork this repo
+* Clone your fork to your laptop / desktop
+* Modify the `homepage` value in `package.json` to point at your own forked repo.
+* Run `npm run deploy` 
+
+For example we have an instance of the app deployed [here](https://chughts.github.io/mq-dev-patterns/). You will need to specify the endpoint of your codeengine app, or any enpoint that is providing the required API the component is expecting.
+
 
 ### `npm run eject`
 
