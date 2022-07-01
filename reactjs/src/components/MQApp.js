@@ -19,6 +19,10 @@ import MQApiApp from "./MQApiApp";
 import MQApiForm from "./MQApiForm";
 import MQAppSetup from "./MQAppSetup";
 
+// Currently only one configuration key is required, but if we more, eg.
+// credentials, or a mechanism to allow a varing number of messages then
+// the ALLKeys array and the containsAll function will check if all the
+// values the app needs have been provided in the configuration.
 const ALLKEYS = ["endpoint"];
 const PARAMSKEY = "mq-api-params";
 
@@ -31,6 +35,9 @@ export default function MQApp() {
     const [haveConfig, setHaveConfig] = useState(false);
     const [status, setStatus] = useState('');
 
+
+    // User has hit the confirm button, check if we have all the 
+    // configuration settings, if so they the api polling can be started.
     const confirm = (params) => {
         console.log('Confirmed');
         console.log(params);
@@ -67,6 +74,8 @@ export default function MQApp() {
     }
 
 
+    // This use effect is only called once on application startup. The
+    // configuration values are retrieved from the local storage stash.
     useEffect(() => {
         const rawSavedParams = localStorage.getItem(PARAMSKEY);
         console.log('raw saved params are ', rawSavedParams);
@@ -80,6 +89,8 @@ export default function MQApp() {
         }
     }, []);
 
+    // This use effect is called every time the api parameters are changed.
+    // The new values are stored in the local storage stash.
     useEffect(() => {
         if (apiParams && containsAll(apiParams, ALLKEYS)) {
             console.log('Saving params in storage ', apiParams);
@@ -87,6 +98,13 @@ export default function MQApp() {
         }
     }, [apiParams]);
 
+    // Depending on whether the start button has been pressed and if
+    // all the api configuration has been specified, this component will 
+    // show one of:
+    //  - MQAppSetup component - to start app or change configuration
+    //  - MQApiForm component - to edit the configuration
+    //  - MQApiApp component - The message polling application
+    
     return (
         <section>
             {!start &&
