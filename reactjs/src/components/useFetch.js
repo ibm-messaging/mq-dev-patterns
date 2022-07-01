@@ -26,6 +26,11 @@ export function useFetch(uri) {
 
   const isMounted = useMountedRef();
 
+
+  // The tick is invoked periodically. 
+  // Before running a fetch, this function determines if the component is 
+  // currently mounted. For this Ref is used instead of State. If the 
+  // component is no longer mounted the interval is cleared.
   const tick = () => {
       console.log('time to run something');
       if (!isMounted.current) {
@@ -59,6 +64,8 @@ export function useFetch(uri) {
       }
   }
 
+  // This useEffect starts the interval which will invoke the fetch
+  // periodically.
   useEffect(() => {
     if (!uri) return;
     if (!isMounted.current) return;
