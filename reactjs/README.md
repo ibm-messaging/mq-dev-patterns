@@ -39,7 +39,7 @@ This app has been configured so that is will deploy as a [git hub page](https://
 * Modify the `homepage` value in `package.json` to point at your own forked repo.
 * Run `npm run deploy` 
 
-For example we have an instance of the app deployed [here](https://chughts.github.io/mq-dev-patterns/). You will need to specify the endpoint of your codeengine app, or any enpoint that is providing the required API the component is expecting.
+For example we have an instance of the app deployed [here](https://chughts.github.io/mq-dev-patterns/). You will need to specify the endpoint of your codeengine app, or any endpoint that is providing the required API the component is expecting.
 
 
 ### `npm run eject`
