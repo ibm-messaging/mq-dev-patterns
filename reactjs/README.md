@@ -33,7 +33,7 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 
 ### `npm run deploy`
 
-This app has been configured so that is will deploy as a [git hub page] (https://create-react-app.dev/docs/deployment/#github-pages). The steps involed are:
+This app has been configured so that is will deploy as a [git hub page](https://create-react-app.dev/docs/deployment/#github-pages). The steps involed are:
 * Fork this repo
 * Clone your fork to your laptop / desktop
 * Modify the `homepage` value in `package.json` to point at your own forked repo.
