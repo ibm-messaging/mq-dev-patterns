@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  MQ Rest Client AWS Lambda API function
+
+
+Globals:
+  Function:
+    Timeout: 5
+    Runtime: nodejs14.x
+    Environment:
+      Variables:
+        MQ_USER: "app"  # "MQ app user id goes here"
+        MQ_PASSWORD: ".." # "MQ password goes here"
+        QUEUE: "DEV.QUEUE.1"  # "Queue Name goes here"
+        QM_NAME: "QM1"  # "Queue Manager Name goes here"
+        HOSTNAME: "..." # "MQ Hostname goes here"
+        QM_PORT: 443 # MQ HTTPS Port goes here
+        DEBUG: "mqaws*:*" # Debug Options
+
+Resources:
+  PutMessageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: mq-lambda/
+      Handler: app.lambdaPutMessageHandler
+      Architectures:
+        - x86_64
+      Events:
+        PutMessage:
+          Type: Api
+          Properties:
+            Path: /putmessage
+            Method: get
+
+Outputs:
+  MQLamdaApi:
+    Description: "API Gateway endpoint URL for Prod stage for MQ Lamda function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/putmessage/"
+  MQLamdaFunction:
+    Description: "MQ Lamda Lambda Function ARN"
+    Value: !GetAtt MQLamdaFunction.Arn
+  MQLamdaFunctionIamRole:
+    Description: "Implicit IAM Role created for MQ Lamda function"
+    Value: !GetAtt MQLamdaFunctionRole.Arn

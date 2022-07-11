@@ -29,7 +29,7 @@ To enable the IBM MQ AMQP service in the container image, you will need to custo
 ## AMQP QPID samples
 There are two sets of samples.
   * [qpid-standard](/amqp-qpid/qpid-standard/README.md)
-  * [qpid-quarkus]((/amqp-qpid/qpid-quarkus/README.md))
+  * [qpid-quarkus](/amqp-qpid/qpid-quarkus/README.md)
 
 Most of the code is common, and shared through symbolic links. Each has its own
 maven `pom.xml`, build and run instructions.
@@ -37,7 +37,7 @@ maven `pom.xml`, build and run instructions.
 ## Run configurations and options
 Each set of samples has its own mechanism for configuration.
   * [qpid-standard](/amqp-qpid/qpid-standard/README.md) uses command line arguments, JNDI and an associated `src/main/resources/jndi.prpperties` file.
-  * [qpid-quarkus]((/amqp-qpid/qpid-quarkus/README.md)) uses
+  * [qpid-quarkus](/amqp-qpid/qpid-quarkus/README.md) uses
   a quarkus `src/main/resources/application.properties` file
 
 ### Mode Options
