@@ -114,8 +114,7 @@ public class JmsResponse {
                 TextMessage message = context.createTextMessage(RequestCalc.buildStringForRequest(extractedValue));
                 message.setJMSCorrelationID(correlationID);
                 JMSProducer producer = context.createProducer();
-                // Make sure message put on a reply queue is non-persistent so non XMS/JMS apps
-                // can get the message off the temp reply queue
+                // Make sure message put on a reply queue is persistent
                 producer.setDeliveryMode(DeliveryMode.PERSISTENT);
                 producer.send(destination, message);
                 context.commit();
