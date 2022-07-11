@@ -23,8 +23,10 @@ const pug = require('pug');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const cors = require('cors');
 
 const app = express();
+app.use(cors());
 app.use(logger(process.env.REQUEST_LOG_FORMAT || 'dev'));
 
 
