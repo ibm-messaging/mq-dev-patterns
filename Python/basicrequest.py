@@ -53,7 +53,7 @@ def connect():
             sco.KeyRepository = MQDetails[EnvStore.KEY_REPOSITORY]
 
         #options = pymqi.CMQC.MQPMO_NO_SYNCPOINT | pymqi.CMQC.MQPMO_NEW_MSG_ID | pymqi.CMQC.MQPMO_NEW_CORREL_ID
-        options = pymqi.CMQC.MQPMO_NEW_CORREL_ID
+        options = pymqi.CMQC.MQPMO_NEW_CORREL_ID | pymqi.CMQC.MQPMO_SYNCPOINT
 
         qmgr = pymqi.QueueManager(None)
         qmgr.connect_with_options(MQDetails[EnvStore.QMGR],
@@ -186,7 +186,6 @@ def awaitResponse(msgId, correlId):
                 pass
             else:
                 # Some other error condition.
-                qmgr.backout()
                 logger.log(e)
                 raise
 

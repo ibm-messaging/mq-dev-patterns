@@ -209,6 +209,13 @@ function respondToRequest(hConn, hObj, msgObject, mqmdRequest) {
     debug_info('Inside MQ Open for Reply Callback function');
     if (err) {
       debug_warn('Error Detected Opening MQ Connection for Reply', err);
+      mq.Back(hConn, function(err) {
+        if (err) {
+          debug_warn('Error on rollback', err);
+        } else {
+          debug_info('Rollback Successful');
+        }
+      });
     } else {
       debug_info("MQOPEN of %s successful", mqmdRequest.ReplyToQMgr);
 
@@ -221,7 +228,7 @@ function respondToRequest(hConn, hObj, msgObject, mqmdRequest) {
       // Describe how the Put should behave
       pmo.Options = MQC.MQPMO_SYNCPOINT;
 
-      //If you do not disconnect, the default is a commit; if you do not disconnect and commit then the default is a rollback
+      // If any error is detected in the put operation, the message will rollback; else it will be commited
       mq.Put(hObjReply, mqmd, pmo, msg, function(err) {
         if (err) {
           debug_warn('Error Detected in Put operation', err);

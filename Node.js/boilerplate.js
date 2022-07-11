@@ -172,9 +172,7 @@ class MQBoilerPlate {
       if ('RESPONSE' === me.modeType || 'REQUEST' === me.modeType){
         debug_info('Putting Message on Queue in mode ', me.modeType);
         mq.Put(queue, mqmd, pmo, msg, function(err) {
-          if (MQBoilerPlate.isPublishNoSubscriptions(me.modeType, err)) {
-            debug_info('Publish unsuccessful because there are no subscribers', err.mqrcstr);
-          } else if (err) {
+          if (err) {
             MQBoilerPlate.reportError(err);
             mq.Back(me.mqConn, function(err) {
               if (err) {
