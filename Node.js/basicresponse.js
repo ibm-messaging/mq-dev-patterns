@@ -228,7 +228,7 @@ function respondToRequest(hConn, hObj, msgObject, mqmdRequest) {
       // Describe how the Put should behave
       pmo.Options = MQC.MQPMO_SYNCPOINT;
 
-      // If any error is detected in the put operation, the message will rollback; else it will be commited
+      // If any error is detected in the put operation, the message received originally will be rolled back onto the queue; else it will be commited
       mq.Put(hObjReply, mqmd, pmo, msg, function(err) {
         if (err) {
           debug_warn('Error Detected in Put operation', err);
