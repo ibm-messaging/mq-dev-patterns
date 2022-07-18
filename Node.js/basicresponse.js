@@ -110,6 +110,19 @@ function getMessages(hConn, hObj) {
   while (ok) {
     getMessage(hConn, hObj);
   }
+  if (ok == false) {
+    // The application is going to end as a potential poison message scenario has been detected.
+    // To prevent a recursive loop this application would need to compare the back out count for the message
+    // with the back out threshold for the queue manager
+    // see - https://stackoverflow.com/questions/64680808/ibm-mq-cmit-and-rollback-with-syncpoint
+    mq.Back(hConn, function(err) {
+      if (err) {
+        debug_warn('Error on rollback', err);
+      } else {
+        debug_info('Rollback Successful');
+      }
+    });
+  }
 }
 
 // This function retrieves messages from the queue without waiting.
@@ -158,9 +171,12 @@ function getMessage(hConn, hObj) {
       } catch (err) {
         debug_warn('JSON Parsing error ', err);
         debug_info("message <%s>", decoder.write(buf));
+        ok = false;
       }
     } else {
       debug_info("binary message: " + buf);
+      // ok = false;
+      debug_warn ('The application is going to end as a potential poison message scenario has been detected.');
     }
   });
 }
@@ -209,13 +225,7 @@ function respondToRequest(hConn, hObj, msgObject, mqmdRequest) {
     debug_info('Inside MQ Open for Reply Callback function');
     if (err) {
       debug_warn('Error Detected Opening MQ Connection for Reply', err);
-      mq.Back(hConn, function(err) {
-        if (err) {
-          debug_warn('Error on rollback', err);
-        } else {
-          debug_info('Rollback Successful');
-        }
-      });
+      ok = false
     } else {
       debug_info("MQOPEN of %s successful", mqmdRequest.ReplyToQMgr);
 
@@ -228,17 +238,15 @@ function respondToRequest(hConn, hObj, msgObject, mqmdRequest) {
       // Describe how the Put should behave
       pmo.Options = MQC.MQPMO_SYNCPOINT;
 
-      // If any error is detected in the put operation, the message received originally will be rolled back onto the queue; else it will be commited
+      //  If any error is detected in the reply put operation, then we have not been able to handle
+      // the original request received. That message needs to be rolled back onto the queue.
+      // If there is no error, then both our read of the request and our send of the reply can be
+      // committed. That will permanently take the request off the queue, and commit the reply
+      // allowing it to be read by the requesting application.
       mq.Put(hObjReply, mqmd, pmo, msg, function(err) {
         if (err) {
           debug_warn('Error Detected in Put operation', err);
-          mq.Back(hConn, function(err) {
-            if (err) {
-              debug_warn('Error on rollback', err);
-            } else {
-              debug_info('Rollback Successful');
-            }
-          });
+          ok = false;
         } else {
           debug_info('MsgId: ', toHexString(mqmd.MsgId));
           debug_info("MQPUT successful");
@@ -251,10 +259,8 @@ function respondToRequest(hConn, hObj, msgObject, mqmdRequest) {
         });
         }
       });
-
     }
   });
-
 }
 
 // When we're done, close queues and connections
