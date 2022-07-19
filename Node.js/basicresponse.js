@@ -115,6 +115,7 @@ function getMessages(hConn, hObj) {
     // To prevent a recursive loop this application would need to compare the back out count for the message
     // with the back out threshold for the queue manager
     // see - https://stackoverflow.com/questions/64680808/ibm-mq-cmit-and-rollback-with-syncpoint
+    debug_warn ('The application is going to end as a potential poison message scenario has been detected.');
     mq.Back(hConn, function(err) {
       if (err) {
         debug_warn('Error on rollback', err);
@@ -176,7 +177,6 @@ function getMessage(hConn, hObj) {
     } else {
       debug_info("binary message: " + buf);
       // ok = false;
-      debug_warn ('The application is going to end as a potential poison message scenario has been detected.');
     }
   });
 }
