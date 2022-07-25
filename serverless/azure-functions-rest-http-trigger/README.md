@@ -6,7 +6,7 @@ The application consists of a single Azure function exposed as an Azure Gateway 
 ## Testing locally 
 These samples can be tested offline locally using [Azure Functions VSCode Extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions). This extension has *Azure Account* and *Azure Resources* extensions as its dependency, which will get automatically installed. 
 
-You will need to sign in to Azure even if you are testing this application locally. Log in to Azure via the *Azure Account* extension or by Azure CLI using `az login`.
+You will need to sign in to Azure even if you are testing this application locally. Log in to Azure via the *Azure Account* extension, manually to Azure Portal or by Azure CLI using `az login`.
 
 ## Building the application
 The application is built by running the debugger on VSCode. Before running the debugger, we will need to configure MQ locally and initialise the *Function* on *Azure Functions* Extension.
