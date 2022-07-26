@@ -8,7 +8,7 @@
     "MQ_PASSWORD": "passw0rd", 
 
     "QUEUE": "DEV.QUEUE.1", 
-    "QM_NAME": "secureapphelm",
+    "QM_NAME": "QUEUE_MANAGER_NAME_HERE",
     "HOSTNAME": "LOADBALANCER_EXTERNAL_IP_HERE",
     "QM_PORT": 9443,
     "DEBUG": "mq*:*"
