@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 IBM Corp.
+ * Copyright 2021, 2022 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
+
+
+// Mapping of environment options to how they are required by the REST Api
+// functions.
+const envOptions = {
+  'MQ_USER' : 'user',
+  'MQ_PASSWORD': 'password',
+  'QUEUE' : 'queue',
+  'QM_NAME' : 'qm_name',
+  'HOSTNAME' : 'hostname',
+  'QM_PORT' : 'port'
+  
+}
+
+var debug_info = require('debug')('mqazure:info');
 
 
 // This class performs REST API parameter checking and builds REST API
@@ -70,34 +85,6 @@ class MQRestParamBuilder {
     return options;
   }
 
-  buildGetParams (rawargs) {
-    return new Promise((resolve, reject) => {
-      let options = this._basicParams(rawargs);
-      if (options.error) {
-        reject(options.error);
-      } else {
-        resolve(options);
-      }
-    });
-  }
-
-  buildPostParms (rawargs) {
-    return new Promise((resolve, reject) => {
-      let message = rawargs.message;
-      let options = this._basicParams(rawargs);
-
-      if (options.error) {
-        reject(options.error);
-      } else {
-        if (!message) {
-          message = "Message sent from MQPost cloud function action at " + new Date().toUTCString();
-        }
-        options.message = message;
-        resolve(options);
-      }
-    });
-  }
-
   buildDeleteParams (rawargs) {
     return new Promise((resolve, reject) => {
       let messageId = rawargs.messageId;
@@ -111,6 +98,33 @@ class MQRestParamBuilder {
         options.qs = {'messageId': messageId};
         resolve(options);
       }
+    });
+  }
+
+  buildParamsForAzure(message) {
+    return new Promise((resolve, reject) => {
+        let azureargs = {};
+
+        Object.entries(envOptions).forEach(([key, value]) => {
+          debug_info("key value pair:", [key,value]);
+          if (key in process.env) {
+            azureargs[value] = process.env[key];
+          }
+        });
+
+        let restoptions = this._basicParams(azureargs);
+
+        if (restoptions.error) {
+          debug_warn('Error Detected : ', restoptions.error);
+          reject(restoptions.error);
+        } else {
+          debug_info('Checking for message');
+          if (!message) {
+            message = "Message sent from Azure Post function at " + new Date().toUTCString();
+          }
+          restoptions.message = message;
+          resolve(restoptions);
+        }
     });
   }
 

@@ -29,7 +29,7 @@ const envOptions = {
 
 // This class performs REST API parameter checking and builds REST API
 // parameters for each call.
-class MQRestParmBuilder {
+class MQRestParamBuilder {
   constructor() {}
 
   _basicParams(rawargs) {
@@ -154,4 +154,4 @@ class MQRestParmBuilder {
 
 }
 
-module.exports = MQRestParmBuilder;
+module.exports = MQRestParamBuilder;
