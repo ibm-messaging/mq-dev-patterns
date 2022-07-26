@@ -19,6 +19,7 @@ const https = require('https');
 
 // Set up debug logging options
 var debug_info = require('debug')('mqazure:info');
+var debug_warn = require('debug')('mqazure:warn');
 
 const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
@@ -33,9 +34,9 @@ class MQRestAPI {
 
   browseForMsg(options) {
     return new Promise(function resolver(resolve, reject) {
-      //console.log('Configuration looks like ', config);
-      //console.log('Connection information looks like ', connection);
-      console.log('https://' + options.host + options.path);
+      //debug_info('Configuration looks like ', config);
+      //debug_info('Connection information looks like ', connection);
+      debug_info('https://' + options.host + options.path);
       let uri = 'https://' + options.host + options.path;
       axios({
         method: 'GET',
@@ -43,13 +44,13 @@ class MQRestAPI {
         headers: options.headers,
       })
       .then(function(response) {
-        console.log('Status code is ',  response.status);
-        console.log('Message Id:');
-        console.log(response.headers['ibm-mq-md-messageid']);
-        // console.log('Headers are:');
-        // console.log(response.headers);
-        // console.log("Full response is:")
-        // console.log(response);
+        debug_info('Status code is ',  response.status);
+        debug_info('Message Id:');
+        debug_info(response.headers['ibm-mq-md-messageid']);
+        // debug_info('Headers are:');
+        // debug_info(response.headers);
+        // debug_info("Full response is:")
+        // debug_info(response);
         switch (response.status) {
           case 200:
           case 201:
@@ -63,7 +64,7 @@ class MQRestAPI {
             break;
           }
         }).catch(function(err) {
-          console.log("REST call error : ", err);
+          debug_warn("REST call error : ", err);
           reject(err);
         });
     });
@@ -71,7 +72,7 @@ class MQRestAPI {
 
   deleteMessage (options) {
     return new Promise((resolve, reject) => {
-      console.log("Retrieving message from MQ Queue");
+      debug_info("Retrieving message from MQ Queue");
       let uri = 'https://' + options.host + options.path;
       axios({
         method: 'DELETE',
@@ -80,12 +81,12 @@ class MQRestAPI {
         headers: options.headers,
       })
       .then(function(response) {
-        console.log('Status code is ',  response.status);
-        console.log('Message Id:');
-        console.log(response.headers['ibm-mq-md-messageid']);
-        console.log("Data found : ", response.data);
-        //console.log("Dumping full response");
-        //console.log(response);
+        debug_info('Status code is ',  response.status);
+        debug_info('Message Id:');
+        debug_info(response.headers['ibm-mq-md-messageid']);
+        debug_info("Data found : ", response.data);
+        //debug_info("Dumping full response");
+        //debug_info(response);
         switch (response.status) {
           case 200:
           case 201:
@@ -103,7 +104,7 @@ class MQRestAPI {
             break;
         }
        }).catch(function(err) {
-          console.log("REST call error : ", err);
+        debug_warn("REST call error : ", err);
           reject(err);
        });
     });
@@ -111,7 +112,7 @@ class MQRestAPI {
 
   postMessage (options) {
     return new Promise((resolve, reject) => {
-      console.log("Posting message to MQ Queue");
+      debug_info("Posting message to MQ Queue");
       let uri = 'https://' + options.host + ":" + options.port + options.path;
       axios({
         method: 'POST',
@@ -120,9 +121,9 @@ class MQRestAPI {
         headers: options.headers,
       })
       .then(function(response) {
-        console.log('Status code is ',  response.status);
-        console.log('Message Id:');
-        console.log(response.headers['ibm-mq-md-messageid']);
+        debug_info('Status code is ',  response.status);
+        debug_info('Message Id:');
+        debug_info(response.headers['ibm-mq-md-messageid']);
         switch (response.status) {
           case 200:
           case 201:
@@ -133,7 +134,7 @@ class MQRestAPI {
             break;
         }
        }).catch(function(err) {
-          console.log("REST call error : ", err);
+          debug_warn("REST call error : ", err);
           reject(err);
        });
     });

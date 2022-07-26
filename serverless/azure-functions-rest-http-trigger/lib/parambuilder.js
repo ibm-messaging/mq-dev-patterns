@@ -32,7 +32,7 @@ var debug_info = require('debug')('mqazure:info');
 
 // This class performs REST API parameter checking and builds REST API
 // parameters for each call.
-class MQRestParmBuilder {
+class MQRestParamBuilder {
   constructor() {}
 
   _basicParams(rawargs) {
@@ -115,10 +115,10 @@ class MQRestParmBuilder {
         let restoptions = this._basicParams(azureargs);
 
         if (restoptions.error) {
-          console.log('Error Detected : ', restoptions.error);
+          debug_warn('Error Detected : ', restoptions.error);
           reject(restoptions.error);
         } else {
-          console.log('Checking for message');
+          debug_info('Checking for message');
           if (!message) {
             message = "Message sent from Azure Post function at " + new Date().toUTCString();
           }
@@ -130,4 +130,4 @@ class MQRestParmBuilder {
 
 }
 
-module.exports = MQRestParmBuilder;
+module.exports = MQRestParamBuilder;
