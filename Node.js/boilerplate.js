@@ -49,15 +49,18 @@ class MQBoilerPlate {
     this.hObjSubscription = null;
     this.modeType = null;
     this.index = 0;
+    this.sync=null;
     this.MQDetails = {};
     this.credentials = {};
     debug_info('MQi Boilerplate constructed');
   }
 
-  initialise(type, i = 0) {
+  initialise(type, sync=false, i = 0) {
     let me = this;
     me.modeType = type;
     me.index = i;
+    me.sync=sync;
+
     return new Promise(function resolver(resolve, reject) {
       me.buildMQDetails()
         .then(() => {
@@ -71,7 +74,7 @@ class MQBoilerPlate {
           if ('SUBSCRIBE' === me.modeType) {
             return me.openMQSubscription(me.mqConn, me.modeType);
           }
-          return me.openMQConnection(me.mqConn, me.modeType);
+          return me.openMQConnection(me.mqConn, me.modeType, me.sync);
         })
         .then((data) => {
           if (data.hObj) {
@@ -141,7 +144,7 @@ class MQBoilerPlate {
   replyMessage(msgId, correlId, msg) {
     debug_info('Preparing for Reply Put');
     // Defaults are fine.
-    var mqmd = new mq.MQMD()
+    var mqmd = new mq.MQMD();
     mqmd.CorrelId = correlId;
     mqmd.MsgId = msgId;
 
@@ -156,7 +159,7 @@ class MQBoilerPlate {
       var queue = me.mqObj;
 
       // Describe how the Put should behave
-      pmo.Options = MQC.MQPMO_NO_SYNCPOINT;
+      pmo.Options =  MQC.MQPMO_NO_SYNCPOINT;
 
       if ('REPLY' === mode) {
         queue = me.mqDynReplyObj;
@@ -169,7 +172,7 @@ class MQBoilerPlate {
         pmo.Options |= MQC.MQPMO_WARN_IF_NO_SUBS_MATCHED;
       }
 
-      debug_info('Putting Message on Queue in mode ', me.modeType);
+      debug_info('Putting Message on Queue in mode ', mode);
       mq.Put(queue, mqmd, pmo, msg, function(err) {
         if (MQBoilerPlate.isPublishNoSubscriptions(me.modeType, err)) {
           debug_info('Publish unsuccessful because there are no subscribers', err.mqrcstr);
@@ -185,6 +188,23 @@ class MQBoilerPlate {
         }
       });
 
+    });
+  }
+
+  rollback(buf,md, poisoningMessageHandle, callbackOnRollback){
+    debug_info("-------------DEV: ROLLING BACK METHOD");
+    var rollback= poisoningMessageHandle(buf, md);
+    if(rollback){
+      mq.Back(this.mqConn, function(err) {
+        callbackOnRollback(err);
+      });
+    }
+   
+  }
+
+  commit(callbackOnCommit){
+    mq.Cmit(this.mqConn, function(err) {
+      callbackOnCommit(err);
     });
   }
 
@@ -205,10 +225,11 @@ class MQBoilerPlate {
       var md = new mq.MQMD();
       var gmo = new mq.MQGMO();
 
-      gmo.Options = MQC.MQGMO_NO_SYNCPOINT |
+      gmo.Options = MQC.MQPMO_SYNCPOINT |
         MQC.MQGMO_WAIT |
         MQC.MQGMO_CONVERT |
         MQC.MQGMO_FAIL_IF_QUIESCING;
+
 
       switch (me.modeType) {
         case 'GET':
@@ -392,11 +413,11 @@ class MQBoilerPlate {
     });
   }
 
-  openMQReplyToConnection(replyToQ) {
+  openMQReplyToConnection(replyToQ, type) {
     let me = this;
     me.MQDetails.ReplyQueue = replyToQ;
     return new Promise(function resolver(resolve, reject) {
-      me.openMQConnection(me.mqConn, 'DYNREP')
+      me.openMQConnection(me.mqConn, type)
         .then((data) => {
           if (data.hObj) {
             me.mqDynReplyObj = data.hObj;
@@ -459,7 +480,7 @@ class MQBoilerPlate {
         if (err) {
           reject(err);
         } else {
-          debug_info("MQOPEN of %s successful", me.MQDetails.QUEUE_NAME);
+          debug_info("MQOPEN of %s successful", od.ObjectName);
           let data = {
             'hObj': hObj
           };
