@@ -63,7 +63,7 @@ public class JmsRequest {
         JMSContext context = null;
         Destination destination = null;
         JMSProducer producer = null;
-
+        
         JmsConnectionFactory connectionFactory = createJMSConnectionFactory();
         setJMSProperties(connectionFactory);
         logger.info("created connection factory");
@@ -71,6 +71,7 @@ public class JmsRequest {
         context = connectionFactory.createContext();
         logger.info("context created");
         destination = context.createQueue("queue:///" + QUEUE_NAME);
+        
         try {
             ((MQDestination) destination).setTargetClient(WMQConstants.WMQ_CLIENT_NONJMS_MQ);
         } catch (JMSException e) {
@@ -94,9 +95,10 @@ public class JmsRequest {
             message.setJMSCorrelationIDAsBytes(b);
             logger.info(getHexString(b));
             message.setJMSExpiration(900000);
-
+            
             logger.finest("Sending a request message");
             TemporaryQueue requestQueue = context.createTemporaryQueue();
+          
             message.setJMSReplyTo(requestQueue);
             producer.send(destination, message);
             logger.info("listening for response");

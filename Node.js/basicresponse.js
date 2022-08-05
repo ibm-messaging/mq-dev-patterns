@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, 2019 IBM Corp.
+ * Copyright 2018, 2022 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ var debug_warn = require('debug')('amqsrep:warn');
 // Set up Constants
 const CCDT = "MQCCDTURL";
 const	FILEPREFIX = "file://";
+const MSG_TRESHOLD= 5;
 
 // Load the MQ Endpoint details either from the envrionment or from the
 // env.json file. The envrionment takes precedence. The json file allows for
@@ -110,6 +111,77 @@ function getMessages(hConn, hObj) {
   while (ok) {
     getMessage(hConn, hObj);
   }
+  //This ok is set up every time that there is an error on getting the message
+  // if there is an error
+  if (ok == false) {
+    return;
+  }
+}
+
+function redirectToBackoutQueue(hConn, hObj, msgObject, mqmd){  
+  var BACKOUT_QUEUE= "DEV.QUEUE.2";
+  debug_info("Back out counter reached the treshold.");
+  debug_info("Redirecting the message to the backout queue "+ BACKOUT_QUEUE +" to avoid poisoning...");
+
+  var od = new mq.MQOD();
+  od.ObjectName = BACKOUT_QUEUE;
+  od.ObjectType = MQC.MQOT_Q;
+  var openOptions = MQC.MQOO_OUTPUT;
+
+  mq.Open(hConn, od, openOptions, function(err, hObjReply) {
+    if (err) {
+      debug_warn('Error Detected Opening MQ Connection for the backout queue', err);
+      ok = false
+    } else {
+      debug_info("MQOPEN of %s successful", BACKOUT_QUEUE);
+
+      var pmo = new mq.MQPMO();      
+      pmo.Options = MQC.MQPMO_SYNCPOINT;
+
+      mq.Put(hObjReply, mqmd, pmo, msgObject, function(err) {
+        if (err) {
+          debug_warn('Error Detected in Put operation', err);
+          ok = false;
+        } else {
+          debug_info('MsgId: ', toHexString(mqmd.MsgId));
+          debug_info("MQPUT successful");
+          mq.Cmit(hConn, function(err) {
+          if (err) {
+            debug_warn('Error on commit', err);
+          } else {
+            debug_info('Commit Successful');
+          }
+        });
+        }
+      });
+    }
+  });
+
+  return;  
+}
+
+function rollbackOrBackout(hConn, hObj, msgObject, mqmd){
+  // The application is going to end as a potential poison message scenario has been detected.
+  // To prevent a recursive loop this application would need to compare the back out count for the message
+  // with the back out threshold for the queue manager
+  // see - https://stackoverflow.com/questions/64680808/ibm-mq-cmit-and-rollback-with-syncpoint
+  debug_warn ('A potential poison message scenario has been detected.');
+
+  var counter= mqmd.BackoutCount;
+  debug_info("------CURRENT BACKOUT COUNTER "+ counter);
+
+  if(counter >= MSG_TRESHOLD){
+    redirectToBackoutQueue(hConn, hObj, msgObject, mqmd);
+  }
+  else{
+    mq.Back(hConn, function(err) {
+      if (err) {
+        debug_warn('Error on rollback', err);
+      } else {
+        debug_info('Rollback Successful');
+      }
+    });
+  }    
 }
 
 // This function retrieves messages from the queue without waiting.
@@ -119,18 +191,21 @@ function getMessage(hConn, hObj) {
   var mqmd = new mq.MQMD();
   var gmo = new mq.MQGMO();
 
-  gmo.Options = MQC.MQGMO_NO_SYNCPOINT |
+  gmo.Options = MQC.MQGMO_SYNCPOINT |
     MQC.MQGMO_NO_WAIT |
     MQC.MQGMO_CONVERT |
     MQC.MQGMO_FAIL_IF_QUIESCING;
 
+  gmo.WaitInterval = 3 * 1000;
+
+//if the reponder did not get the message is the rollback required?
   mq.GetSync(hObj, mqmd, gmo, buf, function(err, len) {
     if (err) {
       if (err.mqrc == MQC.MQRC_NO_MSG_AVAILABLE) {
         debug_info("no more messages");
       } else {
         debug_warn('Error retrieving message', err);
-      }
+      }      
       ok = false;
     } else if (mqmd.Format == "MQSTR") {
       var msgObject = null;
@@ -145,20 +220,28 @@ function getMessage(hConn, hObj) {
       var buffString = buf.toString('utf8');
       //var buffString = JSON.stringify(decoder.write(buf));
       var pos = endOfObject(buffString);
-      debug_info('end is at ', pos);
+      //debug_info('end is at ', pos);
       buffString = buffString.substring(0, pos + 1);
-      debug_info('Truncated String is ', buffString);
+      //debug_info('Truncated String is ', buffString);
 
       try {
         msgObject = JSON.parse(buffString);
+        throw new Error('Error on reading message. (T)');
+
         debug_info("Message Object found", msgObject);
         respondToRequest(hConn, hObj, msgObject, mqmd);
+
       } catch (err) {
-        debug_warn('JSON Parsing error ', err);
-        debug_info("message <%s>", decoder.write(buf));
+        
+        //debug_warn('JSON Parsing error ', err);
+        //debug_info("message <%s>", decoder.write(buf));
+        rollbackOrBackout(hConn, hObj, buf, mqmd);
+
+        //ok = false;
       }
     } else {
       debug_info("binary message: " + buf);
+      // ok = false;
     }
   });
 }
@@ -204,9 +287,10 @@ function respondToRequest(hConn, hObj, msgObject, mqmdRequest) {
   var openOptions = MQC.MQOO_OUTPUT;
 
   mq.Open(hConn, od, openOptions, function(err, hObjReply) {
-    debug_info('Inside MQ Open for Reply Callback function');
+    //debug_info('Inside MQ Open for Reply Callback function');
     if (err) {
       debug_warn('Error Detected Opening MQ Connection for Reply', err);
+      ok = false
     } else {
       debug_info("MQOPEN of %s successful", mqmdRequest.ReplyToQMgr);
 
@@ -217,20 +301,31 @@ function respondToRequest(hConn, hObj, msgObject, mqmdRequest) {
       mqmd.MsgId = mqmdRequest.MsgId;
 
       // Describe how the Put should behave
-      pmo.Options = MQC.MQPMO_NO_SYNCPOINT;
+      pmo.Options = MQC.MQPMO_SYNCPOINT;
 
+      //  If any error is detected in the reply put operation, then we have not been able to handle
+      // the original request received. That message needs to be rolled back onto the queue.
+      // If there is no error, then both our read of the request and our send of the reply can be
+      // committed. That will permanently take the request off the queue, and commit the reply
+      // allowing it to be read by the requesting application.
       mq.Put(hObjReply, mqmd, pmo, msg, function(err) {
         if (err) {
           debug_warn('Error Detected in Put operation', err);
+          ok = false;
         } else {
           debug_info('MsgId: ', toHexString(mqmd.MsgId));
           debug_info("MQPUT successful");
+          mq.Cmit(hConn, function(err) {
+          if (err) {
+            debug_warn('Error on commit', err);
+          } else {
+            debug_info('Commit Successful');
+          }
+        });
         }
       });
-
     }
   });
-
 }
 
 // When we're done, close queues and connections
