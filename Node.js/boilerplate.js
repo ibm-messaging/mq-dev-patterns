@@ -49,7 +49,7 @@ class MQBoilerPlate {
     this.hObjSubscription = null;
     this.modeType = null;
     this.index = 0;
-    this.sync=null;
+    this.beSync=null;
     this.MQDetails = {};
     this.credentials = {};
     debug_info('MQi Boilerplate constructed');
@@ -59,7 +59,7 @@ class MQBoilerPlate {
     let me = this;
     me.modeType = type;
     me.index = i;
-    me.sync=sync;
+    me.beSync=sync;
 
     return new Promise(function resolver(resolve, reject) {
       me.buildMQDetails()
@@ -74,7 +74,7 @@ class MQBoilerPlate {
           if ('SUBSCRIBE' === me.modeType) {
             return me.openMQSubscription(me.mqConn, me.modeType);
           }
-          return me.openMQConnection(me.mqConn, me.modeType, me.sync);
+          return me.openMQConnection(me.mqConn, me.modeType, me.beSync);
         })
         .then((data) => {
           if (data.hObj) {
@@ -224,11 +224,20 @@ class MQBoilerPlate {
     return new Promise(function resolver(resolve, reject) {
       var md = new mq.MQMD();
       var gmo = new mq.MQGMO();
-
-      gmo.Options = MQC.MQPMO_SYNCPOINT |
+      
+      if(me.beSync){
+        gmo.Options = MQC.MQPMO_SYNCPOINT |
         MQC.MQGMO_WAIT |
         MQC.MQGMO_CONVERT |
         MQC.MQGMO_FAIL_IF_QUIESCING;
+      }
+      else{
+        gmo.Options = MQC.MQPMO_NO_SYNCPOINT |
+        MQC.MQGMO_WAIT |
+        MQC.MQGMO_CONVERT |
+        MQC.MQGMO_FAIL_IF_QUIESCING;
+      }
+      
 
 
       switch (me.modeType) {
@@ -467,7 +476,7 @@ class MQBoilerPlate {
           openOptions = MQC.MQOO_OUTPUT;
           break;
         case 'GET':
-          openOptions = MQC.MQOO_INPUT_AS_Q_DEF;
+          openOptions = (me.beSync) ?  MQC.MQPMO_SYNCPOINT : MQC.MQOO_INPUT_AS_Q_DEF;
           break;
         case 'DYNPUT':
           openOptions = MQC.MQOO_INPUT_EXCLUSIVE;
