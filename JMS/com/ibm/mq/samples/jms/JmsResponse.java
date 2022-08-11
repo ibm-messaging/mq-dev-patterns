@@ -51,7 +51,7 @@ public class JmsResponse {
     private static String QUEUE_NAME; // Queue that the application uses to put and get messages to and from
     private static String CIPHER_SUITE;
     private static String CCDTURL;
-    private static String POISONINIG_QUEUE;
+    private static String BACKOUT_QUEUE;
 
     public static void main(String[] args) {
         initialiseLogging();
@@ -174,12 +174,12 @@ public class JmsResponse {
     }
 
     private static void redirectToAnotherQueue(JMSContext context, Message message){
-        logger.info("Redirecting to "+ POISONINIG_QUEUE);
+        logger.info("Redirecting to "+ BACKOUT_QUEUE);
         
-        Destination dest= context.createQueue("queue:///" + POISONINIG_QUEUE);
+        Destination dest= context.createQueue("queue:///" + BACKOUT_QUEUE);
         JMSProducer producer = context.createProducer();
         producer.send(dest, message);
-        logger.info("Message sent to backup queue" + POISONINIG_QUEUE + " correctly");
+        logger.info("Message sent to backup queue" + BACKOUT_QUEUE + " correctly");
         context.commit();
 
     }
@@ -226,8 +226,8 @@ public class JmsResponse {
         APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
         QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
-        POISONINIG_QUEUE= env.getEnvValue("POISONINIG_QUEUE", index);
-        if(POISONINIG_QUEUE.isEmpty()){logger.info("Missing POISONINIG_QUEUE value");}
+        BACKOUT_QUEUE= env.getEnvValue("BACKOUT_QUEUE", index);
+        if(BACKOUT_QUEUE.isEmpty()){logger.info("Missing BACKOUT_QUEUE value");}
         CCDTURL = env.getCheckForCCDT();
     }
 

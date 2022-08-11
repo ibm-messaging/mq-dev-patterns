@@ -79,7 +79,7 @@ def getQueue():
         od = pymqi.OD()
         od.ObjectName = MQDetails[EnvStore.QUEUE_NAME]
         q.open(od, pymqi.CMQC.MQOO_OUTPUT)
-
+        print('Connected to queue ' + str(MQDetails[EnvStore.QUEUE_NAME]))
         return q
     except pymqi.MQMIError as e:
         logger.error("Error getting queue")
@@ -94,13 +94,15 @@ def getDynamicQueue():
     try:
         # Dynamic queue's object descriptor.
         dyn_od = pymqi.OD()
+        print(MQDetails[EnvStore.MODEL_QUEUE_NAME])
+        print(MQDetails[EnvStore.DYNAMIC_QUEUE_PREFIX])
         dyn_od.ObjectName = MQDetails[EnvStore.MODEL_QUEUE_NAME]
         dyn_od.DynamicQName = MQDetails[EnvStore.DYNAMIC_QUEUE_PREFIX]
 
         # Open the dynamic queue.
         dyn_input_open_options = pymqi.CMQC.MQOO_INPUT_EXCLUSIVE
         dyn_queue = pymqi.Queue(qmgr, dyn_od, dyn_input_open_options)
-
+        print("CREATED DYN QUEUE: " + str(dyn_queue))
         dynamicQueueName = dyn_od.ObjectName.strip()
         logger.info('Dynamic Queue Details are')
         logger.info(dynamicQueueName)
@@ -128,12 +130,9 @@ def putMessage():
         md.MsgType = pymqi.CMQC.MQMT_REQUEST
         md.Format = pymqi.CMQC.MQFMT_STRING
 
-        # Send the message.
-        #queue.put(str(json.dumps(msgObject)), md)
+        # Send the message and ReplyToQ destination        
         queue.put(EnvStore.stringForVersion(json.dumps(msgObject)), md)
-        # queue.put(str(json.dumps(msgObject)), md)
-        # queue.put("Hello")
-
+        
         logger.info("Put message successful")
         #logger.info(md.CorrelID)
         return md.MsgId, md.CorrelId
@@ -240,7 +239,7 @@ correlid = None
 qmgr = connect()
 if (qmgr):
     queue = getQueue()
-    # queue.put(message.encode())
+ 
 if (queue):
     dynamic['queue'], dynamic['name'] = getDynamicQueue()
 

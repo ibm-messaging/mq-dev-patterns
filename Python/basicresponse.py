@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from utils.env import EnvStore
 import os
 import json
@@ -99,34 +100,42 @@ def getQueue(queueName, forInput):
 # function to get message from Queue
 
 
-def getMessages():
+def getMessages(qmgr):
     logger.info('Attempting gets from Queue')
     # Message Descriptor
-    md = pymqi.MD()
+   
 
     # Get Message Options
     gmo = pymqi.GMO()
-    gmo.Options = pymqi.CMQC.MQGMO_WAIT | pymqi.CMQC.MQGMO_FAIL_IF_QUIESCING
+    gmo.Options = pymqi.CMQC.MQGMO_WAIT | pymqi.CMQC.MQGMO_FAIL_IF_QUIESCING | pymqi.CMQC.MQGMO_SYNCPOINT
     gmo.WaitInterval = 5000  # 5 seconds
 
     keep_running = True
+    
     while keep_running:
+        backoutCounter=0   
+        ok=True
+        msgObject=None
         try:
             # Reset the MsgId, CorrelId & GroupId so that we can reuse
             # the same 'md' object again.
+            md = pymqi.MD()
             md.MsgId = pymqi.CMQC.MQMI_NONE
             md.CorrelId = pymqi.CMQC.MQCI_NONE
             md.GroupId = pymqi.CMQC.MQGI_NONE
-
+            
             # Wait up to to gmo.WaitInterval for a new message.
             message = queue.get(None, md, gmo)
+            backoutCounter= md.BackoutCount             
 
+            raise Exception("-------------DEV EXCPETION")
             # Process the message here..
-            msgObject = json.loads(message.decode())
+            msgObject = json.loads(message.decode())            
             logger.info('Have message from Queue')
-            logger.info(msgObject)
+            logger.info(msgObject)    
 
-            respondToRequest(md, msgObject)
+    
+            ok= respondToRequest(md, msgObject)
 
         except pymqi.MQMIError as e:
             if e.comp == pymqi.CMQC.MQCC_FAILED and e.reason == pymqi.CMQC.MQRC_NO_MSG_AVAILABLE:
@@ -134,18 +143,58 @@ def getMessages():
                 pass
             else:
                 # Some other error condition.
-                raise
+                raise        
+            ok=False            
 
         except (UnicodeDecodeError, ValueError) as e:
             logger.info('Message is not valid json')
             logger.info(e)
             logger.info(message)
+            ok=False
             continue
-
         except KeyboardInterrupt:
             logger.info('Have received a keyboard interrupt')
             keep_running = False
+        except:
+            ok=False
 
+        if ok == True:
+            #Commiting 
+            qmgr.commit()            
+        else:
+            #print("AN ERROR OCCURED. ROLLING BACK "+ str(backoutCounter))
+            rollback(qmgr, md, msgObject, backoutCounter, ok)        
+               
+            
+            
+            
+
+def rollback(qmgr , md, msg, backoutCounter, ok):
+    #BACKOUT_QUEUE= MQDetails[EnvStore.BACKOUT_QUEUE]
+    BACKOUT_QUEUE= 'DEV.QUEUE.2'
+    # if the backout counter is greater than 5
+    # handle possible poisoning message scenario
+    if(backoutCounter>=5):
+        print("POSIONING MESSAGE DETECTED! ")
+        print("REDIRECTING THE MESSAGE TO THE BACKOUT QUEUE " + str(BACKOUT_QUEUE))
+        backoutQueue= getQueue(BACKOUT_QUEUE.encode(), False)
+        try:
+            msg=EnvStore.stringForVersion(json.dumps(msg))
+            backoutQueue.put(msg,md)
+            qmgr.commit()
+            ok=True
+            print("Message sent to backout queue" + BACKOUT_QUEUE)
+            
+        except:
+            print("Error on redirecting the message")
+    else:        
+        try:
+            qmgr.backout()            
+            ok=True
+        except:
+            logger.error("Error on rollback")
+
+        
 
 def respondToRequest(md, msgObject):
     # Create a response message descriptor with the CorrelId
@@ -154,18 +203,27 @@ def respondToRequest(md, msgObject):
     response_md.CorrelId = md.CorrelId
     response_md.MsgId = md.MsgId
     response_md.Format = pymqi.CMQC.MQFMT_STRING
+    response_md.ReplyToQ= md.ReplyToQ
 
     msgReply = {
         'Greeting': "Reply from Python! " + str(datetime.datetime.now()),
         'value': random.randint(1, 101)
     }
 
-    replyQueue = getQueue(md.ReplyToQ, False)
+    #print(response_md.ReplyToQ)
+    replyQueue = getQueue(response_md.ReplyToQ, False)
+    
     if (msgObject['value']):
         msgReply['value'] = performCalc(msgObject['value'])
     #replyQueue.put(str(json.dumps(msgReply)),response_md )
-    replyQueue.put(EnvStore.stringForVersion(
-        json.dumps(msgReply)), response_md)
+    try:
+        #raise Exception("-------------DEV EXCPETION")
+        replyQueue.put(EnvStore.stringForVersion(json.dumps(msgReply)), response_md)
+        return True
+    except:
+        #Roll back on exception
+        return False
+
 
 
 def performCalc(n):
@@ -186,7 +244,7 @@ def performCalc(n):
 
 def buildMQDetails():
     for key in [EnvStore.QMGR, EnvStore.QUEUE_NAME, EnvStore.CHANNEL, EnvStore.HOST,
-                EnvStore.PORT, EnvStore.KEY_REPOSITORY, EnvStore.CIPHER]:
+                EnvStore.PORT, EnvStore.KEY_REPOSITORY, EnvStore.CIPHER, EnvStore.BACKOUT_QUEUE]:
         MQDetails[key] = EnvStore.getEnvValue(key)
 
 
@@ -215,9 +273,11 @@ queue = None
 
 qmgr = connect()
 if (qmgr):
-    queue = getQueue(MQDetails[EnvStore.QUEUE_NAME], True)
+    queue = getQueue(MQDetails[EnvStore.QUEUE_NAME], True)    
+    
 if (queue):
-    getMessages()
+    getMessages(qmgr)
+
     queue.close()
 
 if (qmgr):

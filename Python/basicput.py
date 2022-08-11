@@ -52,11 +52,13 @@ def connect():
         if MQDetails[EnvStore.KEY_REPOSITORY]:
             logger.info('Setting Key repository')
             sco.KeyRepository = MQDetails[EnvStore.KEY_REPOSITORY]
+            print(sco.KeyRepository)
 
         #options = pymqi.CMQC.MQPMO_NO_SYNCPOINT | pymqi.CMQC.MQPMO_NEW_MSG_ID | pymqi.CMQC.MQPMO_NEW_CORREL_ID
         options = pymqi.CMQC.MQPMO_NEW_CORREL_ID
 
         qmgr = pymqi.QueueManager(None)
+        
         qmgr.connect_with_options(MQDetails[EnvStore.QMGR],
                                   user=credentials[EnvStore.USER],
                                   password=credentials[EnvStore.PASSWORD],
