@@ -128,13 +128,11 @@ def getMessages(qmgr):
             message = queue.get(None, md, gmo)
             backoutCounter= md.BackoutCount             
 
-            raise Exception("-------------DEV EXCPETION")
+            #raise Exception("-------------DEV EXCPETION")
             # Process the message here..
             msgObject = json.loads(message.decode())            
             logger.info('Have message from Queue')
             logger.info(msgObject)    
-
-    
             ok= respondToRequest(md, msgObject)
 
         except pymqi.MQMIError as e:
@@ -161,16 +159,16 @@ def getMessages(qmgr):
         if ok == True:
             #Commiting 
             qmgr.commit()            
-        else:
-            #print("AN ERROR OCCURED. ROLLING BACK "+ str(backoutCounter))
-            rollback(qmgr, md, msgObject, backoutCounter, ok)        
+        elif ok == False:
+            keep_running=rollback(qmgr, md, msgObject, backoutCounter)        
                
             
             
             
 
-def rollback(qmgr , md, msg, backoutCounter, ok):
+def rollback(qmgr , md, msg, backoutCounter):
     #BACKOUT_QUEUE= MQDetails[EnvStore.BACKOUT_QUEUE]
+    ok=False
     BACKOUT_QUEUE= 'DEV.QUEUE.2'
     # if the backout counter is greater than 5
     # handle possible poisoning message scenario
@@ -182,17 +180,19 @@ def rollback(qmgr , md, msg, backoutCounter, ok):
             msg=EnvStore.stringForVersion(json.dumps(msg))
             backoutQueue.put(msg,md)
             qmgr.commit()
-            ok=True
             print("Message sent to backout queue" + BACKOUT_QUEUE)
-            
+            ok=True
         except:
             print("Error on redirecting the message")
+            ok=False
     else:        
         try:
             qmgr.backout()            
             ok=True
         except:
             logger.error("Error on rollback")
+            ok=False
+    return ok
 
         
 

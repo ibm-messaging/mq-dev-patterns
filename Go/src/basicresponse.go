@@ -26,6 +26,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"errors"
 )
 
 var logger = log.New(os.Stdout, "MQ Response: ", log.LstdFlags)
@@ -80,11 +81,14 @@ func logError(err error) {
 func getMessages(qMgr ibmmq.MQQueueManager, qObject ibmmq.MQObject) {
 	logger.Println("Getting Message from queue")
 	var err error
-	msgAvail := true
-	maxRetries := 10
-	retries := maxRetries
+	//msgAvail := true
+	ok:=true
+	running:=true
+	//maxRetries := 10
+	//retries := maxRetries
 
-	for msgAvail == true && err == nil {
+	//for msgAvail == true && err == nil {
+	for running {
 		var datalen int
 
 		// The PUT requires control structures, the Message Descriptor (MQMD)
@@ -105,50 +109,90 @@ func getMessages(qMgr ibmmq.MQQueueManager, qObject ibmmq.MQObject) {
 		// Create a buffer for the message data. This one is large enough
 		// for the messages put by the amqsput sample.
 		buffer := make([]byte, 1024)
-
+				
+		
 		// Now try to get the message
 		datalen, err = qObject.Get(getmqmd, gmo, buffer)
 
-		if err != nil {
-			msgAvail = false
-			logger.Println(err)
-			mqret := err.(*ibmmq.MQReturn)
-			logger.Printf("return code %d, expected %d,", mqret.MQRC, ibmmq.MQRC_NO_MSG_AVAILABLE)
-			if mqret.MQRC == ibmmq.MQRC_NO_MSG_AVAILABLE {
+		//=============NOTE====================
+		//GENERATING ERROR FOR TESTING POISOING MESSAGE
+		err = errors.New("GENERATED ERROR")
+		if err !=nil {
+
+			//msgAvail = false
+			//logger.Println(err)
+			//mqret := err.(*ibmmq.MQReturn)
+			//logger.Printf("return code %d, expected %d,", mqret.MQRC, ibmmq.MQRC_NO_MSG_AVAILABLE)
+			//if mqret.MQRC == ibmmq.MQRC_NO_MSG_AVAILABLE {
+			ok=false
 				// If there's no message available, then don't treat that as a real error as
 				// it's an expected situation
-				retries --
+			/*	retries --
 				if retries == 0 {
-					msgAvail = false
+					msgAvail = false					
 				} else {
 					msgAvail = true
 					err = nil
-				}
-			}
+				}*/
+ 
 		} else {
 			// Assume the message is a printable string
 			logger.Printf("Got message of length %d: ", datalen)
 			logger.Println(string(buffer[:datalen]))
 
 			qObject, err := mqsamputils.OpenDynamicQueue(qMgr, getmqmd.ReplyToQ)
+			
 			if err != nil {
-				logger.Fatalln("Unable to Open Queue")
+				logger.Fatalln("Unable to Open Queue")				
+				running=false
 				os.Exit(1)
 			}
 			defer qObject.Close(0)
 
 			err = replyToMsg(qObject, string(buffer[:datalen]), getmqmd)
-			if err != nil {
-				logError(err)
-				logger.Println("Rolling back message.")
-				qMgr.Back()
-			} else {
-				qMgr.Cmit()
-				logger.Println("Response message commited!")
-				retries = maxRetries
-			}
+			if err != nil {							
+				ok=false				
+			} 
 		}
+
+		if ok {
+			qMgr.Cmit()
+			logger.Println("Response message commited!")
+			//retries = maxRetries	
+		} else{			
+			logger.Println("Rolling back message.")
+			okCallback:=PoisoningMessageHandler(qMgr, buffer, datalen, getmqmd )			
+			running=okCallback
+			
+		}
+
 	}
+}
+
+
+func PoisoningMessageHandler(qMgr ibmmq.MQQueueManager, buffer []byte, datalen int, getmqmd *ibmmq.MQMD) (ok bool) {
+	BACKOUT_QUEUE:= "DEV.QUEUE.2"
+	counter:= getmqmd.BackoutCount
+	ok=true
+	logger.Println("ROLLING BACK " + string(counter))
+	//if counter greater then 5, redirect the message to the backout queue
+	if counter >=5{
+		qObject, err:= mqsamputils.OpenDynamicQueue(qMgr, BACKOUT_QUEUE)
+		if err!=nil {
+			logger.Println("Error on opening the backout queue")
+			ok=false
+		} else{
+			replyToMsg(qObject, string(buffer[:datalen]), getmqmd)			
+			qMgr.Cmit()
+			logger.Println("Message delivered to the backout queue " + string(BACKOUT_QUEUE) + " correctly.")			
+		}
+
+	}else{
+		//logger.Println("CURRENT BACKOUT COUNTER "+ counter)
+		qMgr.Back()
+	}
+	return 
+	
 }
 
 func replyToMsg(qObject ibmmq.MQObject, msg string, getmqmd *ibmmq.MQMD) error {
