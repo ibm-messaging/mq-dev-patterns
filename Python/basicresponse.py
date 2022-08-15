@@ -167,21 +167,23 @@ def getMessages(qmgr):
             
 
 def rollback(qmgr , md, msg, backoutCounter):
-    #BACKOUT_QUEUE= MQDetails[EnvStore.BACKOUT_QUEUE]
-    ok=False
-    BACKOUT_QUEUE= 'DEV.QUEUE.2'
+    # get the backout queue from the Environment --> fix this
+    BACKOUT_QUEUE = MQDetails[EnvStore.BACKOUT_QUEUE]
+   
+    ok=False 
+    #BACKOUT_QUEUE= 'DEV.QUEUE.2'
     # if the backout counter is greater than 5
     # handle possible poisoning message scenario
     if(backoutCounter>=5):
         print("POSIONING MESSAGE DETECTED! ")
         print("REDIRECTING THE MESSAGE TO THE BACKOUT QUEUE " + str(BACKOUT_QUEUE))
-        backoutQueue= getQueue(BACKOUT_QUEUE.encode(), False)
+        backoutQueue= getQueue(BACKOUT_QUEUE, False)
         try:
             msg=EnvStore.stringForVersion(json.dumps(msg))
-            backoutQueue.put(msg,md)
-            qmgr.commit()
-            print("Message sent to backout queue" + BACKOUT_QUEUE)
+            backoutQueue.put(msg,md)            
+            qmgr.commit()                        
             ok=True
+            print("Message sent to backout queue" + str(BACKOUT_QUEUE))
         except:
             print("Error on redirecting the message")
             ok=False

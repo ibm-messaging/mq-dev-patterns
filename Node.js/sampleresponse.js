@@ -28,7 +28,6 @@ var decoder = new StringDecoder('utf8');
 
 //set up conts
 const MSG_TRESHOLD=5;
-const BACKOUT_QUEUE= "DEV.QUEUE.2";
 
 // Set up debug logging options
 var debug_info = require('debug')('samplerep:info');
@@ -81,7 +80,7 @@ function poisoningMessageHandler(buf,md){
 
   if(backoutCounter >= MSG_TRESHOLD){
     debug_info("Redirecting to backout queue");
-
+    var BACKOUT_QUEUE= mqBoilerPlate.MQDetails.BACKOUT_QUEUE;
     sendToQueue(buf, md,BACKOUT_QUEUE).then(() => {
       debug_info('Reply Posted');
       mqBoilerPlate.commit(callbackOnCommit);

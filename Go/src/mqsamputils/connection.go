@@ -57,6 +57,11 @@ func ccdtCheck() (bool) {
 	return false;
 }
 
+func getBackoutQueue (index int) (string) {
+	env:= getEndPoint(index)
+	return env.BackoutQueue
+}
+
 
 // Establishes the connection to the MQ Server. Returns the
 // Queue Manager if successful
@@ -65,7 +70,7 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 
 	// Allocate the MQCNO structure needed for the CONNX call.
 	cno := ibmmq.NewMQCNO()
-  env := getEndPoint(index)
+    env := getEndPoint(index)
 
 	if username := env.User; username != "" {
 		logger.Printf("User %s has been specified\n", username)
@@ -187,3 +192,5 @@ func logError(err error) {
 	logger.Println(err)
 	logger.Printf("Error Code %v", err.(*ibmmq.MQReturn).MQCC)
 }
+
+

@@ -53,7 +53,7 @@ const MSG_TRESHOLD= 5;
 // endpoint in the arryay is used.
 var MQDetails = {};
 
-['QMGR', 'QUEUE_NAME', 'HOST', 'PORT',
+['QMGR', 'QUEUE_NAME', 'BACKOUT_QUEUE', 'HOST', 'PORT',
  'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach(function(f) {
   MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[0][f]
 });
@@ -120,6 +120,8 @@ function getMessages(hConn, hObj) {
 
 function redirectToBackoutQueue(hConn, hObj, msgObject, mqmd){  
   var BACKOUT_QUEUE= "DEV.QUEUE.2";
+  //from the json environment should be something like this
+  //var BACKOUT_QUEUE = MQDetails.BACKOUT_QUEUE
   debug_info("Back out counter reached the treshold.");
   debug_info("Redirecting the message to the backout queue "+ BACKOUT_QUEUE +" to avoid poisoning...");
 

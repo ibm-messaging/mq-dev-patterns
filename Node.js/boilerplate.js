@@ -113,7 +113,7 @@ class MQBoilerPlate {
     let i = this.index;
     if (env.MQ_ENDPOINTS.length > i) {
       ['QMGR', 'QUEUE_NAME', 'TOPIC_NAME',
-       'MODEL_QUEUE_NAME', 'DYNAMIC_QUEUE_PREFIX',
+       'MODEL_QUEUE_NAME', 'DYNAMIC_QUEUE_PREFIX', 'BACKOUT_QUEUE',
        'HOST', 'PORT',
        'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach((f) => {
         this.MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[i][f];

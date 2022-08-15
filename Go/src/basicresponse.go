@@ -26,7 +26,7 @@ import (
 	"os"
 	"strings"
 	"time"
-	"errors"
+	//"errors"
 )
 
 var logger = log.New(os.Stdout, "MQ Response: ", log.LstdFlags)
@@ -49,6 +49,7 @@ func main() {
 	mqsamputils.EnvSettings.LogSettings()
 
 	qMgr, err := mqsamputils.CreateConnection(mqsamputils.FULL_STRING)
+	
 	if err != nil {
 		logger.Fatalln("Unable to Establish Connection to server")
 		os.Exit(1)
@@ -61,6 +62,9 @@ func main() {
 		os.Exit(1)
 	}
 	defer qObject.Close(0)
+
+	// backoutQueue:= mqsamputils.getBackoutQueue(mqsamputils.FULL_STRING)
+	// logger.Println("-------------- BACKOUT QUEUE %s", backoutQueue )
 
 	getMessages(qMgr, qObject)
 
@@ -116,7 +120,7 @@ func getMessages(qMgr ibmmq.MQQueueManager, qObject ibmmq.MQObject) {
 
 		//=============NOTE====================
 		//GENERATING ERROR FOR TESTING POISOING MESSAGE
-		err = errors.New("GENERATED ERROR")
+		//err = errors.New("GENERATED ERROR")
 		if err !=nil {
 
 			//msgAvail = false
@@ -160,7 +164,6 @@ func getMessages(qMgr ibmmq.MQQueueManager, qObject ibmmq.MQObject) {
 			logger.Println("Response message commited!")
 			//retries = maxRetries	
 		} else{			
-			logger.Println("Rolling back message.")
 			okCallback:=PoisoningMessageHandler(qMgr, buffer, datalen, getmqmd )			
 			running=okCallback
 			
@@ -172,9 +175,12 @@ func getMessages(qMgr ibmmq.MQQueueManager, qObject ibmmq.MQObject) {
 
 func PoisoningMessageHandler(qMgr ibmmq.MQQueueManager, buffer []byte, datalen int, getmqmd *ibmmq.MQMD) (ok bool) {
 	BACKOUT_QUEUE:= "DEV.QUEUE.2"
+	// Get the backout queue name from the env
+	//BACKOUT_QUEUE:= mqsamputils.EnvSettings.BackoutQueue
+	//logger.Println("**************** BACKOUT QUEUE" , BACKOUT_QUEUE)
 	counter:= getmqmd.BackoutCount
 	ok=true
-	logger.Println("ROLLING BACK " + string(counter))
+
 	//if counter greater then 5, redirect the message to the backout queue
 	if counter >=5{
 		qObject, err:= mqsamputils.OpenDynamicQueue(qMgr, BACKOUT_QUEUE)
@@ -184,7 +190,7 @@ func PoisoningMessageHandler(qMgr ibmmq.MQQueueManager, buffer []byte, datalen i
 		} else{
 			replyToMsg(qObject, string(buffer[:datalen]), getmqmd)			
 			qMgr.Cmit()
-			logger.Println("Message delivered to the backout queue " + string(BACKOUT_QUEUE) + " correctly.")			
+			logger.Println("Message delivered to the backout queue " , BACKOUT_QUEUE , " correctly.")			
 		}
 
 	}else{
