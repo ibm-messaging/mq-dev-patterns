@@ -63,8 +63,7 @@ func main() {
 	}
 	defer qObject.Close(0)
 
-	// backoutQueue:= mqsamputils.getBackoutQueue(mqsamputils.FULL_STRING)
-	// logger.Println("-------------- BACKOUT QUEUE %s", backoutQueue )
+	
 
 	getMessages(qMgr, qObject)
 
@@ -174,9 +173,9 @@ func getMessages(qMgr ibmmq.MQQueueManager, qObject ibmmq.MQObject) {
 
 
 func PoisoningMessageHandler(qMgr ibmmq.MQQueueManager, buffer []byte, datalen int, getmqmd *ibmmq.MQMD) (ok bool) {
-	BACKOUT_QUEUE:= "DEV.QUEUE.2"
+	//BACKOUT_QUEUE:= "DEV.QUEUE.2"
 	// Get the backout queue name from the env
-	//BACKOUT_QUEUE:= mqsamputils.EnvSettings.BackoutQueue
+	BACKOUT_QUEUE:= mqsamputils.EnvSettings.BackoutQueue
 	//logger.Println("**************** BACKOUT QUEUE" , BACKOUT_QUEUE)
 	counter:= getmqmd.BackoutCount
 	ok=true

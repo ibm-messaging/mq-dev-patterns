@@ -1,0 +1,18 @@
+{
+  "MQ_ENDPOINTS": [{
+      "HOST": "test-a95a.qm.us-south.mq.appdomain.cloud",
+      "PORT": "32055",
+      "CHANNEL": "CLOUD.APP.SVRCONN",
+      "QMGR": "test",
+      "APP_USER": "credential2",
+      "APP_PASSWORD": "gOojnDA9y14IXhIH7gnKJA5AeTS_PFbz4FKda1KLuwSS",
+      "QUEUE_NAME": "DEV.QUEUE.1",
+      "DYNAMIC_QUEUE_PREFIX" : "APP.REPLIES.*",
+      "MODEL_QUEUE_NAME" : "DEV.APP.MODEL.QUEUE",
+      "BACKOUT_QUEUE" : "DEV.QUEUE.2",
+      "TOPIC_NAME" : "dev/",
+      "CIPHER": "TLS_RSA_WITH_AES_128_CBC_SHA256",
+      "CIPHER_SUITE":"TLS_RSA_WITH_AES_128_CBC_SHA256",
+      "KEY_REPOSITORY": "./keys/clientkey/clientkey"
+  }]
+}

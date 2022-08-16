@@ -57,11 +57,6 @@ func ccdtCheck() (bool) {
 	return false;
 }
 
-func getBackoutQueue (index int) (string) {
-	env:= getEndPoint(index)
-	return env.BackoutQueue
-}
-
 
 // Establishes the connection to the MQ Server. Returns the
 // Queue Manager if successful
@@ -84,6 +79,7 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 	}
 
 	if ! ccdtCheck() {
+		logger.Println("BUIDLING")
 		logger.Println("CCDT URL export is not set, will be using json envrionment client connections settings");
 
 		cd := ibmmq.NewMQCD()
@@ -118,7 +114,6 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 
 	// Indicate that we definitely want to use the client connection method.
 	cno.Options = ibmmq.MQCNO_CLIENT_BINDING
-
 	// And now we can try to connect. Wait a short time before disconnecting.
 	logger.Printf("Attempting connection to %s", env.QManager)
 	qMgr, err := ibmmq.Connx(env.QManager, cno)
@@ -178,7 +173,9 @@ func openQueue(qMgrObject ibmmq.MQQueueManager, replyToQ string, msgStyle string
 		mqod.ObjectName = replyToQ
 	}
 
+	
 	logger.Printf("Attempting open queue/topic %s", env.QueueName)
+	
 	qObject, err := qMgrObject.Open(mqod, openOptions)
 	if err != nil {
 		logError(err)

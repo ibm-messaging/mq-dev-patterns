@@ -33,7 +33,7 @@ type Env struct {
 	QueueName        string `json:"QUEUE_NAME"`
 	ModelQueueName   string `json:"MODEL_QUEUE_NAME"`
 	DynamicQueueName string `json:"DYNAMIC_QUEUE_PREFIX"`
-	BackoutQueue 	 string `json:BACKOUT_QUEUE`
+	BackoutQueue 	 string `json:"BACKOUT_QUEUE"`
 	Host             string `json:"HOST"`
 	Port             string `json:"PORT"`
 	Channel          string `json:"CHANNEL"`
@@ -120,9 +120,7 @@ func (Env) GetConnectionCount() int {
 	return len(MQ_ENDPOINTS.Points)
 }
 
-func (Env) GetBackoutQueue() string {
-	return EnvSettings.BackoutQueue;
-}
+
 
 func (Env) LogSettings() {
 	logger.Println("Environment Settings are")
