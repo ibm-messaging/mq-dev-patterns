@@ -47,7 +47,7 @@ function msgCB(md, buf) {
       msgObject = JSON.parse(buf);
       //throw new Error("------- DEV ERROR ON PARSING")
       debug_info("JSON Message Object found", msgObject);
-      respondToRequest(msgObject, md, ok);
+      ok= respondToRequest(msgObject, md);
     } catch (err) {
       debug_info("Not JSON message <%s>", decoder.write(buf));
       ok=false;      
@@ -68,6 +68,7 @@ function handleSyncPoint(buf, md , ok){
     mqBoilerPlate.commit(callbackOnCommit);
   }
 }
+
 
 function poisoningMessageHandler(buf,md){
   // The application is going to end as a potential poison message scenario has been detected.
@@ -125,7 +126,8 @@ function callbackOnRollback(err){
 }
 
 
-function respondToRequest(msgObject, mqmdRequest, ok) {
+function respondToRequest(msgObject, mqmdRequest) {
+  let okResponse;
   debug_info('Preparing response to');
   debug_info('MsgID ', toHexString(mqmdRequest.MsgId));
   debug_info('CorrelId ', toHexString(mqmdRequest.CorrelId));
@@ -146,11 +148,13 @@ function respondToRequest(msgObject, mqmdRequest, ok) {
   sendToQueue(msg,mqmdRequest , mqmdRequest.ReplyToQ)
     .then(() => {
       debug_info('Reply Posted');
+      okResponse=true;
     })
     .catch((err) => {
       debug_warn('Error Processing response ', err);
-      ok=false;
+      okResponse=false;
     });
+    return okResponse
 
   // Post Response
 }

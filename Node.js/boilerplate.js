@@ -192,7 +192,7 @@ class MQBoilerPlate {
   }
 
   rollback(buf,md, poisoningMessageHandle, callbackOnRollback){
-    debug_info("-------------DEV: ROLLING BACK METHOD");
+    
     var rollback= poisoningMessageHandle(buf, md);
     if(rollback){
       mq.Back(this.mqConn, function(err) {
