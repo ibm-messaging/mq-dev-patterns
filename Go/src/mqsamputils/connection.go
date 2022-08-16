@@ -78,8 +78,7 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 		cno.SecurityParms = csp
 	}
 
-	if ! ccdtCheck() {
-		logger.Println("BUIDLING")
+	if ! ccdtCheck() {		
 		logger.Println("CCDT URL export is not set, will be using json envrionment client connections settings");
 
 		cd := ibmmq.NewMQCD()
