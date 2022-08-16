@@ -138,11 +138,11 @@ def getMessages(qmgr):
         except pymqi.MQMIError as e:
             if e.comp == pymqi.CMQC.MQCC_FAILED and e.reason == pymqi.CMQC.MQRC_NO_MSG_AVAILABLE:
                 # No messages, that's OK, we can ignore it.
-                pass
+                ok=True
             else:
                 # Some other error condition.
-                raise        
-            ok=False            
+                ok=False        
+              
 
         except (UnicodeDecodeError, ValueError) as e:
             logger.info('Message is not valid json')
