@@ -117,26 +117,16 @@ func getMessages(qMgr ibmmq.MQQueueManager, qObject ibmmq.MQObject) {
 		// Now try to get the message
 		datalen, err = qObject.Get(getmqmd, gmo, buffer)
 
-		//=============NOTE====================
-		//GENERATING ERROR FOR TESTING POISOING MESSAGE
-		//err = errors.New("GENERATED ERROR")
 		if err !=nil {
-
-			//msgAvail = false
-			//logger.Println(err)
-			//mqret := err.(*ibmmq.MQReturn)
-			//logger.Printf("return code %d, expected %d,", mqret.MQRC, ibmmq.MQRC_NO_MSG_AVAILABLE)
-			//if mqret.MQRC == ibmmq.MQRC_NO_MSG_AVAILABLE {
-			ok=false
-				// If there's no message available, then don't treat that as a real error as
-				// it's an expected situation
-			/*	retries --
-				if retries == 0 {
-					msgAvail = false					
-				} else {
-					msgAvail = true
-					err = nil
-				}*/
+			mqret := err.(*ibmmq.MQReturn)
+				
+			if mqret.MQRC == ibmmq.MQRC_NO_MSG_AVAILABLE {
+				ok=true
+			}else{
+				ok=false
+			}	
+	
+					
  
 		} else {
 			// Assume the message is a printable string
@@ -146,16 +136,15 @@ func getMessages(qMgr ibmmq.MQQueueManager, qObject ibmmq.MQObject) {
 			qObject, err := mqsamputils.OpenDynamicQueue(qMgr, getmqmd.ReplyToQ)
 			
 			if err != nil {
-				logger.Fatalln("Unable to Open Queue")				
-				running=false
-				os.Exit(1)
-			}
-			defer qObject.Close(0)
-
-			err = replyToMsg(qObject, string(buffer[:datalen]), getmqmd)
-			if err != nil {							
+				logger.Println("Unable to Open Queue")				
 				ok=false				
-			} 
+			} else {
+				err = replyToMsg(qObject, string(buffer[:datalen]), getmqmd)
+				if err != nil {							
+					ok=false				
+				} 
+			}			
+			
 		}
 
 		if ok {
@@ -172,11 +161,10 @@ func getMessages(qMgr ibmmq.MQQueueManager, qObject ibmmq.MQObject) {
 }
 
 
-func PoisoningMessageHandler(qMgr ibmmq.MQQueueManager, buffer []byte, datalen int, getmqmd *ibmmq.MQMD) (ok bool) {
-	//BACKOUT_QUEUE:= "DEV.QUEUE.2"
+func PoisoningMessageHandler(qMgr ibmmq.MQQueueManager, buffer []byte, datalen int, getmqmd *ibmmq.MQMD) (ok bool) {	
 	// Get the backout queue name from the env
 	BACKOUT_QUEUE:= mqsamputils.EnvSettings.BackoutQueue
-	//logger.Println("**************** BACKOUT QUEUE" , BACKOUT_QUEUE)
+	
 	counter:= getmqmd.BackoutCount
 	ok=true
 
@@ -193,7 +181,7 @@ func PoisoningMessageHandler(qMgr ibmmq.MQQueueManager, buffer []byte, datalen i
 		}
 
 	}else{
-		//logger.Println("CURRENT BACKOUT COUNTER "+ counter)
+		logger.Println("CURRENT BACKOUT COUNTER %s", string(counter)  )
 		qMgr.Back()
 	}
 	return 
