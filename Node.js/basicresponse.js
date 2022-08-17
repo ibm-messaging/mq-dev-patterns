@@ -152,7 +152,6 @@ function rollbackOrBackout(hConn, hObj, msgObject, mqmd){
     });
   }    
 }
-
 // This function retrieves messages from the queue without waiting.
 function getMessage(hConn, hObj) {
   var buf = Buffer.alloc(1024, 0);
@@ -166,15 +165,16 @@ function getMessage(hConn, hObj) {
 
   gmo.WaitInterval = 3 * 1000;
   var responseOk=true
-  mq.GetSync(hObj, mqmd, gmo, buf, function(err, len) {
-    
+  
+  mq.GetSync(hObj, mqmd, gmo, buf, function(err, len) {    
+
     if (err) {
       if (err.mqrc == MQC.MQRC_NO_MSG_AVAILABLE) {
         debug_info("no more messages");
         ok = false;
       } else {
-        debug_warn('Error retrieving message', err);
-        ok=false;        
+        debug_warn('Error retrieving message', err);        
+        responseOk=false;        
       }      
       
     } else if (mqmd.Format == "MQSTR") {
