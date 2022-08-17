@@ -177,7 +177,7 @@ class MQBoilerPlate {
         if (MQBoilerPlate.isPublishNoSubscriptions(me.modeType, err)) {
           debug_info('Publish unsuccessful because there are no subscribers', err.mqrcstr);
         } else if (err) {
-          MQBoilerPlate.reportError(err);
+          MQBoilerPlate.reportError(err);          
           reject();
         } else {
           debug_info("MQPUT successful ", me.modeType);

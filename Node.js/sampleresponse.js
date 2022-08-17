@@ -38,16 +38,17 @@ var MQBoilerPlate = require('./boilerplate');
 debug_info('Starting up Application');
 var mqBoilerPlate = new MQBoilerPlate();
 
-function msgCB(md, buf) {
+async function msgCB(md, buf) {
   debug_info('Message Received');
-  var ok=true;
+  var ok=true
   if (md.Format == "MQSTR") {
     var msgObject = null;
     try {
       msgObject = JSON.parse(buf);
       //throw new Error("------- DEV ERROR ON PARSING")
       debug_info("JSON Message Object found", msgObject);
-      ok= respondToRequest(msgObject, md);
+      ok= await respondToRequest(msgObject, md);
+     
     } catch (err) {
       debug_info("Not JSON message <%s>", decoder.write(buf));
       ok=false;      
@@ -68,7 +69,6 @@ function handleSyncPoint(buf, md , ok){
     mqBoilerPlate.commit(callbackOnCommit);
   }
 }
-
 
 function poisoningMessageHandler(buf,md){
   // The application is going to end as a potential poison message scenario has been detected.
@@ -104,8 +104,9 @@ function sendToQueue(buf, md, queue){
   return mqBoilerPlate.openMQReplyToConnection(queue, 'DYNREP')
   .then(() => {
     debug_info('Reply To Queue is ready');
-    return mqBoilerPlate.replyMessage(md.MsgId, md.CorrelId, buf);
-  })
+    return mqBoilerPlate.replyMessage(md.MsgId, md.CorrelId, buf)
+  });
+  
   
 }
 
@@ -127,7 +128,6 @@ function callbackOnRollback(err){
 
 
 function respondToRequest(msgObject, mqmdRequest) {
-  let okResponse;
   debug_info('Preparing response to');
   debug_info('MsgID ', toHexString(mqmdRequest.MsgId));
   debug_info('CorrelId ', toHexString(mqmdRequest.CorrelId));
@@ -145,16 +145,15 @@ function respondToRequest(msgObject, mqmdRequest) {
   debug_info('Response will be ', msg);
   debug_info('Opening Reply To Connection');
   // Create ReplyToQ
-  sendToQueue(msg,mqmdRequest , mqmdRequest.ReplyToQ)
+  return sendToQueue(msg,mqmdRequest , mqmdRequest.ReplyToQ)
     .then(() => {
       debug_info('Reply Posted');
-      okResponse=true;
+      return true
     })
     .catch((err) => {
       debug_warn('Error Processing response ', err);
-      okResponse=false;
+      return false
     });
-    return okResponse
 
   // Post Response
 }
