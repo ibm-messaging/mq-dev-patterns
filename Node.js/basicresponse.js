@@ -119,9 +119,9 @@ function getMessages(hConn, hObj) {
 }
 
 function redirectToBackoutQueue(hConn, hObj, msgObject, mqmd){  
-  var BACKOUT_QUEUE= "DEV.QUEUE.2";
+
   //from the json environment should be something like this
-  //var BACKOUT_QUEUE = MQDetails.BACKOUT_QUEUE
+  var BACKOUT_QUEUE = MQDetails.BACKOUT_QUEUE
   debug_info("Back out counter reached the treshold.");
   debug_info("Redirecting the message to the backout queue "+ BACKOUT_QUEUE +" to avoid poisoning...");
 
@@ -219,27 +219,17 @@ function getMessage(hConn, hObj) {
       // The stringify step is needed to truncate
       // the unitialised / empty part of the buffer.
       //var buffString = JSON.stringify(buf.toString('utf8'));
-      var buffString = buf.toString('utf8');
-      //var buffString = JSON.stringify(decoder.write(buf));
-      var pos = endOfObject(buffString);
-      //debug_info('end is at ', pos);
-      buffString = buffString.substring(0, pos + 1);
-      //debug_info('Truncated String is ', buffString);
+      var buffString = buf.toString('utf8');      
+      var pos = endOfObject(buffString);      
+      buffString = buffString.substring(0, pos + 1);      
 
       try {
-        msgObject = JSON.parse(buffString);
-        throw new Error('Error on reading message. (T)');
-
+        msgObject = JSON.parse(buffString);        
         debug_info("Message Object found", msgObject);
         respondToRequest(hConn, hObj, msgObject, mqmd);
 
       } catch (err) {
-        
-        //debug_warn('JSON Parsing error ', err);
-        //debug_info("message <%s>", decoder.write(buf));
-        rollbackOrBackout(hConn, hObj, buf, mqmd);
-
-        //ok = false;
+        rollbackOrBackout(hConn, hObj, buf, mqmd);        
       }
     } else {
       debug_info("binary message: " + buf);
@@ -248,25 +238,7 @@ function getMessage(hConn, hObj) {
   });
 }
 
-function performCalc(n) {
-  let sqRoot = Math.floor(Math.sqrt(n));
-  let a = [];
-  var i, j;
 
-  i = 2;
-  while (sqRoot <= n && i <= sqRoot) {
-    if (0 === n % i) {
-      a.push(i)
-      n /= i;
-    } else {
-      j = i > 2 ? 2 : 1;
-      i += j;
-    }
-  }
-  a.push(n)
-
-  return a;
-}
 
 function respondToRequest(hConn, hObj, msgObject, mqmdRequest) {
   debug_info('Preparing response to');
@@ -328,6 +300,26 @@ function respondToRequest(hConn, hObj, msgObject, mqmdRequest) {
       });
     }
   });
+}
+
+function performCalc(n) {
+  let sqRoot = Math.floor(Math.sqrt(n));
+  let a = [];
+  var i, j;
+
+  i = 2;
+  while (sqRoot <= n && i <= sqRoot) {
+    if (0 === n % i) {
+      a.push(i)
+      n /= i;
+    } else {
+      j = i > 2 ? 2 : 1;
+      i += j;
+    }
+  }
+  a.push(n)
+
+  return a;
 }
 
 // When we're done, close queues and connections
