@@ -130,20 +130,20 @@ function redirectToBackoutQueue(hConn, hObj, msgObject, mqmd){
   od.ObjectType = MQC.MQOT_Q;
   var openOptions = MQC.MQOO_OUTPUT;
 
-  mq.Open(hConn, od, openOptions, function(err, hObjReply) {
+  mq.OpenSync(hConn, od, openOptions, function(err, hObjReply) {
     if (err) {
       debug_warn('Error Detected Opening MQ Connection for the backout queue', err);
-      ok = false
+      throw Error(err)
     } else {
       debug_info("MQOPEN of %s successful", BACKOUT_QUEUE);
 
       var pmo = new mq.MQPMO();      
       pmo.Options = MQC.MQPMO_SYNCPOINT;
 
-      mq.Put(hObjReply, mqmd, pmo, msgObject, function(err) {
+      mq.PutSync(hObjReply, mqmd, pmo, msgObject, function(err) {
         if (err) {
           debug_warn('Error Detected in Put operation', err);
-          ok = false;
+          throw Error(err)
         } else {
           debug_info('MsgId: ', toHexString(mqmd.MsgId));
           debug_info("MQPUT successful");
@@ -173,12 +173,20 @@ function rollbackOrBackout(hConn, hObj, msgObject, mqmd){
   debug_info("------CURRENT BACKOUT COUNTER "+ counter);
 
   if(counter >= MSG_TRESHOLD){
-    redirectToBackoutQueue(hConn, hObj, msgObject, mqmd);
+   
+    try 
+    { 
+      redirectToBackoutQueue(hConn, hObj, msgObject, mqmd);
+    }
+    catch(err){
+       ok=false 
+    }
   }
   else{
     mq.Back(hConn, function(err) {
       if (err) {
         debug_warn('Error on rollback', err);
+        ok=false
       } else {
         debug_info('Rollback Successful');
       }
@@ -194,21 +202,22 @@ function getMessage(hConn, hObj) {
   var gmo = new mq.MQGMO();
 
   gmo.Options = MQC.MQGMO_SYNCPOINT |
-    MQC.MQGMO_NO_WAIT |
     MQC.MQGMO_CONVERT |
     MQC.MQGMO_FAIL_IF_QUIESCING;
 
   gmo.WaitInterval = 3 * 1000;
-
-//if the reponder did not get the message is the rollback required?
+  var responseOk=true
   mq.GetSync(hObj, mqmd, gmo, buf, function(err, len) {
+    //err= Error("gggg")
     if (err) {
       if (err.mqrc == MQC.MQRC_NO_MSG_AVAILABLE) {
         debug_info("no more messages");
+        ok = false;
       } else {
         debug_warn('Error retrieving message', err);
+        ok=false;        
       }      
-      ok = false;
+      
     } else if (mqmd.Format == "MQSTR") {
       var msgObject = null;
 
@@ -223,24 +232,30 @@ function getMessage(hConn, hObj) {
       var pos = endOfObject(buffString);      
       buffString = buffString.substring(0, pos + 1);      
 
-      try {
-        msgObject = JSON.parse(buffString);        
+      try {        
+        msgObject = JSON.parse(buffString);                
         debug_info("Message Object found", msgObject);
-        respondToRequest(hConn, hObj, msgObject, mqmd);
+        respondToRequest(hConn, hObj, msgObject, mqmd);       
 
       } catch (err) {
-        rollbackOrBackout(hConn, hObj, buf, mqmd);        
+        responseOk=false     
       }
     } else {
       debug_info("binary message: " + buf);
-      // ok = false;
+      ok=false
+      return
     }
   });
+
+  if(responseOk===false){
+    rollbackOrBackout(hConn, hObj, buf, mqmd);       
+  }
+
 }
 
 
 
-function respondToRequest(hConn, hObj, msgObject, mqmdRequest) {
+ function respondToRequest(hConn, hObj, msgObject, mqmdRequest) {
   debug_info('Preparing response to');
   debug_info('MsgID ', toHexString(mqmdRequest.MsgId));
   debug_info('CorrelId ', toHexString(mqmdRequest.CorrelId));
@@ -260,11 +275,12 @@ function respondToRequest(hConn, hObj, msgObject, mqmdRequest) {
   od.ObjectType = MQC.MQOT_Q;
   var openOptions = MQC.MQOO_OUTPUT;
 
-  mq.Open(hConn, od, openOptions, function(err, hObjReply) {
-    //debug_info('Inside MQ Open for Reply Callback function');
+  
+   mq.OpenSync(hConn, od, openOptions,  function(err, hObjReply) {
+  
     if (err) {
-      debug_warn('Error Detected Opening MQ Connection for Reply', err);
-      ok = false
+      debug_warn('Error Detected Opening MQ Connection for Reply', err);      
+      throw new Error(err)     
     } else {
       debug_info("MQOPEN of %s successful", mqmdRequest.ReplyToQMgr);
 
@@ -282,10 +298,10 @@ function respondToRequest(hConn, hObj, msgObject, mqmdRequest) {
       // If there is no error, then both our read of the request and our send of the reply can be
       // committed. That will permanently take the request off the queue, and commit the reply
       // allowing it to be read by the requesting application.
-      mq.Put(hObjReply, mqmd, pmo, msg, function(err) {
+       mq.PutSync(hObjReply, mqmd, pmo, msg, function(err) {
         if (err) {
           debug_warn('Error Detected in Put operation', err);
-          ok = false;
+          throw new Error(err)
         } else {
           debug_info('MsgId: ', toHexString(mqmd.MsgId));
           debug_info("MQPUT successful");
@@ -298,8 +314,9 @@ function respondToRequest(hConn, hObj, msgObject, mqmdRequest) {
         });
         }
       });
-    }
+    }    
   });
+
 }
 
 function performCalc(n) {
