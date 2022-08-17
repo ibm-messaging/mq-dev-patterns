@@ -153,6 +153,7 @@ public class JmsResponse {
           rollbackOrPause(context,receivedMessage);
           //jmsex.printStackTrace();
         }
+        
     }
 
     private static void rollbackOrPause(JMSContext context, Message message){

@@ -152,6 +152,7 @@ function rollbackOrBackout(hConn, hObj, msgObject, mqmd){
     });
   }    
 }
+
 // This function retrieves messages from the queue without waiting.
 function getMessage(hConn, hObj) {
   var buf = Buffer.alloc(1024, 0);
@@ -194,7 +195,7 @@ function getMessage(hConn, hObj) {
       try {        
         msgObject = JSON.parse(buffString);                
         debug_info("Message Object found", msgObject);
-        respondToRequest(hConn, hObj, msgObject, mqmd, false);       
+        respondToRequest(hConn, hObj, msgObject, mqmd);       
 
       } catch (err) {
         responseOk=false     
@@ -214,7 +215,7 @@ function getMessage(hConn, hObj) {
 
 
 
- function respondToRequest(hConn, hObj, msgObject, mqmdRequest, isForBackout) {
+ function respondToRequest(hConn, hObj, msgObject, mqmdRequest, isForBackout=false) {
   debug_info('Preparing response to');
   debug_info('MsgID ', toHexString(mqmdRequest.MsgId));
   debug_info('CorrelId ', toHexString(mqmdRequest.CorrelId));
