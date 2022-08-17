@@ -93,6 +93,7 @@ public class JmsResponse {
     }
 
     private static void replyToMessage(JMSContext context, Message receivedMessage, long extractedValue) {
+        boolean ok=true;
         try {
             if (receivedMessage instanceof Message) {
 
@@ -114,19 +115,21 @@ public class JmsResponse {
                 
             }
         } catch (JMSException jmsex) {
+            
             logger.info("******** JMS Exception*********************");
 
             if (null != jmsex.getCause() && jmsex.getCause() instanceof MQException) {
                 MQException innerException = (MQException) jmsex.getCause();
 
                 if (MQConstants.MQRC_UNKNOWN_OBJECT_NAME == innerException.getReason()) {
+                    ok=false;
                     logger.info("Reply to Queue no longer exists, skipping request");
                     return;
                 }
             }
             
-            logger.warning("Unexpected Expection replying to message");
-            rollbackOrPause(context,receivedMessage);
+            logger.warning("Unexpected Expection replying to message");            
+            ok=false;
            // jmsex.printStackTrace();
 
         } catch (JMSRuntimeException jmsex) {
@@ -136,22 +139,26 @@ public class JmsResponse {
               if (null != e && e instanceof MQException) {
                   if (MQConstants.MQRC_UNKNOWN_OBJECT_NAME == e.getReason()) {
                       logger.info("Reply to Queue no longer exists, skipping request");
+                      ok=false;
                       return;
                   }
               }
           }
+          ok=false;
 
           // Get this exception when the reply to queue is no longer valid.
           // eg. When app that posted the message is no longer running.
           if (null != jmsex.getCause() && jmsex.getCause() instanceof DetailedInvalidDestinationException) {
             logger.info("Reply to destination is invalid");
+            ok=false;
             return;
-          }
-
-             
+          }   
           logger.warning("Unexpected runtime error");
-          rollbackOrPause(context,receivedMessage);
+          ok=false;
           //jmsex.printStackTrace();
+        }
+        if (!ok){
+            rollbackOrPause(context,receivedMessage);
         }
         
     }
