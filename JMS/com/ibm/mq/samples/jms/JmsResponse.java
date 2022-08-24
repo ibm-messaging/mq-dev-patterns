@@ -1,5 +1,5 @@
 /*
-* (c) Copyright IBM Corporation 2019, 2022
+* Copyright 2018, 2022 IBM Corp.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -122,14 +122,13 @@ public class JmsResponse {
                 MQException innerException = (MQException) jmsex.getCause();
 
                 if (MQConstants.MQRC_UNKNOWN_OBJECT_NAME == innerException.getReason()) {
-                    ok=false;
+                    ok = false;
                     logger.info("Reply to Queue no longer exists, skipping request");
-                    return;
                 }
             }
             
             logger.warning("Unexpected Expection replying to message");            
-            ok=false;
+            ok = false;
            // jmsex.printStackTrace();
 
         } catch (JMSRuntimeException jmsex) {
@@ -139,57 +138,54 @@ public class JmsResponse {
               if (null != e && e instanceof MQException) {
                   if (MQConstants.MQRC_UNKNOWN_OBJECT_NAME == e.getReason()) {
                       logger.info("Reply to Queue no longer exists, skipping request");
-                      ok=false;
-                      return;
+                      ok = false;                      
                   }
               }
           }
-          ok=false;
 
           // Get this exception when the reply to queue is no longer valid.
           // eg. When app that posted the message is no longer running.
           if (null != jmsex.getCause() && jmsex.getCause() instanceof DetailedInvalidDestinationException) {
             logger.info("Reply to destination is invalid");
-            ok=false;
-            return;
+            ok = false;          
           }   
+
           logger.warning("Unexpected runtime error");
-          ok=false;
+          ok = false;
           //jmsex.printStackTrace();
         }
-        if (!ok){
+
+        if (!ok) {
             rollbackOrPause(context,receivedMessage);
         }
         
     }
 
-    private static void rollbackOrPause(JMSContext context, Message message){
-        int counter=-1;
-        try{
-            counter=Integer.parseInt(message.getStringProperty("JMSXDeliveryCount"));
+    private static void rollbackOrPause(JMSContext context, Message message) {
+        int counter = -1;
+
+        try {
+            counter = Integer.parseInt(message.getStringProperty("JMSXDeliveryCount"));
             logger.info("Current counter" + String.valueOf(counter));
         } catch (Exception e) {
             logger.info("Error on getting the counter");
             return;
         }
 
-        if(counter<5){
+        if(counter < 5) {
             context.rollback();
-        }
-        else{
+        } else {
             redirectToAnotherQueue(context, message);
         }      
     }
 
-    private static void redirectToAnotherQueue(JMSContext context, Message message){
+    private static void redirectToAnotherQueue(JMSContext context, Message message) {
         logger.info("Redirecting to "+ BACKOUT_QUEUE);
-        
-        Destination dest= context.createQueue("queue:///" + BACKOUT_QUEUE);
+        Destination dest = context.createQueue("queue:///" + BACKOUT_QUEUE);
         JMSProducer producer = context.createProducer();
         producer.send(dest, message);
         logger.info("Message sent to backup queue" + BACKOUT_QUEUE + " correctly");
         context.commit();
-
     }
 
     private static long getAndDisplayMessageBody(Message receivedMessage) {
@@ -234,8 +230,8 @@ public class JmsResponse {
         APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
         QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
-        BACKOUT_QUEUE= env.getEnvValue("BACKOUT_QUEUE", index);
-        if(BACKOUT_QUEUE.isEmpty()){logger.info("Missing BACKOUT_QUEUE value");}
+        BACKOUT_QUEUE = env.getEnvValue("BACKOUT_QUEUE", index);
+        if(BACKOUT_QUEUE.isEmpty()) { logger.info("Missing BACKOUT_QUEUE value"); }
         CCDTURL = env.getCheckForCCDT();
     }
 

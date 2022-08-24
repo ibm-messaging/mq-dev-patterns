@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2019 IBM
+# Copyright 2018, 2022 IBM Corp.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,7 +52,6 @@ def connect():
         if MQDetails[EnvStore.KEY_REPOSITORY]:
             logger.info('Setting Key repository')
             sco.KeyRepository = MQDetails[EnvStore.KEY_REPOSITORY]
-            print(sco.KeyRepository)
 
         #options = pymqi.CMQC.MQPMO_NO_SYNCPOINT | pymqi.CMQC.MQPMO_NEW_MSG_ID | pymqi.CMQC.MQPMO_NEW_CORREL_ID
         options = pymqi.CMQC.MQPMO_NEW_CORREL_ID

@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, 2020 IBM Corp.
+ * Copyright 2019, 2022 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -84,16 +84,12 @@ func logError(err error) {
 func getMessages(qMgr ibmmq.MQQueueManager, qObject ibmmq.MQObject) {
 	logger.Println("Getting Message from queue")
 	var err error
-	//msgAvail := true
-	ok:=true
-	running:=true
-	//maxRetries := 10
-	//retries := maxRetries
 
-	//for msgAvail == true && err == nil {
+	ok := true
+	running := true
+
 	for running {
 		var datalen int
-
 		// The PUT requires control structures, the Message Descriptor (MQMD)
 		// and Put Options (MQPMO). Create those with default values.
 		getmqmd := ibmmq.NewMQMD()
@@ -106,35 +102,28 @@ func getMessages(qMgr ibmmq.MQQueueManager, qObject ibmmq.MQObject) {
 		gmo.Options = ibmmq.MQGMO_SYNCPOINT | ibmmq.MQGMO_WAIT | ibmmq.MQGMO_FAIL_IF_QUIESCING
 
 		// Set options to wait for a maximum of 3 seconds for any new message to arrive
-
 		gmo.WaitInterval = 3 * 1000 // The WaitInterval is in milliseconds
-
 		// Create a buffer for the message data. This one is large enough
 		// for the messages put by the amqsput sample.
-		buffer := make([]byte, 1024)
-				
-		
+		buffer := make([]byte, 1024)						
 		// Now try to get the message
 		datalen, err = qObject.Get(getmqmd, gmo, buffer)
 
 		if err !=nil {
-			mqret := err.(*ibmmq.MQReturn)
-				
+			mqret := err.(*ibmmq.MQReturn)		
+
 			if mqret.MQRC == ibmmq.MQRC_NO_MSG_AVAILABLE {
-				ok=true
-			}else{
-				ok=false
+				ok = true
+			} else {
+				ok = false
 			}	
-	
-					
- 
+
 		} else {
 			// Assume the message is a printable string
 			logger.Printf("Got message of length %d: ", datalen)
 			logger.Println(string(buffer[:datalen]))
+			qObject, err := mqsamputils.OpenDynamicQueue(qMgr, getmqmd.ReplyToQ)	
 
-			qObject, err := mqsamputils.OpenDynamicQueue(qMgr, getmqmd.ReplyToQ)
-			
 			if err != nil {
 				logger.Println("Unable to Open Queue")				
 				ok=false				
@@ -143,18 +132,15 @@ func getMessages(qMgr ibmmq.MQQueueManager, qObject ibmmq.MQObject) {
 				if err != nil {							
 					ok=false				
 				} 
-			}			
-			
+			}		
+
 		}
 
 		if ok {
 			qMgr.Cmit()
-			logger.Println("Response message commited!")
-			//retries = maxRetries	
-		} else{			
-			okCallback:=PoisoningMessageHandler(qMgr, buffer, datalen, getmqmd )			
-			running=okCallback
-			
+			logger.Println("Response message commited!")			
+		} else {			
+			running = PoisoningMessageHandler(qMgr, buffer, datalen, getmqmd)									
 		}
 
 	}
@@ -163,29 +149,29 @@ func getMessages(qMgr ibmmq.MQQueueManager, qObject ibmmq.MQObject) {
 
 func PoisoningMessageHandler(qMgr ibmmq.MQQueueManager, buffer []byte, datalen int, getmqmd *ibmmq.MQMD) (ok bool) {	
 	// Get the backout queue name from the env
-	BACKOUT_QUEUE:= mqsamputils.EnvSettings.BackoutQueue
-	
-	counter:= getmqmd.BackoutCount
-	ok=true
+	BACKOUT_QUEUE := mqsamputils.EnvSettings.BackoutQueue	
+	counter := getmqmd.BackoutCount
+	ok = true
 
 	//if counter greater then 5, redirect the message to the backout queue
-	if counter >=5{
-		qObject, err:= mqsamputils.OpenDynamicQueue(qMgr, BACKOUT_QUEUE)
+	if counter >=5 {
+		qObject, err := mqsamputils.OpenDynamicQueue(qMgr, BACKOUT_QUEUE)
+
 		if err!=nil {
 			logger.Println("Error on opening the backout queue")
-			ok=false
-		} else{
+			ok = false
+		} else {
 			replyToMsg(qObject, string(buffer[:datalen]), getmqmd)			
 			qMgr.Cmit()
 			logger.Println("Message delivered to the backout queue " , BACKOUT_QUEUE , " correctly.")			
 		}
 
-	}else{
-		logger.Println("CURRENT BACKOUT COUNTER %s", string(counter)  )
+	} else {
+		logger.Println("CURRENT BACKOUT COUNTER %s", string(counter))
 		qMgr.Back()
 	}
+
 	return 
-	
 }
 
 func replyToMsg(qObject ibmmq.MQObject, msg string, getmqmd *ibmmq.MQMD) error {

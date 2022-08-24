@@ -45,7 +45,7 @@ var debug_warn = require('debug')('amqsrep:warn');
 // Set up Constants
 const CCDT = "MQCCDTURL";
 const	FILEPREFIX = "file://";
-const MSG_TRESHOLD= 5;
+const MSG_TRESHOLD = 5;
 
 // Load the MQ Endpoint details either from the envrionment or from the
 // env.json file. The envrionment takes precedence. The json file allows for
@@ -125,30 +125,32 @@ function rollbackOrBackout(hConn, hObj, msgObject, mqmd){
   // see - https://stackoverflow.com/questions/64680808/ibm-mq-cmit-and-rollback-with-syncpoint
   debug_warn ('A potential poison message scenario has been detected.');
 
-  var counter= mqmd.BackoutCount;
+  var counter = mqmd.BackoutCount;
   debug_info("------CURRENT BACKOUT COUNTER "+ counter);
 
-  if(counter >= MSG_TRESHOLD){
+  if(counter >= MSG_TRESHOLD) {
    
     try 
     { 
-      mqmd.ReplyToQ=MQDetails.BACKOUT_QUEUE;
-      debug_info("Redirecting the message to the bacout queue " + mqmd.ReplyToQ)
+      mqmd.ReplyToQ = MQDetails.BACKOUT_QUEUE;
+      debug_info("Redirecting the message to the backout queue " + mqmd.ReplyToQ)
       respondToRequest(hConn, hObj, msgObject, mqmd, true);
       debug_info("Message redirected correctly")
     }
-    catch(err){
-       ok=false 
+    catch(err) {
+      ok = false 
     }
-  }
-  else{
+
+  } else {
     mq.Back(hConn, function(err) {
+
       if (err) {
         debug_warn('Error on rollback', err);
-        ok=false
+        ok = false
       } else {
         debug_info('Rollback Successful');
       }
+
     });
   }    
 }
@@ -165,7 +167,7 @@ function getMessage(hConn, hObj) {
     MQC.MQGMO_FAIL_IF_QUIESCING;
 
   gmo.WaitInterval = 3 * 1000;
-  var responseOk=true
+  var responseOk = true
   
   mq.GetSync(hObj, mqmd, gmo, buf, function(err, len) {    
 
@@ -175,7 +177,7 @@ function getMessage(hConn, hObj) {
         ok = false;
       } else {
         debug_warn('Error retrieving message', err);        
-        responseOk=false;        
+        responseOk = false;        
       }      
       
     } else if (mqmd.Format == "MQSTR") {
@@ -198,16 +200,16 @@ function getMessage(hConn, hObj) {
         respondToRequest(hConn, hObj, msgObject, mqmd);       
 
       } catch (err) {
-        responseOk=false     
+        responseOk = false     
       }
     } else {
       debug_info("binary message: " + buf);
-      ok=false
+      ok = false
       return
     }
   });
 
-  if(responseOk===false){
+  if (responseOk===false) {
     rollbackOrBackout(hConn, hObj, buf, mqmd);       
   }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, 2020 IBM Corp.
+ * Copyright 2018, 2022 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -36,24 +36,30 @@ const (
 // add it here also.
 
 func getEndPoint(index int) (Env) {
+
 	if index == FULL_STRING {
 		index = 0
 	}
+	
 	return MQ_ENDPOINTS.Points[index]
 }
 
 
 func ccdtCheck() (bool) {
+
 	if fPath := os.Getenv(CCDT); "" != fPath {
-    ccdtFile, err := os.Open(strings.TrimPrefix(fPath, FILEPREFIX))
+    	ccdtFile, err := os.Open(strings.TrimPrefix(fPath, FILEPREFIX))
 		defer ccdtFile.Close()
+
 		if err == nil {
 			logger.Println("CCDT File found and will be used to configure connection")
-		  return true;
+		  	return true;
 		}
+
 		logger.Printf("CCDT File not found at %s", fPath)
 		logger.Println(err)
 	}
+
 	return false;
 }
 
@@ -73,7 +79,6 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 		csp.AuthenticationType = ibmmq.MQCSP_AUTH_USER_ID_AND_PWD
 		csp.UserId = username
 		csp.Password = env.Password
-
 		// Make the CNO refer to the CSP structure so it gets used during the connection
 		cno.SecurityParms = csp
 	}
@@ -90,7 +95,6 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 
 		if env.KeyRepository != "" {
 			logger.Println("Running in TLS Mode")
-
 			cd.SSLCipherSpec = env.Cipher
 			cd.SSLClientAuth = ibmmq.MQSCA_OPTIONAL
 		}
@@ -103,11 +107,10 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 	// of whether a CCDT is being used, need to specify the KeyRepository location
 	// if it has been provided in the environment json settings.
 	if env.KeyRepository != "" {
+
 		logger.Println("Key Repository has been specified")
-
-	  sco := ibmmq.NewMQSCO()
+	  	sco := ibmmq.NewMQSCO()
 		sco.KeyRepository = env.KeyRepository
-
 		cno.SSLConfig = sco
 	}
 
@@ -116,11 +119,13 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 	// And now we can try to connect. Wait a short time before disconnecting.
 	logger.Printf("Attempting connection to %s", env.QManager)
 	qMgr, err := ibmmq.Connx(env.QManager, cno)
+
 	if err == nil {
 		logger.Println("Connection succeeded")
 	} else {
 		logError(err)
 	}
+
 	return qMgr, err
 }
 
@@ -147,7 +152,7 @@ func openQueue(qMgrObject ibmmq.MQQueueManager, replyToQ string, msgStyle string
 	// We have to say how we are going to use this queue. In this case, to PUT
 	// messages. That is done in the openOptions parameter
 
-  env := getEndPoint(index)
+  	env := getEndPoint(index)
 
 	openOptions := ibmmq.MQOO_OUTPUT
 
@@ -176,11 +181,13 @@ func openQueue(qMgrObject ibmmq.MQQueueManager, replyToQ string, msgStyle string
 	logger.Printf("Attempting open queue/topic %s", env.QueueName)
 	
 	qObject, err := qMgrObject.Open(mqod, openOptions)
+
 	if err != nil {
 		logError(err)
 	} else {
 		logger.Println("Opened queue/topic", qObject.Name)
 	}
+
 	return qObject, err
 }
 

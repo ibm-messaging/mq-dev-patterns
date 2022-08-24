@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 IBM Corp.
+ * Copyright 2018, 2022 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -109,7 +109,7 @@ func (Env) GetConnection(index int) string {
 		for _, p := range MQ_ENDPOINTS.Points {
 			connections = append(connections, p.Host + "(" + p.Port + ")")
 		}
-	  return strings.Join(connections[:], ",")
+	  	return strings.Join(connections[:], ",")
 	} else {
 		p := MQ_ENDPOINTS.Points[index]
 		return p.Host + "(" + p.Port + ")" 

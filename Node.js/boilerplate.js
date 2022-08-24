@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, 2019 IBM Corp.
+ * Copyright 2018, 2022 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -191,10 +191,10 @@ class MQBoilerPlate {
     });
   }
 
-  rollback(buf,md, poisoningMessageHandle, callbackOnRollback){
+  rollback(buf,md, poisoningMessageHandle, callbackOnRollback) {
     
     var rollback= poisoningMessageHandle(buf, md);
-    if(rollback){
+    if (rollback) {
       mq.Back(this.mqConn, function(err) {
         callbackOnRollback(err);
       });
@@ -202,7 +202,7 @@ class MQBoilerPlate {
    
   }
 
-  commit(callbackOnCommit){
+  commit(callbackOnCommit) {
     mq.Cmit(this.mqConn, function(err) {
       callbackOnCommit(err);
     });
@@ -225,13 +225,12 @@ class MQBoilerPlate {
       var md = new mq.MQMD();
       var gmo = new mq.MQGMO();
       
-      if(me.beSync){
+      if(me.beSync) {
         gmo.Options = MQC.MQPMO_SYNCPOINT |
         MQC.MQGMO_WAIT |
         MQC.MQGMO_CONVERT |
         MQC.MQGMO_FAIL_IF_QUIESCING;
-      }
-      else{
+      } else {
         gmo.Options = MQC.MQPMO_NO_SYNCPOINT |
         MQC.MQGMO_WAIT |
         MQC.MQGMO_CONVERT |
@@ -257,7 +256,7 @@ class MQBoilerPlate {
       // Set up the callback handler to be invoked when there
       // are any incoming messages. As this is a sample, I'm going
       // to tune down the poll interval from default 10 seconds to 0.5s.
-      mq.setTuningParameters({
+      mq.setTuningParameters( {
         getLoopPollTimeMs: 500
       });
 
@@ -271,13 +270,16 @@ class MQBoilerPlate {
       var timerID = setInterval(() => {
         debug_info('Checking for termination signal');
         count++;
+
         if (count > LIMIT) {
           canExit = true;
         }
+
         if (canExit) {
           clearInterval(timerID);
           resolve();
         }
+        
       }, (waitInterval + 2) * 1000);
     });
   }

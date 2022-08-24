@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2019 IBM
+# Copyright 2018, 2022 IBM Corp.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ def getQueue():
         od = pymqi.OD()
         od.ObjectName = MQDetails[EnvStore.QUEUE_NAME]
         q.open(od, pymqi.CMQC.MQOO_OUTPUT)
-        print('Connected to queue ' + str(MQDetails[EnvStore.QUEUE_NAME]))
+        logger.info('Connected to queue ' + str(MQDetails[EnvStore.QUEUE_NAME]))
         return q
     except pymqi.MQMIError as e:
         logger.error("Error getting queue")
@@ -94,15 +94,15 @@ def getDynamicQueue():
     try:
         # Dynamic queue's object descriptor.
         dyn_od = pymqi.OD()
-        print(MQDetails[EnvStore.MODEL_QUEUE_NAME])
-        print(MQDetails[EnvStore.DYNAMIC_QUEUE_PREFIX])
+        logger.info(MQDetails[EnvStore.MODEL_QUEUE_NAME])
+        logger.info(MQDetails[EnvStore.DYNAMIC_QUEUE_PREFIX])
         dyn_od.ObjectName = MQDetails[EnvStore.MODEL_QUEUE_NAME]
         dyn_od.DynamicQName = MQDetails[EnvStore.DYNAMIC_QUEUE_PREFIX]
 
         # Open the dynamic queue.
         dyn_input_open_options = pymqi.CMQC.MQOO_INPUT_EXCLUSIVE
         dyn_queue = pymqi.Queue(qmgr, dyn_od, dyn_input_open_options)
-        print("CREATED DYN QUEUE: " + str(dyn_queue))
+        logger.info("CREATED DYN QUEUE: " + str(dyn_queue))
         dynamicQueueName = dyn_od.ObjectName.strip()
         logger.info('Dynamic Queue Details are')
         logger.info(dynamicQueueName)

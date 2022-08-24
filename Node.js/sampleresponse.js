@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 IBM Corp.
+ * Copyright 2018, 2022 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ var decoder = new StringDecoder('utf8');
 
 
 //set up conts
-const MSG_TRESHOLD=5;
+const MSG_TRESHOLD = 5;
 
 // Set up debug logging options
 var debug_info = require('debug')('samplerep:info');
@@ -40,18 +40,17 @@ var mqBoilerPlate = new MQBoilerPlate();
 
 async function msgCB(md, buf) {
   debug_info('Message Received');
-  var ok=true
+  var ok = true
   if (md.Format == "MQSTR") {
     var msgObject = null;
     try {
       msgObject = JSON.parse(buf);
-      //throw new Error("------- DEV ERROR ON PARSING")
       debug_info("JSON Message Object found", msgObject);
       ok= await respondToRequest(msgObject, md);
      
     } catch (err) {
       debug_info("Not JSON message <%s>", decoder.write(buf));
-      ok=false;      
+      ok = false;      
     }
     handleSyncPoint(buf, md, ok);
   } else {
@@ -61,27 +60,30 @@ async function msgCB(md, buf) {
   return true;
 }
 
-function handleSyncPoint(buf, md , ok){
-  if(!ok){
+function handleSyncPoint(buf, md , ok) {
+  
+  if (!ok) {
     mqBoilerPlate.rollback(buf, md, poisoningMessageHandler,callbackOnRollback);
-  }
-  else{
+  } else {
     mqBoilerPlate.commit(callbackOnCommit);
   }
+
 }
 
-function poisoningMessageHandler(buf,md){
+function poisoningMessageHandler(buf,md) {
   // The application is going to end as a potential poison message scenario has been detected.
   // To prevent a recursive loop this application would need to compare the back out count for the message
   // with the back out threshold for the queue manager
   // see - https://stackoverflow.com/questions/64680808/ibm-mq-cmit-and-rollback-with-syncpoint
   debug_warn ('A potential poison message scenario has been detected.');
-  var rollback=false;
-  var backoutCounter= md.BackoutCount;
+  var rollback = false;
+  var backoutCounter = md.BackoutCount;
 
-  if(backoutCounter >= MSG_TRESHOLD){
-    debug_info("Redirecting to backout queue");
-    var BACKOUT_QUEUE= mqBoilerPlate.MQDetails.BACKOUT_QUEUE;
+  if(backoutCounter >= MSG_TRESHOLD) {
+    
+    debug_info("Redirecting to the backout queue");
+    var BACKOUT_QUEUE = mqBoilerPlate.MQDetails.BACKOUT_QUEUE;
+
     sendToQueue(buf, md,BACKOUT_QUEUE).then(() => {
       debug_info('Reply Posted');
       mqBoilerPlate.commit(callbackOnCommit);
@@ -90,16 +92,15 @@ function poisoningMessageHandler(buf,md){
       debug_warn('Error redirecting to the backout queue ');
     });
    
-    rollback=false;
-  }
-  else{
-    rollback=true;
+    rollback = false;
+  } else {
+    rollback = true;
   }
 
   return rollback;
 }
 
-function sendToQueue(buf, md, queue){
+function sendToQueue(buf, md, queue) {
 
   return mqBoilerPlate.openMQReplyToConnection(queue, 'DYNREP')
   .then(() => {
@@ -107,10 +108,9 @@ function sendToQueue(buf, md, queue){
     return mqBoilerPlate.replyMessage(md.MsgId, md.CorrelId, buf)
   });
   
-  
 }
 
-function callbackOnCommit(err){
+function callbackOnCommit(err) {
   if (err) {
     debug_warn('Error on commit', err);
   } else {
@@ -118,7 +118,7 @@ function callbackOnCommit(err){
   }
 }
 
-function callbackOnRollback(err){
+function callbackOnRollback(err) {
   if (err) {
     debug_warn('Error on rollback', err);
   } else {
