@@ -44,7 +44,7 @@ var debug_warn = require('debug')('amqsrep:warn');
 
 // Set up Constants
 const CCDT = "MQCCDTURL";
-const	FILEPREFIX = "file://";
+const FILEPREFIX = "file://";
 const MSG_TRESHOLD = 5;
 
 // Load the MQ Endpoint details either from the envrionment or from the
@@ -54,9 +54,9 @@ const MSG_TRESHOLD = 5;
 var MQDetails = {};
 
 ['QMGR', 'QUEUE_NAME', 'BACKOUT_QUEUE', 'HOST', 'PORT',
- 'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach(function(f) {
-  MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[0][f]
-});
+  'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach(function (f) {
+    MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[0][f]
+  });
 
 var credentials = {
   USER: process.env.APP_USER || env.MQ_ENDPOINTS[0].APP_USER,
@@ -123,25 +123,24 @@ function rollbackOrBackout(hConn, hObj, msgObject, mqmd) {
   // To prevent a recursive loop this application would need to compare the back out count for the message
   // with the back out threshold for the queue manager
   // see - https://stackoverflow.com/questions/64680808/ibm-mq-cmit-and-rollback-with-syncpoint
-  debug_warn ('A potential poison message scenario has been detected.');
+  debug_warn('A potential poison message scenario has been detected.');
 
   var counter = mqmd.BackoutCount;
-  debug_info("------CURRENT BACKOUT COUNTER "+ counter);
+  debug_info("------CURRENT BACKOUT COUNTER " + counter);
 
-  if(counter >= MSG_TRESHOLD) {
-   
-    try 
-    { 
+  if (counter >= MSG_TRESHOLD) {
+
+    try {
       mqmd.ReplyToQ = MQDetails.BACKOUT_QUEUE;
       debug_info("Redirecting the message to the backout queue " + mqmd.ReplyToQ)
       respondToRequest(hConn, hObj, msgObject, mqmd, true);
       debug_info("Message redirected correctly")
-    } catch(err) {
-      ok = false 
+    } catch (err) {
+      ok = false
     }
 
   } else {
-    mq.Back(hConn, function(err) {
+    mq.Back(hConn, function (err) {
 
       if (err) {
         debug_warn('Error on rollback', err);
@@ -151,7 +150,7 @@ function rollbackOrBackout(hConn, hObj, msgObject, mqmd) {
       }
 
     });
-  }    
+  }
 }
 
 // This function retrieves messages from the queue without waiting.
@@ -167,18 +166,18 @@ function getMessage(hConn, hObj) {
 
   gmo.WaitInterval = 3 * 1000;
   var responseOk = true
-  
-  mq.GetSync(hObj, mqmd, gmo, buf, function(err, len) {    
+
+  mq.GetSync(hObj, mqmd, gmo, buf, function (err, len) {
 
     if (err) {
       if (err.mqrc == MQC.MQRC_NO_MSG_AVAILABLE) {
         debug_info("no more messages");
         ok = false;
       } else {
-        debug_warn('Error retrieving message', err);        
-        responseOk = false;        
-      }      
-      
+        debug_warn('Error retrieving message', err);
+        responseOk = false;
+      }
+
     } else if (mqmd.Format == "MQSTR") {
       var msgObject = null;
 
@@ -189,17 +188,17 @@ function getMessage(hConn, hObj) {
       // The stringify step is needed to truncate
       // the unitialised / empty part of the buffer.
       //var buffString = JSON.stringify(buf.toString('utf8'));
-      var buffString = buf.toString('utf8');      
-      var pos = endOfObject(buffString);      
-      buffString = buffString.substring(0, pos + 1);      
+      var buffString = buf.toString('utf8');
+      var pos = endOfObject(buffString);
+      buffString = buffString.substring(0, pos + 1);
 
-      try {        
-        msgObject = JSON.parse(buffString);                
+      try {
+        msgObject = JSON.parse(buffString);
         debug_info("Message Object found", msgObject);
-        respondToRequest(hConn, hObj, msgObject, mqmd);       
+        respondToRequest(hConn, hObj, msgObject, mqmd);
 
       } catch (err) {
-        responseOk = false     
+        responseOk = false
       }
     } else {
       debug_info("binary message: " + buf);
@@ -208,15 +207,15 @@ function getMessage(hConn, hObj) {
     }
   });
 
-  if (responseOk===false) {
-    rollbackOrBackout(hConn, hObj, buf, mqmd);       
+  if (responseOk === false) {
+    rollbackOrBackout(hConn, hObj, buf, mqmd);
   }
 
 }
 
 
 
- function respondToRequest(hConn, hObj, msgObject, mqmdRequest, isForBackout=false) {
+function respondToRequest(hConn, hObj, msgObject, mqmdRequest, isForBackout = false) {
   debug_info('Preparing response to');
   debug_info('MsgID ', toHexString(mqmdRequest.MsgId));
   debug_info('CorrelId ', toHexString(mqmdRequest.CorrelId));
@@ -229,8 +228,8 @@ function getMessage(hConn, hObj) {
     'Greeting': "Reply",
     'result': performCalc(msgObject.value)
   }
-  
-  if(!isForBackout){
+
+  if (!isForBackout) {
     msgObject = JSON.stringify(replyObject);
     console.log("STRINGFYING...")
   }
@@ -240,25 +239,26 @@ function getMessage(hConn, hObj) {
   od.ObjectType = MQC.MQOT_Q;
   var openOptions = MQC.MQOO_OUTPUT;
 
-  
-   mq.OpenSync(hConn, od, openOptions,  function(err, hObjReply) {
-  
+
+  mq.OpenSync(hConn, od, openOptions, function (err, hObjReply) {
+
+
     if (err) {
-      debug_warn('Error Detected Opening MQ Connection for Reply', err);      
-      throw new Error(err)     
+      debug_warn('Error Detected Opening MQ Connection for Reply', err);
+      throw new Error(err)
     } else {
       debug_info("MQOPEN of %s successful", mqmdRequest.ReplyToQMgr);
 
-      
+
       var pmo = new mq.MQPMO();
       var mqmd;
-      if(!isForBackout){
+      if (!isForBackout) {
         mqmd = new mq.MQMD(); // Defaults are fine.
         mqmd.CorrelId = mqmdRequest.CorrelId;
         mqmd.MsgId = mqmdRequest.MsgId;
-      }      
-      else if (isForBackout===true){        
-        mqmd=mqmdRequest;
+      }
+      else if (isForBackout === true) {
+        mqmd = mqmdRequest;
       }
 
 
@@ -270,23 +270,23 @@ function getMessage(hConn, hObj) {
       // If there is no error, then both our read of the request and our send of the reply can be
       // committed. That will permanently take the request off the queue, and commit the reply
       // allowing it to be read by the requesting application.
-       mq.PutSync(hObjReply, mqmd, pmo, msgObject, function(err) {
+      mq.PutSync(hObjReply, mqmd, pmo, msgObject, function (err) {
         if (err) {
           debug_warn('Error Detected in Put operation', err);
           throw new Error(err)
         } else {
           debug_info('MsgId: ', toHexString(mqmd.MsgId));
           debug_info("MQPUT successful");
-          mq.Cmit(hConn, function(err) {
-          if (err) {
-            debug_warn('Error on commit', err);
-          } else {
-            debug_info('Commit Successful');
-          }
-        });
+          mq.Cmit(hConn, function (err) {
+            if (err) {
+              debug_warn('Error on commit', err);
+            } else {
+              debug_info('Commit Successful');
+            }
+          });
         }
       });
-    }    
+    }
   });
 
 }
@@ -313,13 +313,13 @@ function performCalc(n) {
 
 // When we're done, close queues and connections
 function cleanup(hConn, hObj) {
-  mq.Close(hObj, 0, function(err) {
+  mq.Close(hObj, 0, function (err) {
     if (err) {
       debug_warn('Error Closing connection', err);
     } else {
       debug_info("MQCLOSE successful");
     }
-    mq.Disc(hConn, function(err) {
+    mq.Disc(hConn, function (err) {
       if (err) {
         debug_warn('Error disconnecting', err);
       } else {
@@ -329,7 +329,7 @@ function cleanup(hConn, hObj) {
   });
 }
 
-function ccdtCheck () {
+function ccdtCheck() {
   if (CCDT in process.env) {
     let ccdtFile = process.env[CCDT].replace(FILEPREFIX, '');
     debug_info(ccdtFile);
@@ -360,7 +360,7 @@ if (credentials.USER) {
   cno.SecurityParms = csp;
 }
 
-if (! ccdtCheck()) {
+if (!ccdtCheck()) {
   debug_info('CCDT URL export is not set, will be using json envrionment client connections settings');
 
   // And then fill in relevant fields for the MQCD
@@ -395,7 +395,7 @@ if (MQDetails.KEY_REPOSITORY) {
 }
 
 // Do the connect, including a callback function
-mq.Connx(MQDetails.QMGR, cno, function(err, hConn) {
+mq.Connx(MQDetails.QMGR, cno, function (err, hConn) {
   if (err) {
     debug_warn('Error Detected making Connection', err);
   } else {
@@ -405,7 +405,7 @@ mq.Connx(MQDetails.QMGR, cno, function(err, hConn) {
     od.ObjectName = MQDetails.QUEUE_NAME;
     od.ObjectType = MQC.MQOT_Q;
     var openOptions = MQC.MQOO_INPUT_AS_Q_DEF;
-    mq.Open(hConn, od, openOptions, function(err, hObj) {
+    mq.Open(hConn, od, openOptions, function (err, hObj) {
       if (err) {
         debug_warn('Error Detected Opening MQ Connection', err);
       } else {
