@@ -118,7 +118,7 @@ function getMessages(hConn, hObj) {
   }
 }
 
-function rollbackOrBackout(hConn, hObj, msgObject, mqmd){
+function rollbackOrBackout(hConn, hObj, msgObject, mqmd) {
   // The application is going to end as a potential poison message scenario has been detected.
   // To prevent a recursive loop this application would need to compare the back out count for the message
   // with the back out threshold for the queue manager
@@ -136,8 +136,7 @@ function rollbackOrBackout(hConn, hObj, msgObject, mqmd){
       debug_info("Redirecting the message to the backout queue " + mqmd.ReplyToQ)
       respondToRequest(hConn, hObj, msgObject, mqmd, true);
       debug_info("Message redirected correctly")
-    }
-    catch(err) {
+    } catch(err) {
       ok = false 
     }
 
