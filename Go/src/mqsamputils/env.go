@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 IBM Corp.
+ * Copyright 2018, 2022 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ type Env struct {
 	QueueName        string `json:"QUEUE_NAME"`
 	ModelQueueName   string `json:"MODEL_QUEUE_NAME"`
 	DynamicQueueName string `json:"DYNAMIC_QUEUE_PREFIX"`
+	BackoutQueue 	 string `json:"BACKOUT_QUEUE"`
 	Host             string `json:"HOST"`
 	Port             string `json:"PORT"`
 	Channel          string `json:"CHANNEL"`
@@ -84,6 +85,7 @@ func environmentOverides() {
 		"QUEUE_NAME":           &EnvSettings.QueueName,
 		"MODEL_QUEUE_NAME":     &EnvSettings.ModelQueueName,
 		"DYNAMIC_QUEUE_PREFIX": &EnvSettings.DynamicQueueName,
+		"BACKOUT_QUEUE" :       &EnvSettings.BackoutQueue,
 		"HOST":                 &EnvSettings.Host,
 		"PORT":                 &EnvSettings.Port,
 		"CHANNEL":              &EnvSettings.Channel,
@@ -107,7 +109,7 @@ func (Env) GetConnection(index int) string {
 		for _, p := range MQ_ENDPOINTS.Points {
 			connections = append(connections, p.Host + "(" + p.Port + ")")
 		}
-	  return strings.Join(connections[:], ",")
+	  	return strings.Join(connections[:], ",")
 	} else {
 		p := MQ_ENDPOINTS.Points[index]
 		return p.Host + "(" + p.Port + ")" 
@@ -118,6 +120,8 @@ func (Env) GetConnectionCount() int {
 	return len(MQ_ENDPOINTS.Points)
 }
 
+
+
 func (Env) LogSettings() {
 	logger.Println("Environment Settings are")
 	logger.Printf("Username is (%s)\n", EnvSettings.User)
@@ -125,6 +129,7 @@ func (Env) LogSettings() {
 	logger.Printf("Queue Manager is (%s)\n", EnvSettings.QManager)
 	logger.Printf("Queue Name is (%s)\n", EnvSettings.QueueName)
 	logger.Printf("ModelQueue Name is (%s)\n", EnvSettings.ModelQueueName)
+	logger.Printf("Backout Queue name is (%s)\n", EnvSettings.BackoutQueue)
 	logger.Printf("Host is (%s)\n", EnvSettings.Host)
 	logger.Printf("Port is (%s)\n", EnvSettings.Port)
 	logger.Printf("Connection is (%s)\n", EnvSettings.GetConnection(FULL_STRING))
