@@ -71,7 +71,7 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 
 	// Allocate the MQCNO structure needed for the CONNX call.
 	cno := ibmmq.NewMQCNO()
-    env := getEndPoint(index)
+    	env := getEndPoint(index)
 
 	if username := env.User; username != "" {
 		logger.Printf("User %s has been specified\n", username)
