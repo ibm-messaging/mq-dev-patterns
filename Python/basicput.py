@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2019 IBM
+# Copyright 2018, 2022 IBM Corp.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@ def connect():
         options = pymqi.CMQC.MQPMO_NEW_CORREL_ID
 
         qmgr = pymqi.QueueManager(None)
+        
         qmgr.connect_with_options(MQDetails[EnvStore.QMGR],
                                   user=credentials[EnvStore.USER],
                                   password=credentials[EnvStore.PASSWORD],

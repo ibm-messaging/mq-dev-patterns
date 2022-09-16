@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, 2019 IBM Corp.
+ * Copyright 2018, 2022 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -49,15 +49,18 @@ class MQBoilerPlate {
     this.hObjSubscription = null;
     this.modeType = null;
     this.index = 0;
+    this.beSync=null;
     this.MQDetails = {};
     this.credentials = {};
     debug_info('MQi Boilerplate constructed');
   }
 
-  initialise(type, i = 0) {
+  initialise(type, sync=false, i = 0) {
     let me = this;
     me.modeType = type;
     me.index = i;
+    me.beSync=sync;
+
     return new Promise(function resolver(resolve, reject) {
       me.buildMQDetails()
         .then(() => {
@@ -71,7 +74,7 @@ class MQBoilerPlate {
           if ('SUBSCRIBE' === me.modeType) {
             return me.openMQSubscription(me.mqConn, me.modeType);
           }
-          return me.openMQConnection(me.mqConn, me.modeType);
+          return me.openMQConnection(me.mqConn, me.modeType, me.beSync);
         })
         .then((data) => {
           if (data.hObj) {
@@ -110,7 +113,7 @@ class MQBoilerPlate {
     let i = this.index;
     if (env.MQ_ENDPOINTS.length > i) {
       ['QMGR', 'QUEUE_NAME', 'TOPIC_NAME',
-       'MODEL_QUEUE_NAME', 'DYNAMIC_QUEUE_PREFIX',
+       'MODEL_QUEUE_NAME', 'DYNAMIC_QUEUE_PREFIX', 'BACKOUT_QUEUE',
        'HOST', 'PORT',
        'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach((f) => {
         this.MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[i][f];
@@ -141,7 +144,7 @@ class MQBoilerPlate {
   replyMessage(msgId, correlId, msg) {
     debug_info('Preparing for Reply Put');
     // Defaults are fine.
-    var mqmd = new mq.MQMD()
+    var mqmd = new mq.MQMD();
     mqmd.CorrelId = correlId;
     mqmd.MsgId = msgId;
 
@@ -156,7 +159,7 @@ class MQBoilerPlate {
       var queue = me.mqObj;
 
       // Describe how the Put should behave
-      pmo.Options = MQC.MQPMO_NO_SYNCPOINT;
+      pmo.Options =  MQC.MQPMO_NO_SYNCPOINT;
 
       if ('REPLY' === mode) {
         queue = me.mqDynReplyObj;
@@ -169,12 +172,12 @@ class MQBoilerPlate {
         pmo.Options |= MQC.MQPMO_WARN_IF_NO_SUBS_MATCHED;
       }
 
-      debug_info('Putting Message on Queue in mode ', me.modeType);
+      debug_info('Putting Message on Queue in mode ', mode);
       mq.Put(queue, mqmd, pmo, msg, function(err) {
         if (MQBoilerPlate.isPublishNoSubscriptions(me.modeType, err)) {
           debug_info('Publish unsuccessful because there are no subscribers', err.mqrcstr);
         } else if (err) {
-          MQBoilerPlate.reportError(err);
+          MQBoilerPlate.reportError(err);          
           reject();
         } else {
           debug_info("MQPUT successful ", me.modeType);
@@ -185,6 +188,23 @@ class MQBoilerPlate {
         }
       });
 
+    });
+  }
+
+  rollback(buf,md, poisoningMessageHandle, callbackOnRollback) {
+    
+    var rollback= poisoningMessageHandle(buf, md);
+    if (rollback) {
+      mq.Back(this.mqConn, function(err) {
+        callbackOnRollback(err);
+      });
+    }
+   
+  }
+
+  commit(callbackOnCommit) {
+    mq.Cmit(this.mqConn, function(err) {
+      callbackOnCommit(err);
     });
   }
 
@@ -204,11 +224,20 @@ class MQBoilerPlate {
     return new Promise(function resolver(resolve, reject) {
       var md = new mq.MQMD();
       var gmo = new mq.MQGMO();
-
-      gmo.Options = MQC.MQGMO_NO_SYNCPOINT |
+      
+      if(me.beSync) {
+        gmo.Options = MQC.MQPMO_SYNCPOINT |
         MQC.MQGMO_WAIT |
         MQC.MQGMO_CONVERT |
         MQC.MQGMO_FAIL_IF_QUIESCING;
+      } else {
+        gmo.Options = MQC.MQPMO_NO_SYNCPOINT |
+        MQC.MQGMO_WAIT |
+        MQC.MQGMO_CONVERT |
+        MQC.MQGMO_FAIL_IF_QUIESCING;
+      }
+      
+
 
       switch (me.modeType) {
         case 'GET':
@@ -227,7 +256,7 @@ class MQBoilerPlate {
       // Set up the callback handler to be invoked when there
       // are any incoming messages. As this is a sample, I'm going
       // to tune down the poll interval from default 10 seconds to 0.5s.
-      mq.setTuningParameters({
+      mq.setTuningParameters( {
         getLoopPollTimeMs: 500
       });
 
@@ -241,13 +270,16 @@ class MQBoilerPlate {
       var timerID = setInterval(() => {
         debug_info('Checking for termination signal');
         count++;
+
         if (count > LIMIT) {
           canExit = true;
         }
+
         if (canExit) {
           clearInterval(timerID);
           resolve();
         }
+        
       }, (waitInterval + 2) * 1000);
     });
   }
@@ -392,11 +424,11 @@ class MQBoilerPlate {
     });
   }
 
-  openMQReplyToConnection(replyToQ) {
+  openMQReplyToConnection(replyToQ, type) {
     let me = this;
     me.MQDetails.ReplyQueue = replyToQ;
     return new Promise(function resolver(resolve, reject) {
-      me.openMQConnection(me.mqConn, 'DYNREP')
+      me.openMQConnection(me.mqConn, type)
         .then((data) => {
           if (data.hObj) {
             me.mqDynReplyObj = data.hObj;
@@ -446,7 +478,7 @@ class MQBoilerPlate {
           openOptions = MQC.MQOO_OUTPUT;
           break;
         case 'GET':
-          openOptions = MQC.MQOO_INPUT_AS_Q_DEF;
+          openOptions = (me.beSync) ?  MQC.MQPMO_SYNCPOINT : MQC.MQOO_INPUT_AS_Q_DEF;
           break;
         case 'DYNPUT':
           openOptions = MQC.MQOO_INPUT_EXCLUSIVE;
@@ -459,7 +491,7 @@ class MQBoilerPlate {
         if (err) {
           reject(err);
         } else {
-          debug_info("MQOPEN of %s successful", me.MQDetails.QUEUE_NAME);
+          debug_info("MQOPEN of %s successful", od.ObjectName);
           let data = {
             'hObj': hObj
           };

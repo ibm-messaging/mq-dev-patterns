@@ -2,7 +2,7 @@
 These REST samples are written in Node.js and have been tested with
 a SAM AWS Lambda runtime of `nodejs14.x`.
 
-The application consists of a single Lambda function exposed as an API Gateway API,  defined in the `template.yaml`.
+The application consists of a single Lambda function exposed as an AWS Gateway API,  defined in the `template.yaml`.
 
 ## MQ Server Configuration
 The application configuration for MQ server is in the `template.yaml` file in the `Environment` `Variables` section. Set `HOSTNAME`, `QM_NAME` etc in for your MQ server.

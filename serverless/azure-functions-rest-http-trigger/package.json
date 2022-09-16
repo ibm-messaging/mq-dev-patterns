@@ -1,0 +1,19 @@
+{
+  "author": "MQ Developer Experience",
+  "name": "MQAzureSample",
+  "version": "0.0.1",
+  "description": "MQ REST Sample for Azure Serverless",
+  "type": "commonjs",
+  "license": "Apache-2.0",
+  "scripts": {
+    "test": "echo \"No tests yet...\""
+  },
+  "dependencies": {
+    "axios": "^0.27.2",
+    "axios-debug-log": "^0.8.4",
+    "debug": "^4.3.4"
+  },
+  "engines": {
+    "node": ">=14.x"
+  }
+}
