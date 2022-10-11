@@ -138,6 +138,7 @@ class MQBoilerPlate {
     debug_info('Preparing for Put');
     // Defaults are fine.
     var mqmd = new mq.MQMD()
+    mqmd.Persistence = MQC.MQPER_PERSISTENT;
     return this.send(msg, mqmd, 'NORMAL');
   }
 
@@ -177,7 +178,7 @@ class MQBoilerPlate {
         if (MQBoilerPlate.isPublishNoSubscriptions(me.modeType, err)) {
           debug_info('Publish unsuccessful because there are no subscribers', err.mqrcstr);
         } else if (err) {
-          MQBoilerPlate.reportError(err);          
+          MQBoilerPlate.reportError(err);
           reject();
         } else {
           debug_info("MQPUT successful ", me.modeType);
@@ -192,14 +193,14 @@ class MQBoilerPlate {
   }
 
   rollback(buf,md, poisoningMessageHandle, callbackOnRollback) {
-    
+
     var rollback= poisoningMessageHandle(buf, md);
     if (rollback) {
       mq.Back(this.mqConn, function(err) {
         callbackOnRollback(err);
       });
     }
-   
+
   }
 
   commit(callbackOnCommit) {
@@ -224,7 +225,7 @@ class MQBoilerPlate {
     return new Promise(function resolver(resolve, reject) {
       var md = new mq.MQMD();
       var gmo = new mq.MQGMO();
-      
+
       if(me.beSync) {
         gmo.Options = MQC.MQPMO_SYNCPOINT |
         MQC.MQGMO_WAIT |
@@ -236,7 +237,7 @@ class MQBoilerPlate {
         MQC.MQGMO_CONVERT |
         MQC.MQGMO_FAIL_IF_QUIESCING;
       }
-      
+
 
 
       switch (me.modeType) {
@@ -279,7 +280,7 @@ class MQBoilerPlate {
           clearInterval(timerID);
           resolve();
         }
-        
+
       }, (waitInterval + 2) * 1000);
     });
   }
