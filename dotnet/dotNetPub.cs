@@ -14,16 +14,12 @@
 * limitations under the License.
 */
 
-using System;
-using IBM.XMS;
 
 namespace ibmmq_samples
 {
     class SimplePublisher
     {
         private Env env = new Env();
-
-        private const String simpleMessage = "This is a simple message from XMS.NET producer";
         private JsonMessage xmsJson = new JsonMessage("This is a simple publisher and your lucky number is ");
 
         public static void Pub()
@@ -96,7 +92,7 @@ namespace ibmmq_samples
 
             // Create a text message and send it.
             textMessage = sessionWMQ.CreateTextMessage();
-            textMessage.Text = xmsJson.toJsonString();
+            textMessage.Text = xmsJson.ToJsonString();
             producer.Send(textMessage);
             Console.WriteLine("Message published");
 

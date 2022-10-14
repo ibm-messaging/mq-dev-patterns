@@ -1,4 +1,4 @@
-/*
+﻿/*
 * (c) Copyright IBM Corporation 2018
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +14,6 @@
 * limitations under the License.
 */
 
-using System;
-using System.IO;
-using IBM.XMS;
 
 namespace ibmmq_samples
 {
@@ -28,7 +25,7 @@ namespace ibmmq_samples
         {
             Env.ConnVariables conn = env.Conn;
 
-            string ccdtURL = checkForCCDT();
+            string ccdtURL = CheckForCCDT();
             if (null != ccdtURL)
             {
                 Console.WriteLine("CCDT Environment setting found");
@@ -55,7 +52,7 @@ namespace ibmmq_samples
 
         static public void SetConnectionProperties(IConnectionFactory cf, Env.ConnVariables conn)
         {
-            string ccdtURL = checkForCCDT();
+            string ccdtURL = CheckForCCDT();
             if (null != ccdtURL)
             {
                 Console.WriteLine("CCDT Environment setting found");
@@ -91,7 +88,7 @@ namespace ibmmq_samples
             }
         }
 
-        static private string checkForCCDT()
+        static private string CheckForCCDT()
         {
             Console.WriteLine("Checking for CCDT File");
             string ccdt = Environment.GetEnvironmentVariable(CCDT);

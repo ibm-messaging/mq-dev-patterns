@@ -1,4 +1,4 @@
-/*
+﻿/*
 * (c) Copyright IBM Corporation 2018
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +14,6 @@
 * limitations under the License.
 */
 
-using System;
-using IBM.XMS;
-
 
 namespace ibmmq_samples
 {
@@ -29,11 +26,7 @@ namespace ibmmq_samples
         public static void Get()
         {
             Console.WriteLine("===> START of Simple Consumer sample for WMQ transport <===\n");
-            Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
-            {
-                e.Cancel = true;
-                SimpleConsumer.keepRunning = false;
-            };
+            Console.CancelKeyPress += ConsoleCancelKeyPress;
             try
             {
                 SimpleConsumer simpleConsumer = new SimpleConsumer();
@@ -57,6 +50,13 @@ namespace ibmmq_samples
             Console.WriteLine("===> END of Simple Consumer sample for WMQ transport <===\n\n");
         }
 
+        private static void ConsoleCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+        {
+            e.Cancel = true;
+            SimpleConsumer.keepRunning = false;
+        }
+
+
         private void ReceiveMessages()
         {
             XMSFactoryFactory factoryFactory;
@@ -77,7 +77,7 @@ namespace ibmmq_samples
 
                 try
                 {
-                    ReceiveMessagesFromEndpoint(cf,e);
+                    ReceiveMessagesFromEndpoint(cf, e);
                 }
                 catch (XMSException ex)
                 {
@@ -86,7 +86,7 @@ namespace ibmmq_samples
                     Console.WriteLine("Error Message: {0}", ex.Message);
 
                     if (ex.LinkedException != null &&
-                           IBM.XMS.MQC.MQRC_Q_MGR_NOT_AVAILABLE.ToString().Equals(ex.LinkedException.Message))
+                           MQC.MQRC_Q_MGR_NOT_AVAILABLE.ToString().Equals(ex.LinkedException.Message))
                     {
                         Console.WriteLine("Queue Manager on this endpoint not available");
                         Console.WriteLine("Moving onto next endpoint");
@@ -152,4 +152,4 @@ namespace ibmmq_samples
             connectionWMQ.Close();
         }
     }
- }
+}

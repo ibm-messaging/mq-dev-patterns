@@ -1,4 +1,4 @@
-/*
+﻿/*
 * (c) Copyright IBM Corporation 2018
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +14,6 @@
 * limitations under the License.
 */
 
-using System;
-using IBM.XMS;
 
 namespace ibmmq_samples
 {
@@ -30,11 +28,7 @@ namespace ibmmq_samples
         public static void Sub()
         {
             Console.WriteLine("===> START of Simple Subscriber sample for WMQ transport <===\n");
-            Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
-            {
-                e.Cancel = true;
-                SimpleSubscriber.keepRunning = false;
-            };
+            Console.CancelKeyPress += ConsoleCancelKeyPress;
             try
             {
                 SimpleSubscriber simpleSubscriber = new SimpleSubscriber();
@@ -56,6 +50,12 @@ namespace ibmmq_samples
                 Console.WriteLine("Sample execution  FAILED!");
             }
             Console.WriteLine("===> END of Simple Subscriber sample for WMQ transport <===\n\n");
+        }
+
+        private static void ConsoleCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+        {
+            e.Cancel = true;
+            SimpleSubscriber.keepRunning = false;
         }
 
         void ReceiveMessages()

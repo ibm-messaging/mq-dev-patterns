@@ -14,18 +14,14 @@
 * limitations under the License.
 */
 
-using System;
-using IBM.XMS;
-
 
 namespace ibmmq_samples
 {
     class SimpleRequest
     {
-        private Env env = new Env();
+        private Env env = new();
 
         private const int TIMEOUTTIME = 30000;
-        private const String simpleMessage = "This is a request message from XMS.NET";
         private JsonMessage xmsJson = new JsonMessage("This is a simple put and your lucky number is ");
 
         public static void Request()
@@ -103,9 +99,9 @@ namespace ibmmq_samples
             // Create a text message and send it.
             textMessage = sessionWMQ.CreateTextMessage();
 
-            String corrID = xmsJson.correlationID;
+            string corrID = xmsJson.correlationID;
 
-            textMessage.Text = xmsJson.toJsonString();
+            textMessage.Text = xmsJson.ToJsonString();
             //***disable for correl id by using message id
             textMessage.JMSCorrelationID = corrID;
             textMessage.JMSExpiration = 900000;
@@ -116,8 +112,8 @@ namespace ibmmq_samples
             Console.WriteLine("Message sent");
             Console.WriteLine(textMessage.JMSCorrelationID);
             Console.WriteLine(corrID);
-            String str = textMessage.JMSMessageID;
-            String selector = "JMSCorrelationID='ID:" + JsonMessage.getCorrFilter(corrID) + "'";
+            _ = textMessage.JMSMessageID;
+            string selector = "JMSCorrelationID='ID:" + JsonMessage.GetCorrFilter(corrID) + "'";
 
 
             Console.WriteLine(selector);

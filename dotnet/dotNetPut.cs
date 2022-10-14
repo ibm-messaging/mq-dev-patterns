@@ -14,8 +14,6 @@
 * limitations under the License.
 */
 
-using System;
-using IBM.XMS;
 
 namespace ibmmq_samples
 {
@@ -93,7 +91,7 @@ namespace ibmmq_samples
 
             // Create a text message and send it.
             textMessage = sessionWMQ.CreateTextMessage();
-            textMessage.Text = xmsJson.toJsonString();
+            textMessage.Text = xmsJson.ToJsonString();
             producer.Send(textMessage);
             Console.WriteLine("Message sent");
 
