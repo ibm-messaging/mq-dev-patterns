@@ -1,11 +1,11 @@
 # IBM MQ XMS samples
-The XMS samples are based on the the existing samples shipped with IBM MQ Server and Client packages. The samples here have been tested with .NET Framework 4.6 and Visual Studio Community 2017 v 15.9.5. Updates have been tested with Visual Studio Community 2019 v 16.1.4 and .NET Framework 4.8.03761.
+The XMS samples are based on the the existing samples shipped with IBM MQ Server and Client packages. The samples here have been tested with .NET 6.0 and Visual Studio Community 2022 v 17.3.6. Also it has been tested with Visual Studio for Mac 2022 v 17.3.7
 
 ## Download
 
 [Windows MQ client v 9.1.2.0 download](https://www-945.ibm.com/support/fixcentral/swg/selectFixes?parent=ibm~WebSphere&product=ibm/WebSphere/WebSphere+MQ&release=9.1.2&platform=Windows+64-bit,+x86&function=fixId&fixids=9.1.2.0-IBM-MQC-Win64+&useReleaseAsTarget=true&includeSupersedes=0)
 
-We have included '.sln', '.csproj', 'packages.config' and 'AssemblyInfo.cs' files. These were created with the Visual Studio Community 2019. We've also added the copy of the 'env.json' file from the top level directory to the '/dotnet' project directory, you'll need to copy this again to '/bin/Debug' in your project directory and adjust the parameters to use your own queue manager.
+We have included '.sln', '.csproj', 'packages.config'. These were created with the Visual Studio Community 2019. We've also added the copy of the 'env.json' file from the top level directory to the '/dotnet' project directory, the files will be copied to '/bin/Debug/net6.0' and adjust the parameters to use your own queue manager.
 
 ## References from Visual Studio
 
