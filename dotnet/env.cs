@@ -14,12 +14,6 @@
 * limitations under the License.
 */
 
-using System;
-using System.IO;
-using System.Collections.Generic;
-
-using Newtonsoft.Json;
-
 
 namespace ibmmq_samples
 {
@@ -27,7 +21,7 @@ namespace ibmmq_samples
     {
         public class MQEndPoints
         {
-            public List<ConnVariables> mq_endpoints;
+            public List<ConnVariables>? mq_endpoints;
         }
 
         public class ConnVariables

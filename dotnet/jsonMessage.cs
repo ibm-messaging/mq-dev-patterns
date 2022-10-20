@@ -14,10 +14,7 @@
 * limitations under the License.
 */
 
-using System;
 using System.Text;
-
-using Newtonsoft.Json;
 
 namespace ibmmq_samples
 {
@@ -28,16 +25,19 @@ namespace ibmmq_samples
         public string correlationID;
         private static Random random = new Random();
         private const int CO_ID_LENGTH = 24;
+
         public JsonMessage(string s)
         {
             msg = s;
             value = random.Next();
             correlationID = correlIdGenerator();
         }
-        public string toJsonString()
+
+        public string ToJsonString()
         {
             return JsonConvert.SerializeObject(this);
         }
+
         private static String correlIdGenerator()
         {
             //JMS/XMS is forcing this to generate a 24byte hext string so we need to
@@ -45,7 +45,7 @@ namespace ibmmq_samples
             return Guid.NewGuid().ToString().PadRight(CO_ID_LENGTH);
         }
 
-        public static byte[] ToByteArray(String HexString)
+        public static byte[] ToByteArray(string HexString)
         {
             int NumberChars = HexString.Length;
             byte[] bytes = new byte[NumberChars / 2];
@@ -56,17 +56,17 @@ namespace ibmmq_samples
             return bytes;
         }
 
-        public static String getCorrFilter(String s)
+        public static string GetCorrFilter(string s)
         {
-            return JsonMessage.AsHexString(JsonMessage.AsBytes(s)).Replace("-", "").Substring(0, 2 * CO_ID_LENGTH);
+            return AsHexString(AsBytes(s)).Replace("-", "")[..(2 * CO_ID_LENGTH)];
         }
 
-        private static String AsHexString(byte[] ba)
+        private static string AsHexString(byte[] ba)
         {
             return BitConverter.ToString(ba);
         }
 
-        private static byte[] AsBytes(String s)
+        private static byte[] AsBytes(string s)
         {
             return Encoding.Default.GetBytes(s);
         }
