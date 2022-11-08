@@ -19,8 +19,9 @@ where
   * `jms.username`
     * MQ app username
 
-    * `jms.password`
+  * `jms.password`
     * MQ app password
+
 
 * `queue.myQueueLookup`
   * queue to use for message put / get
