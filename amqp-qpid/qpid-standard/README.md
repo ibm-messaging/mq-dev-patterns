@@ -1,5 +1,5 @@
 # Standard AMQP QPID to IBM MQ sample
-The main class for this sample is `JMS20Tester` which parses the arguments 
+The main class for this sample is `JMS20Tester` which parses the arguments
 and determines the mode and options for the run.
 
 ## MQ Connection properties
@@ -12,13 +12,15 @@ The properties that the samples need to connect to MQ are in the
 
 * `connectionfactory.myFactoryLookup`
   * ConnectionFactory URI
-    * set to `amqp://localhost:5672`
+    * set to `amqp://localhost:5672?jms.username=app&jms.password=passw0rd
+`
 
-* `jms.username`
-  * MQ app username
+where
+  * `jms.username`
+    * MQ app username
 
-* `jms.password`
-  * MQ app password
+    * `jms.password`
+    * MQ app password
 
 * `queue.myQueueLookup`
   * queue to use for message put / get
