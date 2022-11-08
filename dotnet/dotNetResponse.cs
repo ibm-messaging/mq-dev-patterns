@@ -1,4 +1,4 @@
-/*
+﻿/*
 * (c) Copyright IBM Corporation 2018
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +14,6 @@
 * limitations under the License.
 */
 
-using System;
-using Newtonsoft.Json;
-using IBM.XMS;
-
 
 namespace ibmmq_samples
 {
@@ -32,11 +28,7 @@ namespace ibmmq_samples
         public static void Response()
         {
             Console.WriteLine("===> START of Simple Response sample for WMQ transport <===\n");
-            Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
-            {
-                e.Cancel = true;
-                SimpleResponse.keepRunning = false;
-            };
+            Console.CancelKeyPress += ConsoleCancelKeyPress;
             try
             {
                 SimpleResponse simpleConsumer = new SimpleResponse();
@@ -58,6 +50,12 @@ namespace ibmmq_samples
                 Console.WriteLine("Sample execution  FAILED!");
             }
             Console.WriteLine("===> END of Simple Response sample for WMQ transport <===\n\n");
+        }
+
+        private static void ConsoleCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+        {
+            e.Cancel = true;
+            SimpleResponse.keepRunning = false;
         }
 
         void ReceiveMessages()
@@ -134,24 +132,16 @@ namespace ibmmq_samples
                 replyMessage.JMSCorrelationID = textMessage.JMSCorrelationID;
 
                 MessageValue v = JsonConvert.DeserializeObject<MessageValue>(textMessage.Text);
-                Console.WriteLine(v.value);
+                Console.WriteLine(v?.value);
                 v.message = "The squared number is: ";
                 v.value *= v.value;
-                replyMessage.Text = v.toJsonString();
+                replyMessage.Text = v.ToJsonString();
                 producer.SetIntProperty(XMSC.DELIVERY_MODE, XMSC.DELIVERY_NOT_PERSISTENT);
                 producer.Send(replyMessage);
                 Console.WriteLine("Message sent");
             }
         }
 
-        public class MessageValue
-        {
-            public string message;
-            public int value;
-            public string toJsonString()
-            {
-                return JsonConvert.SerializeObject(this);
-            }
-        }
+        
     }
 }

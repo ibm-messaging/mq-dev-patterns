@@ -14,48 +14,39 @@
 * limitations under the License.
 */
 
-using System;
+using ibmmq_samples;
 
-namespace ibmmq_samples
+string token;
+if (args.Length < 1)
 {
-    class Rocket
+    Console.WriteLine("Say which program you want to run; put, get, pub, sub, request, response");
+}
+else
+{
+    token = args[0];
+    Console.WriteLine(token);
+    switch (token)
     {
-        static void Main(string[] args)
-        {
-            String token;
-            if (args.Length < 1)
-            {
-                Console.WriteLine("Say which program you want to run; put, get, pub, sub, request, response");
-            }
-            else
-            {
-                token = (String)args.GetValue(0);
-                Console.WriteLine(token);
-                switch (token)
-                {
-                    case "put":
-                        SimpleProducer.Put();
-                        break;
-                    case "get":
-                        SimpleConsumer.Get();
-                        break;
-                    case "sub":
-                        SimpleSubscriber.Sub();
-                        break;
-                    case "pub":
-                        SimplePublisher.Pub();
-                        break;
-                    case "request":
-                        SimpleRequest.Request();
-                        break;
-                    case "response":
-                        SimpleResponse.Response();
-                        break;
-                    default:
-                        Console.WriteLine("Say which program you want to run; put, get, pub, sub, request, response");
-                        break;
-                }
-            }
-        }
+        case "put":
+            SimpleProducer.Put();
+            break;
+        case "get":
+            SimpleConsumer.Get();
+            break;
+        case "sub":
+            SimpleSubscriber.Sub();
+            break;
+        case "pub":
+            SimplePublisher.Pub();
+            break;
+        case "request":
+            SimpleRequest.Request();
+            break;
+        case "response":
+            SimpleResponse.Response();
+            break;
+        default:
+            Console.WriteLine("Say which program you want to run; put, get, pub, sub, request, response");
+            break;
     }
 }

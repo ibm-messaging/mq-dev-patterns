@@ -95,6 +95,8 @@ function putMessage(hObj) {
     MQC.MQPMO_NEW_MSG_ID |
     MQC.MQPMO_NEW_CORREL_ID;
 
+  mqmd.Persistence = MQC.MQPER_PERSISTENT;
+
   mq.Put(hObj, mqmd, pmo, msg, function(err) {
     if (err) {
       debug_warn('Error Detected in Put operation', err);
