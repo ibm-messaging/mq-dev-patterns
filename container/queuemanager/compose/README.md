@@ -25,7 +25,7 @@ Start the queue manager by running
 docker -f docker-compose.yaml up
 ````
 
-## Stoping the container
+## Stopping the container
 Stop the queue manager container by running
 
 ````
