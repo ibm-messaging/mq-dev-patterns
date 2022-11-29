@@ -21,6 +21,11 @@
 # the line below, and enter you loadbalancer name.
 # x-aws-loadbalancer: "LoadBalancerName"
 
+# In a .env file set the following
+#  APP_PASSWORD=
+#  ADMIN_PASSWORD=
+
+
 services:
   mq:
     image: "icr.io/ibm-messaging/mq:latest"
@@ -30,8 +35,8 @@ services:
     environment:
       - LICENSE=accept
       - MQ_QMGR_NAME=QM1
-      - MQ_APP_PASSWORD=${APP_PASSWORD}
-      - MQ_ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - MQ_APP_PASSWORD=${APP_PASSWORD:?err}
+      - MQ_ADMIN_PASSWORD=${ADMIN_PASSWORD:?err}
     volumes:
       - qm1data:/mnt/mqm
     networks:

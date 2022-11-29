@@ -25,6 +25,15 @@ Start the queue manager by running
 docker -f docker-compose.yaml up
 ````
 
+If you see the start fails with the following error:
+
+````
+WARNING The "APP_PASSWORD" variable is not set. Defaulting to a blank string.
+WARNING The "ADMIN_PASSWORD" variable is not set. Defaulting to a blank string.
+````
+
+then you have not set the App and Admin passwords in the `.env` file.
+
 ## Stopping the container
 Stop the queue manager container by running
 
