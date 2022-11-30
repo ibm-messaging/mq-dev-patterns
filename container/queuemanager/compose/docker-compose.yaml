@@ -1,0 +1,58 @@
+#
+# * Copyright 2022 IBM Corp.
+# *
+# * Licensed under the Apache License, Version 2.0 (the 'License');
+# * you may not use this file except in compliance with the License.
+# * You may obtain a copy of the License at
+# *
+# * http://www.apache.org/licenses/LICENSE-2.0
+# *
+# * Unless required by applicable law or agreed to in writing, software
+# * distributed under the License is distributed on an "AS IS" BASIS,
+# * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# * See the License for the specific language governing permissions and
+# * limitations under the License.
+
+# If you want to use a predified cluster, then uncomment
+# the line below, and enter your cluster name.
+# x-aws-cluster: "mq-ecs-cluster"
+
+# If you want to use a predified load balancer, then uncomment
+# the line below, and enter you loadbalancer name.
+# x-aws-loadbalancer: "LoadBalancerName"
+
+# In a .env file set the following
+#  APP_PASSWORD=
+#  ADMIN_PASSWORD=
+
+
+services:
+  mq:
+    image: "icr.io/ibm-messaging/mq:latest"
+    ports:
+      - 9443:9443
+      - 1414:1414
+    environment:
+      - LICENSE=accept
+      - MQ_QMGR_NAME=QM1
+      - MQ_APP_PASSWORD=${APP_PASSWORD:?err}
+      - MQ_ADMIN_PASSWORD=${ADMIN_PASSWORD:?err}
+    volumes:
+      - qm1data:/mnt/mqm
+    networks:
+      - qm1network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1Gb
+volumes:
+  qm1data:
+    driver_opts:
+      gid: 0
+    labels:
+      - com.ibm.mq=qm1
+networks:
+  qm1network:
+    labels:
+      - com.ibm.mq=qm1
