@@ -24,7 +24,7 @@ You can use your own MQ server, you'll just have to adjust the MQ objects accord
 * **TOPIC_NAME** - Topic for `publish/subscribe`
 * **MODEL_QUEUE_NAME** - Model Queue used as template to base dynamic queues on for `request/response`
 * **DYNAMIC_QUEUE_PREFIX** - Prefix for dynamically created reply queue - you don't need to create this
-* **CIPHER** - If present in the `env,json`, TLS Cipher specification to use
+* **CIPHER_SPEC** - If present in the `env,json`, TLS Cipher specification to use
 * **KEY_REPOSITORY** - Path to the `keystore` `.kbd` and `.sth` files. If present in the `env.json`, TLS is enabled - this is on the app side.
 
 If instead you choose to provide a client channel definition table (CCDT) file,
