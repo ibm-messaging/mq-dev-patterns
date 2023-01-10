@@ -12,7 +12,11 @@ the [Docker overview](https://docs.docker.com/get-started/overview/)
 lists the AWS IAM permissions needed for Docker Compose to manage AWS resources.
 Please check with the Docker (AWS ECS) Compose documentation for updates on the required policies.
 
-We used the following coarse grained IAM permissions. VisualEditor, denotes that we built the policies using the visual editor. You can merge these policies into logical units, but for clarity we have presented them separately.
+We used the following coarse grained IAM permissions. `VisualEditor0`, denotes that we built the policies using the visual editor. You can merge these policies into logical units, but for clarity we have presented them separately.
+
+**Note:** You may wish to restrict the policies
+further to your specific needs to ensure you have an optimal configuration.
+
 
 #### System policies
 - ElasticLoadBalancingFullAccess
