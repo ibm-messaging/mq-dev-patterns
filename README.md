@@ -25,7 +25,7 @@ You can use your own MQ server, you'll just have to adjust the MQ objects accord
 * **MODEL_QUEUE_NAME** - Model Queue used as template to base dynamic queues on for `request/response`
 * **DYNAMIC_QUEUE_PREFIX** - Prefix for dynamically created reply queue - you don't need to create this
 * **CIPHER_SPEC** - If present in the `env,json`, TLS Cipher specification to use
-* **KEY_REPOSITORY** - Path to the `keystore` `.kbd` and `.sth` files. If running on Apple Silicon then this will the path to the queue manager's exported `trust.pem`. If present in the `env.json`, TLS is enabled - this is on the app side.
+* **KEY_REPOSITORY** - Path to the `keystore` `.kbd` and `.sth` files. If running on Apple Silicon then this will the path to the queue manager's exported `.pem`. If present in the `env.json`, TLS is enabled - this is on the app side.
 
 If instead you choose to provide a client channel definition table (CCDT) file,
 then the **Host**, **PORT**, **Channel** and **Cipher** are provided by the
