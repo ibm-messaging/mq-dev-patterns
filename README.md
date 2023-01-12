@@ -25,7 +25,7 @@ You can use your own MQ server, you'll just have to adjust the MQ objects accord
 * **MODEL_QUEUE_NAME** - Model Queue used as template to base dynamic queues on for `request/response`
 * **DYNAMIC_QUEUE_PREFIX** - Prefix for dynamically created reply queue - you don't need to create this
 * **CIPHER_SPEC** - If present in the `env,json`, TLS Cipher specification to use
-* **KEY_REPOSITORY** - Path to the `keystore` `.kbd` and `.sth` files. If running on Apple Silicon then this will the full path to the queue manager's exported `trust.pem`. If present in the `env.json`, TLS is enabled - this is on the app side.
+* **KEY_REPOSITORY** - Path to the `keystore` `.kbd` and `.sth` files. If running on Apple Silicon then this will the path to the queue manager's exported `trust.pem`. If present in the `env.json`, TLS is enabled - this is on the app side.
 
 If instead you choose to provide a client channel definition table (CCDT) file,
 then the **Host**, **PORT**, **Channel** and **Cipher** are provided by the
@@ -103,9 +103,7 @@ Also, if you have two docker containers, one with TLS and one without, changing 
 The IBM MQ Client Toolkit on Apple Silicon (ARM64) makes use of OpenSSL libraries
 for TLS. For the MQI based samples in this repository, This means that
 `KEY_REPOSITORY` in the `env.json` file or environment
-variable `KEY_REPOSITORY` be set to the path for the queue manager's exported `trust.pem` file. eg. If you have exported the `.pem` file to the root directory of this repository, then set `KEY_REPOSITORY` to `../trust.pem` .
-
-**Note:** The file must be called `trust.pem`
+variable `KEY_REPOSITORY` be set to the path for the queue manager's exported `.pem` file. eg. If you have exported the `qmgrcert.pem` file to the root directory of this repository, then set `KEY_REPOSITORY` to `../qmgrcert.pem` .
 
 
 ### Running a second Docker container with TLS
