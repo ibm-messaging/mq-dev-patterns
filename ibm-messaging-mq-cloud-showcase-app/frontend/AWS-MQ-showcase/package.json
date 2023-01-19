@@ -2,8 +2,7 @@
   "name": "ibm-mq-demo",
   "version": "0.0.0",
   "private": true,
-  "repository": "git@github.com:carbon-design-system/carbon-tutorial.git",
-  "bugs": "https://github.com/carbon-design-system/carbon-tutorial/issues",
+  "repository": "git@github.com:ibm-messaging/mq-dev-patterns.git",
   "license": "Apache-2.0",
   "scripts": {
     "build": "react-scripts build",

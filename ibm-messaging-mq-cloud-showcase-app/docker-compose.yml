@@ -44,8 +44,7 @@ services:
       - mq
     labels:
       - com.ibm.mq.app=mqapp    
-    environment:
-      - HOST_FIRE=9.20.193.145      
+    environment: 
       - HOST=mq
       - APP_PASSWORD=${APP_PASSWORD}      
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}

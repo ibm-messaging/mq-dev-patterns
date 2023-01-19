@@ -1,2 +1,0 @@
-# clientapp
-# AWS-showcase-backend
