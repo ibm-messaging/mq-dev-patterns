@@ -1,0 +1,84 @@
+{
+  "name": "ibm-mq-demo",
+  "version": "0.0.0",
+  "private": true,
+  "repository": "git@github.com:carbon-design-system/carbon-tutorial.git",
+  "bugs": "https://github.com/carbon-design-system/carbon-tutorial/issues",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "react-scripts build",
+    "ci-check": "yarn format:diff",
+    "clean": "yarn cache clean && yarn install",
+    "eject": "react-scripts eject",
+    "format": "prettier --write \"**/*.{js,md,scss}\"",
+    "format:diff": "prettier --list-different \"**/*.{js,md,scss}\"",
+    "format:staged": "prettier --write",
+    "start": "react-scripts start",
+    "test": "react-scripts test"
+  },
+  "dependencies": {
+    "@carbon/charts": "^1.5.7",
+    "@carbon/charts-react": "^1.5.7",
+    "@carbon/ibm-cloud-cognitive-cdai": "^1.22.21",
+    "@carbon/react": "1.1.0",
+    "axios": "^0.27.2",
+    "d3": "^7.6.1",        
+    "http-proxy-middleware": "^2.0.6",
+    "react": "16.10.0",
+    "react-dom": "16.10.0",
+    "react-flow-renderer": "^10.3.17",
+    "react-router-dom": "5.0.0",
+    "react-scripts": "5.0.1",
+    "react-toastify": "^9.0.8",
+    "reactflow": "^11.1.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "7.5.2",
+    "@commitlint/config-conventional": "7.5.0",
+    "husky": "1.3.1",
+    "lint-staged": "8.1.5",
+    "prettier": "1.17.0",
+    "sass": "1.51.0",
+    "wait-for-expect": "3.0.2"
+  },  
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS",
+      "pre-commit": "lint-staged"
+    }
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "lint-staged": {
+    "*.js": [
+      "yarn format:staged",
+      "git add"
+    ],
+    "*.{scss,css}": [
+      "yarn format:staged",
+      "git add"
+    ],
+    "*.md": [
+      "yarn format:staged",
+      "git add"
+    ]
+  },
+  "prettier": {
+    "jsxBracketSameLine": true,
+    "printWidth": 80,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  }
+}

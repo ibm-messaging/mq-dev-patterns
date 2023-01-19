@@ -1,0 +1,23 @@
+services:
+  mq:
+    image: "icr.io/ibm-messaging/mq:latest"
+    ports:
+      - 9443:9443
+      - 1414:1414
+    environment:
+      - LICENSE=accept
+      - MQ_QMGR_NAME=QM1
+      - MQ_APP_PASSWORD=${APP_PASSWORD}
+      - MQ_ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    volumes:
+      - qm1data:/mnt/mqm  
+    networks:
+      - qm1network
+volumes:
+  qm1data:
+    labels:
+      - com.ibm.mq=qm1      
+networks:
+  qm1network:
+    labels:
+      - com.ibm.mq=qm1
