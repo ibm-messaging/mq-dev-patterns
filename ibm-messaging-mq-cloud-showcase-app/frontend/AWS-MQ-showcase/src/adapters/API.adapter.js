@@ -26,6 +26,7 @@ const END_POINT_UNSUB =  '/api/unsub';
 const END_POINT_GETLASTMESSAGEFORSUB =  '/api/getLastMessage';
 const END_POINT_DYNPUT =  '/api/putReq';
 const END_POINT_GETDYN =  '/api/getRes?'; 
+const END_POINT_GET_CODING_CHALLENGE = '/api/getCodingChallange?limit='
 
 class APIAdapter {
   async getAllDepths(isForSubs) {
@@ -48,7 +49,7 @@ class APIAdapter {
     return result;
   }
 
-  put(message, quantity, queueName) {
+  put(message, quantity, queueName, currency =  null) {
     return axios({
       method: 'post',
       url: END_POINT_PUT,
@@ -56,6 +57,7 @@ class APIAdapter {
         message: message,
         quantity: quantity,
         queueName: queueName,
+        currency: currency
       },
     });
   }
@@ -66,6 +68,24 @@ class APIAdapter {
       let URL = END_POINT_GET + limit + '&queueName=' + queueName;
       let _result = await axios.get(URL);      
       result = JSON.parse(_result.data[0].msgObject);
+    } catch (e) {
+      //console.log('Error on getting messages');
+    }
+
+    return result;
+  }
+  
+  async getFromLimitCodingChallange(limit, queueName, currency_, consumerId) {
+    let result = undefined;
+    try {
+      let URL = END_POINT_GET_CODING_CHALLENGE + limit + '&queueName=' + queueName + '&currency=' + currency_ + '&consumerId=' + consumerId;
+      let _result = await axios.get(URL);            
+      let message = JSON.parse(_result.data[0].msgObject);
+      let currency = _result.data[0].properties.currency;
+      result = {
+        message : message,
+        currency : currency
+      }            
     } catch (e) {
       //console.log('Error on getting messages');
     }

@@ -18,15 +18,16 @@ const MQClient = require("../mqclient/mqclient");
 
 class Producer {
     constructor() {        
-        this.mqclient = new MQClient();
+        this.mqclient = new MQClient();        
     }
 
-    putMessages(message, quantity, queueName) {
+    putMessages(message, quantity, queueName, currency) {
 
         let _putRequest = {
             message : message,
             quantity : quantity,
-            queueName : queueName
+            queueName : queueName,
+            currency : currency
         };
 
         return new Promise((resolve, reject) => {

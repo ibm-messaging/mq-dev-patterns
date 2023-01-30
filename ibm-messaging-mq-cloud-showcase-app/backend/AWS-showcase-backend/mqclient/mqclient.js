@@ -72,6 +72,7 @@ class MQClient {
     this[_HCONNKEY] = null;
     this[_HOBJKEY] = null;
     this[_HOBJDYN] = null;
+    this.currency = null;
     this._TOPIC = undefined;
     this._DYNAMIC = undefined;
     this._HEALTHY = true;
@@ -86,6 +87,8 @@ class MQClient {
    * @param {number} putRequest.quantity number of messages to put
    * @param {string} putRequest.queueName specify the name of the queue \
    *  to put the message to
+   * @param {string} putRequest.currency [FOR THE CODING CHALLENGE ONLY] 
+   * the currency value that should be set as a property of the put message
    * @param {string} DYNAMIC specifying whether the connection should be \
    *  dynamic. \
    *  - DYNREP -> the dynamic connection is created \
@@ -108,6 +111,13 @@ class MQClient {
           quantity = putRequest.quantity;
         }
       }
+      // --------------------
+      // Currency stored in putRequest.currency
+      // This value correspond to the currency selected into the Sender component in the frontend
+      // this value should be added as a property to your message on the put function
+      // --------------------
+      this.currency = putRequest.currency || " ";
+            
       let releaseFunction = null;
       mutexDynamicVariablePut.acquire()
       .then((release) => {
@@ -241,7 +251,9 @@ class MQClient {
     *  the just obtained messages.    
     * @returns {Promise} 
     * */         
-  get(_QUEUE_NAME, getLimit, DYNAMIC = null) {    
+  get(_QUEUE_NAME, getLimit, currency = null, DYNAMIC = null) {    
+    // The currency value should be used to filter messages 
+    this.currency = currency;
     return new Promise((resolve, reject) => {                        
       this.performConnection(_QUEUE_NAME)
       .then(() => {
@@ -587,21 +599,17 @@ class MQClient {
 
 
   getSingleMessage(hObj) {
-    return new Promise((resolve, reject) => {
-      
+    return new Promise((resolve, reject) => {    
       if (!this._HEALTHY) {
         debug_info(`mqclient ${this.myID} is no longer healthy aborting getSingleMessage`);
       }
-
       let _dyn = this._DYNAMIC;
       let buf = Buffer.alloc(1024);
       let mqmd = new mq.MQMD();
       let gmo = new mq.MQGMO();
-
       if (null == buf || null == mqmd || null == gmo) {        
         reject("Memory allocation issues in mqclient::getSingleMessage");
-      }
-      
+      }      
       gmo.Options = MQC.MQGMO_NO_SYNCPOINT |
         MQC.MQGMO_NO_WAIT |
         MQC.MQGMO_CONVERT |
@@ -611,7 +619,6 @@ class MQClient {
         "this[_HOBJKEY]" : this[_HOBJKEY],
         "hOnj" : hObj,              
       };      
-
       mq.GetSync( (!hObj) ? this[_HOBJKEY] : hObj, mqmd, gmo, buf, (err, len) => {
         if (err) {
           if (err.mqrc === MQC.MQRC_NO_MSG_AVAILABLE) {
@@ -662,7 +669,15 @@ class MQClient {
                 replyToMsg : mqmd.ReplyToQ
               };
             } else {
-              msgObject = {msgObject : buffString};
+              //!!!!
+              // "Get this value from the message property" 
+              // should be replaced with the property set into the message
+              msgObject = {
+                msgObject : buffString,
+                properties: {
+                  currency : "Get this value from the message property"
+                }
+              };
             }
             debug_info(`mqclient ${this.myID} resolving raw message`);
             resolve(msgObject);

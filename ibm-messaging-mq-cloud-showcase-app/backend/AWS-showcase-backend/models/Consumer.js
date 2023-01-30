@@ -16,13 +16,14 @@
 const MQClient = require("../mqclient/mqclient");
 
 class Consumer {
-    constructor() {
+    constructor(consumerId=null) {
         this.mqclient = new MQClient();
+        this.consumerId = consumerId;
     }
 
-    getMessages(queueName, quantity) {
+    getMessages(queueName, quantity, currency = undefined) {        
         return new Promise((resolve, reject) => {
-            this.mqclient.get(queueName,quantity)
+            this.mqclient.get(queueName,quantity, currency)
             .then((data) => {
                 resolve(data);
             })
@@ -31,6 +32,8 @@ class Consumer {
             })
         });
     }
+
+    getAppId() { return this.consumerId; }
 
 }
 
