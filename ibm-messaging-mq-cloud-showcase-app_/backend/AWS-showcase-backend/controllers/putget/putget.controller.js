@@ -155,7 +155,7 @@ function getCodingChallange(req, res, next) {
   let consumer = new Consumer();
   //Get a number (limit) of messages from the queue _QUEUE_NAME
   consumer.getMessages(_QUEUE_NAME,limit, currency)
-  .then((data) => {    
+  .then((data) => {
     //data contains the list of messages returned
     res.json(data);
   })

@@ -116,7 +116,7 @@ class MQClient {
       // This value correspond to the currency selected into the Sender component in the frontend
       // this value should be added as a property to your message on the put function
       // --------------------
-      this.currency = putRequest.currency || null;
+      this.currency = putRequest.currency || " ";
             
       let releaseFunction = null;
       mutexDynamicVariablePut.acquire()
@@ -140,11 +140,8 @@ class MQClient {
               let msg = JSON.stringify(msgObject);
               return this.putRequest(msg);              
           });
-        } else if (this.currency){
-          debug_info("Connected to MQ for put with properties " + this.currency);
-          return this.performPutWithProperites(message, quantity);                
         } else {
-          debug_info("Connected to MQ for put no properties");
+          debug_info("Connected to MQ for put");
           return this.performPut(message, quantity);                
         }
         
@@ -262,8 +259,7 @@ class MQClient {
       .then(() => {
         this._DYNAMIC = DYNAMIC;
         debug_info("Connected to MQ");
-        return this.performGet(getLimit);        
-        
+        return this.performGet(getLimit);
       })
       .then((messages) => {
         debug_info("mqclient get about to perform cleanup");
@@ -375,9 +371,6 @@ class MQClient {
     let od = new mq.MQOD();
     od.ObjectName = _QUEUE_NAME || MQDetails.QUEUE_NAME;    
     od.ObjectType = MQC.MQOT_Q;    
-    
-    //This space sounds interesting
-
     let openOptions;
 
     if(this._DYNAMIC) {
@@ -485,14 +478,6 @@ class MQClient {
     return mq.PutPromise(this[_HOBJKEY], mqmd, pmo, msg);
   }
 
-  //================== CODING CHALLENGE CODE ==============================
-  performPutWithProperites(message, quantity) {
-    return new Promise((resolve, reject) => {
-      resolve("You should replace this promise with the PUT function that will set the currency as a message property");
-    })                      
-  }
-  //=======================================================================
-
   performPut(message, quantity) {
     debug_info(`mqclient ${this.myID} preparing ${quantity} messages`);
     let promises = [];
@@ -504,21 +489,21 @@ class MQClient {
         'Count' : '' + iteration + ' of ' + quantity,
         'Sent': '' + new Date()        
       };
-      
+
       let msg = JSON.stringify(msgObject);
 
       let mqmd = new mq.MQMD(); // Defaults are fine.
-      let pmo = new mq.MQPMO();      
+      let pmo = new mq.MQPMO();
 
       if (mqmd == null || pmo == null) {
         debug_warn(`mqclient ${this.myID} unable to create mqmd or pmo for pub call`);
         break;
       }      
-      
+
       // Describe how the Put should behave
       pmo.Options = MQC.MQPMO_NO_SYNCPOINT |
       MQC.MQPMO_NEW_MSG_ID |
-      MQC.MQPMO_NEW_CORREL_ID;      
+      MQC.MQPMO_NEW_CORREL_ID;
 
       if (quantity === 1) {
         debug_info(`mqclient ${this.myID} Only a single promise to return. HOBJKEY is ${this[_HOBJKEY]}`);
@@ -583,8 +568,7 @@ class MQClient {
     return new Promise((resolve, reject) => {
       let obtainedMessages = [];
       debug_info(`mqclient ${this.myID} looking for message`);
-      let getPromise = this.currency ? this.getSingleMessageWithProperties() : this.getSingleMessage(hObj)
-      getPromise
+      this.getSingleMessage(hObj)
       .then((messageData) => {   
         debug_info(`mqclient ${this.myID} processing message`);   
         if (messageData != null) {  
@@ -612,23 +596,6 @@ class MQClient {
       });
     });
   }
-  
-  //================== CODING CHALLENGE CODE ==============================
-  getSingleMessageWithProperties() {
-    return new Promise((resolve, reject) => {
-      // the message object you resolve from this function
-      // should be structured in this way
-      let  msgObject = {
-        msgObject : "message",
-        properties: {
-          currency : "Currency from the message property"
-        }
-      };
-      resolve(msgObject);
-    })
-  }
-
-  //=======================================================================
 
 
   getSingleMessage(hObj) {
@@ -701,9 +668,15 @@ class MQClient {
                 msgObject : buffString,
                 replyToMsg : mqmd.ReplyToQ
               };
-            } else {              
+            } else {
+              //!!!!
+              // "Get this value from the message property" 
+              // should be replaced with the property set into the message
               msgObject = {
-                msgObject : buffString,                
+                msgObject : buffString,
+                properties: {
+                  currency : "Get this value from the message property"
+                }
               };
             }
             debug_info(`mqclient ${this.myID} resolving raw message`);

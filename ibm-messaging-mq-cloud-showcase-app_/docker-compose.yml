@@ -1,0 +1,85 @@
+#  Copyright 2022, 2023 IBM Corp.
+#  Licensed under the Apache License, Version 2.0 (the 'License');
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+ 
+#  http://www.apache.org/licenses/LICENSE-2.0
+ 
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+services:
+  fe:
+    build:
+      context: frontend/.
+      labels:
+        - com.ibm.mq.app=mqapp
+    image: frontend:0.1    
+    ports:
+      - 3000:3000    
+    networks:
+      - app-pubic-network      
+    depends_on:
+      - be
+    labels:
+      - com.ibm.mq.app=mqapp
+    environment:
+      - REACT_APP_BE_HOST=be
+      - REACT_APP_IS_FOR_CODING_CHALLENGE=false
+  be:
+    build:
+      context: backend/.
+      labels:
+        - com.ibm.mq.app=mqapp
+    image: backend:0.1    
+    container_name: node-be
+    ports:
+      - 8080:8080    
+    networks:
+      - app-pubic-network
+      - qm1network    
+    depends_on:
+      - mq
+    labels:
+      - com.ibm.mq.app=mqapp    
+    environment: 
+      - HOST=mq
+      - APP_PASSWORD=${APP_PASSWORD}      
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - MQ_QMGR_PORT_MQI=1414
+      - MQ_QMGR_PORT_API=9443          
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4Gb  
+  mq:
+    image: "icr.io/ibm-messaging/mq:latest"
+    ports:
+      - 9443:9443
+      - 1414:1414
+    environment:
+      - LICENSE=accept
+      - MQ_QMGR_NAME=QM1
+      - MQ_APP_PASSWORD=${APP_PASSWORD}
+      - MQ_ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    volumes:
+      - qm1data:/mnt/mqm  
+    networks:
+      - qm1network
+      
+volumes:
+  qm1data:
+    labels:
+      - com.ibm.mq=qm1      
+
+networks:
+  qm1network:
+    labels:
+      - com.ibm.mq=qm1
+  app-pubic-network:
+    labels:
+      - com.ibm.mq.app=mqapp
