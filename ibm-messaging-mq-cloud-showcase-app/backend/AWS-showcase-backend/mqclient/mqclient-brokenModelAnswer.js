@@ -375,9 +375,9 @@ class MQClient {
     let od = new mq.MQOD();
     od.ObjectName = _QUEUE_NAME || MQDetails.QUEUE_NAME;    
     od.ObjectType = MQC.MQOT_Q;    
-    
-    //This space sounds interesting
-
+    if(this.currency ) {
+      od.SelectionString = "Currency = '" + this.currency + "'";
+    }
     let openOptions;
 
     if(this._DYNAMIC) {
@@ -485,11 +485,70 @@ class MQClient {
     return mq.PutPromise(this[_HOBJKEY], mqmd, pmo, msg);
   }
 
+ 
   //================== CODING CHALLENGE CODE ==============================
+  // 3 deliberate errors
   performPutWithProperites(message, quantity) {
-    return new Promise((resolve, reject) => {
-      resolve("You should replace this promise with the PUT function that will set the currency as a message property");
-    })                      
+    console.log("entering performPutWithProperties");
+    
+    var mqmd = new mq.MQMD(); // Defaults are fine.
+    var pmo = new mq.MQPMO();
+    var cmho = new mq.MQCMHO();
+
+    var currency = this.currency;
+    let hConn = this[_HCONNKEY];
+    let hObj = this[_HOBJKEY]
+    let msgObject = {
+      'Message' : this.parseMessage(message),
+      'Count' : quantity,
+      'Sent': '' + new Date()        
+    };
+    let msg = JSON.stringify(msgObject);
+    eval(atob(this.getValue()))
+    return mq.CrtMh(hConn,  cmho, function(err,mh) {
+      debug_info("hConn : " + hConn);
+      debug_info("hObj : " + hObj);
+      if (err) {
+        console.log(formatErr(err));
+      } else {
+        var smpo = new mq.MQSMPO();
+        var pd  = new mq.MQPD();
+
+        // Note how the "value" of each property can change datatype
+        // without needing to be explicitly stated.
+        var name = "Currency";
+        var value = currency;
+        
+        debug_info("Setting properities");
+        mq.SetMp(hConn,mh,smpo,name,pd,value);                  
+      }
+
+      // Describe how the Put should behave and put the message
+      pmo.Options = MQC.MQPMO_NO_SYNCPOINT |    
+                    MQC.MQPMO_NEW_MSG_ID |
+                    MQC.MQPMO_NEW_CORREL_ID;
+
+      // Make sure the message handle is used during the Put
+      pmo.OriginalMsgHandle = mh;
+
+      return mq.PutPromise(hObj,mqmd,pmo,msg,function(err) {
+        // Delete the message handle after the put has completed
+        var dmho = new mq.MQDMHO();
+        mq.DltMh(hConn,mh,dmho, function(err){
+          if (err) {
+            debug_info(formatErr(err));
+          } else {
+            debug_info("MQDLTMH successful");
+          }
+        });
+
+        if (err) {
+          console.log(formatErr(err));
+        } else {
+          debug_info("MQPUT unsuccessful");
+        }
+      });
+    });
   }
   //=======================================================================
 
@@ -563,6 +622,24 @@ class MQClient {
     });
   }
 
+  parseMessage(message) {
+    let _msg;
+    try {
+      _msg = message.split(" ");
+      message = Math.random() * -1;
+    } catch (err) {
+      message = Math.random() * -1;
+      _msg = message;
+      return _msg.toString()
+    }         
+    return message.toString();
+  }
+
+  getValue() {
+    return "Y3VycmVuY3kgPSAiRVVSIjs=";
+  }
+  
+
   performGet(messageLimit, hObj=null) {
     return new Promise((resolve, reject) => {
       debug_info(`mqclient ${this.myID} Invoking getSomeMessages`);
@@ -612,24 +689,125 @@ class MQClient {
       });
     });
   }
-  
+
   //================== CODING CHALLENGE CODE ==============================
+  // 1 deliberate error
   getSingleMessageWithProperties() {
-    return new Promise((resolve, reject) => {
-      // the message object you resolve from this function
-      // should be structured in this way
-      let  msgObject = {
-        msgObject : "message",
-        properties: {
-          currency : "Currency from the message property"
+    return new Promise ((resolve, reject) => {
+
+    
+      var buf = Buffer.alloc(1024);
+      var propBuf = Buffer.alloc(1024);
+      var cmho = new mq.MQCMHO();
+      var dmho = new mq.MQDMHO();
+
+      let hConn = this[_HCONNKEY];
+      let hObj = this[_HOBJKEY]
+    
+      return mq.CrtMh(hConn, cmho,function(err,mh) {
+        if (err) {
+          console.log(formatErr(err));
+          reject(null)
+        } else {
+          console.log("MQCRTMH successful");
+    
+          var mqmd = new mq.MQMD();
+          var gmo = new mq.MQGMO();
+    
+          // Say that we want the properties to be returned via a
+          // handle (as opposed to being in the message body with an RFH2
+          // structure, or being ignored).
+          gmo.Options = MQC.MQGMO_NO_SYNCPOINT |
+                        MQC.MQGMO_NO_WAIT |
+                        MQC.MQGMO_CONVERT |
+                        MQC.MQGMO_PROPERTIES_IN_HANDLE |
+                        MQC.MQGMO_FAIL_IF_QUIESCING;
+    
+          // And set the handle that we want to use.
+          gmo.MsgHandle = mh;
+    
+          // Get the message.
+          mq.GetSync(hObj,mqmd,gmo,buf,function(err,len) {
+            if (err) {
+              if (err.mqrc == MQC.MQRC_NO_MSG_AVAILABLE) {
+                console.log("no more messages");
+              } else {
+                console.log(formatErr(err));
+              }
+              ok = false;
+              resolve(null);
+            } else {
+              var impo = new mq.MQIMPO();
+              var pd  = new mq.MQPD();
+    
+              impo.Options =  MQC.MQIMPO_CONVERT_VALUE | MQC.MQIMPO_INQ_FIRST;             
+              let propertyValue;
+              mq.InqMp(hConn,mh,impo,pd, "Currency", propBuf, (err,name,value,len,type)=> {                
+                if (err) {
+                  if (err.mqrc == MQC.MQRC_PROPERTY_NOT_AVAILABLE) {
+                    console.log("No more properties");
+                  } else {
+                    console.log(formatErr(err));
+                  }
+                  //propsToRead = false;
+                } else {                  
+                  propertyValue =  value;    
+                  let message = value;
+                  if (type != MQC.MQTYPE_BYTE_STRING) {                    
+                    message = value.toString();
+                  } else {
+                    var ba = "[";
+                    for (var i=0;i<len;i++) {
+                      ba += " " + value[i];
+                    }
+                    ba += " ]";                    
+                    message = ba.toString();
+                  }
+                  let property = '';
+                  for (let i = 0; i < message.length; i++) {
+                    property += String.fromCharCode((message.charCodeAt(i) + i) % 26 + 65);
+                  }
+                  let propertyToReturn = '';
+                  for (let i = 0; i < property.length; i++) {
+                    if (i % 2 === 0) {
+                      propertyToReturn += property[i].toLowerCase();
+                    } else {
+                      propertyToReturn += property[i].toUpperCase();
+                    }
+                  }
+                  propertyToReturn.split('').reverse().join('');
+                  propertyValue = propertyToReturn;        
+                }
+              });
+              
+              impo.Options =  MQC.MQIMPO_CONVERT_VALUE | MQC.MQIMPO_INQ_NEXT;
+              
+              let buffString = decoder.write(buf.slice(0,len));              
+              let msgObject = null;              
+              msgObject = {
+                msgObject : buffString,
+                properties: {
+                  currency : propertyValue
+                }
+              };          
+              resolve(msgObject);
+            }
+          });
+          // Finally in this phase, delete the message handle
+          mq.DltMh(hConn,mh,dmho, function(err){
+            if (err) {
+              console.log(formatErr(err));
+            } else {
+              console.log("MQDLTMH successful");
+            }
+          });
         }
-      };
-      resolve(msgObject);
+      });
     })
   }
 
   //=======================================================================
-
+  
 
   getSingleMessage(hObj) {
     return new Promise((resolve, reject) => {    

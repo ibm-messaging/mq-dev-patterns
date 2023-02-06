@@ -31,7 +31,7 @@ class Responder {
     getMessageFromQueue(queueName) {
         return new Promise((resolve, reject) => {
             debug_info(`Responder ${this.myID} getting message from queue`);
-            this.mqclient.get(queueName,1,'DYNAMIC')
+            this.mqclient.get(queueName,1,null, 'DYNAMIC')
             .then((messages) => {
                 if(!messages[0].replyToMsg) {
                     debug_warn("This is not a reply to queue valid message");
