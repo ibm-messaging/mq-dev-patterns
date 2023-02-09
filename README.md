@@ -1,5 +1,4 @@
 ## IBM MQ samples and patterns 
-Please Note: the instructions below should NOT be considered for ibm-messagin-mq-cloud-showcase-app
 
 When your application needs messaging, you don’t want to spend countless hours learning the basics, you want to jump straight in and play, see how things work.
 

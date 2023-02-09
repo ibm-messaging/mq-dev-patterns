@@ -16,7 +16,7 @@
 
 const { v4: uuidv4 } = require('uuid');
 const {DynQueue} = require('./DynamicQueue');
-const MQClient = require("../mqclient/mqclient");
+const MQClient = require("../processors/processing-app");
 
  //Set Logging options
 let debug_info = require('debug')('mqapp-requestor:info');

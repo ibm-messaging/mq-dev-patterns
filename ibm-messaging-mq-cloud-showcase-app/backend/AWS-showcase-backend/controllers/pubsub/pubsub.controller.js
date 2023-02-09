@@ -17,7 +17,6 @@
  const { Subscriber } = require("../../models/Subscriber");
  const { Publisher } = require("../../models/Publisher");
  const { DeQueue } = require("../../models/DeQue");
- const MQClient = require('../../mqclient/mqclient');
  
  
  //Set Logging options

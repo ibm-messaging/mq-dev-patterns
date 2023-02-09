@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-const MQClient = require("../mqclient/mqclient");
+const MQClient = require("../processors/processing-app");
 
 class Consumer {
     constructor(consumerId=null) {

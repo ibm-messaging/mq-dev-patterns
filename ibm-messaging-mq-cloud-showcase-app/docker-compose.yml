@@ -28,7 +28,7 @@ services:
       - com.ibm.mq.app=mqapp
     environment:
       - REACT_APP_BE_HOST=be
-      - REACT_APP_IS_FOR_CODING_CHALLENGE=false
+      - REACT_APP_IS_FOR_CODING_CHALLENGE=true
   be:
     build:
       context: backend/.
