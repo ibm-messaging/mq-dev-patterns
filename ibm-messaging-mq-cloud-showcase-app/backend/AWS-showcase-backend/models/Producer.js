@@ -14,7 +14,7 @@
  * limitations under the License.
  **/
 
-const MQClient = require("../processors/processing-app");
+const MQClient = require("../msms/message-session-manager");
 
 class Producer {
     constructor() {        

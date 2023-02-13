@@ -15,7 +15,7 @@
  **/
 
  const { v4: uuidv4 } = require('uuid');
- const MQClient = require("../processors/processing-app");
+ const MQClient = require("../msms/message-session-manager");
 
  //Set Logging options
 let debug_info = require('debug')('mqapp-responder:info');

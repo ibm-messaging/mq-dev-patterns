@@ -16,7 +16,7 @@
 
 const axios = require('axios');
 const https = require('https');
-const MQClient = require("../../processors/processing-app");
+const MQClient = require("../../msms/message-session-manager");
 // Set Logging options
 let debug_info = require('debug')('mqapp-utilscontroller:info');
 let debug_warn = require('debug')('mqapp-utilscontoller:warn');
