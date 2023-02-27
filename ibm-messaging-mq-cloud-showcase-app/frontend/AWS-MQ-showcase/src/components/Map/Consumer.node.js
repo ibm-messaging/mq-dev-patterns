@@ -114,7 +114,7 @@ const ConsumerNode = ({ id, data }) => {
                 <div style={{ width: 200 }}>
                   <Tag type={!data.isActive ? 'red' : 'green'}>
                     {' '}
-                     {data.isActive ? 'Active' : 'Disactive'}{' '}
+                     {data.isActive ? 'Active' : 'Inactive'}{' '}
                   </Tag>
                 </div>
               </Column>
