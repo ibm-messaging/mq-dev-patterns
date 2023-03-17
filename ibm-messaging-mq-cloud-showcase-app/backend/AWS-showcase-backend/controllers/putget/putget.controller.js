@@ -23,7 +23,7 @@ let debug_info = require('debug')('mqapp-approutes:info');
 let debug_warn = require('debug')('mqapp-approutes:warn');
 
 let consumers = new DeQueue();
-
+let producer;
 const DEFAULT_LIMIT = 1;
 
 //This function puts a message to a provided queue
@@ -48,7 +48,7 @@ function put(req, res, next) {
     quantity = 1;
   }
   //Creating a new Producer instance
-  let producer = new Producer();
+  producer = new Producer();
   //Put a number (quantity) of messages (_message) into the queue _QUEUE_NAME
   producer.putMessages(_message, quantity, _QUEUE_NAME, currency)
   .then((statusMsg) => {
@@ -63,6 +63,55 @@ function put(req, res, next) {
       error: err
     });
   });
+}
+
+async function closeProducerConnection(req, res) {
+  if (producer) {
+    return await producer.closeConnection()
+    .then((response) => {
+      return res.json({
+        status: response
+      })
+    })
+    .catch((err) => {      
+    })  
+  } else {
+    return res.json({
+      status: "init producer"
+    })
+  }
+  
+}
+
+async function closeConsumerConnection(req, res) {
+  let queryData = req.query;
+  let consumerId = queryData.consumerId;
+
+  if (!consumerId) {
+    return res.status(500).send({
+      error: "Please provide a valid id"
+    });
+  }
+
+  let consumer = await consumerObjectAleadyExistingFromAppId(consumerId);
+
+  if (consumer === -1) {
+    return res.status(500).send({
+      error : "This consumer does not exist"
+    });
+  }  else {
+    consumer.closeConnection()
+    .then((data) => {      
+      res.json(data);
+    })
+    .catch((err) => {
+      return res.status(500).send({
+        error : err
+      });
+    });
+  }
+
+  
 }
 
 //This function returns a subscriber object from its appId
@@ -171,5 +220,7 @@ function getCodingChallange(req, res, next) {
 module.exports = {
     get,
     put,
-    getCodingChallange
+    getCodingChallange,
+    closeProducerConnection,
+    closeConsumerConnection
 };

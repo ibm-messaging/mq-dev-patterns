@@ -16,7 +16,7 @@
 
 
 import React, { useEffect, memo, useState } from 'react';
-import { Button, Column, Dropdown, Grid} from '@carbon/react';
+import { Button, Column, Dropdown, Grid, Toggle} from '@carbon/react';
 import { Handle } from 'react-flow-renderer';
 import { Send } from '@carbon/react/icons';
 import APIAdapter from '../../adapters/API.adapter';
@@ -25,7 +25,7 @@ import NumberInput from '@carbon/react/lib/components/NumberInput/NumberInput';
 import './map.css';
 import TextInput from '@carbon/react/lib/components/TextInput';
 
-const PRODUCTION_QUANTITY = 25;
+const PRODUCTION_QUANTITY = 5;
 const ProducerNode = ({ id, data }) => {
   const adapter = new APIAdapter();
   const animateConnection = useStore(
@@ -35,6 +35,7 @@ const ProducerNode = ({ id, data }) => {
   const [quantity, setQuantity] = useState(PRODUCTION_QUANTITY);
   const [animationState, setAnimationState] = useState(false);
   const [name, setName] = useState(data.label);  
+  const [isToggle, setIsToggle] = useState(false);
 
   const isForTheCodingChallange = (process.env.REACT_APP_IS_FOR_CODING_CHALLENGE === 'true');  
   const [selectedCurrency, setSelectedCurrency] = useState("EUR"); 
@@ -48,15 +49,32 @@ const ProducerNode = ({ id, data }) => {
     }
   });
 
+  useEffect(() => {
+    if (data.connectedQueue && isToggle) {
+      const interval = setInterval(() => {
+        _onClick(id);
+      }, 10000);
+      return () => clearInterval(interval);
+    }
+  });
+
   const _onClick = id => {
     setAnimationState(true);
     animateConnection(id, true);
     try {
       let message = 'You bought a new ticket!';
       if(isForTheCodingChallange) {
-        adapter.put(quantity, 1, data.connectedQueue, selectedCurrency).then(res => {});      
+        adapter.put(quantity, 1, data.connectedQueue, selectedCurrency).then(res => {                    
+          if(isToggle) {
+            adapter.closeProducer()
+          }      
+        });      
       } else {
-        adapter.put(message, quantity, data.connectedQueue).then(res => {});      
+        adapter.put(message, quantity, data.connectedQueue).then(res => {          
+          if(isToggle) {
+            adapter.closeProducer()
+          }      
+        });      
       }
       
     } catch (e) {
@@ -74,6 +92,15 @@ const ProducerNode = ({ id, data }) => {
     setName(e.value);
   };  
 
+
+  useEffect(() => {
+    if(!data.connectedQueue) {
+      adapter.closeProducer();
+    }
+  }, [data.connectedQueue])
+
+  
+
   if(isForTheCodingChallange) {
     return (
       
@@ -82,7 +109,8 @@ const ProducerNode = ({ id, data }) => {
           className="edgebutton node"
           too
           onClick={() => {
-            deleteMe(id);
+            deleteMe(id);            
+            adapter.closeProducer();
           }}>
           X
         </button>
@@ -166,7 +194,7 @@ const ProducerNode = ({ id, data }) => {
           className="edgebutton node"
           too
           onClick={() => {
-            deleteMe(id);
+            deleteMe(id);                        
           }}>
           X
         </button>
@@ -210,6 +238,18 @@ const ProducerNode = ({ id, data }) => {
           }}>
           Create Bookings
         </Button>
+
+        <Toggle
+          id={id}
+          size="sm"           
+          labelA= {"Start auto"}
+          labelB= {"Stop auto"}
+          toggled={isToggle}
+          onToggle={() => {
+            setIsToggle(!isToggle);
+          }}
+        />
+        
       </div>
     )
   }

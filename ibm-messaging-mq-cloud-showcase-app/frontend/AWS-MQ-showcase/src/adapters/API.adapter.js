@@ -27,8 +27,33 @@ const END_POINT_GETLASTMESSAGEFORSUB =  '/api/getLastMessage';
 const END_POINT_DYNPUT =  '/api/putReq';
 const END_POINT_GETDYN =  '/api/getRes?'; 
 const END_POINT_GET_CODING_CHALLENGE = '/api/getCodingChallange?limit='
+const END_POINT_CLOSE_CONSUMER_CONNECTION = '/api/closeConsumer';
+const END_POINT_CLOSE_PRODUCER_CONNECTION = '/api/closeProducer';
 
 class APIAdapter {
+
+  async closeProducer() {
+    let result;
+    try {
+      result = await axios.get(END_POINT_CLOSE_PRODUCER_CONNECTION);      
+    } catch (err) {
+      result = err;
+    }    
+    return result;
+  }
+  
+  async closeConsumer(consumerId) {
+    let result;
+
+    try{
+      let URL = END_POINT_CLOSE_CONSUMER_CONNECTION + `?consumerId=${consumerId}`;
+      result = await axios.get(URL)
+    } catch(err) {
+      result = err;
+    }
+
+    return result;
+  }
   async getAllDepths(isForSubs) {
     let result = undefined;
     try {
