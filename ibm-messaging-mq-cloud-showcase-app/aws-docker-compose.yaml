@@ -1,0 +1,122 @@
+#
+# * Copyright 2022, 2023 IBM Corp.
+# *
+# * Licensed under the Apache License, Version 2.0 (the 'License');
+# * you may not use this file except in compliance with the License.
+# * You may obtain a copy of the License at
+# *
+# * http://www.apache.org/licenses/LICENSE-2.0
+# *
+# * Unless required by applicable law or agreed to in writing, software
+# * distributed under the License is distributed on an "AS IS" BASIS,
+# * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# * See the License for the specific language governing permissions and
+# * limitations under the License.
+
+# If you want to use a predified cluster, then uncomment
+# the line below, and enter your cluster ARN (Amazon Resource Name).
+# x-aws-cluster: "mq-ecs-cluster"
+
+# If you want to use a predified load balancer, then uncomment
+# the line below, and enter you loadbalancer ARN (Amazon Resource Name).
+# x-aws-loadbalancer: "LoadBalancerName"
+
+# In a .env file set the following
+#  APP_PASSWORD=
+#  ADMIN_PASSWORD=
+#  IMAGE_ECS_REGISTRY_URI=
+#  CLUSTER_NAME=
+
+services:
+  fe:
+    build:
+      context: frontend/.
+      labels:
+        - com.ibm.mq.app=mqapp
+    image: ${IMAGE_ECS_REGISTRY_URI:?err}/${CLUSTER_NAME:?err}:frontend    
+    ports:
+      - 3000:3000  
+    networks:
+      - app-pubic-network  
+    environment:   
+      - REACT_APP_BE_HOST=be     
+      - REACT_APP_IS_FOR_CODING_CHALLENGE=false
+    depends_on:
+      - be
+    labels:
+      - com.ibm.mq.app=mqapp
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2Gb  
+  be:
+    build:
+      context: backend/.
+      labels:
+        - com.ibm.mq.app=mqapp
+    image: ${IMAGE_ECS_REGISTRY_URI:?err}/${CLUSTER_NAME:?err}:backend   
+    container_name: node-be 
+    networks:
+      - app-pubic-network
+      - qm1network    
+    depends_on:
+      - mq
+    labels:
+      - com.ibm.mq.app=mqapp    
+    environment:   
+      - HOST=mq
+      - APP_PASSWORD=${APP_PASSWORD:?err}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:?err}     
+      - MQ_QMGR_PORT_MQI=1414
+      - MQ_QMGR_PORT_API=9443   
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4Gb         
+  mq:
+    image: "icr.io/ibm-messaging/mq:latest"
+    ports:
+      - 9443:9443    
+    environment:
+      - LICENSE=accept
+      - MQ_QMGR_NAME=QM1
+      - MQ_APP_PASSWORD=${APP_PASSWORD:?err}
+      - MQ_ADMIN_PASSWORD=${ADMIN_PASSWORD:?err}
+    volumes:
+      - qm1data:/mnt/mqm  
+    networks:
+      - qm1network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2Gb  
+volumes:
+  qm1data:
+    driver_opts:
+      gid: 0
+    labels:
+      - com.ibm.mq=qm1      
+networks:
+  qm1network:
+    labels:
+      - com.ibm.mq=qm1
+  app-pubic-network:
+    labels:
+      - com.ibm.mq.app=mqapp
+
+# Uncomment the lines below to enforce TLS / HTTPS traffic to the fe service
+# You will need to either import or request a certificate on AWS Certificate
+# Manager. Your certificate will be given an ARN to identify it. Update the
+# CertificateArn setting below to reflect your certificate's ARN.
+
+# x-aws-cloudformation:
+#   Resources:
+#     FeTCP80Listener:
+#       Properties:
+#         Certificates:
+#           - CertificateArn: "arn:aws:acm:certificate/123abc"
+#         Protocol: HTTPS
+#         Port: 443      
