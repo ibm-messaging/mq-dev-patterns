@@ -8,9 +8,9 @@ You'll find `put/get`, `pub/sub`, `request/response` samples that you can run in
 
 There is a [README for each language](#readme-docs) that helps you with the initial setup.
 
-You need an MQ server with a queue or topic to run these samples against. To find out more about what MQ is and how it works, start from [LearnMQ](https://developer.ibm.com/messaging/learn-mq/).
+You need an MQ server with a queue or topic to run these samples against. To find out more about what MQ is and how it works, start from [LearnMQ](http://ibm.biz/mq-badge).
 
-To get your MQ server set up, check out [Ready, Set, Connect](https://developer.ibm.com/messaging/learn-mq/mq-tutorials/mq-connect-to-queue-manager/).
+To get your MQ server set up, check out [Ready, Set, Connect](https://developer.ibm.com/series/mq-ready-set-connect/).
 
 You can use your own MQ server, you'll just have to adjust the MQ objects accordingly so they match on both the server and the client side.
 
@@ -55,11 +55,12 @@ Topic - dev/
 Cipher suite - TLS_RSA_WITH_AES_128_CBC_SHA256
 ~~~
 
-The default configuration for MQ objects that you get with our Docker container does not include the model queue.
+### Model queue and MQ container image
+The default configuration for MQ objects that you get with our Docker container does not include a model queue.
 
-We use the model queue in the `request/response` pattern as a template for the request application to create a temporary reply queue.
+We use a model queue in the `request/response` pattern as a template for the request application to create a temporary reply queue.
 
-Use the MQ Web Console to create the model queue. You can access the MQ Web Console for your MQ running in Docker at [https://localhost:9443/ibmmq/console/](https://localhost:9443/ibmmq/console/). You can log in with the [default admin details](https://github.com/ibm-messaging/mq-container/blob/4d4051312eb9d95a086e2ead76482d1f1616d149/docs/developer-config.md#web-console) or your own, if you made changes.
+You can use the MQ Web Console to create the model queue. Access the MQ Web Console for your MQ running as a container at [https://localhost:9443/ibmmq/console/](https://localhost:9443/ibmmq/console/). You can log in with the [default admin details](https://github.com/ibm-messaging/mq-container/blob/4d4051312eb9d95a086e2ead76482d1f1616d149/docs/developer-config.md#web-console) or your own, if you made changes.
 
 ## Environment variables
 
@@ -94,9 +95,9 @@ for the sample applications to use.
 ## TLS
 
 For example, removing the CIPHER_SUITE and KEY_REPOSITORY lines (don't forget to remove the comma from the last line in the json)
-will mean the sample will not connect using TLS.
+will mean the sample will connect without using TLS.
 
-Also, if you have two docker containers, one with TLS and one without, changing the port number in the `env.json` allows you to switch between them.
+If you have two docker containers, one with TLS and one without, changing the port number in the `env.json` allows you to switch between them.
 
 ### Apple Silicon
 
@@ -106,15 +107,15 @@ for TLS. For the MQI based samples in this repository, this means that
 variable `KEY_REPOSITORY` be set to the path for the queue manager's exported `.pem` file. eg. If you have exported the `qmgrcert.pem` file to the root directory of this repository, then set `KEY_REPOSITORY` to `../qmgrcert.pem` .
 
 
-### Running a second Docker container with TLS
+### Using port forwarding to run a multiple containers
 
-Let's say you're already running MQ in a Docker container without TLS having set it up by following the [Ready, Set, Connect](https://developer.ibm.com/messaging/learn-mq/mq-tutorials/mq-connect-to-queue-manager/) tutorial.
+Let's say you're already running MQ in a Docker container without TLS having set it up by following the [Ready, Set, Connect](https://developer.ibm.com/series/mq-ready-set-connect/) tutorial.
 
 Now you want to run the second Docker container to try the samples with TLS switched on.
 
 You can have the same MQ objects set up in both, and switch between them by using the host port forwarding to make the non TLS queue manager available on port 1414 and the TLS one on port 1415.
 
-#### Creating self signed certificates by using `openssl`
+### Creating self signed certificates by using `openssl`
 
 Do this in a directory you'll easily remember as you'll have to copy the server certificates over into a temporary folder each time you need to run MQ with TLS in a Docker container.
 
@@ -196,8 +197,46 @@ Do not install any application requirements until
 
 ## README docs
 
-## [Node.js](/Node.js/README.md)
-## [JMS](/JMS/README.md)
-## [Python](/Python/README.md)
-## [C# .Net](/dotnet/README.md)
-## [Go](/Go/README.md)
+### Language based MQI / JMS / XMS samples
+#### [Node.js](/Node.js/README.md)
+#### [JMS](/JMS/README.md)
+#### [Python](/Python/README.md)
+#### [C# .Net](/dotnet/README.md)
+#### [Go](/Go/README.md)
+
+### REST samples
+#### [Rust](/Rust-REST/README.md)
+#### [Swift](/Swift-REST/README.md)
+#### [react.js](/reactjs/README.md)
+
+### AMQP samples
+#### [QPID](/amqp-qpid/README.md)
+
+### Transaction samples
+#### [JMS](/transactions/JMS/SE/README.md)
+#### [Spring](/transactions/JMS/Spring/README.md)
+
+### Framework samples
+#### [Spring](/Spring-JMS/README.md)
+#### [Transactions on Spring](/transactions/JMS/Spring/README.md)
+#### [Quarkus](/amqp-qpid/qpid-quarkus/README.md)
+
+### Reactive samples
+#### [Vert.x](/reactive/amqp-vertx/README.md)
+
+### Serverless samples
+#### [AWS Lambda](/serverless/aws-lambda-rest/README.md)
+#### [Azure Functions](/serverless/azure-functions-rest-http-trigger/README.md)
+#### [Code Engine](/serverless/codeengine/README.md)
+#### [OpenWhisk Cloud Functions](/serverless/openwhisk/README.md)
+
+### Showcase app
+#### [Showcase](/ibm-messaging-mq-cloud-showcase-app/README.md)
+
+### Kubernetes samples
+#### [Scaling with Keda](Go-K8s/README.md)
+
+### MQ container deployment examples
+#### [compose](/container/queuemanager/compose/README.md)
+
+
