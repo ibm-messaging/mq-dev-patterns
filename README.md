@@ -55,6 +55,7 @@ Topic - dev/
 Cipher suite - TLS_RSA_WITH_AES_128_CBC_SHA256
 ~~~
 
+
 ### Model queue and MQ container image
 The default configuration for MQ objects that you get with our Docker container does not include a model queue.
 
