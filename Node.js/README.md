@@ -1,6 +1,7 @@
 # IBM MQ Node.js samples
 The Node.js samples are based on https://github.com/ibm-messaging/mq-mqi-nodejs/tree/master/samples
-and have been tested with Node.js v8.11.1 , v10.15.2 & v12.13.0
+and have been tested with Node.js v16.8.1
+
 
 Install/unzip IBM MQ client
 
@@ -106,7 +107,7 @@ topic.
 
 To run with logging, run
 
-`DEBUG=amqs*:* node basicsubscibe.js`
+`DEBUG=amqs*:* node basicsubscribe.js`
 
 The publish and subscribe applications have the common MQ boiler plate
 factorised into a library and makes use of
