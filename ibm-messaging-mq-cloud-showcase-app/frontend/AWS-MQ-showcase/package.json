@@ -16,20 +16,21 @@
     "test": "react-scripts test"
   },
   "dependencies": {
-    "@carbon/charts": "^1.5.7",
-    "@carbon/charts-react": "^1.5.7",
-    "@carbon/ibm-cloud-cognitive-cdai": "^1.22.21",
+    "@carbon/charts": "1.5.7",
+    "@carbon/charts-react": "1.5.7",
+    "@carbon/ibm-cloud-cognitive-cdai": "1.22.21",
     "@carbon/react": "1.1.0",
-    "axios": "^0.27.2",
-    "d3": "^7.6.1",        
-    "http-proxy-middleware": "^2.0.6",
+    "dom-to-image-more": "3.1.4",    
+    "axios": "0.27.2",
+    "d3": "7.6.1",        
+    "http-proxy-middleware": "2.0.6",
     "react": "16.10.0",
     "react-dom": "16.10.0",
-    "react-flow-renderer": "^10.3.17",
+    "react-flow-renderer": "10.3.17",
     "react-router-dom": "5.3.4",
     "react-scripts": "5.0.1",
-    "react-toastify": "^9.0.8",
-    "reactflow": "^11.1.0"
+    "react-toastify": "9.0.8",
+    "reactflow": "11.1.0"
   },
   "devDependencies": {
     "@commitlint/cli": "7.5.2",
