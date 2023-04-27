@@ -50,10 +50,10 @@ const useStore = create((set, get) => ({
   },
   reset: () => {
     set({
-      nodes: initialNodes,
+      nodes: [],
     });
     set({
-      edges: initialEdges,
+      edges: [],
     });
   },
   onConnect: connection => {
