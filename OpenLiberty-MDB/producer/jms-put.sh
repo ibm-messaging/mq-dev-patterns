@@ -13,4 +13,9 @@
 # limitations under the License.
 
 export PATH=$PATH:/home/jdk-11.0.16.1+1/bin
+
+export HOST=localhost
+export APP_USER=yourAppUser
+export APP_PASSWORD=yourUsernamePassword
+
 java -cp ./com.ibm.mq.allclient-9.3.0.0.jar:./javax.jms-api-2.0.1.jar:./json-20220320.jar:. com/ibm/mq/samples/jms/JmsPut.java

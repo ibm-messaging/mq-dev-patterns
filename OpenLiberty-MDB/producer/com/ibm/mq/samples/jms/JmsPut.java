@@ -55,7 +55,7 @@ public class JmsPut {
 
 	// Create variables for the connection to MQ
 	// Host name or IP address
-	private static final String HOST = "localhost"; 
+	private static final String HOST = System.getenv("HOST");; 
 	// Listener port for your queue manager
 	private static final int PORT = 1414; 
 	// Channel name
@@ -63,9 +63,9 @@ public class JmsPut {
 	// Queue manager name
 	private static final String QMGR = "QM1"; 
 	// User name that application uses to connect to MQ
-	private static final String APP_USER = "app"; 
+	private static final String APP_USER = System.getenv("APP_USER");; 
 	// Password that the application uses to connect to MQ
-	private static final String APP_PASSWORD = "yourUsernamePassword"; 	
+	private static final String APP_PASSWORD = System.getenv("APP_PASSWORD");
 	// Queue that the application uses to put and get messages to and from
 	private static final String QUEUE = "DEV.QUEUE.2"; 
 
