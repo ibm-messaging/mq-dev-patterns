@@ -16,7 +16,6 @@
 
 package com.ibm.mq.samples.jms;
 
-
 import javax.jms.Destination;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
@@ -28,46 +27,20 @@ import com.ibm.msg.client.jms.JmsConnectionFactory;
 import com.ibm.msg.client.jms.JmsFactoryFactory;
 import com.ibm.msg.client.wmq.WMQConstants;
 
-/**
- * A minimal and simple application for Point-to-point messaging.
- *
- * Application makes use of fixed literals, any customisations will require
- * re-compilation of this source file. Application assumes that the named queue
- * is empty prior to a run.
- *
- * Notes:
- *
- * API type: JMS API (v2.0, simplified domain)
- *
- * Messaging domain: Point-to-point
- *
- * Provider type: IBM MQ
- *
- * Connection mode: Client connection
- *
- * JNDI in use: No
- *
- */
 public class JmsPut {
 
 	// System exit status value (assume unset value to be 1)
 	private static int status = 1;
 
 	// Create variables for the connection to MQ
-	// Host name or IP address
-	private static final String HOST = System.getenv("HOST");; 
-	// Listener port for your queue manager
-	private static final int PORT = 1414; 
-	// Channel name
-	private static final String CHANNEL = "DEV.APP.SVRCONN"; 
-	// Queue manager name
-	private static final String QMGR = "QM1"; 
-	// User name that application uses to connect to MQ
-	private static final String APP_USER = System.getenv("APP_USER");; 
-	// Password that the application uses to connect to MQ
-	private static final String APP_PASSWORD = System.getenv("APP_PASSWORD");
-	// Queue that the application uses to put and get messages to and from
-	private static final String QUEUE = "DEV.QUEUE.2"; 
+	private static final String HOST = System.getenv("HOST"); // Host name or IP address
+	private static final int PORT = 1414; // Listener port for your queue manager
+	private static final String CHANNEL = "DEV.APP.SVRCONN"; // Channel name
+	private static final String QMGR = "QM1"; // Queue manager name
+	private static final String APP_USER = System.getenv("APP_USER"); // User name that application uses to connect to MQ
+	private static final String APP_PASSWORD = System.getenv("APP_PASSWORD"); // Password that the application uses to connect to MQ
+	private static final String QUEUE_NAME_1 = "DEV.QUEUE.1"; // Queue that the application uses to put and get messages to and from
+	private static final String QUEUE_NAME_2 = "DEV.QUEUE.2"; // Queue that the application uses to put and get messages to and from
 
 	/**
 	 * Main method
@@ -78,7 +51,8 @@ public class JmsPut {
 
 		// Variables
 		JMSContext context = null;
-		Destination destination1 = null;		
+		Destination destination1 = null;
+		Destination destination2 = null;
 		JMSProducer producer = null;
 		JMSConsumer consumer = null;
 
@@ -102,15 +76,18 @@ public class JmsPut {
 			//cf.setStringProperty(WMQConstants.WMQ_SSL_CIPHER_SUITE, "*TLS12");
 
 			// Create JMS objects
-			context = cf.createContext();			
+			context = cf.createContext();
+			destination1= context.createQueue("queue:///" + QUEUE_NAME_1);
 
-			destination1= context.createQueue("queue:///" + QUEUE);
+			destination2= context.createQueue("queue:///" + QUEUE_NAME_2);
 			long uniqueNumber = System.currentTimeMillis() % 1000;
 			TextMessage message = context.createTextMessage("Your lucky number today is " + uniqueNumber);
 
 			producer = context.createProducer();
 			producer.send(destination1, message);
-			System.out.println("Sent message:\n" + message);			
+			System.out.println("Sent message:\n" + message);
+			producer.send(destination2, message);
+			System.out.println("Sent message:\n" + message);
 
                         context.close();
 
