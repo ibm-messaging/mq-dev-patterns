@@ -21,6 +21,18 @@ class Producer {
         this.mqclient = new MQClient();        
     }
 
+    closeConnection() {
+        return new Promise((resolve, reject) => {
+            this.mqclient.cleanUp()
+            .then((res) => {
+                resolve(res)
+            })
+            .catch((err) => {
+                reject(err);
+            })
+        })
+    }
+
     putMessages(message, quantity, queueName, currency) {
 
         let _putRequest = {

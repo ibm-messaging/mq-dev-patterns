@@ -37,6 +37,14 @@ const ConsumerNode = ({ id, data }) => {
   const isForTheCodingChallange = (process.env.REACT_APP_IS_FOR_CODING_CHALLENGE === 'true');  
   const [selectedCurrency, setSelectedCurrency] = useState("EUR");
 
+  const closeConsumerConnection = async () => {
+    try{
+      await adapter.closeConsumer(id);
+    } catch(err) {
+      console.log(err);
+    }
+  }
+
 
   useEffect(() => {
     if (data.isActive && data.connectedQueue) {
@@ -84,7 +92,7 @@ const ConsumerNode = ({ id, data }) => {
           className="edgebutton node"
           too
           onClick={() => {
-            deleteMe(id);
+            deleteMe(id);            
           }}>
           X
         </button>
@@ -202,6 +210,7 @@ const ConsumerNode = ({ id, data }) => {
           too
           onClick={() => {
             deleteMe(id);
+            closeConsumerConnection();
           }}>
           X
         </button>

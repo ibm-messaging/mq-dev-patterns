@@ -33,6 +33,18 @@ class Consumer {
         });
     }
 
+    closeConnection() {
+        return new Promise((resolve, reject) => {
+            this.mqclient.cleanUp()
+            .then((data) => {
+                resolve(data);
+            })
+            .catch((err) => {
+                reject(err);
+            })
+        })
+    }
+
     getAppId() { return this.consumerId; }
 
 }
