@@ -7,8 +7,8 @@
     </featureManager>
 
     <!-- Auth details for IBM MQ default developer config -->
-    <variable name="ibmmq.username" value="app"/>
-    <variable name="ibmmq.password" value="yourUsernamePassword"/>
+    <!-- <variable name="ibmmq.username" value="app"/>
+    <variable name="ibmmq.password" value="yourUsernamePassword"/> -->
 
     <resourceAdapter id="wmqjmsra" location="https://repo.maven.apache.org/maven2/com/ibm/mq/wmq.jmsra/9.3.2.0/wmq.jmsra-9.3.2.0.rar" />
     
@@ -29,10 +29,10 @@
     <jmsActivationSpec id="ibm-mq-mdb/JMS2ListenerMDB">
         <properties.wmqjmsra
             channel="DEV.APP.SVRCONN"
-            hostName="0.0.0.0"
+            hostName="${server-ibmmq-hostName}"
             port="1414"
-            userName="${ibmmq.username}"
-            password="${ibmmq.password}"
+            userName="${server-ibmmq-username}"
+            password="${server-ibmmq-password}"
             queueManager="QM1"
             transportType="CLIENT"
             destinationRef="jms/dev.queue.2"

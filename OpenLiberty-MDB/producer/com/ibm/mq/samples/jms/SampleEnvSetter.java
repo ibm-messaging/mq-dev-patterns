@@ -44,7 +44,7 @@ public class SampleEnvSetter {
 
         try {
             JSONParser parser = new JSONParser();
-            Object data = parser.parse(new FileReader("../env.json"));
+            Object data = parser.parse(new FileReader("./env.json"));
             logger.info("File read");
 
             mqEnvSettings = (JSONObject) data;
@@ -86,6 +86,29 @@ public class SampleEnvSetter {
         }
         return value;
     }
+
+
+    public String[] getEnvValueArray(String key, int index) {
+        JSONObject mqAppEnv = null;
+        JSONArray queuesJSON;
+        String QUEUES[] = {};        
+        if (mqEndPoints != null && ! mqEndPoints.isEmpty()) {
+            mqAppEnv = (JSONObject) mqEndPoints.get(index);
+            queuesJSON = (JSONArray) mqAppEnv.get(key);
+            List<String> queues = new ArrayList<String>();
+            if (queuesJSON != null && ! queuesJSON.isEmpty()) {
+              for (Object o : queuesJSON) {
+                String q = String.valueOf(o);                
+                queues.add(q);
+              } 
+              QUEUES = queues.toArray(new String[queues.size()]);
+            } else {
+              logger.warning("At least one queue has to be specified.");
+            }
+        }
+        return QUEUES;
+    }
+
 
     public String getCheckForCCDT() {
         String value = System.getenv(CCDT);

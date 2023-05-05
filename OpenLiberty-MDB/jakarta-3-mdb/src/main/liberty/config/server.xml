@@ -5,19 +5,14 @@
     <featureManager>
         <feature>jakartaee-9.1</feature>
     </featureManager>
-
-    <!-- Auth details for IBM MQ default developer config -->
-    <!-- <variable name="ibmmq.username" value="app"/>
-    <variable name="ibmmq.password" value="yourUsernamePassword"/>
-    -->
-
-    <authData id="mqauthid" user="app" password="yourUsernamePassword"/>
+    
+    <authData id="mqauthid" user="${server-ibmmq-username}" password="${server-ibmmq-password}"/>
     <resourceAdapter id="wmqjmsra" location="https://repo.maven.apache.org/maven2/com/ibm/mq/wmq.jakarta.jmsra/9.3.2.0/wmq.jakarta.jmsra-9.3.2.0.rar" />
 
     <jmsConnectionFactory jndiName="jms/jmsCF" connectionManagerRef="QM1Dev" containerAuthDataRef="mqauthid">
         <properties.wmqjmsra
             channel="DEV.APP.SVRCONN"
-            hostName="localhost"
+            hostName="${server-ibmmq-hostName}" 
             port="1414"
             queueManager="QM1"
             transportType="CLIENT"
