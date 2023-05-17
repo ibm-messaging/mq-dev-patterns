@@ -23,7 +23,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.4.2</version>
+		<version>3.0.0</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
@@ -32,7 +32,7 @@
 	<name>mq-spring</name>
 	<description>MQ samples project for Spring Boot</description>
 	<properties>
-		<java.version>11</java.version>
+		<java.version>17</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -54,13 +54,13 @@
 		<dependency>
 			<groupId>org.springframework.integration</groupId>
 			<artifactId>spring-integration-jms</artifactId>
-			<version>5.4.4</version>
+			<version>6.1.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<optional>true</optional>
+			 <version>1.18.22</version>
 		</dependency>
 
 		<dependency>
@@ -78,7 +78,7 @@
 		<dependency>
 			<groupId>com.ibm.mq</groupId>
 			<artifactId>mq-jms-spring-boot-starter</artifactId>
-			<version>2.4.1</version>
+			<version>3.0.6</version>
 		</dependency>
 
 		<dependency>

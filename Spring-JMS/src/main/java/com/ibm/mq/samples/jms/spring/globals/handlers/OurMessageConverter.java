@@ -26,7 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.jms.support.converter.MessageConversionException;
 import org.springframework.jms.support.converter.MessageConverter;
 
-import javax.jms.*;
+import jakarta.jms.*;
 
 public class OurMessageConverter implements MessageConverter {
     protected final Log logger = LogFactory.getLog(getClass());
