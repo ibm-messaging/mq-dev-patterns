@@ -1,3 +1,9 @@
+## Issue Support 
+
+The code in this repository, is provided and maintained on a community basis, and is not covered by any IBM commercial support agreement or warranty.
+
+For issues and fixes please just raise an issue against this repository.
+
 ## IBM MQ samples and patterns 
 
 When your application needs messaging, you don’t want to spend countless hours learning the basics, you want to jump straight in and play, see how things work.
