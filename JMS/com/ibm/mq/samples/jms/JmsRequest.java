@@ -1,5 +1,5 @@
 /*
-* (c) Copyright IBM Corporation 2019
+* (c) Copyright IBM Corporation 2019, 2023
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ public class JmsRequest {
     private static String MODEL_QUEUE_NAME; //
     private static String CIPHER_SUITE;
     private static String CCDTURL;
+    private static Boolean BINDINGS = false;
 
     private static Random random = new Random();
 
@@ -153,6 +154,7 @@ public class JmsRequest {
         QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
         MODEL_QUEUE_NAME = env.getEnvValue("MODEL_QUEUE_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
+        BINDINGS = env.getEnvBooleanValue("BINDINGS", index);
 
         CCDTURL = env.getCheckForCCDT();
     }
@@ -179,7 +181,13 @@ public class JmsRequest {
                 logger.info("Will be making use of CCDT File " + CCDTURL);
                 cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
             }
-            cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
+
+            if (BINDINGS) {
+                cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_BINDINGS);
+            } else {
+                cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
+            }
+
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
             cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "JmsRequest");
             cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
