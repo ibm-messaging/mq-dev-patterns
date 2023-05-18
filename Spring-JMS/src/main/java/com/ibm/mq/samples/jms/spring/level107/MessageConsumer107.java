@@ -24,7 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
-import javax.jms.Message;
+import jakarta.jms.Message;
 
 //@Component
 public class MessageConsumer107 {

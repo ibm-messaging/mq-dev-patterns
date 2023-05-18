@@ -29,7 +29,7 @@ import org.springframework.integration.jms.dsl.Jms;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
 
-import javax.jms.ConnectionFactory;
+import jakarta.jms.ConnectionFactory;
 
 
 //@Component

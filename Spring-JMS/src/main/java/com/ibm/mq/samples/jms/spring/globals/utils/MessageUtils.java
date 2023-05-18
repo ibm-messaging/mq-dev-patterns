@@ -6,7 +6,7 @@ import com.ibm.mq.samples.jms.spring.globals.data.OurOtherData;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import javax.jms.*;
+import jakarta.jms.*;
 import java.io.Serializable;
 import java.util.Map;
 

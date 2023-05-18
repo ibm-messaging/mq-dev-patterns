@@ -16,15 +16,15 @@
 
 package com.ibm.mq.samples.jms.spring.globals.handlers;
 
-import com.ibm.mq.jms.MQDestination;
+import com.ibm.mq.jakarta.jms.MQDestination;
 import com.ibm.mq.samples.jms.spring.globals.Constants;
-import com.ibm.msg.client.wmq.WMQConstants;
+import com.ibm.msg.client.jakarta.wmq.WMQConstants;
 import org.springframework.jms.support.destination.DestinationResolver;
 
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Session;
+import jakarta.jms.DeliveryMode;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.Session;
 
 public class OurDestinationResolver implements DestinationResolver {
     @Override
