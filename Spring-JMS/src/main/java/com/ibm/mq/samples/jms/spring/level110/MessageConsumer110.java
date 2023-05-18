@@ -26,9 +26,9 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Component;
 
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Message;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
 import java.util.Date;
 
 

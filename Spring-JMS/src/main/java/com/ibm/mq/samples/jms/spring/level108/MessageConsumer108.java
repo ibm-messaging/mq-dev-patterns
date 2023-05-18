@@ -26,7 +26,7 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
-import javax.jms.*;
+import jakarta.jms.*;
 
 
 //@Component

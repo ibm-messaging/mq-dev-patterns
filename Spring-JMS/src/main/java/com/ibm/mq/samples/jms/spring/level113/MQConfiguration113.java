@@ -31,8 +31,8 @@ import org.springframework.jms.config.JmsListenerEndpointRegistrar;
 import org.springframework.jms.config.SimpleJmsListenerEndpoint;
 import org.springframework.jms.support.QosSettings;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.DeliveryMode;
 
 //@Configuration
 public class MQConfiguration113 implements JmsListenerConfigurer {

@@ -16,7 +16,7 @@
 
 package com.ibm.mq.samples.jms.spring.level105;
 
-import javax.jms.*;
+import jakarta.jms.*;
 
 import com.ibm.mq.samples.jms.spring.globals.Constants;
 import com.ibm.mq.samples.jms.spring.globals.data.OurData;

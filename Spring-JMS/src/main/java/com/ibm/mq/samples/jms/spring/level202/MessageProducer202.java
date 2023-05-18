@@ -33,7 +33,7 @@ import org.springframework.integration.dsl.Transformers;
 import org.springframework.integration.jms.dsl.Jms;
 import org.springframework.stereotype.Component;
 
-import javax.jms.ConnectionFactory;
+import jakarta.jms.ConnectionFactory;
 import java.util.concurrent.TimeUnit;
 
 //@Component
