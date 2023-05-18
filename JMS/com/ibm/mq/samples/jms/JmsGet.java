@@ -1,5 +1,5 @@
 /*
-* (c) Copyright IBM Corporation 2019
+* (c) Copyright IBM Corporation 2019, 2023
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -51,8 +51,8 @@ public class JmsGet {
     private static String APP_PASSWORD; // Password that the application uses to connect to MQ
     private static String QUEUE_NAME; // Queue that the application uses to put and get messages to and from
     private static String CIPHER_SUITE;
-
     private static String CCDTURL;
+    private static Boolean BINDINGS = false;
 
     private static long TIMEOUTTIME = 5000;  // 5 Seconds
 
@@ -159,6 +159,7 @@ public class JmsGet {
         APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
         QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
+        BINDINGS = env.getEnvBooleanValue("BINDINGS", index);
 
         if (null == CCDTURL) {
           CCDTURL = env.getCheckForCCDT();
@@ -189,7 +190,12 @@ public class JmsGet {
                 cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
             }
 
-            cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
+            if (BINDINGS) {
+                cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_BINDINGS);
+            } else {
+                cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
+            }
+            
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
             cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "JmsGet (JMS)");
             cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);

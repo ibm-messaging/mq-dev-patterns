@@ -87,6 +87,25 @@ public class SampleEnvSetter {
         return value;
     }
 
+    public Boolean getEnvBooleanValue(String key, int index) {
+      JSONObject mqAppEnv = null;
+
+      Boolean value = Boolean.getBoolean(key);
+
+      if (!value && mqEndPoints != null &&
+                 ! mqEndPoints.isEmpty()) {
+          mqAppEnv = (JSONObject) mqEndPoints.get(index);
+          value = (Boolean) mqAppEnv.get(key);
+          if (value == null) {
+            value = false;
+          }
+      }
+
+      logger.info("returning " + value + " for key " + key);
+
+      return value;
+  }    
+
     public String getCheckForCCDT() {
         String value = System.getenv(CCDT);
 

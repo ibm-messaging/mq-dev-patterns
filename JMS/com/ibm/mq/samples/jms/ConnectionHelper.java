@@ -1,5 +1,5 @@
 /*
-* (c) Copyright IBM Corporation 2019
+* (c) Copyright IBM Corporation 2019, 2023
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ public class ConnectionHelper {
     private String TOPIC_NAME = null; // Topic that the application publishes to
     private String CIPHER_SUITE = null;
     private static String CCDTURL;
+    private static Boolean BINDINGS = false;
 
     JMSContext context;
 
@@ -113,6 +114,7 @@ public class ConnectionHelper {
         QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
         TOPIC_NAME = env.getEnvValue("TOPIC_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
+        BINDINGS = env.getEnvBooleanValue("BINDINGS", index);
 
         CCDTURL = env.getCheckForCCDT();
     }
@@ -145,7 +147,12 @@ public class ConnectionHelper {
                 cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
             }
 
-            cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
+            if (BINDINGS) {
+                cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_BINDINGS);
+            } else {
+                cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
+            }
+
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
             cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, id);
             cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);

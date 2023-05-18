@@ -1,5 +1,5 @@
 /*
-* Copyright 2018, 2022 IBM Corp.
+* (c) Copyright IBM Corporation 2019, 2023
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ public class JmsResponse {
     private static String CIPHER_SUITE;
     private static String CCDTURL;
     private static String BACKOUT_QUEUE;
+    private static Boolean BINDINGS = false;
 
     public static void main(String[] args) {
         initialiseLogging();
@@ -230,8 +231,13 @@ public class JmsResponse {
         APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
         QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
+        BINDINGS = env.getEnvBooleanValue("BINDINGS", index);
         BACKOUT_QUEUE = env.getEnvValue("BACKOUT_QUEUE", index);
-        if(BACKOUT_QUEUE.isEmpty()) { logger.info("Missing BACKOUT_QUEUE value"); }
+
+        if ( BACKOUT_QUEUE == null || BACKOUT_QUEUE.isEmpty() ) { 
+            logger.info("Missing BACKOUT_QUEUE value"); 
+        }
+
         CCDTURL = env.getCheckForCCDT();
     }
 
@@ -257,7 +263,13 @@ public class JmsResponse {
                 logger.info("Will be making use of CCDT File " + CCDTURL);
                 cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
             }
-            cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
+
+            if (BINDINGS) {
+                cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_BINDINGS);
+            } else {
+                cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE, WMQConstants.WMQ_CM_CLIENT);
+            }
+
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
             cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "JmsBasicResponse (JMS)");
             cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
