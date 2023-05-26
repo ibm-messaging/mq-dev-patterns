@@ -143,9 +143,11 @@ public class JmsPub {
 
       cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
       cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "SimplePub (JMS)");
-      cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
-      cf.setStringProperty(WMQConstants.USERID, APP_USER);
-      cf.setStringProperty(WMQConstants.PASSWORD, APP_PASSWORD);
+      if (null != APP_USER && !APP_USER.trim().isEmpty()) {
+        cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
+        cf.setStringProperty(WMQConstants.USERID, APP_USER);
+        cf.setStringProperty(WMQConstants.PASSWORD, APP_PASSWORD);
+      }
       cf.setStringProperty(WMQConstants.CLIENT_ID, PUBLICATION_NAME);
       if (CIPHER_SUITE != null && !CIPHER_SUITE.isEmpty()) {
         cf.setStringProperty(WMQConstants.WMQ_SSL_CIPHER_SUITE, CIPHER_SUITE);
