@@ -22,6 +22,8 @@
 
 # Node source files
 *.js zos-working-tree-encoding=ibm-1047
+# Always use LF for npm package files because npm cli likes to change line endings.
+package*.json text eol=lf
 
 # Python source files
 *.py zos-working-tree-encoding=ibm-1047
