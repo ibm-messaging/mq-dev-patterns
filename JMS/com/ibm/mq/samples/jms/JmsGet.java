@@ -198,9 +198,11 @@ public class JmsGet {
             
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
             cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "JmsGet (JMS)");
-            cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
-            cf.setStringProperty(WMQConstants.USERID, APP_USER);
-            cf.setStringProperty(WMQConstants.PASSWORD, APP_PASSWORD);
+            if (null != APP_USER && !APP_USER.trim().isEmpty()) {
+                cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
+                cf.setStringProperty(WMQConstants.USERID, APP_USER);
+                cf.setStringProperty(WMQConstants.PASSWORD, APP_PASSWORD);
+            }
             if (CIPHER_SUITE != null && !CIPHER_SUITE.isEmpty()) {
                 cf.setStringProperty(WMQConstants.WMQ_SSL_CIPHER_SUITE, CIPHER_SUITE);
             }
