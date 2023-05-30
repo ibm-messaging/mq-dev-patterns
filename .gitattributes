@@ -1,0 +1,3 @@
+# file encodings for zOS
+*.java zos-working-tree-encoding=ibm-1047
+*.json zos-working-tree-encoding=ibm-1047
