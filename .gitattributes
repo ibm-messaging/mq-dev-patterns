@@ -1,0 +1,41 @@
+# file encodings for zOS
+# When cloning onto Z/OS convert the source files into ibm-1047 US EBCDIC
+
+# Documentation
+*.md zos-working-tree-encoding=ibm-1047
+
+# Configuration files
+*.json zos-working-tree-encoding=ibm-1047
+*.properties zos-working-tree-encoding=ibm-1047
+*.xml zos-working-tree-encoding=ibm-1047
+
+# C# source files
+*.cs zos-working-tree-encoding=ibm-1047
+
+# Go source files
+*.go zos-working-tree-encoding=ibm-1047
+*.mod zos-working-tree-encoding=ibm-1047
+*.sum zos-working-tree-encoding=ibm-1047
+
+# Java source files
+*.java zos-working-tree-encoding=ibm-1047
+
+# Node source files
+*.js zos-working-tree-encoding=ibm-1047
+# Always use LF for npm package files because npm cli likes to change line endings.
+package*.json text eol=lf
+
+# Python source files
+*.py zos-working-tree-encoding=ibm-1047
+
+# Rust source files
+*.rs zos-working-tree-encoding=ibm-1047
+*.toml zos-working-tree-encoding=ibm-1047
+
+# Shell scripts
+*.sh zos-working-tree-encoding=ibm-1047
+
+# Swift scripts
+*.swift zos-working-tree-encoding=ibm-1047
+# not .xcodeproj  ?
+
