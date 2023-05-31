@@ -1,5 +1,5 @@
 /*
-* (c) Copyright IBM Corporation 2019
+* (c) Copyright IBM Corporation 2019, 2023
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -17,14 +17,13 @@
 package com.ibm.mq.samples.jms;
 
 import java.util.logging.*;
-import org.json.simple.parser.ParseException;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONArray;
-import java.io.FileReader;
+import org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
 import java.io.IOException;
-import java.io.FileNotFoundException;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.lang.System;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,18 +39,17 @@ public class SampleEnvSetter {
     public SampleEnvSetter() {
         JSONObject mqEnvSettings = null;
 
-        mqEndPoints = null;
-
+        mqEndPoints = null;    
         try {
-            JSONParser parser = new JSONParser();
-            Object data = parser.parse(new FileReader("../env.json"));
-            logger.info("File read");
+            File file = new File("../env.json");
+            String content = new String(Files.readAllBytes(Paths.get(file.toURI())));
+            mqEnvSettings = new JSONObject(content);
 
-            mqEnvSettings = (JSONObject) data;
+            logger.info("File read");
 
             if (mqEnvSettings != null) {
               logger.info("JSON Data Found");
-              mqEndPoints = (JSONArray) mqEnvSettings.get("MQ_ENDPOINTS");
+              mqEndPoints = (JSONArray) mqEnvSettings.getJSONArray("MQ_ENDPOINTS");
             }
 
             if (mqEndPoints == null || mqEndPoints.isEmpty()) {
@@ -60,13 +58,12 @@ public class SampleEnvSetter {
             } else {
                 logger.info("There is at least one MQ endpoint in the .json file");
             }
-
-        } catch (FileNotFoundException e) {
-            logger.warning(e.getMessage());
         } catch (IOException e) {
+            logger.warning("Error processing env.json file");
             logger.warning(e.getMessage());
-        } catch (ParseException e) {
-            logger.warning(e.getMessage());
+        } catch (JSONException e) {
+          logger.warning("Error parsing env.json file");
+          logger.warning(e.getMessage());         
         }
     }
 
@@ -74,11 +71,16 @@ public class SampleEnvSetter {
         JSONObject mqAppEnv = null;
         String value = System.getenv(key);
 
-        if ((value == null || value.isEmpty()) &&
-                   mqEndPoints != null &&
-                   ! mqEndPoints.isEmpty()) {
-            mqAppEnv = (JSONObject) mqEndPoints.get(index);
-            value = (String) mqAppEnv.get(key);
+        try {
+            if ((value == null || value.isEmpty()) &&
+                        mqEndPoints != null &&
+                        ! mqEndPoints.isEmpty()) {
+                mqAppEnv = (JSONObject) mqEndPoints.get(index);
+                value = (String) mqAppEnv.get(key);
+            }
+        } catch (JSONException e) {
+          logger.warning("Error looking for json key " + key);
+          logger.warning(e.getMessage());         
         }
 
         if (! key.contains("PASSWORD")) {
@@ -92,13 +94,18 @@ public class SampleEnvSetter {
 
       Boolean value = Boolean.getBoolean(key);
 
-      if (!value && mqEndPoints != null &&
-                 ! mqEndPoints.isEmpty()) {
-          mqAppEnv = (JSONObject) mqEndPoints.get(index);
-          value = (Boolean) mqAppEnv.get(key);
-          if (value == null) {
-            value = false;
+      try {
+          if (!value && mqEndPoints != null &&
+                          ! mqEndPoints.isEmpty()) {
+              mqAppEnv = (JSONObject) mqEndPoints.get(index);
+              value = (Boolean) mqAppEnv.getBoolean(key);
+              if (value == null) {
+                value = false;
+              }
           }
+      } catch (JSONException e) {
+        logger.warning("Error looking for json key " + key);
+        logger.warning(e.getMessage());         
       }
 
       logger.info("returning " + value + " for key " + key);
@@ -110,37 +117,38 @@ public class SampleEnvSetter {
         String value = System.getenv(CCDT);
 
         if (value != null && ! value.isEmpty()) {
-          String ccdtFile = value;
-          if (ccdtFile.startsWith(FILEPREFIX)) {
-            ccdtFile = ccdtFile.split(FILEPREFIX)[1];
-            logger.info("Checking for existance of file " + ccdtFile);
+            String ccdtFile = value;
+            if (ccdtFile.startsWith(FILEPREFIX)) {
+                ccdtFile = ccdtFile.split(FILEPREFIX)[1];
+                logger.info("Checking for existance of file " + ccdtFile);
 
-            File tmp = new File(ccdtFile);
-            if (! tmp.exists()) {
-              value = null;
+                File tmp = new File(ccdtFile);
+                if (! tmp.exists()) {
+                    value = null;
+                }
             }
-
-          }
         }
         return value;
     }
 
     public String getConnectionString() {
-      List<String> coll = new ArrayList<String>();
+        logger.info("SampleEnvSetter : getConnectionString **********************************");
 
-      for (Object o : mqEndPoints) {
-        JSONObject jo = (JSONObject) o;
-        String s = (String) jo.get("HOST") + "(" + (String) jo.get("PORT") + ")";
-        coll.add(s);
-      }
+        List<String> coll = new ArrayList<String>();
 
-      String connString = String.join(",", coll);
-      logger.info("Connection string will be " + connString);
+        for (Object o : mqEndPoints) {
+            JSONObject jo = (JSONObject) o;
+            String s = (String) jo.get("HOST") + "(" + (String) jo.get("PORT") + ")";
+            coll.add(s);
+        }
 
-      return connString;
+        String connString = String.join(",", coll);
+        logger.info("Connection string will be " + connString);
+
+        return connString;
     }
 
     public int getCount() {
-      return mqEndPoints.size();
+        return mqEndPoints.length();
     }
 }
