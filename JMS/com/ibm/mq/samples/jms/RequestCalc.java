@@ -1,5 +1,5 @@
 /*
-* (c) Copyright IBM Corporation 2019
+* (c) Copyright IBM Corporation 2019, 2023
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -17,40 +17,31 @@
 package com.ibm.mq.samples.jms;
 
 import java.util.logging.*;
-import org.json.simple.parser.ParseException;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.JSONObject;
-import java.lang.System;
+import org.json.JSONObject;
+import org.json.JSONException;
 
 public class RequestCalc {
 
     private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
 
     public static String buildStringForRequest(long r) {
-
         JSONObject obj = new JSONObject();
         obj.put("message", "The number is:");
-        obj.put("value", new Long(r));
+        obj.put("value", Long.valueOf(r));
         String reply = obj.toString();
         return reply;
-
     }
 
     public static long requestIntegerSquared(String response) {
         long n = 0;
+
         try {
-
-            JSONParser parser = new JSONParser();
-            Object data = parser.parse(response);
-            logger.info("Value retrieved from request");
-            JSONObject obj = (JSONObject) data;
-            if (null != obj.get("value")) {
-              n = (long) obj.get("value");
-            }
+            JSONObject obj = new JSONObject(response);
+            n = (long) obj.getLong("value");
             n *= n;
-
-        } catch (ParseException e) {
-            logger.warning(e.getMessage());
+        } catch (JSONException e) {
+            logger.warning("Error looking for value in json request");
+            logger.warning(e.getMessage());         
         }
         return n;
     }

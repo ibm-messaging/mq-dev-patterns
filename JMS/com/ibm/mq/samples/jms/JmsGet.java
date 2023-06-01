@@ -22,7 +22,6 @@ import javax.jms.Destination;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
-import javax.jms.JMSProducer;
 import javax.jms.Message;
 import javax.jms.TextMessage;
 import javax.jms.JMSRuntimeException;
@@ -32,8 +31,6 @@ import com.ibm.msg.client.jms.JmsFactoryFactory;
 import com.ibm.msg.client.wmq.WMQConstants;
 import com.ibm.mq.constants.MQConstants;
 import com.ibm.mq.MQException;
-
-import com.ibm.msg.client.jms.DetailedIllegalStateRuntimeException;
 
 import com.ibm.mq.samples.jms.SampleEnvSetter;
 
