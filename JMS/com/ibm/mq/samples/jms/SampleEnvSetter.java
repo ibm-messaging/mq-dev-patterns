@@ -69,7 +69,7 @@ public class SampleEnvSetter {
 
     public String getEnvValue(String key, int index) {
         JSONObject mqAppEnv = null;
-        String value = System.getenv(key);
+        String value = System.getProperty(key);
 
         try {
             if ((value == null || value.isEmpty()) &&
@@ -114,7 +114,7 @@ public class SampleEnvSetter {
   }    
 
     public String getCheckForCCDT() {
-        String value = System.getenv(CCDT);
+        String value = System.getProperty(CCDT);
 
         if (value != null && ! value.isEmpty()) {
             String ccdtFile = value;
