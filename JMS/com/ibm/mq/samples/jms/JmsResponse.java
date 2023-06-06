@@ -80,8 +80,9 @@ public class JmsResponse {
                 // getting the message from the requestor
                 Message receivedMessage = consumer.receive();
 
-                long extractedValue = getAndDisplayMessageBody(receivedMessage);
-                replyToMessage(context, receivedMessage, extractedValue);
+                //long extractedValue = getAndDisplayMessageBody(receivedMessage);
+                checkMessageType(receivedMessage);
+                replyToMessage(context, receivedMessage);
             } catch (JMSRuntimeException jmsex) {
 
                 jmsex.printStackTrace();
@@ -93,18 +94,21 @@ public class JmsResponse {
         }
     }
 
-    private static void replyToMessage(JMSContext context, Message receivedMessage, long extractedValue) {
+    private static void replyToMessage(JMSContext context, Message receivedMessage) {
         boolean ok=true;
         try {
+            String requestObject = null;
+            if (receivedMessage instanceof TextMessage) {
+                TextMessage textMessage = (TextMessage) receivedMessage;
+                requestObject = textMessage.getText();
+            }
+
             if (receivedMessage instanceof Message) {
 
                 Destination destination = receivedMessage.getJMSReplyTo();
                 String correlationID = receivedMessage.getJMSCorrelationID();   
-                
-            
-                //throw new JMSRuntimeException("Error on reading the message");
                
-                TextMessage message = context.createTextMessage(RequestCalc.buildStringForRequest(extractedValue));
+                TextMessage message = context.createTextMessage(RequestResponseHelper.buildStringForResponse(requestObject));
                 message.setJMSCorrelationID(correlationID);
                 JMSProducer producer = context.createProducer();
 
@@ -189,13 +193,11 @@ public class JmsResponse {
         context.commit();
     }
 
-    private static long getAndDisplayMessageBody(Message receivedMessage) {
-        long responseValue = 0;
+    private static void checkMessageType(Message receivedMessage) {
         if (receivedMessage instanceof TextMessage) {
             TextMessage textMessage = (TextMessage) receivedMessage;
             try {
                 logger.info("Request message was" + textMessage.getText());
-                responseValue = RequestCalc.requestIntegerSquared(textMessage.getText());
             } catch (JMSException jmsex) {
                 recordFailure(jmsex);
             }
@@ -204,7 +206,6 @@ public class JmsResponse {
         } else {
             logger.info("Received object not of JMS Message type!\n");
         }
-        return responseValue;
     }
 
     // recurse on the inner exceptions looking for a MQException.
