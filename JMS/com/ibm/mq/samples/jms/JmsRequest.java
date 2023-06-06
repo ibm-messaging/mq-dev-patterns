@@ -52,7 +52,7 @@ public class JmsRequest {
     private static String CIPHER_SUITE;
     private static String CCDTURL;
     private static Boolean BINDINGS = false;
-    private static String REQUEST_MODE="";
+    private static String REQUEST_MODE = "";
 
     private static Random random = new Random();
 

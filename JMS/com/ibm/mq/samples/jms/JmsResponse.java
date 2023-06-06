@@ -80,7 +80,6 @@ public class JmsResponse {
                 // getting the message from the requestor
                 Message receivedMessage = consumer.receive();
 
-                //long extractedValue = getAndDisplayMessageBody(receivedMessage);
                 checkMessageType(receivedMessage);
                 replyToMessage(context, receivedMessage);
             } catch (JMSRuntimeException jmsex) {
