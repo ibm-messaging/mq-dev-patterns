@@ -85,7 +85,7 @@ public class RequestResponseHelper {
     }
 
     private static String modeFromRequest(JSONObject request) {
-        return getStringFromObj(request, MODE_KEY);
+        return validModeOrDefault(getStringFromObj(request, MODE_KEY));
     }
 
     private static String validModeOrDefault(String mode) {
