@@ -111,7 +111,30 @@ public class SampleEnvSetter {
       logger.info("returning " + value + " for key " + key);
 
       return value;
-  }    
+    }    
+
+    public Long getEnvLongValue(String key, int index) {
+        JSONObject mqAppEnv = null;
+        Long value = Long.getLong(key,0L);
+
+        try {
+            if (value <= 0L && mqEndPoints != null &&
+                            ! mqEndPoints.isEmpty()) {
+                mqAppEnv = (JSONObject) mqEndPoints.get(index);
+                value = (Long) mqAppEnv.getLong(key);
+                if (value == null) {
+                  value = 0L;
+                }
+            }
+        } catch (JSONException e) {
+          logger.warning("Error looking for json key " + key);
+          logger.warning(e.getMessage());         
+        }
+  
+        logger.info("returning " + value + " for key " + key);
+
+        return value;
+    }
 
     public String getCheckForCCDT() {
         String value = System.getProperty(CCDT);

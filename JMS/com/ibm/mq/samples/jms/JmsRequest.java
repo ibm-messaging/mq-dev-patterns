@@ -18,7 +18,6 @@ package com.ibm.mq.samples.jms;
 
 import java.util.logging.*;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.Random;
 
 import javax.jms.Destination;
@@ -53,6 +52,7 @@ public class JmsRequest {
     private static String CIPHER_SUITE;
     private static String CCDTURL;
     private static Boolean BINDINGS = false;
+    private static String REQUEST_MODE = "";
 
     private static Random random = new Random();
 
@@ -82,7 +82,7 @@ public class JmsRequest {
         producer = context.createProducer();
         logger.info("producer created");
 
-        TextMessage message = context.createTextMessage(RequestCalc.buildStringForRequest(random.nextInt(101)));
+        TextMessage message = context.createTextMessage(RequestResponseHelper.buildStringForRequest(REQUEST_MODE, random.nextInt(101)));
         try {
             String correlationID = String.format("%24.24s", UUID.randomUUID().toString());
             byte[] b = null;
@@ -155,6 +155,8 @@ public class JmsRequest {
         MODEL_QUEUE_NAME = env.getEnvValue("MODEL_QUEUE_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
         BINDINGS = env.getEnvBooleanValue("BINDINGS", index);
+
+        REQUEST_MODE = env.getEnvValue("REQUEST_MODE", index);
 
         CCDTURL = env.getCheckForCCDT();
     }
