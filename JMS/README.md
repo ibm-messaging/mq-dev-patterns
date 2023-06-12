@@ -225,6 +225,8 @@ If you have used maven to build the samples, you can run
 
 The response sample will get a message from the queue, process it and put the response on the reply to queue and keep looking for more messages to respond to till you ctrl+c interrupt it.
 
+If you set the envrionment variable `RESPONDER_INACTIVITY_TIMEOUT` to a number the responder will wait `RESPONDER_INACTIVITY_TIMEOUT` seconds for a request before timing out and ending.
+
 ## The SampleEnvSetter
 
 Used by all samples to read the JSON file. Will be compiled when you compile any other the other samples.

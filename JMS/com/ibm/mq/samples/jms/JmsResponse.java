@@ -53,6 +53,7 @@ public class JmsResponse {
     private static String CCDTURL;
     private static String BACKOUT_QUEUE;
     private static Boolean BINDINGS = false;
+    private static Long RESPONDER_INACTIVITY_TIMEOUT = 0L;
 
     public static void main(String[] args) {
         initialiseLogging();
@@ -77,9 +78,20 @@ public class JmsResponse {
 
        while (true) {
             try {
+                Message receivedMessage = null;
                 // getting the message from the requestor
-                Message receivedMessage = consumer.receive();
-
+                if (0 < RESPONDER_INACTIVITY_TIMEOUT) {
+                    logger.info("Responder waiting for " + RESPONDER_INACTIVITY_TIMEOUT + " milliseconds for next request");
+                    receivedMessage = consumer.receive(RESPONDER_INACTIVITY_TIMEOUT);  
+                    if (null == receivedMessage) {
+                        logger.info("Timed out with no requests received");
+                        logger.info("Terminating responder");
+                        break;
+                    }
+                } else {
+                    receivedMessage = consumer.receive();
+                }
+                logger.info("Checking message type");
                 checkMessageType(receivedMessage);
                 replyToMessage(context, receivedMessage);
             } catch (JMSRuntimeException jmsex) {
@@ -233,6 +245,13 @@ public class JmsResponse {
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
         BINDINGS = env.getEnvBooleanValue("BINDINGS", index);
         BACKOUT_QUEUE = env.getEnvValue("BACKOUT_QUEUE", index);
+        RESPONDER_INACTIVITY_TIMEOUT = env.getEnvLongValue("RESPONDER_INACTIVITY_TIMEOUT", index);
+
+        // TIMEOUT in receive is in milliseconds, a value of 5 will be converted to 
+        // 5000 milliseconds = 5 seconds.
+        if (0 < RESPONDER_INACTIVITY_TIMEOUT) {
+            RESPONDER_INACTIVITY_TIMEOUT *= 1000;
+        }
 
         if ( BACKOUT_QUEUE == null || BACKOUT_QUEUE.isEmpty() ) { 
             logger.info("Missing BACKOUT_QUEUE value"); 
