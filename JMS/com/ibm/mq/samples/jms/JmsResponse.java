@@ -53,6 +53,7 @@ public class JmsResponse {
     private static String CCDTURL;
     private static String BACKOUT_QUEUE;
     private static Boolean BINDINGS = false;
+    private static Long RESPONDER_INACTIVITY_TIMEOUT = 0L;
 
     public static void main(String[] args) {
         initialiseLogging();
@@ -77,11 +78,22 @@ public class JmsResponse {
 
        while (true) {
             try {
+                Message receivedMessage = null;
                 // getting the message from the requestor
-                Message receivedMessage = consumer.receive();
-
-                long extractedValue = getAndDisplayMessageBody(receivedMessage);
-                replyToMessage(context, receivedMessage, extractedValue);
+                if (0 < RESPONDER_INACTIVITY_TIMEOUT) {
+                    logger.info("Responder waiting for " + RESPONDER_INACTIVITY_TIMEOUT + " milliseconds for next request");
+                    receivedMessage = consumer.receive(RESPONDER_INACTIVITY_TIMEOUT);  
+                    if (null == receivedMessage) {
+                        logger.info("Timed out with no requests received");
+                        logger.info("Terminating responder");
+                        break;
+                    }
+                } else {
+                    receivedMessage = consumer.receive();
+                }
+                logger.info("Checking message type");
+                checkMessageType(receivedMessage);
+                replyToMessage(context, receivedMessage);
             } catch (JMSRuntimeException jmsex) {
 
                 jmsex.printStackTrace();
@@ -93,18 +105,21 @@ public class JmsResponse {
         }
     }
 
-    private static void replyToMessage(JMSContext context, Message receivedMessage, long extractedValue) {
+    private static void replyToMessage(JMSContext context, Message receivedMessage) {
         boolean ok=true;
         try {
+            String requestObject = null;
+            if (receivedMessage instanceof TextMessage) {
+                TextMessage textMessage = (TextMessage) receivedMessage;
+                requestObject = textMessage.getText();
+            }
+
             if (receivedMessage instanceof Message) {
 
                 Destination destination = receivedMessage.getJMSReplyTo();
                 String correlationID = receivedMessage.getJMSCorrelationID();   
-                
-            
-                //throw new JMSRuntimeException("Error on reading the message");
                
-                TextMessage message = context.createTextMessage(RequestCalc.buildStringForRequest(extractedValue));
+                TextMessage message = context.createTextMessage(RequestResponseHelper.buildStringForResponse(requestObject));
                 message.setJMSCorrelationID(correlationID);
                 JMSProducer producer = context.createProducer();
 
@@ -189,13 +204,11 @@ public class JmsResponse {
         context.commit();
     }
 
-    private static long getAndDisplayMessageBody(Message receivedMessage) {
-        long responseValue = 0;
+    private static void checkMessageType(Message receivedMessage) {
         if (receivedMessage instanceof TextMessage) {
             TextMessage textMessage = (TextMessage) receivedMessage;
             try {
                 logger.info("Request message was" + textMessage.getText());
-                responseValue = RequestCalc.requestIntegerSquared(textMessage.getText());
             } catch (JMSException jmsex) {
                 recordFailure(jmsex);
             }
@@ -204,7 +217,6 @@ public class JmsResponse {
         } else {
             logger.info("Received object not of JMS Message type!\n");
         }
-        return responseValue;
     }
 
     // recurse on the inner exceptions looking for a MQException.
@@ -233,6 +245,13 @@ public class JmsResponse {
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
         BINDINGS = env.getEnvBooleanValue("BINDINGS", index);
         BACKOUT_QUEUE = env.getEnvValue("BACKOUT_QUEUE", index);
+        RESPONDER_INACTIVITY_TIMEOUT = env.getEnvLongValue("RESPONDER_INACTIVITY_TIMEOUT", index);
+
+        // TIMEOUT in receive is in milliseconds, a value of 5 will be converted to 
+        // 5000 milliseconds = 5 seconds.
+        if (0 < RESPONDER_INACTIVITY_TIMEOUT) {
+            RESPONDER_INACTIVITY_TIMEOUT *= 1000;
+        }
 
         if ( BACKOUT_QUEUE == null || BACKOUT_QUEUE.isEmpty() ) { 
             logger.info("Missing BACKOUT_QUEUE value"); 
