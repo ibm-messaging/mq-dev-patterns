@@ -31,6 +31,7 @@ import {
 
 const LandingPage = () => {
   const [selectedTab, setSelectedTab] = useState(0);
+  const isMobile = /Mobile/.test(navigator.userAgent);
   return (
     <Grid className="lanKLandding-page" fullWidth>
       <Column lg={16} md={8} sm={4} className="landing-page__banner">
@@ -45,8 +46,8 @@ const LandingPage = () => {
             let { index } = e;
             setSelectedTab(index);
           }}>
-          <Switch name="one" text="POINT-TO-POINT" />
-          <Switch name="two" text="PUBLISHER/SUBSCRIBER" />
+          <Switch name="one" text="POINT-TO-POINT" />          
+          {isMobile ? <></> : <Switch name="two" text="PUBLISHER/SUBSCRIBER" />}
           <Switch name="three" text="REQUEST/RESPONSE" />
         </ContentSwitcher>
 
@@ -55,9 +56,13 @@ const LandingPage = () => {
             <TabPanel>
               <PointPointIndex />
             </TabPanel>
-            <TabPanel>
+            {
+              isMobile ?
+              <></> :
+              <TabPanel>
               <PubSubIndex />
-            </TabPanel>
+              </TabPanel> 
+            }            
             <TabPanel>
               <RequestResponseIndex />
             </TabPanel>
