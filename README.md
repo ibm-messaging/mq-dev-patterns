@@ -93,6 +93,11 @@ We've tried to make this easier by providing one `env.json` file in the main `sa
 }
 ```
 
+### Z/Xplore
+If you are running these samples on Z/Xplore then you can use the
+`env-zbindings.json` file. Simply rename the `env-zbindings.json` to 
+`env.json`
+
 You can use the `env.json` file to 'switch on' or 'switch off' parts of the code.
 
 ## Endpoints Array
