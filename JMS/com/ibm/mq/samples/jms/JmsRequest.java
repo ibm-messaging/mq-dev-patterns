@@ -115,7 +115,7 @@ public class JmsRequest {
             producer.send(destination, message);
             logger.info("listening for response");
 
-            logger.info(selector);
+            logger.info("Selecting reply based on selector " + selector);
             JMSConsumer consumer = context.createConsumer(requestQueue, selector);
             logger.info("reply getter created");
             Message receivedMessage = consumer.receive();
