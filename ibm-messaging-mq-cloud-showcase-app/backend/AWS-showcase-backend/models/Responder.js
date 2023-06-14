@@ -24,14 +24,14 @@ let debug_warn = require('debug')('mqapp-responder:warn');
 class Responder {
     constructor(appId) {
         this.appId = appId;
-        this.mqclient = new MQClient();
+        this.mqclient = new MQClient();        
         this.myID = uuidv4();
     }
 
     getMessageFromQueue(queueName) {
         return new Promise((resolve, reject) => {
             debug_info(`Responder ${this.myID} getting message from queue`);
-            this.mqclient.get(queueName,1,null, 'DYNAMIC')
+            this.mqclient.get(queueName,1,null, 'DYNAMIC', this.appId)
             .then((messages) => {
                 debug_warn(`The producer retrieved this message ${JSON.stringify(messages)}`);
                 if(!messages[0].replyToMsg) {

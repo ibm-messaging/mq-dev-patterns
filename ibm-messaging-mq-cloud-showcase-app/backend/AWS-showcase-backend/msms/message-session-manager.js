@@ -72,8 +72,8 @@ class MQClient {
     this[_HCONNKEY] = null;
     this[_HOBJKEY] = null;
     this[_HOBJDYN] = null;
-    this.currency = null;
-    this.filterBySessionID = null;
+    this.currency = null;    
+    this.sessionID = null;
     this._TOPIC = undefined;
     this._DYNAMIC = undefined;
     this._HEALTHY = true;
@@ -99,7 +99,7 @@ class MQClient {
    *    creating a new tmp queue. (Usually used by Requestors) \
    * @returns {Promise}
    */  
-  put(putRequest, DYNAMIC = null) {    
+  put(putRequest, DYNAMIC = null, sessionID = null) {    
     return new Promise((resolve, reject) => {
       let message = 'Message from app running in Cloud Engine';
       
@@ -141,7 +141,7 @@ class MQClient {
           // The dynamic connection has been created and stored in this[_HOBJDYN]    
           return this.performConnection(putRequest.queueName)
           .then(() => {
-            this.performPutWithSessionID(msg, 1, 1);  
+            this.performPutWithSessionID(msg, 1, sessionID);  
           })                                 
           
         } else if (this.currency){
@@ -192,6 +192,8 @@ class MQClient {
 
     mqmd.ReplyToQ = this[_HOBJDYN]._name;
     mqmd.MsgType = MQC.MQMT_REQUEST;  
+
+    debug_info(`----------PUT performed with the following sessionID: ${sessionID}`)
 
     return mq.CrtMh(hConn,  cmho, function(err,mh) {      
       debug_info("hConn : " + hConn);
@@ -314,15 +316,16 @@ class MQClient {
     *  the just obtained messages.    
     * @returns {Promise} 
     * */         
-  get(_QUEUE_NAME, getLimit, currency = null, DYNAMIC = null) {    
+  get(_QUEUE_NAME, getLimit, currency = null, DYNAMIC = null, sessionID = null) {    
     // The currency value should be used to filter messages 
     this.currency = currency;    
-    this.filterBySessionID = DYNAMIC === "DYNAMIC";
+    this.sessionID = sessionID;
+    
     return new Promise((resolve, reject) => {                              
       
       this.performConnection(_QUEUE_NAME)
       .then(() => {                            
-        this.filterBySessionID = null;
+        this.sessionID = null;
         this._DYNAMIC = DYNAMIC;
         debug_info("Connected to MQ");        
         return this.performGet(getLimit);        
@@ -438,12 +441,12 @@ class MQClient {
   performOpen(_QUEUE_NAME) {
     let od = new mq.MQOD();
     od.ObjectName = _QUEUE_NAME || MQDetails.QUEUE_NAME;    
-    od.ObjectType = MQC.MQOT_Q;    
+    od.ObjectType = MQC.MQOT_Q;        
 
-    debug_info(`=============Filter by ID ${this.filterBySessionID}`);
-
-    if(this.filterBySessionID) {
-      od.SelectionString = "sessionID = 1";
+    if(this.sessionID !== null) {
+      let selectionString = `sessionID = '${this.sessionID}'` 
+      debug_info(`The selection string for this responde request is ${selectionString}`);
+      od.SelectionString = selectionString;
     }
         
     //This space sounds interesting
