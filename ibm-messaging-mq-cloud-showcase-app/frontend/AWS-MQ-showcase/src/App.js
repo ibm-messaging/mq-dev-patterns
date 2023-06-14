@@ -34,6 +34,7 @@ class App extends Component {
         </Theme>
         <Content>
         <ToastContainer
+            style={{height:"50px"}}
             position="bottom-right"
             autoClose={2000}
             hideProgressBar={false}

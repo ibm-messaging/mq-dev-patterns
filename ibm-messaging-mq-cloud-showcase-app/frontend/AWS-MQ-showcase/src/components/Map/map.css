@@ -14,7 +14,7 @@
  * limitations under the License.
  **/
  
-.mq--progress-bar--progress {
+ .mq--progress-bar--progress {
   color: 'red';
 }
 .queue-image {
@@ -165,21 +165,23 @@
   font-weight: bold;
 }
 
-.subscriber-node-subscription-name {
-  margin-top: 10px;
-  width: 100%;
-}
 
 .producer-node-send-button {
+  height: 30px;
+  text-align: center;
+  padding-top: 5px;
   margin-top: 10px;
   width: 100%;
 }
 
-.publisher-node-send-button {
-  margin-top: 10px;
-  width: 100%;
-  left: 10%;
-  padding-left: 22.5%;
+.publisher-node-send-button {  
+  height: 35px;
+  text-align: center;
+  padding-top: 5px;  
+  text-align: center;  
+  width: 100%;    
+  margin-left: 7%;
+  text-align: center;  
   font-size: 1.2em;
 }
 
