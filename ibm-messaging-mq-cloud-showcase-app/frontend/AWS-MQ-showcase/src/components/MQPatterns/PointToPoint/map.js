@@ -151,8 +151,9 @@ function Flow() {
             onConnect={onConnect}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
+            defaultPosition={[0, 0]}
             className="touchdevice-flow"
-            defaultZoom={0.5}>
+            defaultZoom={0.1}>
             <Background variant="lines" />
             <Controls />
           </ReactFlow>

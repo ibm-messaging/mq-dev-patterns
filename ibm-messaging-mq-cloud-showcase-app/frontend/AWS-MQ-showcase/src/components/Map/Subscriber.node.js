@@ -14,14 +14,8 @@
  * limitations under the License.
  **/
 
-
 import React, { useEffect, useState } from 'react';
-import {  
-  Grid,
-  Column,  
-  Tag,
-  TextInput,  
-} from '@carbon/react';
+import { Grid, Column, Tag, TextInput } from '@carbon/react';
 import { Handle } from 'react-flow-renderer';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PubSub/store';
@@ -29,43 +23,40 @@ import FormLabel from '@carbon/react/lib/components/FormLabel/FormLabel';
 import './map.css';
 import { toast } from 'react-toastify';
 
-
 const SubscriberNode = ({ id, data }) => {
   const adapter = new APIAdapter();
   const animateConnection = useStore(
     state => state.changeEdgeAnimationFromNodeId
   );
-  const [animationState, setAnimationState] = useState(false);  
+  const [animationState, setAnimationState] = useState(false);
   const _deleteMe = useStore(state => state.onDeleteNode);
   const _deleteEdgeDueToFailingSUb = useStore(
     state => state.deleteEdgeFromNode
   );
-  const [lastMessage, setLastMessage] = useState(undefined);  
+  const [lastMessage, setLastMessage] = useState(undefined);
   const [sessionCount, setSessionCount] = useState(0);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [name, setName] = useState(data.label);
-  const [canSend, setCandSend] = useState(true);    
+  const [canSend, setCandSend] = useState(true);
   // Randomize the intervals between API invocations.
-  const intervalTillTheLastMessage = between(1500,3500);
+  const intervalTillTheLastMessage = between(1500, 3500);
 
-  function between(min, max) {  
-    return Math.floor(
-      Math.random() * (max - min) + min
-    )
+  function between(min, max) {
+    return Math.floor(Math.random() * (max - min) + min);
   }
 
   useEffect(() => {
     if (data.connectedQueue) {
       const interval = setInterval(async () => {
         try {
-          if(canSend) {
+          if (canSend) {
             setCandSend(false);
             let _lastMessages = await adapter.getForSubFromAppId(
               id,
               data.connectedQueue
             );
             setCandSend(true);
-  
+
             if (_lastMessages !== undefined) {
               if (_lastMessages === -1) {
                 // if -1 it means that the sub is not subcscribed to
@@ -79,7 +70,6 @@ const SubscriberNode = ({ id, data }) => {
                 setSessionCount(state => state + 1);
               }
             }
-       
           }
         } catch (e) {
           console.log(e);
@@ -87,7 +77,7 @@ const SubscriberNode = ({ id, data }) => {
       }, intervalTillTheLastMessage);
       return () => clearInterval(interval);
     }
-  });  
+  });
 
   useEffect(() => {
     if (animationState) {
@@ -102,7 +92,7 @@ const SubscriberNode = ({ id, data }) => {
     switch (data.subscriptionState) {
       // if it is not subscribed
       case 0:
-        if(data.connectedQueue) {
+        if (data.connectedQueue) {
           subscribe();
         } else if (!data.connectedQueue) {
           setIsSubscribed(false);
@@ -112,7 +102,7 @@ const SubscriberNode = ({ id, data }) => {
       case 2:
         unsub();
         break;
-      default:        
+      default:
         break;
     }
   }, [data.subscriptionState]);
@@ -189,26 +179,13 @@ const SubscriberNode = ({ id, data }) => {
         }}
         isConnectable={!data.connectedQueue}
       />
-
-      <Grid>
-        <Column lg={9}>
-          <TextInput
-            className="consumer-node-name-label"
-            value={name}
-            size="sm"
-            onChange={e => changeName(e)}
-          />
-        </Column>
-        <Column lg={7}>
-          <Tag
-            className="subscriber-node-subscription-name"
-            type={isSubscribed ? 'green' : 'orange'}>
-            {isSubscribed
-              ? 'Subscribed to: ' + data.connectedQueue
-              : 'No subscription'}
-          </Tag>
-        </Column>
-      </Grid>
+    
+      <TextInput
+        className="consumer-node-name-label"
+        value={name}
+        size="sm"
+        onChange={e => changeName(e)}
+      />                  
 
       <Column md={16} lg={16} sm={16}>
         <FormLabel className="consumer-subsection-title">
@@ -223,10 +200,18 @@ const SubscriberNode = ({ id, data }) => {
       </Column>
       <Column md={16} lg={16} sm={16}>
         <FormLabel>Date: {lastMessage?.Date}</FormLabel>
-      </Column>      
+      </Column>
       <Column md={16} lg={16} sm={16}>
         <FormLabel>Notifications Received: {sessionCount}</FormLabel>
       </Column>
+
+      <Tag  
+            style={{height:"5px", position: "absolute", right: "10px", bottom: "5px"}} 
+            type={isSubscribed ? 'green' : 'orange'}>
+            {isSubscribed
+              ? 'Subscribed to: ' + data.connectedQueue
+              : 'No subscription'}
+        </Tag>
     </div>
   );
 };
