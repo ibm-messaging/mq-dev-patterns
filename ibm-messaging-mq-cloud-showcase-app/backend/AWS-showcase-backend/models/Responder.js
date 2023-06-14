@@ -14,7 +14,7 @@
  * limitations under the License.
  **/
 
- const { v4: uuidv4 } = require('uuid');
+ const { v4: uuidv4, stringify } = require('uuid');
  const MQClient = require("../msms/message-session-manager");
 
  //Set Logging options
@@ -33,6 +33,7 @@ class Responder {
             debug_info(`Responder ${this.myID} getting message from queue`);
             this.mqclient.get(queueName,1,null, 'DYNAMIC')
             .then((messages) => {
+                debug_warn(`The producer retrieved this message ${JSON.stringify(messages)}`);
                 if(!messages[0].replyToMsg) {
                     debug_warn("This is not a reply to queue valid message");
                     resolve(null);

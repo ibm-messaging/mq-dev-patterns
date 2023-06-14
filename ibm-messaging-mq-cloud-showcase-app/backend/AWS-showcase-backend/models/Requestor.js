@@ -60,7 +60,7 @@ class Requestor {
         return new Promise((resolve, reject) => {
             this.mqclient.put(putRequest, 'DYNPUT')
             .then((hObjDyn) => {
-                debug_info(`requester ${this.myID} putting message onto queue`);
+                debug_info(`requester ${this.myID} putting message onto queue ${JSON.stringify(hObjDyn)}`);
 
                 let name = hObjDyn._name;                
                 let newDyn = new DynQueue(this.mqclient, hObjDyn, name);                
@@ -69,7 +69,7 @@ class Requestor {
                 resolve(hObjDyn);
             })
             .catch((err) => {
-                debug_warn(`requester ${this.myID} error putting message onto queue ${err}`);
+                debug_warn(`requester ${this.myID} error putting message onto queue ${hObjDyn}`);
                 reject(err);
             })
         });
