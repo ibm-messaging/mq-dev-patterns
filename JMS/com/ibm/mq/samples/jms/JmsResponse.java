@@ -206,20 +206,29 @@ public class JmsResponse {
 
         try {
             counter = Integer.parseInt(message.getStringProperty("JMSXDeliveryCount"));
-            logger.info("Current counter" + String.valueOf(counter));
+            logger.info("Current counter " + String.valueOf(counter));
         } catch (Exception e) {
             logger.info("Error on getting the counter");
             return;
         }
 
         if(counter < 5) {
+            logger.warning("rolling back the message");
             context.rollback();
         } else {
+            logger.warning("Retry rate has been exceeded");
+            logger.warning("Attempting to backout the message");
             redirectToAnotherQueue(context, message);
         }      
     }
 
     private static void redirectToAnotherQueue(JMSContext context, Message message) {
+        if (null == BACKOUT_QUEUE || BACKOUT_QUEUE.isEmpty()) {
+            logger.warning("backout queue has not been supplied");
+            logger.warning("message may cause poison message situation");
+            context.commit();
+            return;
+        }
         logger.info("Redirecting to "+ BACKOUT_QUEUE);
         Destination dest = context.createQueue("queue:///" + BACKOUT_QUEUE);
         JMSProducer producer = context.createProducer();
