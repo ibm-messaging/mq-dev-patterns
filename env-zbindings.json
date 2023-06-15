@@ -2,7 +2,6 @@
     "MQ_ENDPOINTS": [{
       "HOST": "127.0.0.1",
       "PORT": "1414",
-      "CHANNEL": "DEV.APP.SVRCONN",
       "QMGR": "CSQ9",
       "BINDINGS": true,
       "QUEUE_NAME": "DEV.QUEUE.1",
