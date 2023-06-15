@@ -32,7 +32,10 @@ import javax.jms.TemporaryQueue;
 import com.ibm.msg.client.jms.JmsConnectionFactory;
 import com.ibm.msg.client.jms.JmsFactoryFactory;
 import com.ibm.msg.client.wmq.WMQConstants;
+import com.ibm.msg.client.jms.DetailedInvalidDestinationException;
 import com.ibm.mq.jms.MQDestination;
+
+import com.ibm.msg.client.jms.DetailedInvalidDestinationRuntimeException;
 
 import com.ibm.mq.samples.jms.SampleEnvSetter;
 
@@ -124,8 +127,13 @@ public class JmsRequest {
         } catch (JMSException e) {
             logger.warning("Got a JMS exception");
             logger.warning(e.getMessage());
+        } catch (DetailedInvalidDestinationRuntimeException e) {
+            logger.warning("Looks like something is wrong with the queue name"); 
+            logger.warning(e.getMessage());
         } catch (Exception e) {
-
+            logger.warning("Got an exception");
+            logger.warning("Exception class Name " + e.getClass().getSimpleName());
+            logger.warning(e.getMessage());
         }
     }
 
