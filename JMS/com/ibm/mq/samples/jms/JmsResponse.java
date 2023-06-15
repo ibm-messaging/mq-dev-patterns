@@ -152,12 +152,19 @@ public class JmsResponse {
         } catch (JMSException jmsex) {    
             logger.info("JMS Exception caught");
 
-            if (null != jmsex.getCause() && jmsex.getCause() instanceof MQException) {
-                MQException innerException = (MQException) jmsex.getCause();
+            Throwable cause = jmsex.getCause();
 
-                if (MQConstants.MQRC_UNKNOWN_OBJECT_NAME == innerException.getReason()) {
-                    ok = false;
-                    logger.info("Reply to Queue no longer exists, skipping request");
+            if (null != cause && cause instanceof MQException) {
+                MQException innerException = (MQException) cause;
+                int reason = innerException.getReason();
+
+                switch(innerException.getReason()) {
+                    case MQConstants.MQRC_UNKNOWN_OBJECT_NAME:
+                        logger.info("Reply to Queue no longer exists, skipping request");
+                        break;
+                    case MQConstants.MQRC_CONNECTION_BROKEN:
+                        logger.info("MQ Connection has broken");
+                        break;                    
                 }
             }
             
@@ -310,7 +317,13 @@ public class JmsResponse {
         try {
             if (null == CCDTURL) {
                 cf.setStringProperty(WMQConstants.WMQ_CONNECTION_NAME_LIST, ConnectionString);
-                cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
+                
+                if (null == CHANNEL && !BINDINGS) {
+                    logger.warning("When running in client mode, either channel or CCDT must be provided");
+                } else if (null != CHANNEL) {
+                    cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
+                }
+                
             } else {
                 logger.info("Will be making use of CCDT File " + CCDTURL);
                 cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
