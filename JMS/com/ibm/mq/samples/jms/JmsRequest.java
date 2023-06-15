@@ -47,7 +47,8 @@ public class JmsRequest {
     private static String QMGR; // Queue manager name
     private static String APP_USER; // User name that application uses to connect to MQ
     private static String APP_PASSWORD; // Password that the application uses to connect to MQ
-    private static String QUEUE_NAME; // Queue that the application uses to put and get messages to and from
+    private static String QUEUE_NAME; // Queue that the application uses to put messages to
+    private static String REPLY_QUEUE_NAME; // Queue that the application uses to get messages replies from
     private static String MODEL_QUEUE_NAME; //
     private static String CIPHER_SUITE;
     private static String CCDTURL;
@@ -97,14 +98,24 @@ public class JmsRequest {
             logger.info(getHexString(b));
             message.setJMSExpiration(900000);
             
-            logger.finest("Sending a request message");
-            TemporaryQueue requestQueue = context.createTemporaryQueue();
-          
+            Destination requestQueue = null;
+
+            if (null == REPLY_QUEUE_NAME || REPLY_QUEUE_NAME.isEmpty()) {
+                logger.finest("Setting the reply to queue to a temporary queue");
+                //TemporaryQueue requestQueue = context.createTemporaryQueue(); 
+                requestQueue = context.createTemporaryQueue();   
+            } else {
+                logger.finest("Setting the reply to queue to " + REPLY_QUEUE_NAME);
+                requestQueue = context.createQueue("queue:///" + REPLY_QUEUE_NAME);               
+            }
+
             message.setJMSReplyTo(requestQueue);
+
+            logger.finest("Sending a request message");
             producer.send(destination, message);
             logger.info("listening for response");
 
-            logger.info(selector);
+            logger.info("Selecting reply based on selector " + selector);
             JMSConsumer consumer = context.createConsumer(requestQueue, selector);
             logger.info("reply getter created");
             Message receivedMessage = consumer.receive();
@@ -152,6 +163,7 @@ public class JmsRequest {
         APP_USER = env.getEnvValue("APP_USER", index);
         APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
         QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
+        REPLY_QUEUE_NAME = env.getEnvValue("REPLY_QUEUE_NAME", index);
         MODEL_QUEUE_NAME = env.getEnvValue("MODEL_QUEUE_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
         BINDINGS = env.getEnvBooleanValue("BINDINGS", index);

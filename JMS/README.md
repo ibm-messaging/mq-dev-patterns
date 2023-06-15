@@ -207,6 +207,9 @@ If you have used maven to build the samples, you can run
 
 The request sample will put a message and wait for a response until it either gets a response or you `ctrl+c` interrupt it.
 
+If you set the envrionment variable `REPLY_QUEUE_NAME` then the reply to queue will be set 
+to that queue, otherwise a temporary queue is created. 
+
 In the second terminal;
 
 Run the response sample
