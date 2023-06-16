@@ -207,6 +207,9 @@ If you have used maven to build the samples, you can run
 
 The request sample will put a message and wait for a response until it either gets a response or you `ctrl+c` interrupt it.
 
+If you set the envrionment variable `REPLY_QUEUE_NAME` then the reply to queue will be set 
+to that queue, otherwise a temporary queue is created. 
+
 In the second terminal;
 
 Run the response sample
@@ -225,17 +228,27 @@ If you have used maven to build the samples, you can run
 
 The response sample will get a message from the queue, process it and put the response on the reply to queue and keep looking for more messages to respond to till you ctrl+c interrupt it.
 
+If you set the envrionment variable `RESPONDER_INACTIVITY_TIMEOUT` to a number the responder will wait `RESPONDER_INACTIVITY_TIMEOUT` seconds for a request before timing out and ending.
+
 ## The SampleEnvSetter
 
 Used by all samples to read the JSON file. Will be compiled when you compile any other the other samples.
 
 
-## The RequestCalc
+## The RequestResponseHelper
 
-Used in the request / response samples to parse messages into and out of JSON and to take the random number from the request, square it and return it in the response.
-
+Used in the request / response samples to parse messages into and out of JSON. 
 Will be compiled when you compile either request / response samples.
 
+The message content to be posted can be controlled by the envionment option `REQUEST_MODE`. 
+
+EG. 
+
+`java -DREQUEST_MODE="REWARDS" -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsRequest`
+
+A `REQUEST_MODE` of `REWARDS` sends messages posting reward points to a customer id. 
+Any other value for `REQUEST_MODE` runs in default mode where the request sends a 
+random number, which is squared and returned in the response.
 
 
 ## Run the samples with TLS

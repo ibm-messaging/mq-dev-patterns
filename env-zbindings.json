@@ -1,0 +1,15 @@
+{
+    "MQ_ENDPOINTS": [{
+      "HOST": "127.0.0.1",
+      "PORT": "1414",
+      "QMGR": "CSQ9",
+      "BINDINGS": true,
+      "QUEUE_NAME": "DEV.QUEUE.1",
+      "REPLY_QUEUE_NAME": "DEV.QUEUE.2",
+      "MODEL_QUEUE_NAME": "DEV.APP.MODEL.QUEUE",
+      "DYNAMIC_QUEUE_PREFIX": "APP.REPLIES.*",
+      "TOPIC_NAME": "dev/",
+      "RESPONDER_INACTIVITY_TIMEOUT": 10,
+      "REQUEST_MODE": "REWARDS"
+    }]
+  }

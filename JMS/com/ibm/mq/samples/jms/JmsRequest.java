@@ -18,7 +18,6 @@ package com.ibm.mq.samples.jms;
 
 import java.util.logging.*;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.Random;
 
 import javax.jms.Destination;
@@ -33,7 +32,10 @@ import javax.jms.TemporaryQueue;
 import com.ibm.msg.client.jms.JmsConnectionFactory;
 import com.ibm.msg.client.jms.JmsFactoryFactory;
 import com.ibm.msg.client.wmq.WMQConstants;
+import com.ibm.msg.client.jms.DetailedInvalidDestinationException;
 import com.ibm.mq.jms.MQDestination;
+
+import com.ibm.msg.client.jms.DetailedInvalidDestinationRuntimeException;
 
 import com.ibm.mq.samples.jms.SampleEnvSetter;
 
@@ -48,11 +50,13 @@ public class JmsRequest {
     private static String QMGR; // Queue manager name
     private static String APP_USER; // User name that application uses to connect to MQ
     private static String APP_PASSWORD; // Password that the application uses to connect to MQ
-    private static String QUEUE_NAME; // Queue that the application uses to put and get messages to and from
+    private static String QUEUE_NAME; // Queue that the application uses to put messages to
+    private static String REPLY_QUEUE_NAME; // Queue that the application uses to get messages replies from
     private static String MODEL_QUEUE_NAME; //
     private static String CIPHER_SUITE;
     private static String CCDTURL;
     private static Boolean BINDINGS = false;
+    private static String REQUEST_MODE = "";
 
     private static Random random = new Random();
 
@@ -82,7 +86,7 @@ public class JmsRequest {
         producer = context.createProducer();
         logger.info("producer created");
 
-        TextMessage message = context.createTextMessage(RequestCalc.buildStringForRequest(random.nextInt(101)));
+        TextMessage message = context.createTextMessage(RequestResponseHelper.buildStringForRequest(REQUEST_MODE, random.nextInt(101)));
         try {
             String correlationID = String.format("%24.24s", UUID.randomUUID().toString());
             byte[] b = null;
@@ -97,14 +101,24 @@ public class JmsRequest {
             logger.info(getHexString(b));
             message.setJMSExpiration(900000);
             
-            logger.finest("Sending a request message");
-            TemporaryQueue requestQueue = context.createTemporaryQueue();
-          
+            Destination requestQueue = null;
+
+            if (null == REPLY_QUEUE_NAME || REPLY_QUEUE_NAME.isEmpty()) {
+                logger.finest("Setting the reply to queue to a temporary queue");
+                //TemporaryQueue requestQueue = context.createTemporaryQueue(); 
+                requestQueue = context.createTemporaryQueue();   
+            } else {
+                logger.finest("Setting the reply to queue to " + REPLY_QUEUE_NAME);
+                requestQueue = context.createQueue("queue:///" + REPLY_QUEUE_NAME);               
+            }
+
             message.setJMSReplyTo(requestQueue);
+
+            logger.finest("Sending a request message");
             producer.send(destination, message);
             logger.info("listening for response");
 
-            logger.info(selector);
+            logger.info("Selecting reply based on selector " + selector);
             JMSConsumer consumer = context.createConsumer(requestQueue, selector);
             logger.info("reply getter created");
             Message receivedMessage = consumer.receive();
@@ -113,8 +127,13 @@ public class JmsRequest {
         } catch (JMSException e) {
             logger.warning("Got a JMS exception");
             logger.warning(e.getMessage());
+        } catch (DetailedInvalidDestinationRuntimeException e) {
+            logger.warning("Looks like something is wrong with the queue name"); 
+            logger.warning(e.getMessage());
         } catch (Exception e) {
-
+            logger.warning("Got an exception");
+            logger.warning("Exception class Name " + e.getClass().getSimpleName());
+            logger.warning(e.getMessage());
         }
     }
 
@@ -152,9 +171,12 @@ public class JmsRequest {
         APP_USER = env.getEnvValue("APP_USER", index);
         APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
         QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
+        REPLY_QUEUE_NAME = env.getEnvValue("REPLY_QUEUE_NAME", index);
         MODEL_QUEUE_NAME = env.getEnvValue("MODEL_QUEUE_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
         BINDINGS = env.getEnvBooleanValue("BINDINGS", index);
+
+        REQUEST_MODE = env.getEnvValue("REQUEST_MODE", index);
 
         CCDTURL = env.getCheckForCCDT();
     }
@@ -176,7 +198,11 @@ public class JmsRequest {
         try {
             if (null == CCDTURL) {
                 cf.setStringProperty(WMQConstants.WMQ_CONNECTION_NAME_LIST, ConnectionString);
-                cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
+                if (null == CHANNEL && !BINDINGS) {
+                    logger.warning("When running in client mode, either channel or CCDT must be provided");
+                } else if (null != CHANNEL) {
+                    cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
+                }
             } else {
                 logger.info("Will be making use of CCDT File " + CCDTURL);
                 cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);

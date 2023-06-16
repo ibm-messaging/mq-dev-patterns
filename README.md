@@ -6,7 +6,7 @@ For issues and fixes please just raise an issue against this repository.
 
 ## IBM MQ samples and patterns 
 
-When your application needs messaging, you don’t want to spend countless hours learning the basics, you want to jump straight in and play, see how things work.
+When your application needs messaging, you don't want to spend countless hours learning the basics, you want to jump straight in and play, see how things work.
 
 We have taken parts that make up the current set of our IBM MQ samples and built applications that you can use to do just that.
 
@@ -92,6 +92,11 @@ We've tried to make this easier by providing one `env.json` file in the main `sa
     }]
 }
 ```
+
+### Z/Xplore
+If you are running these samples on Z/Xplore then you can use the
+`env-zbindings.json` file. Simply rename the `env-zbindings.json` to 
+`env.json`
 
 You can use the `env.json` file to 'switch on' or 'switch off' parts of the code.
 

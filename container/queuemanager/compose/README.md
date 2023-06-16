@@ -19,12 +19,18 @@ further to your specific needs to ensure you have an optimal configuration.
 
 
 #### System policies
+These are AWS managed policies that you don't need to write yourself. We used the following
+AWS managed system policies:
 - ElasticLoadBalancingFullAccess
 - AmazonECS_FullAccess
 - AmazonEC2FullAccess
 - IAMFullAccess
 - AWSCloudFormationFullAccess
 
+
+#### User defined policies
+These are permissions for which we didn't find suitable AWS managed policies, so had to hand
+create them. 
 #### logs
 ```{javascript}
 {
@@ -33,12 +39,7 @@ further to your specific needs to ensure you have an optimal configuration.
         {
             "Sid": "VisualEditor0",
             "Effect": "Allow",
-            "Action": [
-                "logs:DescribeLogGroups",
-                "logs:DeleteLogGroup",
-                "logs:FilterLogEvents",
-                "logs:CreateLogGroup"
-            ],
+            "Action": "logs:*",
             "Resource": "*"
         }
     ]
@@ -105,6 +106,23 @@ further to your specific needs to ensure you have an optimal configuration.
             "Sid": "VisualEditor0",
             "Effect": "Allow",
             "Action": "elasticfilesystem:*",
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+#### ECR 
+This is an additional policy needed to deploy the showcase application and 
+grants permission to use AWS Elastic Container Registry to store showcase container images.
+```{javascript}
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": "ecr:*",
             "Resource": "*"
         }
     ]
