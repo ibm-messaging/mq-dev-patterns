@@ -202,7 +202,7 @@ class APIAdapter {
     return res;
   }
 
-  async dynPut(msg, quantity, queueName, type, appId) {
+  async dynPut(msg, quantity, queueName, type, appId, sessionID=null) {
     try {
       let result = undefined;
 
@@ -215,6 +215,7 @@ class APIAdapter {
           queueName: queueName,
           type: type,
           appId: appId,
+          sessionID : sessionID
         },
       });
 

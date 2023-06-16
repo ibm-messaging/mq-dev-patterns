@@ -191,9 +191,7 @@ class MQClient {
     let hObj = this[_HOBJKEY]
 
     mqmd.ReplyToQ = this[_HOBJDYN]._name;
-    mqmd.MsgType = MQC.MQMT_REQUEST;  
-
-    debug_info(`----------PUT performed with the following sessionID: ${sessionID}`)
+    mqmd.MsgType = MQC.MQMT_REQUEST;      
 
     return mq.CrtMh(hConn,  cmho, function(err,mh) {      
       debug_info("hConn : " + hConn);
@@ -726,8 +724,7 @@ class MQClient {
         "this[_HOBJKEY]" : this[_HOBJKEY],
         "hOnj" : hObj,              
       };      
-      mq.GetSync( (!hObj) ? this[_HOBJKEY] : hObj, mqmd, gmo, buf, (err, len) => {
-        debug_info(`----------------- mqmd.Format is ${mqmd.Format}`);
+      mq.GetSync( (!hObj) ? this[_HOBJKEY] : hObj, mqmd, gmo, buf, (err, len) => {        
         if (err) {
           if (err.mqrc === MQC.MQRC_NO_MSG_AVAILABLE) {
             debug_info(`mqclient ${this.myID} no more messages`);

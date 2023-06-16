@@ -23,6 +23,7 @@ import FormLabel from '@carbon/react/lib/components/FormLabel/FormLabel';
 import { Send } from '@carbon/react/icons';
 import { toast } from 'react-toastify';
 import './map.css';
+import Cookies from 'js-cookie';
 
 const ResponderNode = ({ id, data }) => {
   const adapter = new APIAdapter();
@@ -40,9 +41,16 @@ const ResponderNode = ({ id, data }) => {
   const [responseMessage, setResponseMesasge] = useState();
   const [replyQueue, setReplyQueue] = useState();
   const [defaultInitQueue, setDefaultInitQueue] = useState();
-  useEffect(() => {
+  const [sessionID , setSessionID] = useState()
+
+  useEffect(() => {    
+    let _sessionID = Cookies.get("sessionID");        
+    id = _sessionID;    
+    setSessionID(_sessionID);
+    
     setDefaultInitQueue(data.connectedQueue);
   }, []);
+
   useEffect(() => {
     if (data.isActive && defaultInitQueue) {
       const interval = setInterval(async () => {
@@ -52,7 +60,7 @@ const ResponderNode = ({ id, data }) => {
             let _lastMessages = await adapter.getDyn(
               1,
               defaultInitQueue,
-              id,
+              sessionID,
               'DYNREP'
             );
             _onClick(id);
@@ -180,6 +188,46 @@ const ResponderNode = ({ id, data }) => {
           </Button>                    
           
           
+
+      {/* <Grid>
+        <Column md={7} lg={{ offset: 13 }} sm={3} />
+        <Column md={16} lg={16} sm={16}>
+          <FormLabel>Last message received:</FormLabel>
+        </Column>
+        <Column md={16} lg={16} sm={16}>
+          <FormLabel className={'consumer-subsection-title'}>
+            {lastMessage?.Message}
+          </FormLabel>
+        </Column>
+        <Column md={16} lg={16} sm={16}>
+          <FormLabel className={'consumer-subsection-title'}>
+            Replying in: {replyQueue}
+          </FormLabel>
+        </Column>
+        <Column md={8} lg={8} sm={8}>
+          <TextInput
+            className="consumer-node-name-label"
+            placeholder="Write here your message"
+            value={responseMessage}
+            size="sm"
+            onChange={e => changeResponseMessage(e)}
+          />
+        </Column>
+        <Column md={8} lg={8} sm={8}>
+          <Button
+            renderIcon={props => <Send size={42} {...props} />}
+            className="publisher-node-send-button"
+            size="sm"
+            onClick={() => {
+              onSendResponse();
+            }}>
+            Reply
+          </Button>
+        </Column>
+        <Column md={16} lg={16} sm={16}>
+          <FormLabel>Transactions Processed: {sessionCount}</FormLabel>
+        </Column>
+      </Grid> */}
     </div>
   );
 };
