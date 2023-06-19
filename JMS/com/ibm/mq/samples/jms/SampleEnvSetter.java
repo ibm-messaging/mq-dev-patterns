@@ -40,25 +40,8 @@ public class SampleEnvSetter {
     public SampleEnvSetter() {
         JSONObject mqEnvSettings = null;
         mqEndPoints = null;  
+        File file = getEnvFile();
 
-        File file = null;
-        boolean onZ = System.getProperty("os.name").toLowerCase().contains(ZOS);
-        if (onZ) {
-            logger.info("Running on z/OS");
-            file = new File("../env-zbindings.json");
-            if (! file.exists()){
-                logger.info("Environment settings env-zbindings.json file not found");
-                file = null;
-            }   
-        }
-        if (null == file) {
-            file = new File("../env.json");
-            if (! file.exists()){
-                logger.info("Environment settings env.json file not found");
-                logger.info("If there are no envrionment overrides then the app will not be able to connect to MQ");
-                file = null;
-            }  
-        }
         try {
             String content = new String(Files.readAllBytes(Paths.get(file.toURI())));
             mqEnvSettings = new JSONObject(content);
@@ -83,6 +66,28 @@ public class SampleEnvSetter {
           logger.warning("Error parsing env.json file");
           logger.warning(e.getMessage());         
         }
+    }
+
+    private File getEnvFile() {
+        File file = null;
+        boolean onZ = System.getProperty("os.name").toLowerCase().contains(ZOS);
+        if (onZ) {
+            logger.info("Running on z/OS");
+            file = new File("../env-zbindings.json");
+            if (! file.exists()){
+                logger.info("Environment settings env-zbindings.json file not found");
+                file = null;
+            }   
+        }
+        if (null == file) {
+            file = new File("../env.json");
+            if (! file.exists()){
+                logger.info("Environment settings env.json file not found");
+                logger.info("If there are no envrionment overrides then the app will not be able to connect to MQ");
+                file = null;
+            }  
+        }   
+        return file;     
     }
 
     public String getEnvValue(String key, int index) {
