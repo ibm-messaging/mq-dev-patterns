@@ -181,7 +181,11 @@ public class JmsGet {
             if (null == CCDTURL) {
                 cf.setStringProperty(WMQConstants.WMQ_HOST_NAME, HOST);
                 cf.setIntProperty(WMQConstants.WMQ_PORT, PORT);
-                cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
+                if (null == CHANNEL && !BINDINGS) {
+                    logger.warning("When running in client mode, either channel or CCDT must be provided");
+                } else if (null != CHANNEL) {
+                    cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
+                }
             } else {
                 logger.info("Will be making use of CCDT File " + CCDTURL);
                 cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
