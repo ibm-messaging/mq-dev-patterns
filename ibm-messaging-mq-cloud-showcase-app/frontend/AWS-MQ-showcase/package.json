@@ -30,7 +30,9 @@
     "react-router-dom": "5.3.4",
     "react-scripts": "5.0.1",
     "react-toastify": "9.0.8",
-    "reactflow": "11.1.0"
+    "reactflow": "11.1.0",
+    "js-cookie": "^3.0.5",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@commitlint/cli": "7.5.2",

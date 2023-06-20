@@ -35,6 +35,7 @@ function putReq(req, res, next) {
     let _quantityInString = data.quantity || "";
     let quantity = parseInt(_quantityInString);
     let _QUEUE_NAME = data.queueName;
+    let sessionID = data.sessionID || -1;
     let type = data.type;
 
     if (!appId || !type || !quantity) {
@@ -57,7 +58,7 @@ function putReq(req, res, next) {
       // If the put request has been requested from a Requestor
       if(type === 'DYNPUT') {
         // Create a new Requestor object
-        let newRequestor = new Requestor(appId);
+        let newRequestor = new Requestor(appId, sessionID);
         // Add the new requestor to the application's list
         applications.push(newRequestor);
         // Set the current application as the newRequestor
@@ -121,7 +122,7 @@ function getRes(req, res, next) {
     // If the get request has been requested from a Requestor
     if(type === 'DYNPUT') {
       // Create a new Requestor object
-      let newRequestor = new Requestor(appId);
+      let newRequestor = new Requestor(appId, sessionID);
       applications.push(newRequestor);
       application = newRequestor;
       console.log("Creating new Requestor");
