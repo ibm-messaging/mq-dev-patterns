@@ -24,6 +24,7 @@ import './map.css';
 import FormLabel from '@carbon/react/lib/components/FormLabel/FormLabel';
 import TextInput from '@carbon/react/lib/components/TextInput';
 import { toast } from 'react-toastify';
+import Cookies from 'js-cookie';
 
 const RequestorNode = ({ id, data }) => {
   const adapter = new APIAdapter();
@@ -42,8 +43,12 @@ const RequestorNode = ({ id, data }) => {
   const [tmpQueueName, setTmpQueueName] = useState();
   const [isWaitingForReply, setIsWaitingForReply] = useState(false);
   const [responseMessage, setResponseMessage] = useState();
+  const [sessionID, setSessionID] = useState();
 
   useEffect(() => {
+    let _sessionID = Cookies.get("sessionID");        
+    setSessionID(_sessionID);
+    
     if (animationState) {
       setTimeout(() => {
         animateConnection(id, false);
@@ -81,7 +86,7 @@ const RequestorNode = ({ id, data }) => {
       let message = 'Request';
       // Adapter DYNPUT
       adapter
-        .dynPut(message, 1, data.connectedQueue, 'DYNPUT', id)
+        .dynPut(message, 1, data.connectedQueue, 'DYNPUT', id, sessionID)
         .then(res => {
           //Drow the TMP queue && starting pulling the TMP queue waiting for the response
           if (res !== -1) {

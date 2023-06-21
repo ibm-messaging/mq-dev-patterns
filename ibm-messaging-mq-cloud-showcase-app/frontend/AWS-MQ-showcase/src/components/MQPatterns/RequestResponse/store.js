@@ -20,16 +20,101 @@ import {
   applyEdgeChanges,
   updateEdge,
 } from 'react-flow-renderer';
-import initialNodes from './nodes';
-import initialEdges from './edges';
 import MapUtils from '../../Map/utils';
+import Cookies from 'js-cookie';
 //import { persist } from 'zustand/middleware';
-
+import { v4 as uuidv4 } from 'uuid';
 const utils = new MapUtils();
 
+let sessionID = Cookies.get('sessionID');
+let requestorSessionID = Cookies.get('requestorSessionID');
+
+const setCookies = () => {
+  if (!sessionID) {
+    sessionID = uuidv4().replace(/-/g, '');
+    requestorSessionID = uuidv4().replace(/-/g, '');
+    Cookies.set('sessionID', sessionID);
+    Cookies.set('requestorSessionID', requestorSessionID);      
+  }
+}
+
+setCookies();
+
+const _initialNodes = [  
+  {
+    id: requestorSessionID,
+    type: 'producer',
+    data: {
+      role: 'Producer',
+      label: 'Partecipants checker',
+      connectedQueue: 'DEV.QUEUE.3',
+      isActive: false,
+    },
+    position: { x: 200, y: 62 },
+    sourcePosition: 'right',
+    targetPosition: 'right',
+    draggable: true,
+  },
+  {
+    id: sessionID,
+    type: 'consumer',
+    data: {
+      role: 'Consumer',
+      label: 'Partecipant confirmation',
+      connectedQueue: 'DEV.QUEUE.3',
+      isActive: false,
+    },
+    position: { x: 1350, y: 50 },
+    targetPosition: 'left',
+    sourcePosition: 'left',
+    draggable: true,
+  },
+  {
+    id: '17',
+    type: 'queue',
+    isAqueue: 1,
+    data: {
+      role: 'q',
+      depth: 0,
+      queueName: 'DEV.QUEUE.3',
+    },
+    position: { x: 650, y: 20 },
+    sourcePosition: 'right',
+    targetPosition: 'left',
+    draggable: true,    
+  },
+
+];
+
+const _initialEdges = [
+  {
+    id: '17-' + sessionID,
+    source: '17',
+    target: sessionID,
+    type: 'custom',
+    animated: false,
+    style: {
+      stroke: '#0050e6',
+      strokeWidth: 1,
+    }
+  },
+  {
+    id: requestorSessionID + '-17',
+    source: requestorSessionID,
+    target: '17',
+    type: 'custom',
+    animated: false,
+    style: {
+      stroke: '#0050e6',
+      strokeWidth: 1,
+    }
+  }
+];
+
+
 const useStore = create((set, get) => ({
-  nodes: initialNodes,
-  edges: initialEdges,
+  nodes: _initialNodes,
+  edges: _initialEdges,
   queueData: [],
   onNodesChange: changes => {
     set({
