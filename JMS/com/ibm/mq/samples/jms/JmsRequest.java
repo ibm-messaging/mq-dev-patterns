@@ -60,6 +60,9 @@ public class JmsRequest {
 
     private static Random random = new Random();
 
+    
+    private static Long HOUR = 60* 60 * 1000L; 
+
     public static void main(String[] args) {
         initialiseLogging();
         mqConnectionVariables();
@@ -84,6 +87,7 @@ public class JmsRequest {
         }
         logger.info("destination created");
         producer = context.createProducer();
+        producer.setTimeToLive(2 * HOUR);
         logger.info("producer created");
 
         TextMessage message = context.createTextMessage(RequestResponseHelper.buildStringForRequest(REQUEST_MODE, random.nextInt(101)));

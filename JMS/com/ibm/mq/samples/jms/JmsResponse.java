@@ -58,6 +58,8 @@ public class JmsResponse {
     private static Boolean BINDINGS = false;
     private static Long RESPONDER_INACTIVITY_TIMEOUT = 0L;
 
+    private static Long HOUR = 60* 60 * 1000L; 
+
     public static void main(String[] args) {
         initialiseLogging();
         mqConnectionVariables();
@@ -139,12 +141,15 @@ public class JmsResponse {
                
                 TextMessage message = context.createTextMessage(RequestResponseHelper.buildStringForResponse(requestObject));
                 message.setJMSCorrelationID(correlationID);
-                JMSProducer producer = context.createProducer();
 
                 // Make sure message put on a reply queue is non-persistent so non XMS/JMS apps
                 // can get the message off the temp reply queue
-                producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-                producer.send(destination, message);                       
+                // Reply will expire in an hour if not retrieved by the requester
+
+                context.createProducer()
+                    .setDeliveryMode(DeliveryMode.NON_PERSISTENT)
+                    .setTimeToLive(HOUR)
+                    .send(destination, message);                       
                 context.commit();
                 
             }
