@@ -93,8 +93,8 @@ We've tried to make this easier by providing one `env.json` file in the main `sa
 }
 ```
 
-### Z/Xplore
-If you are running these samples on Z/Xplore then you can use the
+### IBM Z Xplore
+If you are running these samples on IBM Z Xplore then you can use the
 `env-zbindings.json` file. Simply rename the `env-zbindings.json` to 
 `env.json`
 
