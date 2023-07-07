@@ -25,7 +25,7 @@ let mqclient = new MQClient();
 // on the mqclient object, this configuration does not change.
 const configuration = Object.assign({}, mqclient.getRESTConfiguration());
 let HOST = "https://";
-const ADMIN = "admin";
+const DEFAULT_ADMIN = "admin";
 const END_POINT_ALL_DEPTHS = `:9443/ibmmq/console/internal/ibmmq/qmgr/QM1/queue?type=qlocal`;
 //This get function is used to get the depth of the queues
 async function get(req, res) {
@@ -39,8 +39,8 @@ async function get(req, res) {
         url: END_POINT,
         method: "GET",
         auth: {
-            username: ADMIN,
-            password: CREDENTIAL['ADMIN_PASSWORD']                
+            username: CREDENTIAL.ADMIN_USER || ADMIN,
+            password: CREDENTIAL.ADMIN_PASSWORD                
         },
         headers: { //this headers is required 
             'Accept' : 'application/json',       
