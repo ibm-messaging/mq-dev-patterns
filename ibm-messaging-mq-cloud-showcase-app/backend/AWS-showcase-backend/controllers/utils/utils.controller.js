@@ -65,13 +65,13 @@ async function get(req, res) {
         //Send the REST request to MQ
         let request = await axios(axiosCommand);   
         // if a valid response has been returned, handle the results
-        if (request && request.data) {
+        if (request && request.data && request.data.queue) {
             debug_info('Queue depths obtained');
-            debug_info(request.data);
+            debug_info(request.data.queue);
             // The result (result.data) is a list of all the queues names (and other info) stored within the queue manager.
             // In this list there are some default queues not needed. The resultAdapter will
             // take only the queue required for the frontend.
-            let response = resultAdapter(request.data, isForSubs); 
+            let response = resultAdapter(request.data.queue, isForSubs); 
             //Only the queues needed to the frontend are returned
             return res.json(response);
         } else {
@@ -102,13 +102,14 @@ function resultAdapter(result, isForSubs) {
         let isToAppend = ((name.indexOf('DEV.QUEUE') > -1 && !isForSubs) || //getting depths for normal queues
                     (name.indexOf('APP.REPLIES') > -1 && !isForSubs) ) || // getting depths for tmp queues
                     (isForSubs && name.indexOf('SYSTEM.MANAGED.NDURABLE') > -1); //getting depths for subs non-durable queues
-        //if the queue is to retur to the frontend
-        if (isToAppend) {            
+        //if the queue is to return to the frontend
+        if (isToAppend) {   
+            debug_info('Queue Depth being returned for ', name, queue.status['currentDepth']);          
             // for each queue required for the frontend 
             // save its name and current depth as this JSON entry
             let singleQueueEntry = {
                 'name': name,
-                'depth': queue['currentdepth']
+                'depth': queue.status['currentDepth']
             };
             response.push(singleQueueEntry);
         } 
