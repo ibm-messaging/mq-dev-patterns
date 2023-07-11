@@ -37,4 +37,4 @@ RUN npm install --only=prod \
 
 EXPOSE 8080
 
-CMD npm start 
+CMD npm debug 
