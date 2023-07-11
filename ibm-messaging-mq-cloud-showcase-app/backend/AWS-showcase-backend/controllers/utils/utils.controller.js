@@ -66,8 +66,7 @@ async function get(req, res) {
         let request = await axios(axiosCommand);   
         // if a valid response has been returned, handle the results
         if (request && request.data) {
-            debug_info('Queue depth obtained');
-            debug_info(response.data);
+            debug_info('Queue depths obtained');
             // The result (result.data) is a list of all the queues names (and other info) stored within the queue manager.
             // In this list there are some default queues not needed. The resultAdapter will
             // take only the queue required for the frontend.
@@ -92,10 +91,12 @@ async function get(req, res) {
 // and returns only those required.
 function resultAdapter(result, isForSubs) {
     let response = [];
+    debug_info("Iterating over queue depth data per queue");
     // for each available queue 
     result.map( queue => {       
         //get its name     
-        let name = queue['name'];        
+        let name = queue['name'];   
+        debug_info('Looking at queue ', name);     
         //filter logic
         let isToAppend = ((name.indexOf('DEV.QUEUE') > -1 && !isForSubs) || //getting depths for normal queues
                     (name.indexOf('APP.REPLIES') > -1 && !isForSubs) ) || // getting depths for tmp queues
