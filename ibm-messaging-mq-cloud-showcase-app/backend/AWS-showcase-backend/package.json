@@ -21,7 +21,7 @@
     "uuid": "9.0.0"
   },
   "scripts": {
-    "start": "node server.js",
+    "start": "DEBUG=mqapp* node server.js",
     "debug": "DEBUG=mqapp* node server.js"
   },
   "engines": {
