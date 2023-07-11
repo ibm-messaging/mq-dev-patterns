@@ -46,7 +46,7 @@ const defaultRequestorMessage = "Hello, are you still interested in the show?";
 // endpoint in the arryay is used.
 let MQDetails = {};
 let ok = true;
-['QMGR', 'QUEUE_NAME', 'HOST', 'PORT', 'MQ_QMGR_PORT_MQI',
+['QMGR', 'QUEUE_NAME', 'HOST', 'PORT', 'MQ_QMGR_PORT_MQI', 'MQ_QMGR_PORT_API',
  'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach(function(f) {
   MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[0][f];
 });
