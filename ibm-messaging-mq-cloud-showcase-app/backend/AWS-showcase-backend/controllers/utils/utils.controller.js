@@ -74,6 +74,7 @@ async function get(req, res) {
         }
         
     } catch(e) {
+        debug_warn(e);
         return res.status(525).send({
             error: "Error on handling the API CALL"
         });
