@@ -28,12 +28,18 @@ let HOST = "https://";
 const DEFAULT_ADMIN = "admin";
 const END_POINT_ALL_DEPTHS = `:9443/ibmmq/console/internal/ibmmq/qmgr/QM1/queue?type=qlocal`;
 //This get function is used to get the depth of the queues
+
 async function get(req, res) {
     let queryData = req.query;
     let isForSubs = queryData.isForSubs || false;
     //Credential are obtained from the .env file   
     const CREDENTIAL = configuration['CREDENTIAL'];
     const END_POINT = HOST + configuration['HOST'] + END_POINT_ALL_DEPTHS;   
+
+    let adminUser = CREDENTIAL.ADMIN_USER || ADMIN;
+    debug_info("Connecting to MQ using admin user ", adminUser);
+    debug_info("Connecting to MQ server at ", END_POINT);
+
     // creating the REST request
     const axiosCommand = {
         url: END_POINT,
