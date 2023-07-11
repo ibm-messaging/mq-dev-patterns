@@ -67,7 +67,7 @@ async function get(req, res) {
         // if a valid response has been returned, handle the results
         if (request && request.data) {
             debug_info('Queue depths obtained');
-            debug_info(request);
+            debug_info(request.data);
             // The result (result.data) is a list of all the queues names (and other info) stored within the queue manager.
             // In this list there are some default queues not needed. The resultAdapter will
             // take only the queue required for the frontend.
