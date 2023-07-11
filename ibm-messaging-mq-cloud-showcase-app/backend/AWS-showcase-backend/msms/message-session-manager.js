@@ -857,8 +857,9 @@ class MQClient {
 
   getRESTConfiguration() {
     let RESTCredential = {
-      'HOST' : process.env['HOST'],
-      'CREDENTIAL' : credentials
+      'HOST' : process.env['HOST'] || MQDetails.HOST,
+      'CREDENTIAL' : credentials, 
+      'MQ_QMGR_PORT_API' : process.env['MQ_QMGR_PORT_API'] || MQDetails.MQ_QMGR_PORT_API,
     };
     return RESTCredential;
   }

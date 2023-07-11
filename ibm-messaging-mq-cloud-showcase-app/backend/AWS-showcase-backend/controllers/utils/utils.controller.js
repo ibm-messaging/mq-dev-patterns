@@ -26,7 +26,7 @@ let mqclient = new MQClient();
 const configuration = Object.assign({}, mqclient.getRESTConfiguration());
 let HOST = "https://";
 const DEFAULT_ADMIN = "admin";
-const END_POINT_ALL_DEPTHS = `:9443/ibmmq/console/internal/ibmmq/qmgr/QM1/queue?type=qlocal`;
+const END_POINT_ALL_DEPTHS = `:${configuration.MQ_QMGR_PORT_API}/ibmmq/console/internal/ibmmq/qmgr/QM1/queue?type=qlocal`;
 //This get function is used to get the depth of the queues
 
 async function get(req, res) {
