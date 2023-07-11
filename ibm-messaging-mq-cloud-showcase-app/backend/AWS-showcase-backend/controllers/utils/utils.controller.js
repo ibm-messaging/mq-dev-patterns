@@ -26,7 +26,12 @@ let mqclient = new MQClient();
 const configuration = Object.assign({}, mqclient.getRESTConfiguration());
 let HOST = "https://";
 const DEFAULT_ADMIN = "admin";
-const END_POINT_ALL_DEPTHS = `:${configuration.MQ_QMGR_PORT_API}/ibmmq/console/internal/ibmmq/qmgr/QM1/queue?type=qlocal`;
+//const END_POINT_ALL_DEPTHS = `:${configuration.MQ_QMGR_PORT_API}/ibmmq/console/internal/ibmmq/qmgr/QM1/queue?type=qlocal`;
+
+const END_POINT_ALL_DEPTHS = `:${configuration.MQ_QMGR_PORT_API}/ibmmq/rest/v1/admin/qmgr/QM1/queue?type=local&status=status.currentDepth`;
+
+//https://web-qm1-5273.qm.us-south.mq.appdomain.cloud:443/ibmmq/rest/v1/admin/qmgr/QM1/queue?type=local&status=status.currentDepth
+
 //This get function is used to get the depth of the queues
 
 async function get(req, res) {
@@ -61,6 +66,8 @@ async function get(req, res) {
         let request = await axios(axiosCommand);   
         // if a valid response has been returned, handle the results
         if (request && request.data) {
+            debug_info('Queue depth obtained');
+            debug_info(response.data);
             // The result (result.data) is a list of all the queues names (and other info) stored within the queue manager.
             // In this list there are some default queues not needed. The resultAdapter will
             // take only the queue required for the frontend.
