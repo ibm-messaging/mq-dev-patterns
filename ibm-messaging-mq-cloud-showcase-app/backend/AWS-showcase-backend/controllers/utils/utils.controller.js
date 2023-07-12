@@ -26,11 +26,8 @@ let mqclient = new MQClient();
 const configuration = Object.assign({}, mqclient.getRESTConfiguration());
 let HOST = "https://";
 const DEFAULT_ADMIN = "admin";
-//const END_POINT_ALL_DEPTHS = `:${configuration.MQ_QMGR_PORT_API}/ibmmq/console/internal/ibmmq/qmgr/QM1/queue?type=qlocal`;
 
 const END_POINT_ALL_DEPTHS = `:${configuration.MQ_QMGR_PORT_API}/ibmmq/rest/v1/admin/qmgr/QM1/queue?type=local&status=status.currentDepth`;
-
-//https://web-qm1-5273.qm.us-south.mq.appdomain.cloud:443/ibmmq/rest/v1/admin/qmgr/QM1/queue?type=local&status=status.currentDepth
 
 //This get function is used to get the depth of the queues
 
@@ -67,7 +64,7 @@ async function get(req, res) {
         // if a valid response has been returned, handle the results
         if (request && request.data && request.data.queue) {
             debug_info('Queue depths obtained');
-            debug_info(request.data.queue);
+            // debug_info(request.data.queue);
             // The result (result.data) is a list of all the queues names (and other info) stored within the queue manager.
             // In this list there are some default queues not needed. The resultAdapter will
             // take only the queue required for the frontend.
@@ -92,19 +89,19 @@ async function get(req, res) {
 // and returns only those required.
 function resultAdapter(result, isForSubs) {
     let response = [];
-    debug_info("Iterating over queue depth data per queue");
+    // debug_info("Iterating over queue depth data per queue");
     // for each available queue 
     result.map( queue => {       
         //get its name     
         let name = queue['name'];   
-        debug_info('Looking at queue ', name);     
+        // debug_info('Looking at queue ', name);     
         //filter logic
         let isToAppend = ((name.indexOf('DEV.QUEUE') > -1 && !isForSubs) || //getting depths for normal queues
                     (name.indexOf('APP.REPLIES') > -1 && !isForSubs) ) || // getting depths for tmp queues
                     (isForSubs && name.indexOf('SYSTEM.MANAGED.NDURABLE') > -1); //getting depths for subs non-durable queues
         //if the queue is to return to the frontend
         if (isToAppend) {   
-            debug_info('Queue Depth being returned for ', name, queue.status['currentDepth']);          
+            // debug_info('Queue Depth being returned for ', name, queue.status['currentDepth']);          
             // for each queue required for the frontend 
             // save its name and current depth as this JSON entry
             let singleQueueEntry = {
