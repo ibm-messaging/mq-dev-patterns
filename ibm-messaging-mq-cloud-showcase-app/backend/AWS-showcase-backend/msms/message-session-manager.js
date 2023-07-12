@@ -57,10 +57,12 @@ let ok = true;
 
 if (MQDetails['MQ_QMGR_PORT_MQI']) {
   MQDetails['PORT'] = MQDetails['MQ_QMGR_PORT_MQI'];
+} else if (! MQDetails['PORT']) {
+  MQDetails['PORT'] = MQDetails['MQ_QMGR_PORT_MQI'] = DEFAULT_MQI_PORT;
 } else {
   MQDetails['MQ_QMGR_PORT_MQI'] = DEFAULT_MQI_PORT;
-  MQDetails['PORT'] = MQDetails['MQ_QMGR_PORT_MQI'];
 }
+
 
 let credentials = {
   USER: process.env.APP_USER || env.MQ_ENDPOINTS[0].APP_USER || DEFAULT_APP_USER,
@@ -68,8 +70,6 @@ let credentials = {
   ADMIN_USER: process.env.ADMIN_USER || env.MQ_ENDPOINTS[0].ADMIN_USER || DEFAULT_ADMIN_USER,
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || env.MQ_ENDPOINTS[0].ADMIN_PASSWORD
 };
-
-debug_info("credentials are ", credentials);
 
 const mutexMQClientPerformSub = new Mutex();
 const mutexTopicVariableSub = new Mutex();
