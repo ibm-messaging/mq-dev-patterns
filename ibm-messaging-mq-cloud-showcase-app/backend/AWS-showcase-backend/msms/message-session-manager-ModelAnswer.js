@@ -57,9 +57,10 @@ let ok = true;
 
 if (MQDetails['MQ_QMGR_PORT_MQI']) {
   MQDetails['PORT'] = MQDetails['MQ_QMGR_PORT_MQI'];
+} else if (! MQDetails['PORT']) {
+  MQDetails['PORT'] = MQDetails['MQ_QMGR_PORT_MQI'] = DEFAULT_MQI_PORT;
 } else {
   MQDetails['MQ_QMGR_PORT_MQI'] = DEFAULT_MQI_PORT;
-  MQDetails['PORT'] = MQDetails['MQ_QMGR_PORT_MQI'];
 }
 
 let credentials = {
