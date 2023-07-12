@@ -82,7 +82,7 @@ function Flow() {
           type: type,
           data: {
             role: 'Producer',
-            label: 'Consumer Name',
+            label: 'Producer Name',
             connectedQueue: '',
             isActive: false,
           },
