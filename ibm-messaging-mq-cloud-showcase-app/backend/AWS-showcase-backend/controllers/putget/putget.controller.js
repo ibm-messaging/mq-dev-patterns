@@ -185,7 +185,6 @@ function get(req, res, next) {
       error : err
     });
   });
-  
 }
 
 function getCodingChallange(req, res, next) {
@@ -213,11 +212,16 @@ function getCodingChallange(req, res, next) {
       error : err
     });
   });
-  
+}
+
+//This function gets some messages from a queue
+function about(req, res, next) {
+  res.json({"response" : "hello"});
 }
 
 
 module.exports = {
+    about,
     get,
     put,
     getCodingChallange,
