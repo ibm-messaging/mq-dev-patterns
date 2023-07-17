@@ -3,7 +3,7 @@ Transactions with JMS and IBM MQ
 
 ## What are Transactions
 
-Read [this transactions article](https://developer.ibm.com/components/ibm-mq/articles/an-introduction-to-local-transactions-using-mq-and-jms/) for an intro to transactions. If you've just come from there, you're in the right place, continue reading and explore the samples.
+Read [this transactions article](https://ibm.biz/BdyV5P) for an intro to transactions. If you've just come from there, you're in the right place, continue reading and explore the samples.
 
 Transactions give you special powers but as a developer, it is down to you to understand enough of the concepts and features that the JMS API and IBM MQ provide, to get the most out of transactions in your applications.
 
@@ -16,7 +16,7 @@ Our transaction samples are based on a basic point to point scenario with a send
 
 ![Point to point with IBM MQ](/transactions/JMS/SE/images/ibm_mq_point_to_point.gif)
 
-More on building apps for IBM MQ at [LearnMQ](https://developer.ibm.com/components/ibm-mq/series/badge-ibm-mq-developer-essentials/).
+More on building apps for IBM MQ at [LearnMQ](https://ibm.biz/BdyV5G).
 
 We then add transactions.
 
@@ -35,7 +35,7 @@ We then add transactions.
 
 
 ## Get a queue manager
-Follow [this tutorial](https://developer.ibm.com/components/ibm-mq/tutorials/mq-connect-app-queue-manager-containers/) in IBM Developer MQ hub for full instructions.
+Follow [this tutorial](https://ibm.biz/BdyV58) in IBM Developer MQ hub for full instructions.
 
 If you've already used Docker, just run these commands to get set up:
 
