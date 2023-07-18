@@ -63,6 +63,8 @@ private static final String APP_PASSWORD = "passw0rd";  // Password that the app
 private static final String QUEUE_NAME = "DEV.QUEUE.1";  // Queue that the application uses to put and get messages to and from
 
 
+
+
 /**
  * Main method
  *
@@ -78,6 +80,14 @@ public static void main(String[] args) {
 								Random rand = new Random(); //instance of random class
 								int upperbound = 999;
 
+// Defining a specific exception for when rollback is occuring
+class PutTransactionRollbackException extends Exception {
+    public PutTransactionRollbackException(String s)
+    {
+        // Call constructor of parent Exception
+        super(s);
+    }
+}
 
 								try {
 																// Create a connection factory
@@ -116,21 +126,28 @@ public static void main(String[] args) {
 																catch (InterruptedException e) {
 																								System.out.println("wait interrupt 15 sec");
 																}
-																if (uniqueNumber %2 == 0) {
-																								throw new Exception("error generated");
+																if (uniqueNumber % 2 == 0) {
+																								throw new PutTransactionRollbackException("Lucky number was even, rolling back");
 																}
 																context.commit();
 
 																recordSuccess();
-								} catch (JMSException jmsex) {
+								} 
+								catch (JMSException jmsex) {
 																context.rollback();
 																recordFailure(jmsex);
-								} catch (Exception ex) {
-																recordFailure(ex);
+																System.out.println("JMSEX ");
+																jmsex.printStackTrace();
+								} 
+								catch (PutTransactionRollbackException ptsex) {
 																context.rollback();
+																recordFailure(ptsex);
+																System.out.println("Rollback was successful, message was removed from queue");
 								}
-
-
+								catch (Exception ex) {
+																System.out.println("EX ");
+																ex.printStackTrace();
+								}
 								System.exit(status);
 
 }  // end main()

@@ -5,16 +5,16 @@ Transactions with JMS and IBM MQ
 
 Read [this transactions article](https://ibm.biz/mq-basic-tx) for an intro to transactions. If you've just come from there, you're in the right place, continue reading and explore the samples.
 
-Transactions give you special powers but as a developer, it is down to you to understand enough of the concepts and features that the JMS API and IBM MQ provide, to get the most out of transactions in your applications.
+Transactions give you special powers, but as a developer, it is down to you to understand enough of the concepts and features that the JMS API and IBM MQ provide to get the most out of transactions in your applications.
 
 We’ve provided you with some basic building blocks to help you on your way.
 
-Our transaction samples are based on a basic point to point scenario with a sender and a receiver. 
+Our transaction samples are based on a basic point-to-point scenario involving a sender and a receiver. 
 
-#### Point to point without a transaction
+#### Point-to-point without a transaction
 
 
-![Point to point with IBM MQ](/transactions/JMS/SE/images/ibm_mq_point_to_point.gif)
+![Point-to-point with IBM MQ](/transactions/JMS/SE/images/ibm_mq_point_to_point.gif)
 
 More on building apps for IBM MQ at [LearnMQ](https://ibm.biz/learn-mq).
 
@@ -22,7 +22,7 @@ We then add transactions.
 
 #### Point to point with a transaction on the sender side
 
-![Point to point with IBM MQ](/transactions/JMS/SE/images/ibm_mq_transaction.png)
+![Point-to-point with IBM MQ](/transactions/JMS/SE/images/ibm_mq_transaction.png)
 
 ## Getting started with transactions
 
@@ -35,7 +35,7 @@ We then add transactions.
 
 
 ## Get a queue manager
-Follow [this tutorial](https://ibm.biz/mq-create-queue-manager) in IBM Developer MQ hub for full instructions.
+Follow [this tutorial](https://ibm.biz/mq-create-queue-manager) in the IBM Developer MQ hub for full instructions.
 
 If you've already used Docker, just run these commands to get set up:
 
@@ -102,13 +102,13 @@ Click the `Create +` button to create a backout queue for the `DEV.QUEUE.1`. Thi
 
 Click the `Local` tile to choose the queue type.
 
-Name your queue `BACKOUT.Q`.
+Name your queue `DEV.BACKOUT.Q`.
 
 Click `Create`.
 
 You'll see your new backout queue at the top of the list of queues on the `Manage queue manager QM1 page`.
 
-Click the three dots at the end of the row of the `BACKOUT.Q` to open the list of options.
+Click the three dots at the end of the row of the `DEV.BACKOUT.Q` to open the list of options.
 
 Click `Configuration` then click the `Security tab`.
 
@@ -124,7 +124,7 @@ We'll be using the `DEV.QUEUE.1` as our main target queue. You need to tell this
 
 Click the three dots at the end of the row of the `DEV.QUEUE.1` to open the list of options then click `Configuration`.
 
-Click the `Edit` button, then `Storage`. Fill in the `Backout requeue queue` field with `BACKOUT.Q`.
+Click the `Edit` button, then `Storage`. Fill in the `Backout requeue queue` field with `DEV.BACKOUT.Q`.
 
 Set the `Backout` threshold to `3`.
 
