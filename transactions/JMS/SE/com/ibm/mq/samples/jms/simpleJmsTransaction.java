@@ -142,7 +142,7 @@ class PutTransactionRollbackException extends Exception {
 								catch (PutTransactionRollbackException ptsex) {
 																context.rollback();
 																recordFailure(ptsex);
-																System.out.println("Rollback was successful, message was removed from queue");
+																System.out.println("Rollback was successful, message was not put to queue");
 								}
 								catch (Exception ex) {
 																System.out.println("EX ");

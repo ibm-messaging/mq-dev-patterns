@@ -70,9 +70,9 @@ During the 15 second wait in the program before rollback or commit is called, yo
 
 If you refresh the queues after the 15 second wait is over, the queue depth will update;
 
-If the random number was odd, commit is called and the message remains on the `DEV.QUEUE.1` queue.
+If the random number was odd, commit is called and the message is put on the `DEV.QUEUE.1` queue.
 
-If the random number was even, rollback is called and the message is rolled back and removed from the queue.
+If the random number was even, rollback is called and the message is rolled back and not put to the queue.
 
 
 Go ahead and try
