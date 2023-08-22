@@ -41,20 +41,15 @@ java -cp ./com.ibm.mq.allclient-9.2.0.0.jar:./javax.jms-api-2.0.1.jar:. com.ibm.
 
 Refresh the queues.
 
-The first time you run the sample, all three messages should be put on the queue under a transaction.
+If the random number is odd, all three messages should be put on the queue under a transaction.
 
 Check the `DEV.QUEUE.1` queue on the `MQ Console` to confirm.
 
-Edit the sample, comment out the code on line `105` and uncomment line `106`.
+If the random number is even, a rollback will be demonstrated.
 
-This will introduce an error to one of the messages and all three should roll back to the `BACKOUT.Q` instead of being put to the `DEV.QUEUE.1` under a commit.
+When the first and second messages are sent, information about what has happened to the messages is logged to the terminal. At this point, refresh the `MQ Console` to confirm this behaviour.
 
-Recompile the sample.
-
-Run the recompiled sample.
-
-Check the `MQ Console` - where did the messages end up?
-
+After sending the first two messages, an error is introduced which prevents the third message from being sent. This means that none of the three messages are committed to the queue as they are all rolled-back.
 
 Go ahead and try
 
