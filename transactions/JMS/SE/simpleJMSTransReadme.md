@@ -5,25 +5,25 @@ Simple put transaction sample
 * Commit
 * Rollback
 
-#### Point to point without a transaction
+#### Point-to-point without a transaction
 
-![Point to point with IBM MQ](/transactions/JMS/SE/images/ibm_mq_point_to_point.gif)
+![Point-to-point with IBM MQ](/transactions/JMS/SE/images/ibm_mq_point_to_point.gif)
 
-#### Point to point with a transaction
+#### Point-to-point with a transaction
 
-![Point to point with a transaction](/transactions/JMS/SE/images/ibm_mq_transaction_msg_b4_commit.png)
+![Point-to-point with a transaction](/transactions/JMS/SE/images/ibm_mq_transaction_msg_b4_commit.png)
 
-#### Point to point with a transaction - commit
+#### Point-to-point with a transaction - commit
 
-![Point to point with a transaction](/transactions/JMS/SE/images/ibm_mq_transaction_msg_commited.png)
+![Point-to-point with a transaction](/transactions/JMS/SE/images/ibm_mq_transaction_msg_commited.png)
 
-#### Point to point with a transaction - rollback step 1
+#### Point-to-point with a transaction - rollback step 1
 
-![Point to point with a transaction](/transactions/JMS/SE/images/ibm_mq_transaction_msg_rollback.png)
+![Point-to-point with a transaction](/transactions/JMS/SE/images/ibm_mq_transaction_msg_rollback.png)
 
-#### Point to point with a transaction - rollback step 2
+#### Point-to-point with a transaction - rollback step 2
 
-![Point to point with a transaction](/transactions/JMS/SE/images/ibm_mq_transaction_MSG_rollback_2.png)
+![Point-to-point with a transaction](/transactions/JMS/SE/images/ibm_mq_transaction_MSG_rollback_2.png)
 
 
 
@@ -31,7 +31,7 @@ Simple put transaction sample
 
 Open a terminal window.
 
-Have the terminal window side by side with a browser window with your MQ Console.
+Have the terminal window side-by-side with a browser window open at your MQ Console.
 
 Move to your local cloned `mq-dev-patterns/transactions/JMS/SE` directory.
 
@@ -72,7 +72,7 @@ If you refresh the queues after the 15 second wait is over, the queue depth will
 
 If the random number was odd, commit is called and the message is put on the `DEV.QUEUE.1` queue.
 
-If the random number was even, rollback is called and the message is rolled back to the `BACKOUT.Q`.
+If the random number was even, rollback is called and the message is rolled back and not put to the queue.
 
 
 Go ahead and try
