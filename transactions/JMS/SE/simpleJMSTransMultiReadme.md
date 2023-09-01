@@ -1,14 +1,14 @@
 Transaction when sending several messages together
 ==================================================
 
-  * Send all three messages or none
+  * Send all three messages or none by executing a commit or a rollback
 
 
 ## Steps
 
 Open a terminal.
 
-Have the terminal window side by side with a browser window with your `MQ Console` page.
+Have the terminal window side-by-side with a browser window with your `MQ Console` page.
 
 Move to your local cloned `mq-dev-patterns/transactions/JMS/SE` directory.
 
@@ -39,17 +39,15 @@ Run the compiled program:
 java -cp ./com.ibm.mq.allclient-9.2.0.0.jar:./javax.jms-api-2.0.1.jar:. com.ibm.mq.samples.jms.simpleJmsTransMulti
 ```
 
-Refresh the queues.
+Within the program a random number is generated and depending on if it is odd or even, either a COMMIT or ROLLBACK will be carried out
 
-If the random number is odd, all three messages should be put on the queue under a transaction.
+In the terminal, you will be prompted to refresh DEV.QUEUE.1 so you can see the effect on the queue at each stage.
 
-Check the `DEV.QUEUE.1` queue on the `MQ Console` to confirm.
+When a commit is being demonstrated, you will see all 3 messages being sent to the queue, though they won't be visible. Then a commit will occur which will irreversibly put the 3 messages on to the queue, where should be visible to you. 
 
-If the random number is even, a rollback will be demonstrated.
+In the event of a rollback, you will see 2 messages being sent to the queue, again they won't be visible yet. Before the third message can be sent an "error" will occur, triggering a rollback.
+Follow the instructions in the terminal to see what effect this has on the contents of DEV.QUEUE.1.
 
-When the first and second messages are sent, information about what has happened to the messages is logged to the terminal. At this point, refresh the `MQ Console` to confirm this behaviour.
-
-After sending the first two messages, an error is introduced which prevents the third message from being sent. This means that none of the three messages are committed to the queue as they are all rolled-back.
 
 Go ahead and try
 
