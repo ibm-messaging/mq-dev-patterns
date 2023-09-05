@@ -34,6 +34,7 @@ router.get('/api/unsub', pubsubController.unsub);
 router.post('/api/putReq', reuqestreponseController.putReq);
 router.get('/api/getRes', reuqestreponseController.getRes);
 
+router.get('/', putgetController.about);
 
 
 module.exports = router;

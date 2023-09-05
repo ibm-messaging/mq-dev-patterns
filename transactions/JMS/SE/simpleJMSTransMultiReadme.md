@@ -1,14 +1,14 @@
 Transaction when sending several messages together
 ==================================================
 
-  * Send all three messages or none
+  * Send all three messages or none by executing a commit or a rollback
 
 
 ## Steps
 
 Open a terminal.
 
-Have the terminal window side by side with a browser window with your `MQ Console` page.
+Have the terminal window side-by-side with a browser window with your `MQ Console` page.
 
 Move to your local cloned `mq-dev-patterns/transactions/JMS/SE` directory.
 
@@ -39,21 +39,14 @@ Run the compiled program:
 java -cp ./com.ibm.mq.allclient-9.2.0.0.jar:./javax.jms-api-2.0.1.jar:. com.ibm.mq.samples.jms.simpleJmsTransMulti
 ```
 
-Refresh the queues.
+Within the program a random number is generated and depending on if it is odd or even, either a COMMIT or ROLLBACK will be carried out
 
-The first time you run the sample, all three messages should be put on the queue under a transaction.
+In the terminal, you will be prompted to refresh DEV.QUEUE.1 so you can see the effect on the queue at each stage.
 
-Check the `DEV.QUEUE.1` queue on the `MQ Console` to confirm.
+When a commit is being demonstrated, you will see all 3 messages being sent to the queue, though they won't be visible. Then a commit will occur which will irreversibly put the 3 messages on to the queue, where should be visible to you. 
 
-Edit the sample, comment out the code on line `105` and uncomment line `106`.
-
-This will introduce an error to one of the messages and all three should roll back to the `BACKOUT.Q` instead of being put to the `DEV.QUEUE.1` under a commit.
-
-Recompile the sample.
-
-Run the recompiled sample.
-
-Check the `MQ Console` - where did the messages end up?
+In the event of a rollback, you will see 2 messages being sent to the queue, again they won't be visible yet. Before the third message can be sent an "error" will occur, triggering a rollback.
+Follow the instructions in the terminal to see what effect this has on the contents of DEV.QUEUE.1.
 
 
 Go ahead and try

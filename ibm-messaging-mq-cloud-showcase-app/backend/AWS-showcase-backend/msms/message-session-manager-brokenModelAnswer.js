@@ -36,6 +36,10 @@ const _HOBJKEY = Symbol('hObj');
 const _HOBJDYN = Symbol('hDyn');
 
 const defaultRequestorMessage = "Hello, are you still interested in the show?";
+const DEFAULT_APP_USER = 'app';
+const DEFAULT_ADMIN_USER = 'admin';
+const DEFAULT_MQI_PORT = '1414';
+const DEFAULT_MQ_HTTP_PORT = '9443';
 
 // Load the MQ Endpoint details either from the envrionment or from the
 // env.json file. The envrionment takes precedence.
@@ -46,18 +50,23 @@ const defaultRequestorMessage = "Hello, are you still interested in the show?";
 // endpoint in the arryay is used.
 let MQDetails = {};
 let ok = true;
-['QMGR', 'QUEUE_NAME', 'HOST', 'PORT', 'MQ_QMGR_PORT_MQI',
+['QMGR', 'QUEUE_NAME', 'HOST', 'PORT', 'MQ_QMGR_PORT_MQI', 'MQ_QMGR_PORT_API',
  'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach(function(f) {
   MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[0][f];
 });
 
 if (MQDetails['MQ_QMGR_PORT_MQI']) {
   MQDetails['PORT'] = MQDetails['MQ_QMGR_PORT_MQI'];
+} else if (! MQDetails['PORT']) {
+  MQDetails['PORT'] = MQDetails['MQ_QMGR_PORT_MQI'] = DEFAULT_MQI_PORT;
+} else {
+  MQDetails['MQ_QMGR_PORT_MQI'] = DEFAULT_MQI_PORT;
 }
 
 let credentials = {
-  USER: process.env.APP_USER || env.MQ_ENDPOINTS[0].APP_USER,
+  USER: process.env.APP_USER || env.MQ_ENDPOINTS[0].APP_USER || DEFAULT_APP_USER,
   APP_PASSWORD: process.env.APP_PASSWORD || env.MQ_ENDPOINTS[0].APP_PASSWORD,
+  ADMIN_USER: process.env.ADMIN_USER || env.MQ_ENDPOINTS[0].ADMIN_USER || DEFAULT_ADMIN_USER,
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || env.MQ_ENDPOINTS[0].ADMIN_PASSWORD
 };
 
@@ -952,7 +961,9 @@ class MQClient {
   getRESTConfiguration() {
     let RESTCredential = {
       'HOST' : process.env['HOST'],
-      'CREDENTIAL' : credentials
+      'CREDENTIAL' : credentials,
+      'MQ_QMGR_PORT_API' : process.env['MQ_QMGR_PORT_API'] || MQDetails.MQ_QMGR_PORT_API || DEFAULT_MQ_HTTP_PORT,
+
     };
     return RESTCredential;
   }

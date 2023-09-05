@@ -14,24 +14,17 @@
  * limitations under the License.
  **/
 
-const { createProxyMiddleware } = require('http-proxy-middleware');
+package com.example.demo;
 
-const be = process.env.REACT_APP_BE_HOST;
-const be_port = process.env.REACT_APP_BE_PORT || "8080";
-const be_tls = process.env.REACT_APP_BE_TLS || false;
-const HTTP_PROTOCOL = be_tls ? "https://" : "http://";
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.jms.annotation.EnableJms;
 
-const be_host = HTTP_PROTOCOL + be + ":" + be_port;
+@SpringBootApplication
+@EnableJms
+public class DemoApplication {
 
-module.exports = function(app) {        
-    app.use(
-      '/api',
-      createProxyMiddleware({
-        target: String(be_host),
-        changeOrigin: true,
-        headers: { Connection: 'keep-alive' }
-      })
-    );
-};
- 
- 
+	public static void main(String[] args) {
+		SpringApplication.run(DemoApplication.class, args);
+	}
+}
