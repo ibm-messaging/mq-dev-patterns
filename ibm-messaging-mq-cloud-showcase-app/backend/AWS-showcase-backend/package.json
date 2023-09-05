@@ -25,7 +25,7 @@
     "debug": "DEBUG=mqapp* node server.js"
   },
   "engines": {
-    "node": ">=12.16.3"
+    "node": ">=16.18.2"
   },
   "type": "commonjs"
 }
