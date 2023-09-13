@@ -70,6 +70,7 @@ eg.
 resource "aws_ecs_service" "mq-dev-service" {
   count = 0
   ...
+}
 ````
 
 and running `terraform apply`. 
