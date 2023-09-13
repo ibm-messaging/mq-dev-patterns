@@ -34,9 +34,6 @@ Other MQ parameters are defaulted to
 "MQ_QMGR_NAME" = "QM1"
 ````
 
-
-
-
 ## platform.tf
 This file configures the AWS Terraform provider.
 
@@ -54,6 +51,7 @@ Is the container definition template file.
 The output from `terraform apply` is the load balancer DNS name.
 
 ## apply
+Run `terraform apply` to create all the AWS resources needed to run an IBM MQ queuemanager as a service on ECS/Fargate.
 
 ## destroy
-
+Run `terraform destroy` to delete all the AWS resources created.
