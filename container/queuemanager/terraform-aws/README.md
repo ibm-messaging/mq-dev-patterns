@@ -63,6 +63,16 @@ The output from `terraform apply` is the load balancer DNS name.
 
 ## apply
 Run `terraform apply` to create all the AWS resources needed to run an IBM MQ queuemanager as a service on ECS/Fargate.
+You can partially remove some resources, by setting count to `0`. 
+
+eg. 
+```` 
+resource "aws_ecs_service" "mq-dev-service" {
+  count = 0
+  ...
+````
+
+and running `terraform apply`. 
 
 ## destroy
 Run `terraform destroy` to delete all the AWS resources created.

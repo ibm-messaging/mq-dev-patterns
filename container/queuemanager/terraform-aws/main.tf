@@ -239,6 +239,10 @@ resource "aws_ecs_cluster" "main" {
 # Once all the above pre-reqs are in place the ECS
 # service can be created.
 resource "aws_ecs_service" "mq-dev-service" {
+  # By default count is 1
+  # If you want to delet this aws_ecs_service only
+  # then set the count to 0 
+  # count = 0
   name            = "mq-development-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.mq_task.arn
