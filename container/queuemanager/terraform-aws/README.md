@@ -3,11 +3,14 @@ These .tf files provide a starter set which
 can be used to deploy an running IBM MQ Queue Manager
 container using Terraform onto AWS.
 
+We have tested these scripts with AWS AdministratorAccess permission.
+
 ## AWS CLI
 Although you won't need to use it directly, underneath you will need the AWS CLI. If you have configured the AWS CLI with the AWS Account access key, the terraform commands will be able to access your credentials. That is, you have have run `aws configure` from the command line.
 
 ## init
-Run `terraform init` to download and initialise the requisite providers and modules - `aws` and `vpc`
+Run `terraform init` to download and configure the requisite providers and modules - `aws` and `vpc`.
+
 
 ## variables.tf
 This file exposes the customisable parameters. Most come with defaults, but all can be overridden using either command line arguments or envrionment variables. 
@@ -35,7 +38,8 @@ Other MQ parameters are defaulted to
 ````
 
 ## platform.tf
-This file configures the AWS Terraform provider.
+This file configures the AWS Terraform provider. For latest
+provider version and documentation see [terraform aws doc](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
 
 ## main.tf
 A new VPC is created and a single IBM MQ Advanced for Developers image is put into a private subnet. 
