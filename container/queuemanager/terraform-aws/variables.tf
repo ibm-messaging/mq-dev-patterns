@@ -49,7 +49,7 @@ variable "mq_container_name" {
 
 # The number of running containers 
 variable "app_count" {
-  type = number
+  type    = number
   default = 1
 }
 

@@ -202,9 +202,9 @@ resource "aws_security_group_rule" "allow_hw_1414" {
   type              = "ingress"
   security_group_id = aws_security_group.mq_task_secuity_group.id
 
-  from_port   = 1414
-  to_port     = 1414
-  protocol    = "tcp"
+  from_port = 1414
+  to_port   = 1414
+  protocol  = "tcp"
 
   # Only allow traffic from apps running in this VPC
   # private and public subnets
@@ -216,9 +216,9 @@ resource "aws_security_group_rule" "allow_hw_9443" {
   type              = "ingress"
   security_group_id = aws_security_group.mq_task_secuity_group.id
 
-  from_port   = 9443
-  to_port     = 9443
-  protocol    = "tcp"
+  from_port = 9443
+  to_port   = 9443
+  protocol  = "tcp"
 
   # Only allow traffic from apps running in this VPC
   # private and public subnets

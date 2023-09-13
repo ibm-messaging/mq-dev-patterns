@@ -3,10 +3,13 @@ These .tf files provide a starter set which
 can be used to deploy an running IBM MQ Queue Manager
 container using Terraform onto AWS.
 
-We have tested these scripts with AWS AdministratorAccess permission.
+We have tested this configuration with an id that has AWS `AdministratorAccess` permission.
 
 ## AWS CLI
 Although you won't need to use it directly, underneath you will need the AWS CLI. If you have configured the AWS CLI with the AWS Account access key, the terraform commands will be able to access your credentials. That is, you have have run `aws configure` from the command line.
+
+## Terraform CLI
+Install the Terraform CLI following [this Terraform guide](https://developer.hashicorp.com/terraform/downloads).
 
 ## init
 Run `terraform init` to download and configure the requisite providers and modules - `aws` and `vpc`.
@@ -29,7 +32,11 @@ queuemanager image will fail on start.
 
 Start up envrionment parameters for the MQ container image are also specified in the `variables.tf` file.
 
-There are no defaults for `mq_app_password` or `mq_admin_password`, so they must be set on `terraform apply`. 
+There are no defaults for `mq_app_password` or `mq_admin_password`, so they must be set on `terraform apply`, either interactively or as `-var` command line parameters. eg.
+
+````
+terraform apply -var mq_app_password="AD1ficlutToDeciferAppPassw0rd" -var mq_admin_password="AD1ficlutToDeciferAdminPassw0rd"
+````
 
 Other MQ parameters are defaulted to 
 ````
