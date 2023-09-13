@@ -14,7 +14,7 @@
 
 FROM ubuntu:20.04 as builder
 
-ENV NODE_VERSION 16
+ENV NODE_VERSION 18
 
 #get the application
 ENV APP_DIR /usr/local
