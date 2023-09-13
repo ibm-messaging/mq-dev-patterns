@@ -1,0 +1,43 @@
+[
+    {
+      "image": "icr.io/ibm-messaging/mq:latest",
+      "cpu": 1024,
+      "memory": 2048,
+      "name": "${MQ_CONTAINER_NAME}",
+      "networkMode": "awsvpc",
+      "portMappings": [
+        {
+          "containerPort": ${MQ_HTTP_PORT},
+          "hostPort": ${MQ_HTTP_PORT}
+        },
+        {
+            "containerPort": ${MQ_MQI_PORT},
+            "hostPort": ${MQ_MQI_PORT}
+        }
+      ],
+      "environment": [
+        %{ for env_key, env_value in ENVVARS }
+        {
+          "name": "${env_key}",
+          "value": "${env_value}"
+        },
+        %{ endfor ~}
+        {
+          "name"  : "MQ_APP_PASSWORD",
+          "value" : "${MQ_APP_PASSWORD}"
+        },
+        {
+          "name"  : "MQ_ADMIN_PASSWORD",
+          "value" : "${MQ_ADMIN_PASSWORD}"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-region": "${REGION}",
+          "awslogs-stream-prefix": "mqdevex-terraform",
+          "awslogs-group": "${LOG_GROUP_NAME}"
+        }
+      }
+    }
+]
