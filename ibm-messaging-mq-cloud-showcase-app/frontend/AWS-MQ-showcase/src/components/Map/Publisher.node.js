@@ -118,7 +118,7 @@ const PublisherNode = ({ id, data }) => {
         size="sm"
         className="producer-node-name-label"
         ref={refTitle}
-        labelText="Title of your noitfication"
+        labelText="Title of your notification"
         value={title}
         placeholder="Waitlist reminder"
         onChange={e => setTitle(e.value)}
@@ -128,7 +128,7 @@ const PublisherNode = ({ id, data }) => {
         size="sm"
         ref={refMessage}
         labelText="Content of your notification"
-        placeholder={'Do not FORGET our WAITLIST!' + data.connectedQueue}
+        placeholder={'Don\'t forget about our WAITLIST! ' + data.connectedQueue}
         value={message}
         onChange={e => setMessage(e.value)}
       />

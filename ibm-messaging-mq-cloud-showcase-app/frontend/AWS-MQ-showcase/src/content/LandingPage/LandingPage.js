@@ -77,13 +77,13 @@ const LandingPage = () => {
             </h3>
           </Column>
           <Column md={4} lg={4} sm={4}>
-            73% of the Fortune 100
+            90% of the top 100 global banks
           </Column>
           <Column md={4} lg={4} sm={4}>
             73% of the Fortune 100
           </Column>
           <Column md={4} lg={4} sm={4}>
-            73% of the Fortune 100
+            80% of the top 20 telecommunications companies
           </Column>
         </Grid>
       </Column>
