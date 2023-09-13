@@ -205,7 +205,10 @@ resource "aws_security_group_rule" "allow_hw_1414" {
   from_port   = 1414
   to_port     = 1414
   protocol    = "tcp"
-  cidr_blocks = ["0.0.0.0/0"]
+
+  # Only allow traffic from apps running in this VPC
+  # private and public subnets
+  cidr_blocks = [var.vpc_cidr_block]
 }
 
 # Allow 9443 traffic into the queue manager
@@ -216,7 +219,10 @@ resource "aws_security_group_rule" "allow_hw_9443" {
   from_port   = 9443
   to_port     = 9443
   protocol    = "tcp"
-  cidr_blocks = ["0.0.0.0/0"]
+
+  # Only allow traffic from apps running in this VPC
+  # private and public subnets
+  cidr_blocks = [var.vpc_cidr_block]
 }
 
 # Create the cloudwatch log group. 
