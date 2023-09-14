@@ -110,6 +110,7 @@ public class simpleJmsTransaction {
       // Create JMS objects
 
       int uniqueNumber = rand.nextInt(upperbound);
+      System.out.println("Your number is: " + uniqueNumber);
 
       context = cf.createContext(JMSContext.SESSION_TRANSACTED);
       destination = context.createQueue("queue:///" + QUEUE_NAME);

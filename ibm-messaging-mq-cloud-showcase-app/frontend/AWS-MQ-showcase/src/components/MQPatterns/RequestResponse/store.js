@@ -46,7 +46,7 @@ const _initialNodes = [
     type: 'producer',
     data: {
       role: 'Producer',
-      label: 'Partecipants checker',
+      label: 'Participants checker',
       connectedQueue: 'DEV.QUEUE.3',
       isActive: false,
     },
@@ -60,7 +60,7 @@ const _initialNodes = [
     type: 'consumer',
     data: {
       role: 'Consumer',
-      label: 'Partecipant confirmation',
+      label: 'Participant confirmation',
       connectedQueue: 'DEV.QUEUE.3',
       isActive: false,
     },
