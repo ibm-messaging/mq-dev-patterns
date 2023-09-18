@@ -30,6 +30,8 @@ The log group is paramertized as its usage needs to
 be consistent throughout the script. Otherwise the
 queuemanager image will fail on start.
 
+We use `variable` in lieu of `locals` so that the values can be customised externally.
+
 Start up envrionment parameters for the MQ container image are also specified in the `variables.tf` file.
 
 There are no defaults for `mq_app_password` or `mq_admin_password`, so they must be set on `terraform apply`, either interactively or as `-var` command line parameters. eg.

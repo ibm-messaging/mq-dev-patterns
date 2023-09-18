@@ -41,24 +41,7 @@ data "aws_availability_zones" "available_zones" {
   state = "available"
 }
 
-#
-# module blocks
-#
 
-# Create a new VPC making use of the terraform aws vpc module
-module "vpc" {
-  source = "terraform-aws-modules/vpc/aws"
-
-  name = "mq-ecs-vpc"
-  cidr = var.vpc_cidr_block
-
-  azs             = data.aws_availability_zones.available_zones.names
-  private_subnets = slice(var.private_subnet_cidr_blocks, 0, var.private_subnet_count)
-  public_subnets  = slice(var.public_subnet_cidr_blocks, 0, var.public_subnet_count)
-
-  enable_nat_gateway = true
-  enable_vpn_gateway = var.enable_vpn_gateway
-}
 
 #
 # resource blocks
@@ -81,7 +64,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role" {
 # to be amended.
 resource "aws_security_group" "lb" {
   name   = "mq-nlb-security-group"
-  vpc_id = module.vpc.vpc_id
+  vpc_id = data.aws_vpc.mq_vpc.id
 
   egress {
     from_port   = 0
@@ -118,7 +101,7 @@ resource "aws_security_group_rule" "allow_mq_9443_traffic" {
 resource "aws_lb" "default" {
   name               = "mq-nlb"
   load_balancer_type = "network"
-  subnets            = module.vpc.public_subnets
+  subnets            = data.aws_subnets.public.ids
   security_groups    = [aws_security_group.lb.id]
 }
 
@@ -126,7 +109,7 @@ resource "aws_lb_target_group" "mq1414" {
   name        = "mq1414-target-group"
   port        = 1414
   protocol    = "TCP"
-  vpc_id      = module.vpc.vpc_id
+  vpc_id      = data.aws_vpc.mq_vpc.id
   target_type = "ip"
 }
 
@@ -134,7 +117,7 @@ resource "aws_lb_target_group" "mq9443" {
   name        = "mq9443-target-group"
   port        = 9443
   protocol    = "TCP"
-  vpc_id      = module.vpc.vpc_id
+  vpc_id      = data.aws_vpc.mq_vpc.id
   target_type = "ip"
 }
 
@@ -163,6 +146,7 @@ resource "aws_lb_listener" "mqon1414" {
   }
 }
 
+# Define the ECS Task and identify underlying container. 
 resource "aws_ecs_task_definition" "mq_task" {
   family                   = "mq-dev"
   network_mode             = "awsvpc"
@@ -181,13 +165,26 @@ resource "aws_ecs_task_definition" "mq_task" {
     REGION            = var.region,
     ENVVARS           = var.envvars
   })
+
+  volume {
+    name = "efs-volume"
+    efs_volume_configuration {
+      file_system_id = data.aws_efs_file_system.mq.id
+      root_directory = "/"
+      transit_encryption  = "ENABLED"
+      authorization_config {
+        access_point_id = data.aws_efs_access_point.mq.id
+      }
+    }
+  }
+
 }
 
 # Queue Manager security group. 
 # Ingress rules are defined separately.
 resource "aws_security_group" "mq_task_secuity_group" {
   name   = "mq-task-security-group"
-  vpc_id = module.vpc.vpc_id
+  vpc_id = data.aws_vpc.mq_vpc.id
 
   egress {
     protocol    = "-1"
@@ -208,7 +205,7 @@ resource "aws_security_group_rule" "allow_hw_1414" {
 
   # Only allow traffic from apps running in this VPC
   # private and public subnets
-  cidr_blocks = [var.vpc_cidr_block]
+  cidr_blocks = [data.aws_vpc.mq_vpc.cidr_block]
 }
 
 # Allow 9443 traffic into the queue manager
@@ -222,14 +219,17 @@ resource "aws_security_group_rule" "allow_hw_9443" {
 
   # Only allow traffic from apps running in this VPC
   # private and public subnets
-  cidr_blocks = [var.vpc_cidr_block]
+  cidr_blocks = [data.aws_vpc.mq_vpc.cidr_block]
 }
 
 # Create the cloudwatch log group. 
 # The log group name used by the ecs task definition must match this name.
 resource "aws_cloudwatch_log_group" "mqlogs" {
   name = var.log_group
+  # skip_destroy = true 
+  # retention_in_days = 3
 }
+
 
 # Create the ECS Cluster
 resource "aws_ecs_cluster" "main" {
@@ -240,7 +240,7 @@ resource "aws_ecs_cluster" "main" {
 # service can be created.
 resource "aws_ecs_service" "mq-dev-service" {
   # By default count is 1
-  # If you want to delet this aws_ecs_service only
+  # If you want to delete this aws_ecs_service only
   # then set the count to 0 
   # count = 0
   name            = "mq-development-service"
@@ -254,7 +254,7 @@ resource "aws_ecs_service" "mq-dev-service" {
 
   network_configuration {
     security_groups = [aws_security_group.mq_task_secuity_group.id]
-    subnets         = module.vpc.private_subnets
+    subnets         = data.aws_subnets.private.ids
   }
 
   load_balancer {
