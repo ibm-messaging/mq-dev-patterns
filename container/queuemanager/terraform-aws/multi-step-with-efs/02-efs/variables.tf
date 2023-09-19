@@ -20,6 +20,6 @@ variable "region" {
 
 # VPC needs to be input as a variable when applying this script
 variable "vpc_id" {
-  description = "The aws region to apply these services to"
+  description = "The VPC to apply these services to"
 }
 

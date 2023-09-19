@@ -67,12 +67,15 @@ variable "log_group" {
 
 variable "vpc_id" {
   description = "The aws region to apply these services to"
+  default     = "vpc-0232e44e5654ad375"
 }
 
 variable "efs_id" {
-  description = "EFS that MQ will use for persistent storage" 
+  description = "EFS that MQ will use for persistent storage"
+  default     = "fs-05f1d829b4183778d"  
 }
 
 variable "efs_access_point" {
   description = "EFS Access poind"
+  default = "fsap-04eabfd137dfb30df"
 }
