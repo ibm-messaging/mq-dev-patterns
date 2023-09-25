@@ -18,6 +18,7 @@
 variable "region" {
   description = "The aws region to apply these services to"
   default     = "eu-west-2"
+  type        = string
 }
 
 variable "enable_vpn_gateway" {

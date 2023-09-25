@@ -17,6 +17,7 @@
 variable "region" {
   description = "The aws region to apply these services to"
   default     = "eu-west-2"
+  type        = string
 }
 
 variable "mq_app_password" {
@@ -45,6 +46,7 @@ variable "envvars" {
 variable "mq_container_name" {
   description = "Container name"
   default     = "mq-container"
+  type        = string
 }
 
 # The number of running containers 
@@ -60,6 +62,7 @@ variable "app_count" {
 variable "log_group" {
   description = "CloudWatch log group"
   default     = "/devex/mq/terraform/efs"
+  type        = string
 }
 
 
@@ -68,14 +71,17 @@ variable "log_group" {
 variable "vpc_id" {
   description = "The aws region to apply these services to"
   default     = "vpc-0232e44e5654ad375"
+  type        = string
 }
 
 variable "efs_id" {
   description = "EFS that MQ will use for persistent storage"
-  default     = "fs-05f1d829b4183778d"  
+  default     = "fs-05f1d829b4183778d"
+  type        = string
 }
 
 variable "efs_access_point" {
   description = "EFS Access poind"
-  default = "fsap-04eabfd137dfb30df"
+  default     = "fsap-04eabfd137dfb30df"
+  type        = string
 }

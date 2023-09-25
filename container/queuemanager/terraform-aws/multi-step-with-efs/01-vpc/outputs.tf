@@ -23,7 +23,7 @@
 
 output "vpc_id" {
   description = "VPC ID"
-  value = module.vpc.vpc_id
+  value       = module.vpc.vpc_id
 }
 
 output "cidr_block" {
@@ -32,12 +32,12 @@ output "cidr_block" {
 
 output "vpc_private_subnets" {
   description = "Private Subnets"
-  value = module.vpc.private_subnets
+  value       = module.vpc.private_subnets
 }
 
 output "vpc_public_subnets" {
   description = "Public Subnets"
-  value = module.vpc.public_subnets
+  value       = module.vpc.public_subnets
 }
 
 

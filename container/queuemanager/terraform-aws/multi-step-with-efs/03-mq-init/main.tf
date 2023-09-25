@@ -72,9 +72,9 @@ resource "aws_ecs_task_definition" "mq_task" {
   volume {
     name = "efs-volume"
     efs_volume_configuration {
-      file_system_id = data.aws_efs_file_system.mq.id
-      root_directory = "/"
-      transit_encryption  = "ENABLED"
+      file_system_id     = data.aws_efs_file_system.mq.id
+      root_directory     = "/"
+      transit_encryption = "ENABLED"
       authorization_config {
         access_point_id = data.aws_efs_access_point.mq.id
       }

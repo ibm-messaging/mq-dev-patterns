@@ -24,7 +24,7 @@ data "aws_subnets" "private" {
     values = [data.aws_vpc.mq_vpc.id]
   }
   tags = {
-    Tier = "private"
+    Tier  = "private"
     Usage = "mq"
   }
 }

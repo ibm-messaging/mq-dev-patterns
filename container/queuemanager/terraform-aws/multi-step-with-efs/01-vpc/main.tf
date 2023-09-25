@@ -27,12 +27,12 @@ module "vpc" {
 
   # Tag the subnets so that they can be differentiated downstream.
   private_subnet_tags = {
-    Tier = "private"
+    Tier  = "private"
     Usage = "mq"
   }
- 
+
   public_subnet_tags = {
-    Tier = "public"
+    Tier  = "public"
     Usage = "mq"
   }
 

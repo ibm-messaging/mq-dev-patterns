@@ -18,12 +18,12 @@
 
 output "efs_id" {
   description = "EFS ID"
-  value = aws_efs_file_system.efs_persist.id
+  value       = aws_efs_file_system.efs_persist.id
 }
 
 output "efs_access_point_id" {
   description = "EFS access point for Init"
-  value = aws_efs_access_point.fargate.id
+  value       = aws_efs_access_point.fargate.id
 }
 
 # Output these values to double check with VPC output to
