@@ -250,5 +250,5 @@ Do not install any application requirements until
 
 ### MQ container deployment examples
 #### [compose](/container/queuemanager/compose/README.md)
-
+#### [compose](/container/queuemanager/terraform-aws/README.md)
 
