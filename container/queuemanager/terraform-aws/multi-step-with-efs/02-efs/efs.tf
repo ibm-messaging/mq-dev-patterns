@@ -30,7 +30,7 @@ resource "aws_efs_access_point" "fargate" {
     creation_info {
       owner_gid   = 0
       owner_uid   = 0
-      permissions = 777
+      permissions = 730
     }
   }
 }
