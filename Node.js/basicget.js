@@ -237,6 +237,8 @@ function getMessage(hObj) {
   });
 }
 
+// getMessages promise only resolves if there are either no more messages
+// or it is not possible to retrieve any more messages.
 function getMessages(hObj) {
   return new Promise(function resolver(resolve, reject) {
     debug_info('Retrieving next messages in getMessages');
@@ -249,8 +251,6 @@ function getMessages(hObj) {
         resolve();
       }
     })
-
-    resolve();
   });
 }
 
