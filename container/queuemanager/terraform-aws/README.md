@@ -5,6 +5,10 @@ container using Terraform onto AWS ECS.
 
 We have tested this configuration with an id that has AWS `AdministratorAccess` permission.
 
+We have yet to test these configurations with [OpenTofu](https://opentofu.org), but the expectations 
+that they should work with little to no admendment.
+
+
 ## AWS CLI
 Although you won't need to use it directly, the terraform CLI makes use of your AWS CLI configuration. 
 If you have configured the AWS CLI with the AWS Account access key, the terraform commands will be able to access AWS using the configuration. That is, if you have have run `aws configure` from the command line, 
