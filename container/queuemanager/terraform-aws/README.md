@@ -5,8 +5,11 @@ container using Terraform onto AWS ECS.
 
 We have tested this configuration with an id that has AWS `AdministratorAccess` permission.
 
-We have yet to test these configurations with [OpenTofu](https://opentofu.org), but the expectations 
-that they should work with little to no admendment.
+We have yet to test these configurations with [OpenTofu](https://opentofu.org). Our expectations 
+that they should work with little to no admendment, as 
+
+> Initially, OpenTofu will be a drop-in replacement for Terraform, as it will be compatible with Terraform 
+> versions 1.5.x. You won’t need to make any changes to your code to ensure compatibility. 
 
 
 ## AWS CLI
