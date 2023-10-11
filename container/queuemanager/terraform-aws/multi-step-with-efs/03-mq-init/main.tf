@@ -43,13 +43,13 @@ data "aws_availability_zones" "available_zones" {
 
 
 # Task execution role and policy for AssumeRole to enable logging.
-resource "aws_iam_role" "ecs_task_execution_role" {
-  name               = "ecs-staging-execution-role"
+resource "aws_iam_role" "ecs_init_task_execution_role" {
+  name               = "ecs-init-staging-execution-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_execution_role.json
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_task_execution_role" {
-  role       = aws_iam_role.ecs_task_execution_role.name
+resource "aws_iam_role_policy_attachment" "ecs_init_task_execution_role" {
+  role       = aws_iam_role.ecs_init_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
@@ -57,7 +57,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role" {
 resource "aws_ecs_task_definition" "mq_task" {
   family                   = "mq-dev"
   network_mode             = "awsvpc"
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn       = aws_iam_role.ecs_init_task_execution_role.arn
   requires_compatibilities = ["FARGATE"]
   cpu                      = 1024
   memory                   = 2048
@@ -113,32 +113,20 @@ resource "aws_ecs_cluster" "main" {
 }
 
 # Once all the above pre-reqs are in place the ECS
-# service can be created.
-resource "aws_ecs_service" "mq-dev-service" {
-  # By default count is 1
-  # If you want to delet this aws_ecs_service only
-  # then set the count to 0 
-  # count = 0
-  name            = "mq-development-service"
+# one of task can be started.
+data "aws_ecs_task_execution" "mq-efs_init-task" {
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.mq_task.arn
   desired_count   = var.app_count
   launch_type     = "FARGATE"
 
-  # If set will force new deployment on every apply
-  # force_new_deployment = true
+   network_configuration {
+     security_groups = [aws_security_group.mq_init_task_secuity_group.id]
+     subnets         = data.aws_subnets.private.ids
+     assign_public_ip = false
+   }
 
-  network_configuration {
-    security_groups = [aws_security_group.mq_init_task_secuity_group.id]
-    subnets         = data.aws_subnets.private.ids
-  }
-
-  # depends_on is set to the task execution role. 
-  # The role depends is to prevent a race condition during service deletion, 
-  # otherwise, the policy may be destroyed too soon and the ECS service will 
-  # then get stuck in the DRAINING state.
-  # See https://registry.terraform.io/providers/figma/aws-4-49-0/latest/docs/resources/ecs_service
-  depends_on = [aws_iam_role_policy_attachment.ecs_task_execution_role]
+  depends_on = [aws_iam_role_policy_attachment.ecs_init_task_execution_role]
 }
 
 

@@ -153,33 +153,16 @@ eg.
 terraform apply -var vpc_id="vpc-123" -var efs_id="fs-456" -var efs_access_point="fsap-789"
 ```
 
-The storage initialisation is a single task that completes, after which the container terminates. 
-Terraform detects that the container has terminated and restarts it. Once the storage has been initialised, ie. you see 
+The storage initialisation is a single one off task that completes, after which the container terminates. 
+Once the storage has been initialised, ie. you see 
 
 ```
 Created directory structure under /var/mqm
 ```
 
-in the logs then the task has been completed. Then either run
+in the logs then the task has been completed. 
 
-`terraform destroy` 
-
-or 
-
-You can partially remove some resources, by setting count to `0` in `main.tf`
-
-eg. 
-```
-resource "aws_ecs_service" "mq-dev-service" {
-  count = 0
-  ...
-}
-```
-
-then running
-```
-terraform apply -var vpc_id="vpc-123" -var efs_id="fs-456" -var efs_access_point="fsap-789"
-```
+*Note:* You still need to run `terraform destroy`, to clean up resources.
 
 There are no outputs from this configuration.
 

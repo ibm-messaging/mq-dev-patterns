@@ -64,7 +64,7 @@ variable "efs_id" {
 }
 
 variable "efs_access_point" {
-  description = "EFS Access poind"
+  description = "EFS Access point"
   type        = string
 }
 
