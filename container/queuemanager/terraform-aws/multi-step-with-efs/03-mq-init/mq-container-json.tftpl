@@ -1,0 +1,37 @@
+[
+    {
+      "image": "icr.io/ibm-messaging/mq:latest",
+      "entrypoint": ["runmqserver","-i"],
+      "cpu": 1024,
+      "memory": 2048,
+      "name": "${MQ_CONTAINER_NAME}",
+      "networkMode": "awsvpc",
+      "environment": [
+        %{ for env_key, env_value in ENVVARS }
+        {
+          "name": "${env_key}",
+          "value": "${env_value}"
+        },
+        %{ endfor ~}
+        {
+          "name"  : "dummy",
+          "value" : "dummy"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-region": "${REGION}",
+          "awslogs-stream-prefix": "mqdevex-terraform",
+          "awslogs-group": "${LOG_GROUP_NAME}"
+        }
+      },
+      "mountPoints": [
+        {
+          "containerPath": "/mnt/mqm",
+          "sourceVolume": "efs-volume",
+          "readOnly" : false
+        }
+      ]
+    }
+]
