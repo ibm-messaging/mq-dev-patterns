@@ -58,10 +58,13 @@ public class JmsRequest {
     private static Boolean BINDINGS = false;
     private static String REQUEST_MODE = "";
 
+    private static Long REQUEST_MESSAGE_EXPIRY = 0L;
+
     private static Random random = new Random();
 
+    private static Long SECOND = 1000L;
+    private static Long HOUR = 60 * 60 * SECOND; 
     
-    private static Long HOUR = 60* 60 * 1000L; 
 
     public static void main(String[] args) {
         initialiseLogging();
@@ -87,7 +90,15 @@ public class JmsRequest {
         }
         logger.info("destination created");
         producer = context.createProducer();
-        producer.setTimeToLive(2 * HOUR);
+
+        // If messages will expire then don't set time to live for messages
+        // Otherwise ensure that they disappear off the queue in 2 hours
+        if (0 < REQUEST_MESSAGE_EXPIRY) {
+            producer.setTimeToLive(REQUEST_MESSAGE_EXPIRY);
+        } else {
+            producer.setTimeToLive(2 * HOUR);
+        }
+
         logger.info("producer created");
 
         TextMessage message = context.createTextMessage(RequestResponseHelper.buildStringForRequest(REQUEST_MODE, random.nextInt(101)));
@@ -103,8 +114,9 @@ public class JmsRequest {
             }
             message.setJMSCorrelationIDAsBytes(b);
             logger.info(getHexString(b));
-            message.setJMSExpiration(900000);
-            
+
+            message.setJMSExpiration(REQUEST_MESSAGE_EXPIRY);
+
             Destination requestQueue = null;
 
             if (null == REPLY_QUEUE_NAME || REPLY_QUEUE_NAME.isEmpty()) {
@@ -125,8 +137,20 @@ public class JmsRequest {
             logger.info("Selecting reply based on selector " + selector);
             JMSConsumer consumer = context.createConsumer(requestQueue, selector);
             logger.info("reply getter created");
-            Message receivedMessage = consumer.receive();
-            getAndDisplayMessageBody(receivedMessage);
+
+            Message receivedMessage = null;
+            if (0 < REQUEST_MESSAGE_EXPIRY){
+                receivedMessage = consumer.receive(REQUEST_MESSAGE_EXPIRY);
+            } else {
+                receivedMessage = consumer.receive();
+            }
+
+            if (null != receivedMessage) {
+                getAndDisplayMessageBody(receivedMessage);
+            } else {
+                logger.warning("Request has been timed out");
+            }
+
 
         } catch (JMSException e) {
             logger.warning("Got a JMS exception");
@@ -181,6 +205,16 @@ public class JmsRequest {
         BINDINGS = env.getEnvBooleanValue("BINDINGS", index);
 
         REQUEST_MODE = env.getEnvValue("REQUEST_MODE", index);
+
+        REQUEST_MESSAGE_EXPIRY = env.getEnvLongValue("REQUEST_MESSAGE_EXPIRY", index);
+
+        // Expiry is in milliseconds, a value of 5 will be converted to 
+        // 5000 milliseconds = 5 seconds.
+        if (0 < REQUEST_MESSAGE_EXPIRY) {
+            REQUEST_MESSAGE_EXPIRY *= SECOND;
+        } else {
+            REQUEST_MESSAGE_EXPIRY = 900000L;
+        }
 
         CCDTURL = env.getCheckForCCDT();
     }

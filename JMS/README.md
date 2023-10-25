@@ -230,6 +230,9 @@ The response sample will get a message from the queue, process it and put the re
 
 If you set the envrionment variable `RESPONDER_INACTIVITY_TIMEOUT` to a number the responder will wait `RESPONDER_INACTIVITY_TIMEOUT` seconds for a request before timing out and ending.
 
+If you set the envrionment variable `REQUEST_MESSAGE_EXPIRY` to a number the requester will set the message expiry to  `REQUEST_MESSAGE_EXPIRY` seconds. It will then wait for `REQUEST_MESSAGE_EXPIRY` seconds for a reply before timing out and ending.
+
+
 ## The SampleEnvSetter
 
 Used by all samples to read the JSON file. Will be compiled when you compile any other the other samples.
