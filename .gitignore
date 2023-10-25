@@ -11,3 +11,9 @@
 **/node_modules/*
 .idea
 amqp-vertx/target/*
+.terraform.*
+.terraform/
+terraform.tfstate.*
+terraform.tfstate
+
+
