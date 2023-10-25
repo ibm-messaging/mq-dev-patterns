@@ -91,7 +91,7 @@ public class JmsRequest {
         logger.info("destination created");
         producer = context.createProducer();
 
-        // If messages will expire then don't set time to live for messages
+        // If messages will expire set appropriate time to live for messages
         // Otherwise ensure that they disappear off the queue in 2 hours
         if (0 < REQUEST_MESSAGE_EXPIRY) {
             producer.setTimeToLive(REQUEST_MESSAGE_EXPIRY);
