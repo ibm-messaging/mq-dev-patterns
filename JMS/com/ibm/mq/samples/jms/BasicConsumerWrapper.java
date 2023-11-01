@@ -19,10 +19,10 @@ package com.ibm.mq.samples.jms;
 import java.util.logging.*;
 
 // JMS
-// import javax.jms.JMSRuntimeException;
+import javax.jms.JMSRuntimeException;
 
 // Jakarta
-import jakarta.jms.JMSRuntimeException;
+// import jakarta.jms.JMSRuntimeException;
 
 import com.ibm.mq.samples.jms.BasicConsumer;
 import com.ibm.mq.samples.jms.SampleEnvSetter;

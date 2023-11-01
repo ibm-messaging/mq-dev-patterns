@@ -19,34 +19,34 @@ package com.ibm.mq.samples.jms;
 import java.util.logging.*;
 
 // JMS
-// import javax.jms.Destination;
-// import javax.jms.JMSProducer;
-// import javax.jms.JMSContext;
-// import javax.jms.Message;
-// import javax.jms.TextMessage;
-// import javax.jms.JMSRuntimeException;
-// import javax.jms.JMSException;
+import javax.jms.Destination;
+import javax.jms.JMSProducer;
+import javax.jms.JMSContext;
+import javax.jms.Message;
+import javax.jms.TextMessage;
+import javax.jms.JMSRuntimeException;
+import javax.jms.JMSException;
 
-// import com.ibm.msg.client.jms.JmsConnectionFactory;
-// import com.ibm.msg.client.jms.JmsFactoryFactory;
-// import com.ibm.msg.client.wmq.WMQConstants;
+import com.ibm.msg.client.jms.JmsConnectionFactory;
+import com.ibm.msg.client.jms.JmsFactoryFactory;
+import com.ibm.msg.client.wmq.WMQConstants;
 
-// import com.ibm.mq.jms.MQDestination;
+import com.ibm.mq.jms.MQDestination;
 
-// Jakarta
-import jakarta.jms.Destination;
-import jakarta.jms.JMSProducer;
-import jakarta.jms.JMSContext;
-import jakarta.jms.Message;
-import jakarta.jms.TextMessage;
-import jakarta.jms.JMSRuntimeException;
-import jakarta.jms.JMSException;
+// Use these imports for building with Jakarta Messaging
+// import jakarta.jms.Destination;
+// import jakarta.jms.JMSProducer;
+// import jakarta.jms.JMSContext;
+// import jakarta.jms.Message;
+// import jakarta.jms.TextMessage;
+// import jakarta.jms.JMSRuntimeException;
+// import jakarta.jms.JMSException;
 
-import com.ibm.msg.client.jakarta.jms.JmsConnectionFactory;
-import com.ibm.msg.client.jakarta.jms.JmsFactoryFactory;
-import com.ibm.msg.client.jakarta.wmq.WMQConstants;
+// import com.ibm.msg.client.jakarta.jms.JmsConnectionFactory;
+// import com.ibm.msg.client.jakarta.jms.JmsFactoryFactory;
+// import com.ibm.msg.client.jakarta.wmq.WMQConstants;
 
-import com.ibm.mq.jakarta.jms.MQDestination;
+// import com.ibm.mq.jakarta.jms.MQDestination;
 
 import com.ibm.mq.samples.jms.SampleEnvSetter;
 
@@ -133,9 +133,9 @@ public class JmsPub {
     JmsConnectionFactory cf;
     try {
       // JMS
-      // ff = JmsFactoryFactory.getInstance(WMQConstants.WMQ_PROVIDER);
+      ff = JmsFactoryFactory.getInstance(WMQConstants.WMQ_PROVIDER);
       // Jakarta
-      ff = JmsFactoryFactory.getInstance(WMQConstants.JAKARTA_WMQ_PROVIDER);
+      // ff = JmsFactoryFactory.getInstance(WMQConstants.JAKARTA_WMQ_PROVIDER);
 
       cf = ff.createConnectionFactory();
     } catch (JMSException jmsex) {
