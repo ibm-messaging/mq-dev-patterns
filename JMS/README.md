@@ -1,6 +1,7 @@
 # IBM MQ JMS samples
 The JMS samples are based on the the existing samples shipped with IBM MQ Server and Client packages.
-These have been tested with Java(TM) SE Runtime Environment (build 1.8.0_181-b13).
+These have been tested with Eclipse OpenJ9 VM 11.0.17.0
+
 
 Download
 [latest IBM MQ allclient jar](https://search.maven.org/search?q=a:com.ibm.mq.allclient)
@@ -10,6 +11,18 @@ Download
 [JSON parser](https://central.sonatype.com/artifact/org.json/json/20230227)
 
 Add the jars to the top level JMS folder, these commands will then work
+
+## Jakarta
+If you want to use Jakarta Messaging in place of JMS, then use the following jars in-lieu of allclient and jms-api.
+
+ [latest IBM MQ Jakarta client jar](https://search.maven.org/search?q=a:com.ibm.mq.jakarta.client)
+
+[Jakarta Messaging API 2.0.1 jar](https://search.maven.org/search?q=a:jakarta.jms-api)
+
+This will generate compilation errors. The code, however contains commented out blocks (mainly the import blocks) that you can uncomment to overcome the compilation errors. Remember to remove the JMS code blocks that need removing.
+
+If you are using maven then a Jakarta enabled `pom-jakarta.xml` can be used.
+
 
 ## Intro to JMS Samples
 
@@ -83,6 +96,13 @@ You can build the samples by running the command.
 ````
 mvn clean package
 ````
+
+If you want to use the Jakarta messaging dependencies then run 
+
+````
+mvn clean package -f pom-jakarta.xml
+````
+
 The `clean` option will clear out any previous build.
 The build will create a ./target/mq-dev-patterns-0.1.0.jar file containing the
 compiled samples.
