@@ -1,5 +1,5 @@
 /*
-* (c) Copyright IBM Corporation 2020
+* (c) Copyright IBM Corporation 2020, 2023
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -19,7 +19,12 @@ package com.ibm.mq.samples.jms;
 import java.util.logging.*;
 import javax.jms.JMSRuntimeException;
 
-import com.ibm.mq.constants.MQConstants;
+// JMS 
+// import com.ibm.mq.constants.MQConstants;
+
+// Jakarta
+import com.ibm.msg.client.jakarta.wmq.WMQConstants;
+
 import com.ibm.mq.MQException;
 
 

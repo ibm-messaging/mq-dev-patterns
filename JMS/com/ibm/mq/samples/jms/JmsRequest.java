@@ -20,22 +20,42 @@ import java.util.logging.*;
 import java.util.UUID;
 import java.util.Random;
 
-import javax.jms.Destination;
-import javax.jms.JMSConsumer;
-import javax.jms.JMSContext;
-import javax.jms.JMSException;
-import javax.jms.JMSProducer;
-import javax.jms.TextMessage;
-import javax.jms.Message;
-import javax.jms.TemporaryQueue;
+// JMS
+// import javax.jms.Destination;
+// import javax.jms.JMSConsumer;
+// import javax.jms.JMSContext;
+// import javax.jms.JMSException;
+// import javax.jms.JMSProducer;
+// import javax.jms.TextMessage;
+// import javax.jms.Message;
+// import javax.jms.TemporaryQueue;
 
-import com.ibm.msg.client.jms.JmsConnectionFactory;
-import com.ibm.msg.client.jms.JmsFactoryFactory;
-import com.ibm.msg.client.wmq.WMQConstants;
-import com.ibm.msg.client.jms.DetailedInvalidDestinationException;
-import com.ibm.mq.jms.MQDestination;
+// import com.ibm.msg.client.jms.JmsConnectionFactory;
+// import com.ibm.msg.client.jms.JmsFactoryFactory;
+// import com.ibm.msg.client.wmq.WMQConstants;
+// import com.ibm.msg.client.jms.DetailedInvalidDestinationException;
+// import com.ibm.mq.jms.MQDestination;
 
-import com.ibm.msg.client.jms.DetailedInvalidDestinationRuntimeException;
+// import com.ibm.msg.client.jms.DetailedInvalidDestinationRuntimeException;
+
+// Jakarta
+import jakarta.jms.Destination;
+import jakarta.jms.JMSConsumer;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSException;
+import jakarta.jms.JMSProducer;
+import jakarta.jms.TextMessage;
+import jakarta.jms.Message;
+import jakarta.jms.TemporaryQueue;
+
+import com.ibm.msg.client.jakarta.jms.JmsConnectionFactory;
+import com.ibm.msg.client.jakarta.jms.JmsFactoryFactory;
+import com.ibm.msg.client.jakarta.wmq.WMQConstants;
+import com.ibm.msg.client.jakarta.jms.DetailedInvalidDestinationException;
+import com.ibm.mq.jakarta.jms.MQDestination;
+
+import com.ibm.msg.client.jakarta.jms.DetailedInvalidDestinationRuntimeException;
+
 
 import com.ibm.mq.samples.jms.SampleEnvSetter;
 
@@ -223,7 +243,11 @@ public class JmsRequest {
         JmsFactoryFactory ff;
         JmsConnectionFactory cf;
         try {
-            ff = JmsFactoryFactory.getInstance(WMQConstants.WMQ_PROVIDER);
+            // JMS
+            // ff = JmsFactoryFactory.getInstance(WMQConstants.WMQ_PROVIDER);
+            // Jakarta
+            ff = JmsFactoryFactory.getInstance(WMQConstants.JAKARTA_WMQ_PROVIDER);
+
             cf = ff.createConnectionFactory();
         } catch (JMSException jmsex) {
             recordFailure(jmsex);
