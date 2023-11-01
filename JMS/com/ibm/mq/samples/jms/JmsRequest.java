@@ -20,7 +20,7 @@ import java.util.logging.*;
 import java.util.UUID;
 import java.util.Random;
 
-// JMS
+// Use these imports for building with JMS
 import javax.jms.Destination;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;

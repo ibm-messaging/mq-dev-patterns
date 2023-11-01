@@ -18,7 +18,7 @@ package com.ibm.mq.samples.jms;
 
 import java.util.logging.*;
 
-// JMS
+// Use these imports for building with JMS
 import javax.jms.Destination;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
@@ -29,7 +29,7 @@ import com.ibm.msg.client.wmq.WMQConstants;
 
 import com.ibm.mq.jms.MQDestination;
 
-// Jakara
+// Use these imports for building with Jakarta Messaging
 // import jakarta.jms.Destination;
 // import jakarta.jms.JMSContext;
 // import jakarta.jms.JMSException;

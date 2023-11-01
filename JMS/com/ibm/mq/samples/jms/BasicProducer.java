@@ -18,14 +18,14 @@ package com.ibm.mq.samples.jms;
 
 import java.util.logging.*;
 
-// JMS
+// Use these imports for building with JMS
 import javax.jms.Destination;
 import javax.jms.JMSProducer;
 import javax.jms.JMSContext;
 import javax.jms.Message;
 import javax.jms.JMSRuntimeException;
 
-// Jakarta
+// Use these imports for building with Jakarta Messaging
 // import jakarta.jms.Destination;
 // import jakarta.jms.JMSProducer;
 // import jakarta.jms.JMSContext;

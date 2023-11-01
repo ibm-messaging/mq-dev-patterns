@@ -18,7 +18,7 @@ package com.ibm.mq.samples.jms;
 
 import java.util.logging.*;
 
-// JMS 
+// Use these imports for building with JMS
 import javax.jms.Destination;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
