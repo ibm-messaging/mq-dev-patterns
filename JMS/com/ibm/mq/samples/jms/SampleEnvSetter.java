@@ -113,6 +113,14 @@ public class SampleEnvSetter {
         return value;
     }
 
+    public String getEnvValueOrDefault(String key, String defaultValue, int index) {
+        String value = getEnvValue(key, index);
+
+        return (null == value || value.trim().isEmpty()) 
+                        ? defaultValue
+                        : value;
+    }
+
     public int getPortEnvValue(String key, int index) {
         int value = DEFAULT_MQI_PORT;
         try {

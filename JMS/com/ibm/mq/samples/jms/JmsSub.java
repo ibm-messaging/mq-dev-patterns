@@ -48,6 +48,7 @@ import com.ibm.msg.client.wmq.WMQConstants;
 import com.ibm.mq.samples.jms.SampleEnvSetter;
 
 public class JmsSub {
+    private static final String DEFAULT_APP_NAME = "Dev Experience JmsSub";
     private static final Level LOGLEVEL = Level.ALL;
     private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
 
@@ -57,6 +58,7 @@ public class JmsSub {
     private static String QMGR; // Queue manager name
     private static String APP_USER; // User name that application uses to connect to MQ
     private static String APP_PASSWORD; // Password that the application uses to connect to MQ
+    private static String APP_NAME; // Application Name that the application uses
     private static String TOPIC_NAME; // Queue that the application uses to put and get messages to and from
     private static String SUBSCRIPTION_NAME = "JmsSub - SampleSubscriber";
     private static String CIPHER_SUITE;
@@ -129,6 +131,7 @@ public class JmsSub {
         QMGR = env.getEnvValue("QMGR", index);
         APP_USER = env.getEnvValue("APP_USER", index);
         APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
+        APP_NAME = env.getEnvValueOrDefault("APP_NAME", DEFAULT_APP_NAME, index);
         TOPIC_NAME = env.getEnvValue("TOPIC_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
         BINDINGS = env.getEnvBooleanValue("BINDINGS", index);
@@ -176,7 +179,7 @@ public class JmsSub {
             }
             
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
-            cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "SimpleSub (JMS)");
+            cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, APP_NAME);
             if (null != APP_USER && !APP_USER.trim().isEmpty()) {
                 cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
                 cf.setStringProperty(WMQConstants.USERID, APP_USER);

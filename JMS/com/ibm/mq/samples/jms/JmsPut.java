@@ -52,6 +52,7 @@ import com.ibm.mq.samples.jms.SampleEnvSetter;
 
 public class JmsPut {
 
+    private static final String DEFAULT_APP_NAME = "Dev Experience JmsPut";
     private static final Level LOGLEVEL = Level.ALL;
     private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
 
@@ -61,6 +62,7 @@ public class JmsPut {
     private static String QMGR; // = "QM1"; //System.getenv("QMGR"); // Queue manager name
     private static String APP_USER; // = "app"; // User name that application uses to connect to MQ
     private static String APP_PASSWORD; // = "passw0rd"; // Password that the application uses to connect to MQ
+    private static String APP_NAME; // Application Name that the application uses
     private static String QUEUE_NAME; // = "DEV.QUEUE.1"; // Queue that the application uses to put and get messages
                                       // to and from
     private static String CIPHER_SUITE;
@@ -119,6 +121,7 @@ public class JmsPut {
         QMGR = env.getEnvValue("QMGR", index);
         APP_USER = env.getEnvValue("APP_USER", index);
         APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
+        APP_NAME = env.getEnvValueOrDefault("APP_NAME", DEFAULT_APP_NAME, index);
         QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
         BINDINGS = env.getEnvBooleanValue("BINDINGS", index);
@@ -166,7 +169,7 @@ public class JmsPut {
             }
 
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
-            cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "JmsPut (JMS)");
+            cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, APP_NAME);
             if (null != APP_USER && !APP_USER.trim().isEmpty()) {
                 cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
                 cf.setStringProperty(WMQConstants.USERID, APP_USER);
