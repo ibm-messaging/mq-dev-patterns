@@ -212,7 +212,14 @@ public class JmsRequest {
         SampleEnvSetter env = new SampleEnvSetter();
         int index = 0;
 
-        ConnectionString = env.getConnectionString();
+        CCDTURL = env.getCheckForCCDT();
+
+        // If the CCDT is in use then a connection string will 
+        // not be needed.
+        if (null == CCDTURL) {
+            ConnectionString = env.getConnectionString();
+        }
+
         CHANNEL = env.getEnvValue("CHANNEL", index);
         QMGR = env.getEnvValue("QMGR", index);
         APP_USER = env.getEnvValue("APP_USER", index);
@@ -234,8 +241,6 @@ public class JmsRequest {
         } else {
             REQUEST_MESSAGE_EXPIRY = 900000L;
         }
-
-        CCDTURL = env.getCheckForCCDT();
     }
 
     private static JmsConnectionFactory createJMSConnectionFactory() {
@@ -267,6 +272,10 @@ public class JmsRequest {
             } else {
                 logger.info("Will be making use of CCDT File " + CCDTURL);
                 cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
+    
+                // Set the WMQ_CLIENT_RECONNECT_OPTIONS property to allow 
+                // the MQ JMS classes to attempt a reconnect 
+                // cf.setIntProperty(WMQConstants.WMQ_CLIENT_RECONNECT_OPTIONS, WMQConstants.WMQ_CLIENT_RECONNECT);
             }
 
             if (BINDINGS) {

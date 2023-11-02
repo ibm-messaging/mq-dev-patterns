@@ -303,7 +303,15 @@ public class JmsResponse {
     private static void mqConnectionVariables() {
         SampleEnvSetter env = new SampleEnvSetter();
         int index = 0;
-        ConnectionString = env.getConnectionString();
+
+        CCDTURL = env.getCheckForCCDT();
+
+        // If the CCDT is in use then a connection string will 
+        // not be needed.
+        if (null == CCDTURL) {
+            ConnectionString = env.getConnectionString();
+        }
+
         CHANNEL = env.getEnvValue("CHANNEL", index);
         QMGR = env.getEnvValue("QMGR", index);
         APP_USER = env.getEnvValue("APP_USER", index);
@@ -323,8 +331,6 @@ public class JmsResponse {
         if ( BACKOUT_QUEUE == null || BACKOUT_QUEUE.isEmpty() ) { 
             logger.info("Missing BACKOUT_QUEUE value"); 
         }
-
-        CCDTURL = env.getCheckForCCDT();
     }
 
     private static JmsConnectionFactory createJMSConnectionFactory() {
@@ -358,6 +364,10 @@ public class JmsResponse {
             } else {
                 logger.info("Will be making use of CCDT File " + CCDTURL);
                 cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
+
+                // Set the WMQ_CLIENT_RECONNECT_OPTIONS property to allow 
+                // the MQ JMS classes to attempt a reconnect 
+                // cf.setIntProperty(WMQConstants.WMQ_CLIENT_RECONNECT_OPTIONS, WMQConstants.WMQ_CLIENT_RECONNECT);
             }
 
             if (BINDINGS) {

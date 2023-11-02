@@ -110,15 +110,24 @@ public class ConnectionHelper {
     private void mqConnectionVariables(int index) {
         SampleEnvSetter env = new SampleEnvSetter();
 
-        if (USE_CONNECTION_STRING == index) {
-          ConnectionString = env.getConnectionString();
-          logger.info("Connecting to " + ConnectionString);
-          index = 0;
-        } else {
-          HOST = env.getEnvValue("HOST", index);
-          PORT = Integer.parseInt(env.getEnvValue("PORT", index));
-          logger.info("Connection to " + HOST + "(" + PORT + ")");
-        }
+        CCDTURL = env.getCheckForCCDT();
+
+        // If the CCDT is in use then a connection string will 
+        // not be needed.
+        if (null == CCDTURL) {
+            if (USE_CONNECTION_STRING == index) {
+                ConnectionString = env.getConnectionString();
+                logger.info("Connecting to " + ConnectionString);
+                index = 0;
+            } else {
+                HOST = env.getEnvValue("HOST", index);
+                PORT = env.getPortEnvValue("PORT", index);                
+                logger.info("Connection to " + HOST + "(" + PORT + ")");
+            }
+        } else if (USE_CONNECTION_STRING == index) {
+            index = 0;
+        }     
+
         CHANNEL = env.getEnvValue("CHANNEL", index);
         QMGR = env.getEnvValue("QMGR", index);
         APP_USER = env.getEnvValue("APP_USER", index);
@@ -127,8 +136,6 @@ public class ConnectionHelper {
         TOPIC_NAME = env.getEnvValue("TOPIC_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
         BINDINGS = env.getEnvBooleanValue("BINDINGS", index);
-
-        CCDTURL = env.getCheckForCCDT();
     }
 
     private JmsConnectionFactory createJMSConnectionFactory() {
@@ -162,11 +169,14 @@ public class ConnectionHelper {
                     logger.warning("When running in client mode, either channel or CCDT must be provided");
                 } else if (null != CHANNEL) {
                     cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
-                }
-                
+                }         
             } else {
                 logger.info("Will be making use of CCDT File " + CCDTURL);
                 cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
+
+                // Set the WMQ_CLIENT_RECONNECT_OPTIONS property to allow 
+                // the MQ JMS classes to attempt a reconnect 
+                // cf.setIntProperty(WMQConstants.WMQ_CLIENT_RECONNECT_OPTIONS, WMQConstants.WMQ_CLIENT_RECONNECT);
             }
 
             if (BINDINGS) {
