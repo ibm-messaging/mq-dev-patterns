@@ -170,8 +170,9 @@ public class SampleEnvSetter {
 
                 File tmp = new File(ccdtFile);
                 if (! tmp.exists()) {
+                    logger.info("CCDT file not found");
                     value = null;
-                }
+                } 
             }
         }
         return value;

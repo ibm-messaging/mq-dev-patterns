@@ -163,9 +163,19 @@ public class JmsGet {
     }
 
     private static void mqConnectionVariables(SampleEnvSetter env, int index) {
-        HOST = env.getEnvValue("HOST", index);
-        logger.info(HOST);
-        PORT = Integer.parseInt(env.getEnvValue("PORT", index));
+        CCDTURL = env.getCheckForCCDT();
+
+        // If there is a CCDT then Host and Port will be 
+        // specified there
+        if (null == CCDTURL) {
+            HOST = env.getEnvValue("HOST", index);
+            try {
+                PORT = Integer.parseInt(env.getEnvValue("PORT", index));
+            } catch (NumberFormatException e) {
+                logger.warning("Unable to parse a number for port ");
+            } 
+        }
+    
         CHANNEL = env.getEnvValue("CHANNEL", index);
         QMGR = env.getEnvValue("QMGR", index);
         APP_USER = env.getEnvValue("APP_USER", index);
@@ -173,10 +183,6 @@ public class JmsGet {
         QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
         BINDINGS = env.getEnvBooleanValue("BINDINGS", index);
-
-        if (null == CCDTURL) {
-          CCDTURL = env.getCheckForCCDT();
-        }
     }
 
     private static JmsConnectionFactory createJMSConnectionFactory() {

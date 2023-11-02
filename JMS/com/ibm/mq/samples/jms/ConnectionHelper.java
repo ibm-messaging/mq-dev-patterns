@@ -47,6 +47,7 @@ public class ConnectionHelper {
     private static final Level LOGLEVEL = Level.ALL;
     private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
     public static final int USE_CONNECTION_STRING = -1;
+    private static final int DEFAULT_MQI_PORT = 1414;
 
     // Create variables for the connection to MQ
     private static String ConnectionString = null; //= "localhost(1414),localhost(1416)"
@@ -110,15 +111,31 @@ public class ConnectionHelper {
     private void mqConnectionVariables(int index) {
         SampleEnvSetter env = new SampleEnvSetter();
 
-        if (USE_CONNECTION_STRING == index) {
-          ConnectionString = env.getConnectionString();
-          logger.info("Connecting to " + ConnectionString);
-          index = 0;
-        } else {
-          HOST = env.getEnvValue("HOST", index);
-          PORT = Integer.parseInt(env.getEnvValue("PORT", index));
-          logger.info("Connection to " + HOST + "(" + PORT + ")");
-        }
+        CCDTURL = env.getCheckForCCDT();
+
+        // If the CCDT is in use then a connection string will 
+        // not be needed.
+        if (null == CCDTURL) {
+            if (USE_CONNECTION_STRING == index) {
+                ConnectionString = env.getConnectionString();
+                logger.info("Connecting to " + ConnectionString);
+                index = 0;
+            } else {
+                HOST = env.getEnvValue("HOST", index);
+                try {
+                    PORT = Integer.parseInt(env.getEnvValue("PORT", index));
+                } catch (NumberFormatException e) {
+                    logger.warning("Unable to parse a number for port ");
+                    logger.warning("CCDT has not been specified, defaulting port to " + DEFAULT_MQI_PORT);
+                    PORT = DEFAULT_MQI_PORT;
+                } 
+                
+                logger.info("Connection to " + HOST + "(" + PORT + ")");
+            }
+        } else if (USE_CONNECTION_STRING == index) {
+            index = 0;
+        }     
+
         CHANNEL = env.getEnvValue("CHANNEL", index);
         QMGR = env.getEnvValue("QMGR", index);
         APP_USER = env.getEnvValue("APP_USER", index);
@@ -127,8 +144,6 @@ public class ConnectionHelper {
         TOPIC_NAME = env.getEnvValue("TOPIC_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
         BINDINGS = env.getEnvBooleanValue("BINDINGS", index);
-
-        CCDTURL = env.getCheckForCCDT();
     }
 
     private JmsConnectionFactory createJMSConnectionFactory() {
