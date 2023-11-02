@@ -56,6 +56,7 @@ public class ConnectionHelper {
     private String QMGR = null; // Queue manager name
     private String APP_USER = null; // User name that application uses to connect to MQ
     private String APP_PASSWORD = null; // Password that the application uses to connect to MQ
+    private String APP_NAME = null; // Application Name that the application uses
     private String QUEUE_NAME = null; // Queue that the application uses to put and get messages to and from
     private String TOPIC_NAME = null; // Topic that the application publishes to
     private String CIPHER_SUITE = null;
@@ -67,7 +68,7 @@ public class ConnectionHelper {
     public ConnectionHelper (String id, int index) {
 
         //initialiseLogging();
-        mqConnectionVariables(index);
+        mqConnectionVariables(id, index);
         logger.info("Get application is starting");
 
         JmsConnectionFactory connectionFactory = createJMSConnectionFactory();
@@ -107,7 +108,7 @@ public class ConnectionHelper {
       }
     }
 
-    private void mqConnectionVariables(int index) {
+    private void mqConnectionVariables(String default_app_name, int index) {
         SampleEnvSetter env = new SampleEnvSetter();
 
         CCDTURL = env.getCheckForCCDT();
@@ -132,6 +133,7 @@ public class ConnectionHelper {
         QMGR = env.getEnvValue("QMGR", index);
         APP_USER = env.getEnvValue("APP_USER", index);
         APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
+        APP_NAME = env.getEnvValueOrDefault("APP_NAME", default_app_name, index);
         QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
         TOPIC_NAME = env.getEnvValue("TOPIC_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
