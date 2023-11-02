@@ -120,7 +120,6 @@ public class SampleEnvSetter {
         } catch (NumberFormatException e) {
             logger.warning("Unable to parse a number for port ");
             logger.warning("defaulting port to " + DEFAULT_MQI_PORT);
-            value = DEFAULT_MQI_PORT;
         } 
         return value;
     }
