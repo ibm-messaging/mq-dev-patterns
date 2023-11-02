@@ -18,6 +18,7 @@ package com.ibm.mq.samples.jms;
 
 import java.util.logging.*;
 
+// Use these imports for building with JMS
 import javax.jms.Destination;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
@@ -27,6 +28,17 @@ import com.ibm.msg.client.jms.JmsFactoryFactory;
 import com.ibm.msg.client.wmq.WMQConstants;
 
 import com.ibm.mq.jms.MQDestination;
+
+// Use these imports for building with Jakarta Messaging
+// import jakarta.jms.Destination;
+// import jakarta.jms.JMSContext;
+// import jakarta.jms.JMSException;
+
+// import com.ibm.msg.client.jakarta.jms.JmsConnectionFactory;
+// import com.ibm.msg.client.jakarta.jms.JmsFactoryFactory;
+// import com.ibm.msg.client.jakarta.wmq.WMQConstants;
+
+// import com.ibm.mq.jakarta.jms.MQDestination;
 
 import com.ibm.mq.samples.jms.SampleEnvSetter;
 
@@ -123,7 +135,11 @@ public class ConnectionHelper {
         JmsFactoryFactory ff;
         JmsConnectionFactory cf;
         try {
+            // JMS
             ff = JmsFactoryFactory.getInstance(WMQConstants.WMQ_PROVIDER);
+            // Jakarta
+            // ff = JmsFactoryFactory.getInstance(WMQConstants.JAKARTA_WMQ_PROVIDER);
+
             cf = ff.createConnectionFactory();
         } catch (JMSException jmsex) {
             recordFailure(jmsex);

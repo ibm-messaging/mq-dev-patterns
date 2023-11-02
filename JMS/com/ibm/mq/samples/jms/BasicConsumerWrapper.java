@@ -1,5 +1,5 @@
 /*
-* (c) Copyright IBM Corporation 2020
+* (c) Copyright IBM Corporation 2020, 2023
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -17,7 +17,12 @@
 package com.ibm.mq.samples.jms;
 
 import java.util.logging.*;
+
+// Use these imports for building with JMS
 import javax.jms.JMSRuntimeException;
+
+// Use these imports for building with Jakarta Messaging
+// import jakarta.jms.JMSRuntimeException;
 
 import com.ibm.mq.samples.jms.BasicConsumer;
 import com.ibm.mq.samples.jms.SampleEnvSetter;

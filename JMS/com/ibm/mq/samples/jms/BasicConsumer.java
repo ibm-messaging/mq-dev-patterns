@@ -1,5 +1,5 @@
 /*
-* (c) Copyright IBM Corporation 2019
+* (c) Copyright IBM Corporation 2019, 2023
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -18,11 +18,19 @@ package com.ibm.mq.samples.jms;
 
 import java.util.logging.*;
 
+// Use these imports for building with JMS
 import javax.jms.Destination;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
 import javax.jms.Message;
 import javax.jms.JMSRuntimeException;
+
+// Use these imports for building with Jakarta Messaging
+// import jakarta.jms.Destination;
+// import jakarta.jms.JMSConsumer;
+// import jakarta.jms.JMSContext;
+// import jakarta.jms.Message;
+// import jakarta.jms.JMSRuntimeException;
 
 import com.ibm.mq.samples.jms.ConnectionHelper;
 import com.ibm.mq.samples.jms.LoggingHelper;
