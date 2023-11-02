@@ -47,7 +47,6 @@ public class ConnectionHelper {
     private static final Level LOGLEVEL = Level.ALL;
     private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
     public static final int USE_CONNECTION_STRING = -1;
-    private static final int DEFAULT_MQI_PORT = 1414;
 
     // Create variables for the connection to MQ
     private static String ConnectionString = null; //= "localhost(1414),localhost(1416)"
@@ -122,14 +121,7 @@ public class ConnectionHelper {
                 index = 0;
             } else {
                 HOST = env.getEnvValue("HOST", index);
-                try {
-                    PORT = Integer.parseInt(env.getEnvValue("PORT", index));
-                } catch (NumberFormatException e) {
-                    logger.warning("Unable to parse a number for port ");
-                    logger.warning("CCDT has not been specified, defaulting port to " + DEFAULT_MQI_PORT);
-                    PORT = DEFAULT_MQI_PORT;
-                } 
-                
+                PORT = env.getPortEnvValue("PORT", index);                
                 logger.info("Connection to " + HOST + "(" + PORT + ")");
             }
         } else if (USE_CONNECTION_STRING == index) {
@@ -177,8 +169,7 @@ public class ConnectionHelper {
                     logger.warning("When running in client mode, either channel or CCDT must be provided");
                 } else if (null != CHANNEL) {
                     cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
-                }
-                
+                }         
             } else {
                 logger.info("Will be making use of CCDT File " + CCDTURL);
                 cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);

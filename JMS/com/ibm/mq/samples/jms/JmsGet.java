@@ -169,11 +169,7 @@ public class JmsGet {
         // specified there
         if (null == CCDTURL) {
             HOST = env.getEnvValue("HOST", index);
-            try {
-                PORT = Integer.parseInt(env.getEnvValue("PORT", index));
-            } catch (NumberFormatException e) {
-                logger.warning("Unable to parse a number for port ");
-            } 
+            PORT = env.getPortEnvValue("PORT", index);
         }
     
         CHANNEL = env.getEnvValue("CHANNEL", index);

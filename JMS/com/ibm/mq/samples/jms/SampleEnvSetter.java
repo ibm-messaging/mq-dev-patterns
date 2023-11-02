@@ -36,6 +36,7 @@ public class SampleEnvSetter {
     private static final String CCDT = "MQCCDTURL";
     private static final String FILEPREFIX = "file://";
     private static final String ZOS = "z/os";
+    private static final int DEFAULT_MQI_PORT = 1414;
 
     public SampleEnvSetter() {
         JSONObject mqEnvSettings = null;
@@ -109,6 +110,18 @@ public class SampleEnvSetter {
         if (! key.contains("PASSWORD")) {
           logger.info("returning " + value + " for key " + key);
         }
+        return value;
+    }
+
+    public int getPortEnvValue(String key, int index) {
+        int value = DEFAULT_MQI_PORT;
+        try {
+            value = Integer.parseInt(this.getEnvValue(key, index));
+        } catch (NumberFormatException e) {
+            logger.warning("Unable to parse a number for port ");
+            logger.warning("defaulting port to " + DEFAULT_MQI_PORT);
+            value = DEFAULT_MQI_PORT;
+        } 
         return value;
     }
 
