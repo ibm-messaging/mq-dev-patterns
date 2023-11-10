@@ -45,7 +45,19 @@ If you are using maven then a Jakarta enabled `pom-jakarta.xml` can be used.
 **SampleEnvSetter.java** - Used by all stand alone samples to read the variable from the env.json. Used by the decoupled samples through the ConnectionHelper.
 Encapsulates the reading of MQ environment variables and allows all the samples to use a common set.
 
+The location and name of the env.json file defaults 
+to `../env.json`. This can be overriden by setting the envrionment option `EnvFile`. 
 
+eg. 
+
+````
+java -DEnvFile=../env.json -jar target/mq-dev-patterns-0.1.0.jar put 
+````
+If the environment settings file isn't found then the CCDT, Queue Manager, Queue, and user credentials need to be provided as envrionment settings.
+
+````
+java -DEnvFile=../env-not-found.json -DQMGR=QM1 -DAPP_USER=app -DAPP_PASSWORD=app-passw0rd -DQUEUE_NAME=DEV.QUEUE.1 -DMQCCDTURL=file:///location/ccdt.json -jar target/mq-dev-patterns-0.1.0.jar put 
+````
 
 ### Refactored samples to reduce duplication
 
