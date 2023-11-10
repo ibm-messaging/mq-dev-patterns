@@ -46,14 +46,14 @@ If you are using maven then a Jakarta enabled `pom-jakarta.xml` can be used.
 Encapsulates the reading of MQ environment variables and allows all the samples to use a common set.
 
 The location and name of the env.json file defaults 
-to `../env.json`. This can be overriden by setting the envrionment option `EnvFile`. 
+to `../env.json`. This can be overriden by setting the environment option `EnvFile`. 
 
 eg. 
 
 ````
 java -DEnvFile=../env.json -jar target/mq-dev-patterns-0.1.0.jar put 
 ````
-If the environment settings file isn't found then the CCDT, Queue Manager, Queue, and user credentials need to be provided as envrionment settings.
+If the environment settings file isn't found then the CCDT, Queue Manager, Queue, and user credentials need to be provided as environment settings.
 
 ````
 java -DEnvFile=../env-not-found.json -DQMGR=QM1 -DAPP_USER=app -DAPP_PASSWORD=app-passw0rd -DQUEUE_NAME=DEV.QUEUE.1 -DMQCCDTURL=file:///location/ccdt.json -jar target/mq-dev-patterns-0.1.0.jar put 
@@ -239,7 +239,7 @@ If you have used maven to build the samples, you can run
 
 The request sample will put a message and wait for a response until it either gets a response or you `ctrl+c` interrupt it.
 
-If you set the envrionment variable `REPLY_QUEUE_NAME` then the reply to queue will be set 
+If you set the environment variable `REPLY_QUEUE_NAME` then the reply to queue will be set 
 to that queue, otherwise a temporary queue is created. 
 
 In the second terminal;
@@ -260,9 +260,9 @@ If you have used maven to build the samples, you can run
 
 The response sample will get a message from the queue, process it and put the response on the reply to queue and keep looking for more messages to respond to till you ctrl+c interrupt it.
 
-If you set the envrionment variable `RESPONDER_INACTIVITY_TIMEOUT` to a number the responder will wait `RESPONDER_INACTIVITY_TIMEOUT` seconds for a request before timing out and ending.
+If you set the environment variable `RESPONDER_INACTIVITY_TIMEOUT` to a number the responder will wait `RESPONDER_INACTIVITY_TIMEOUT` seconds for a request before timing out and ending.
 
-If you set the envrionment variable `REQUEST_MESSAGE_EXPIRY` to a number the requester will set the message expiry to  `REQUEST_MESSAGE_EXPIRY` seconds. It will then wait for `REQUEST_MESSAGE_EXPIRY` seconds for a reply before timing out and ending.
+If you set the environment variable `REQUEST_MESSAGE_EXPIRY` to a number the requester will set the message expiry to  `REQUEST_MESSAGE_EXPIRY` seconds. It will then wait for `REQUEST_MESSAGE_EXPIRY` seconds for a reply before timing out and ending.
 
 
 ## The SampleEnvSetter
