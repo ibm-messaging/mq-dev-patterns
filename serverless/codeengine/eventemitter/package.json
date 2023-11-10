@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "ibmmq": "^0.9.17",
-    "axios": "^0.25.0",
+    "axios": "^1.6.0",
     "debug": "^4.3.3"
   },
   "scripts": {
