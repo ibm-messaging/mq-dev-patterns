@@ -9,7 +9,7 @@
     "test": "echo \"No tests yet...\""
   },
   "dependencies": {
-    "axios": "^0.27.2",
+    "axios": "^1.6.0",
     "axios-debug-log": "^0.8.4",
     "debug": "^4.3.4"
   },
