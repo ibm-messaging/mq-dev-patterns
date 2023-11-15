@@ -21,7 +21,13 @@ If you want to use Jakarta Messaging in place of JMS, then use the following jar
 
 This will generate compilation errors. The code, however contains commented out blocks (mainly the import blocks) that you can uncomment to overcome the compilation errors. Remember to remove the JMS code blocks that need removing.
 
-If you are using maven then a Jakarta enabled `pom-jakarta.xml` can be used.
+If you are using maven then add -P JAKARTA to the mvn commands.
+eg. 
+```
+mvn clean package -P JAKARTA
+```
+
+Alternatively a Jakarta enabled `pom-jakarta.xml` can be used.
 
 
 ## Intro to JMS Samples
@@ -110,6 +116,13 @@ mvn clean package
 ````
 
 If you want to use the Jakarta messaging dependencies then run 
+either
+
+````
+mvn clean package -P JAKARTA
+````
+
+or
 
 ````
 mvn clean package -f pom-jakarta.xml
