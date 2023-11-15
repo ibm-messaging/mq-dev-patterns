@@ -84,7 +84,7 @@ public class SampleEnvSetter {
     
         // Allow system setting to override env file location and name
         String valueEnvFile = System.getProperty(ENV_FILE);
-        logger.warning(ENV_FILE + " is set to " + valueEnvFile);
+        logger.info(ENV_FILE + " is set to " + valueEnvFile);
 
         if (null != valueEnvFile) {
         } else if (onZ) {
