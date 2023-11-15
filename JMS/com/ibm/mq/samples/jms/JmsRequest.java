@@ -20,6 +20,7 @@ import java.util.logging.*;
 import java.util.UUID;
 import java.util.Random;
 
+// Use these imports for building with JMS
 import javax.jms.Destination;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
@@ -37,10 +38,29 @@ import com.ibm.mq.jms.MQDestination;
 
 import com.ibm.msg.client.jms.DetailedInvalidDestinationRuntimeException;
 
+// Use these imports for building with Jakarta Messaging
+// import jakarta.jms.Destination;
+// import jakarta.jms.JMSConsumer;
+// import jakarta.jms.JMSContext;
+// import jakarta.jms.JMSException;
+// import jakarta.jms.JMSProducer;
+// import jakarta.jms.TextMessage;
+// import jakarta.jms.Message;
+// import jakarta.jms.TemporaryQueue;
+
+// import com.ibm.msg.client.jakarta.jms.JmsConnectionFactory;
+// import com.ibm.msg.client.jakarta.jms.JmsFactoryFactory;
+// import com.ibm.msg.client.jakarta.wmq.WMQConstants;
+// import com.ibm.msg.client.jakarta.jms.DetailedInvalidDestinationException;
+// import com.ibm.mq.jakarta.jms.MQDestination;
+
+// import com.ibm.msg.client.jakarta.jms.DetailedInvalidDestinationRuntimeException;
+
 import com.ibm.mq.samples.jms.SampleEnvSetter;
 
 public class JmsRequest {
 
+    private static final String DEFAULT_APP_NAME = "Dev Experience JmsRequest";
     private static final Level LOGLEVEL = Level.ALL;
     private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
 
@@ -50,6 +70,7 @@ public class JmsRequest {
     private static String QMGR; // Queue manager name
     private static String APP_USER; // User name that application uses to connect to MQ
     private static String APP_PASSWORD; // Password that the application uses to connect to MQ
+    private static String APP_NAME; // Application Name that the application uses
     private static String QUEUE_NAME; // Queue that the application uses to put messages to
     private static String REPLY_QUEUE_NAME; // Queue that the application uses to get messages replies from
     private static String MODEL_QUEUE_NAME; //
@@ -58,10 +79,13 @@ public class JmsRequest {
     private static Boolean BINDINGS = false;
     private static String REQUEST_MODE = "";
 
+    private static Long REQUEST_MESSAGE_EXPIRY = 0L;
+
     private static Random random = new Random();
 
+    private static Long SECOND = 1000L;
+    private static Long HOUR = 60 * 60 * SECOND; 
     
-    private static Long HOUR = 60* 60 * 1000L; 
 
     public static void main(String[] args) {
         initialiseLogging();
@@ -87,7 +111,15 @@ public class JmsRequest {
         }
         logger.info("destination created");
         producer = context.createProducer();
-        producer.setTimeToLive(2 * HOUR);
+
+        // If messages will expire set appropriate time to live for messages
+        // Otherwise ensure that they disappear off the queue in 2 hours
+        if (0 < REQUEST_MESSAGE_EXPIRY) {
+            producer.setTimeToLive(REQUEST_MESSAGE_EXPIRY);
+        } else {
+            producer.setTimeToLive(2 * HOUR);
+        }
+
         logger.info("producer created");
 
         TextMessage message = context.createTextMessage(RequestResponseHelper.buildStringForRequest(REQUEST_MODE, random.nextInt(101)));
@@ -103,8 +135,9 @@ public class JmsRequest {
             }
             message.setJMSCorrelationIDAsBytes(b);
             logger.info(getHexString(b));
-            message.setJMSExpiration(900000);
-            
+
+            message.setJMSExpiration(REQUEST_MESSAGE_EXPIRY);
+
             Destination requestQueue = null;
 
             if (null == REPLY_QUEUE_NAME || REPLY_QUEUE_NAME.isEmpty()) {
@@ -125,8 +158,20 @@ public class JmsRequest {
             logger.info("Selecting reply based on selector " + selector);
             JMSConsumer consumer = context.createConsumer(requestQueue, selector);
             logger.info("reply getter created");
-            Message receivedMessage = consumer.receive();
-            getAndDisplayMessageBody(receivedMessage);
+
+            Message receivedMessage = null;
+            if (0 < REQUEST_MESSAGE_EXPIRY){
+                receivedMessage = consumer.receive(REQUEST_MESSAGE_EXPIRY);
+            } else {
+                receivedMessage = consumer.receive();
+            }
+
+            if (null != receivedMessage) {
+                getAndDisplayMessageBody(receivedMessage);
+            } else {
+                logger.warning("Request has been timed out");
+            }
+
 
         } catch (JMSException e) {
             logger.warning("Got a JMS exception");
@@ -169,11 +214,19 @@ public class JmsRequest {
         SampleEnvSetter env = new SampleEnvSetter();
         int index = 0;
 
-        ConnectionString = env.getConnectionString();
+        CCDTURL = env.getCheckForCCDT();
+
+        // If the CCDT is in use then a connection string will 
+        // not be needed.
+        if (null == CCDTURL) {
+            ConnectionString = env.getConnectionString();
+        }
+
         CHANNEL = env.getEnvValue("CHANNEL", index);
         QMGR = env.getEnvValue("QMGR", index);
         APP_USER = env.getEnvValue("APP_USER", index);
         APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
+        APP_NAME = env.getEnvValueOrDefault("APP_NAME", DEFAULT_APP_NAME, index);
         QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
         REPLY_QUEUE_NAME = env.getEnvValue("REPLY_QUEUE_NAME", index);
         MODEL_QUEUE_NAME = env.getEnvValue("MODEL_QUEUE_NAME", index);
@@ -182,14 +235,26 @@ public class JmsRequest {
 
         REQUEST_MODE = env.getEnvValue("REQUEST_MODE", index);
 
-        CCDTURL = env.getCheckForCCDT();
+        REQUEST_MESSAGE_EXPIRY = env.getEnvLongValue("REQUEST_MESSAGE_EXPIRY", index);
+
+        // Expiry is in milliseconds, a value of 5 will be converted to 
+        // 5000 milliseconds = 5 seconds.
+        if (0 < REQUEST_MESSAGE_EXPIRY) {
+            REQUEST_MESSAGE_EXPIRY *= SECOND;
+        } else {
+            REQUEST_MESSAGE_EXPIRY = 900000L;
+        }
     }
 
     private static JmsConnectionFactory createJMSConnectionFactory() {
         JmsFactoryFactory ff;
         JmsConnectionFactory cf;
         try {
+            // JMS
             ff = JmsFactoryFactory.getInstance(WMQConstants.WMQ_PROVIDER);
+            // Jakarta
+            // ff = JmsFactoryFactory.getInstance(WMQConstants.JAKARTA_WMQ_PROVIDER);
+
             cf = ff.createConnectionFactory();
         } catch (JMSException jmsex) {
             recordFailure(jmsex);
@@ -210,6 +275,10 @@ public class JmsRequest {
             } else {
                 logger.info("Will be making use of CCDT File " + CCDTURL);
                 cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
+    
+                // Set the WMQ_CLIENT_RECONNECT_OPTIONS property to allow 
+                // the MQ JMS classes to attempt a reconnect 
+                // cf.setIntProperty(WMQConstants.WMQ_CLIENT_RECONNECT_OPTIONS, WMQConstants.WMQ_CLIENT_RECONNECT);
             }
 
             if (BINDINGS) {
@@ -219,7 +288,7 @@ public class JmsRequest {
             }
 
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
-            cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "JmsRequest");
+            cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, APP_NAME);
             if (null != APP_USER && !APP_USER.trim().isEmpty()) {
                 cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
                 cf.setStringProperty(WMQConstants.USERID, APP_USER);

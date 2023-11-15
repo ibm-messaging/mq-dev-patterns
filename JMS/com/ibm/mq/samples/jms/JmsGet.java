@@ -18,6 +18,7 @@ package com.ibm.mq.samples.jms;
 
 import java.util.logging.*;
 
+// Use these imports for building with JMS
 import javax.jms.Destination;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
@@ -29,6 +30,21 @@ import javax.jms.JMSRuntimeException;
 import com.ibm.msg.client.jms.JmsConnectionFactory;
 import com.ibm.msg.client.jms.JmsFactoryFactory;
 import com.ibm.msg.client.wmq.WMQConstants;
+
+// Use these imports for building with Jakarta Messaging
+// import jakarta.jms.Destination;
+// import jakarta.jms.JMSConsumer;
+// import jakarta.jms.JMSContext;
+// import jakarta.jms.JMSException;
+// import jakarta.jms.Message;
+// import jakarta.jms.TextMessage;
+// import jakarta.jms.JMSRuntimeException;
+
+// import com.ibm.msg.client.jakarta.jms.JmsConnectionFactory;
+// import com.ibm.msg.client.jakarta.jms.JmsFactoryFactory;
+// import com.ibm.msg.client.jakarta.wmq.WMQConstants;
+
+
 import com.ibm.mq.constants.MQConstants;
 import com.ibm.mq.MQException;
 
@@ -36,6 +52,7 @@ import com.ibm.mq.samples.jms.SampleEnvSetter;
 
 public class JmsGet {
 
+    private static final String DEFAULT_APP_NAME = "Dev Experience JmsGet";
     private static final Level LOGLEVEL = Level.ALL;
     private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
 
@@ -46,6 +63,7 @@ public class JmsGet {
     private static String QMGR; // Queue manager name
     private static String APP_USER; // User name that application uses to connect to MQ
     private static String APP_PASSWORD; // Password that the application uses to connect to MQ
+    private static String APP_NAME; // Application Name that the application uses
     private static String QUEUE_NAME; // Queue that the application uses to put and get messages to and from
     private static String CIPHER_SUITE;
     private static String CCDTURL;
@@ -120,13 +138,12 @@ public class JmsGet {
                      continueProcessing = false;
                 } else {
                   getAndDisplayMessageBody(receivedMessage);
+                  logger.info("Waiting 1 second before looking for next message");
+                  waitAWhile(1000);
                 }
             } catch (JMSRuntimeException jmsex) {
                 jmsex.printStackTrace();
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                }
+                waitAWhile(1000);
             }
         }
     }
@@ -147,27 +164,34 @@ public class JmsGet {
     }
 
     private static void mqConnectionVariables(SampleEnvSetter env, int index) {
-        HOST = env.getEnvValue("HOST", index);
-        logger.info(HOST);
-        PORT = Integer.parseInt(env.getEnvValue("PORT", index));
+        CCDTURL = env.getCheckForCCDT();
+
+        // If there is a CCDT then Host and Port will be 
+        // specified there
+        if (null == CCDTURL) {
+            HOST = env.getEnvValue("HOST", index);
+            PORT = env.getPortEnvValue("PORT", index);
+        }
+    
         CHANNEL = env.getEnvValue("CHANNEL", index);
         QMGR = env.getEnvValue("QMGR", index);
         APP_USER = env.getEnvValue("APP_USER", index);
         APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
+        APP_NAME = env.getEnvValueOrDefault("APP_NAME", DEFAULT_APP_NAME, index);
         QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
         BINDINGS = env.getEnvBooleanValue("BINDINGS", index);
-
-        if (null == CCDTURL) {
-          CCDTURL = env.getCheckForCCDT();
-        }
     }
 
     private static JmsConnectionFactory createJMSConnectionFactory() {
         JmsFactoryFactory ff;
         JmsConnectionFactory cf;
         try {
+            // JMS
             ff = JmsFactoryFactory.getInstance(WMQConstants.WMQ_PROVIDER);
+            // Jakarta
+            // ff = JmsFactoryFactory.getInstance(WMQConstants.JAKARTA_WMQ_PROVIDER);
+
             cf = ff.createConnectionFactory();
         } catch (JMSException jmsex) {
             recordFailure(jmsex);
@@ -189,6 +213,10 @@ public class JmsGet {
             } else {
                 logger.info("Will be making use of CCDT File " + CCDTURL);
                 cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
+                
+                // Set the WMQ_CLIENT_RECONNECT_OPTIONS property to allow 
+                // the MQ JMS classes to attempt a reconnect 
+                // cf.setIntProperty(WMQConstants.WMQ_CLIENT_RECONNECT_OPTIONS, WMQConstants.WMQ_CLIENT_RECONNECT);
             }
 
             if (BINDINGS) {
@@ -198,7 +226,7 @@ public class JmsGet {
             }
             
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
-            cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "JmsGet (JMS)");
+            cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, APP_NAME);
             if (null != APP_USER && !APP_USER.trim().isEmpty()) {
                 cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
                 cf.setStringProperty(WMQConstants.USERID, APP_USER);
@@ -252,5 +280,12 @@ public class JmsGet {
 
         logger.setLevel(LOGLEVEL);
         logger.finest("Logging initialised");
+    }
+
+    private static void waitAWhile(int duration) {
+        try {
+            Thread.sleep(duration);
+        } catch (InterruptedException e) {
+        }
     }
 }

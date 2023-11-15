@@ -18,6 +18,7 @@ package com.ibm.mq.samples.jms;
 
 import java.util.logging.*;
 
+// Use these imports for building with JMS
 import javax.jms.Destination;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
@@ -27,6 +28,17 @@ import com.ibm.msg.client.jms.JmsFactoryFactory;
 import com.ibm.msg.client.wmq.WMQConstants;
 
 import com.ibm.mq.jms.MQDestination;
+
+// Use these imports for building with Jakarta Messaging
+// import jakarta.jms.Destination;
+// import jakarta.jms.JMSContext;
+// import jakarta.jms.JMSException;
+
+// import com.ibm.msg.client.jakarta.jms.JmsConnectionFactory;
+// import com.ibm.msg.client.jakarta.jms.JmsFactoryFactory;
+// import com.ibm.msg.client.jakarta.wmq.WMQConstants;
+
+// import com.ibm.mq.jakarta.jms.MQDestination;
 
 import com.ibm.mq.samples.jms.SampleEnvSetter;
 
@@ -44,6 +56,7 @@ public class ConnectionHelper {
     private String QMGR = null; // Queue manager name
     private String APP_USER = null; // User name that application uses to connect to MQ
     private String APP_PASSWORD = null; // Password that the application uses to connect to MQ
+    private String APP_NAME = null; // Application Name that the application uses
     private String QUEUE_NAME = null; // Queue that the application uses to put and get messages to and from
     private String TOPIC_NAME = null; // Topic that the application publishes to
     private String CIPHER_SUITE = null;
@@ -55,7 +68,7 @@ public class ConnectionHelper {
     public ConnectionHelper (String id, int index) {
 
         //initialiseLogging();
-        mqConnectionVariables(index);
+        mqConnectionVariables(id, index);
         logger.info("Get application is starting");
 
         JmsConnectionFactory connectionFactory = createJMSConnectionFactory();
@@ -95,35 +108,47 @@ public class ConnectionHelper {
       }
     }
 
-    private void mqConnectionVariables(int index) {
+    private void mqConnectionVariables(String default_app_name, int index) {
         SampleEnvSetter env = new SampleEnvSetter();
 
-        if (USE_CONNECTION_STRING == index) {
-          ConnectionString = env.getConnectionString();
-          logger.info("Connecting to " + ConnectionString);
-          index = 0;
-        } else {
-          HOST = env.getEnvValue("HOST", index);
-          PORT = Integer.parseInt(env.getEnvValue("PORT", index));
-          logger.info("Connection to " + HOST + "(" + PORT + ")");
-        }
+        CCDTURL = env.getCheckForCCDT();
+
+        // If the CCDT is in use then a connection string will 
+        // not be needed.
+        if (null == CCDTURL) {
+            if (USE_CONNECTION_STRING == index) {
+                ConnectionString = env.getConnectionString();
+                logger.info("Connecting to " + ConnectionString);
+                index = 0;
+            } else {
+                HOST = env.getEnvValue("HOST", index);
+                PORT = env.getPortEnvValue("PORT", index);                
+                logger.info("Connection to " + HOST + "(" + PORT + ")");
+            }
+        } else if (USE_CONNECTION_STRING == index) {
+            index = 0;
+        }     
+
         CHANNEL = env.getEnvValue("CHANNEL", index);
         QMGR = env.getEnvValue("QMGR", index);
         APP_USER = env.getEnvValue("APP_USER", index);
         APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
+        APP_NAME = env.getEnvValueOrDefault("APP_NAME", default_app_name, index);
         QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
         TOPIC_NAME = env.getEnvValue("TOPIC_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
         BINDINGS = env.getEnvBooleanValue("BINDINGS", index);
-
-        CCDTURL = env.getCheckForCCDT();
     }
 
     private JmsConnectionFactory createJMSConnectionFactory() {
         JmsFactoryFactory ff;
         JmsConnectionFactory cf;
         try {
+            // JMS
             ff = JmsFactoryFactory.getInstance(WMQConstants.WMQ_PROVIDER);
+            // Jakarta
+            // ff = JmsFactoryFactory.getInstance(WMQConstants.JAKARTA_WMQ_PROVIDER);
+
             cf = ff.createConnectionFactory();
         } catch (JMSException jmsex) {
             recordFailure(jmsex);
@@ -146,11 +171,14 @@ public class ConnectionHelper {
                     logger.warning("When running in client mode, either channel or CCDT must be provided");
                 } else if (null != CHANNEL) {
                     cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
-                }
-                
+                }         
             } else {
                 logger.info("Will be making use of CCDT File " + CCDTURL);
                 cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
+
+                // Set the WMQ_CLIENT_RECONNECT_OPTIONS property to allow 
+                // the MQ JMS classes to attempt a reconnect 
+                // cf.setIntProperty(WMQConstants.WMQ_CLIENT_RECONNECT_OPTIONS, WMQConstants.WMQ_CLIENT_RECONNECT);
             }
 
             if (BINDINGS) {

@@ -18,9 +18,15 @@ package com.ibm.mq.samples.jms;
 
 import java.util.logging.*;
 
+// Use these imports for building with JMS
 import javax.jms.Message;
 import javax.jms.TextMessage;
 import javax.jms.JMSException;
+
+// Use these imports for building with Jakarta Messaging
+// import jakarta.jms.Message;
+// import jakarta.jms.TextMessage;
+// import jakarta.jms.JMSException;
 
 import com.ibm.mq.samples.jms.ConnectionHelper;
 import com.ibm.mq.samples.jms.LoggingHelper;

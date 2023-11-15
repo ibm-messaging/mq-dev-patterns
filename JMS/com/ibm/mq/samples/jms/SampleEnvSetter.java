@@ -36,6 +36,7 @@ public class SampleEnvSetter {
     private static final String CCDT = "MQCCDTURL";
     private static final String FILEPREFIX = "file://";
     private static final String ZOS = "z/os";
+    private static final int DEFAULT_MQI_PORT = 1414;
 
     public SampleEnvSetter() {
         JSONObject mqEnvSettings = null;
@@ -112,6 +113,25 @@ public class SampleEnvSetter {
         return value;
     }
 
+    public String getEnvValueOrDefault(String key, String defaultValue, int index) {
+        String value = getEnvValue(key, index);
+
+        return (null == value || value.trim().isEmpty()) 
+                        ? defaultValue
+                        : value;
+    }
+
+    public int getPortEnvValue(String key, int index) {
+        int value = DEFAULT_MQI_PORT;
+        try {
+            value = Integer.parseInt(this.getEnvValue(key, index));
+        } catch (NumberFormatException e) {
+            logger.warning("Unable to parse a number for port ");
+            logger.warning("defaulting port to " + DEFAULT_MQI_PORT);
+        } 
+        return value;
+    }
+
     public Boolean getEnvBooleanValue(String key, int index) {
       JSONObject mqAppEnv = null;
 
@@ -170,8 +190,9 @@ public class SampleEnvSetter {
 
                 File tmp = new File(ccdtFile);
                 if (! tmp.exists()) {
+                    logger.info("CCDT file not found");
                     value = null;
-                }
+                } 
             }
         }
         return value;

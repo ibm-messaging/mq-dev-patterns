@@ -17,7 +17,12 @@
 package com.ibm.mq.samples.jms;
 
 import java.util.logging.*;
+
+// Use this import for building with JMS
 import javax.jms.JMSRuntimeException;
+
+// Use this import for building with Jakarta Messaging
+// import jakarta.jms.JMSRuntimeException;
 
 import com.ibm.mq.constants.MQConstants;
 import com.ibm.mq.MQException;

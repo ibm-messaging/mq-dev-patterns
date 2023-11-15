@@ -17,6 +17,8 @@
 package com.ibm.mq.samples.jms;
 
 import java.util.logging.*;
+
+// Use these imports for building with JMS
 import javax.jms.Destination;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
@@ -33,15 +35,35 @@ import com.ibm.msg.client.wmq.WMQConstants;
 import com.ibm.msg.client.jms.DetailedInvalidDestinationException;
 import com.ibm.msg.client.jms.DetailedInvalidDestinationRuntimeException;
 
+import com.ibm.mq.jms.MQDestination;
+
+// Use these imports for building with Jakarta Messaging
+// import jakarta.jms.Destination;
+// import jakarta.jms.JMSConsumer;
+// import jakarta.jms.JMSContext;
+// import jakarta.jms.JMSException;
+// import jakarta.jms.JMSProducer;
+// import jakarta.jms.Message;
+// import jakarta.jms.TextMessage;
+// import jakarta.jms.JMSRuntimeException;
+// import jakarta.jms.DeliveryMode;
+
+// import com.ibm.msg.client.jakarta.jms.JmsConnectionFactory;
+// import com.ibm.msg.client.jakarta.jms.JmsFactoryFactory;
+// import com.ibm.msg.client.jakarta.wmq.WMQConstants;
+// import com.ibm.msg.client.jakarta.jms.DetailedInvalidDestinationException;
+// import com.ibm.msg.client.jakarta.jms.DetailedInvalidDestinationRuntimeException;
+
+// import com.ibm.mq.jakarta.jms.MQDestination;
+
 import com.ibm.mq.constants.MQConstants;
 import com.ibm.mq.MQException;
 
-import com.ibm.mq.jms.MQDestination;
 
 import com.ibm.mq.samples.jms.SampleEnvSetter;
 
 public class JmsResponse {
-
+    private static final String DEFAULT_APP_NAME = "Dev Experience JmsResponse";
     private static final Level LOGLEVEL = Level.ALL;
     private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
 
@@ -51,6 +73,7 @@ public class JmsResponse {
     private static String QMGR; // Queue manager name
     private static String APP_USER; // User name that application uses to connect to MQ
     private static String APP_PASSWORD; // Password that the application uses to connect to MQ
+    private static String APP_NAME; // Application Name that the application uses
     private static String QUEUE_NAME; // Queue that the application uses to put and get messages to and from
     private static String CIPHER_SUITE;
     private static String CCDTURL;
@@ -281,11 +304,20 @@ public class JmsResponse {
     private static void mqConnectionVariables() {
         SampleEnvSetter env = new SampleEnvSetter();
         int index = 0;
-        ConnectionString = env.getConnectionString();
+
+        CCDTURL = env.getCheckForCCDT();
+
+        // If the CCDT is in use then a connection string will 
+        // not be needed.
+        if (null == CCDTURL) {
+            ConnectionString = env.getConnectionString();
+        }
+
         CHANNEL = env.getEnvValue("CHANNEL", index);
         QMGR = env.getEnvValue("QMGR", index);
         APP_USER = env.getEnvValue("APP_USER", index);
         APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
+        APP_NAME = env.getEnvValueOrDefault("APP_NAME", DEFAULT_APP_NAME, index);
         QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
         CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
         BINDINGS = env.getEnvBooleanValue("BINDINGS", index);
@@ -301,15 +333,17 @@ public class JmsResponse {
         if ( BACKOUT_QUEUE == null || BACKOUT_QUEUE.isEmpty() ) { 
             logger.info("Missing BACKOUT_QUEUE value"); 
         }
-
-        CCDTURL = env.getCheckForCCDT();
     }
 
     private static JmsConnectionFactory createJMSConnectionFactory() {
         JmsFactoryFactory ff;
         JmsConnectionFactory cf;
         try {
+            // JMS
             ff = JmsFactoryFactory.getInstance(WMQConstants.WMQ_PROVIDER);
+            // Jakarta
+            // ff = JmsFactoryFactory.getInstance(WMQConstants.JAKARTA_WMQ_PROVIDER);
+
             cf = ff.createConnectionFactory();
         } catch (JMSException jmsex) {
             recordFailure(jmsex);
@@ -332,6 +366,10 @@ public class JmsResponse {
             } else {
                 logger.info("Will be making use of CCDT File " + CCDTURL);
                 cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
+
+                // Set the WMQ_CLIENT_RECONNECT_OPTIONS property to allow 
+                // the MQ JMS classes to attempt a reconnect 
+                // cf.setIntProperty(WMQConstants.WMQ_CLIENT_RECONNECT_OPTIONS, WMQConstants.WMQ_CLIENT_RECONNECT);
             }
 
             if (BINDINGS) {
@@ -341,7 +379,7 @@ public class JmsResponse {
             }
 
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
-            cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "JmsBasicResponse (JMS)");
+            cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, APP_NAME);
             if (null != APP_USER && !APP_USER.trim().isEmpty()) {
                 cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
                 cf.setStringProperty(WMQConstants.USERID, APP_USER);

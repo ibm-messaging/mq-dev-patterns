@@ -24,8 +24,8 @@ To deploy the containers on AWS ECS, follow the instructions in the [AWS-TUTORIA
 To deploy the containers on your local machine (requires docker and docker-compose), run the following commands in your terminal:
 
     cd mq-dev-patterns/ibm-messaging-mq-cloud-showcase-app/
-    docker-compose build
-    docker-compose up
+    docker-compose -f aws-docker-compose.yaml build
+    docker-compose -f aws-docker-compose.yaml up
     
 After starting the three containers, you can now access:
     - the playground app on the following URL: http://<your-local-machine-IP>:3000

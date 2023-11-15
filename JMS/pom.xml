@@ -43,12 +43,12 @@
     <dependency>
         <groupId>com.ibm.mq</groupId>
         <artifactId>com.ibm.mq.allclient</artifactId>
-        <version>9.2.5.0</version>
+        <version>9.3.4.0</version>
     </dependency>
     <dependency>
         <groupId>org.json</groupId>
         <artifactId>json</artifactId>
-        <version>20230227</version>
+        <version>20231013</version>
     </dependency>   
 
   </dependencies>
