@@ -28,7 +28,7 @@ function stopTail() {
 
 alreadyTrapped=false
 eyeCatcher="#### " # Make it easier to spot script messages in terminal
-numInstances=12 # Default number of applications to start
+numInstances=12 # Default number of applications to start (should be > 0)
 appClassName=com.ibm.mq.samples.jms.JmsGet # Default jms application for demo (JMS consumers)
 logFileName="log" # Log file name prefix for application instance logs
 maxLogsToTail=6 # Attempt to tail the first $maxLogsToTail for readbility (should be > 0)
@@ -36,6 +36,7 @@ maxLogsToTail=6 # Attempt to tail the first $maxLogsToTail for readbility (shoul
 # if you want your logs to be overwritten, set 'overwriteLogs' to true
 overwriteLogs=false # Don't overwrite existing logs by default
 
+envJsonPath=../../env.json
 classPath="../target/mq-dev-patterns-0.1.0.jar" # MAVEN classpath
 # classPath="../com.ibm.mq.allclient-9.3.3.0.jar:../javax.jms-api-2.0.1.jar:../json-20230227.jar" # default classpath for dev-patterns JMS application. See https://ibm.biz/learn-mq 
 
@@ -93,7 +94,7 @@ for i in $(seq 1 $numInstances)
 
   do
     echo Starting instance $i
-    java -DMQCCDTURL=$MQCCDTURL -DEnvFile=../../env.json -cp $classPath:. $appClassName > $logFileName$i.txt 2>&1 &
+    java -DMQCCDTURL=$MQCCDTURL -DEnvFile=$envJsonPath -cp $classPath:. $appClassName > $logFileName$i.txt 2>&1 &
     if [ "$i" -le $maxLogsToTail ]
       then
         # Append lof to list to tail
@@ -103,7 +104,7 @@ for i in $(seq 1 $numInstances)
 
 echo ""
 echo $eyeCatcher "Ready to tail first "$maxLogsToTail" log files."
-sleep 0.5
+sleep 0.5 #sleep for half a second
 # Start tailing the logs
 tail -f $logsToTail
 # Following SIGINT on tail 
