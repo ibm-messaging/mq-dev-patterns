@@ -16,7 +16,7 @@
 
 
 function stopTail() {
-  if [[ "$alreadyTrapped" = false ]]
+  if [ "$alreadyTrapped" -eq false ]
     then
       alreadyTrapped=true
       echo $eyeCatcher"No longer tailing logs, <ctrl-c> again to stop applications if they are still running."
@@ -57,8 +57,8 @@ if [ "$#" -ne 2 ]
         echo ""
       else 
         echo $eyeCatcher "Invalid arguments."
-        echo "Usage: run-jms-demo.sh <jms_application_name> <number_of_instances>" # Display usage information for script
-        echo "Example: run-jms-demo.sh " $appClassName $numInstances
+        echo "Usage: $0 <jms_application_name> <number_of_instances>" # Display usage information for script
+        echo "Example: $0 " $appClassName $numInstances
         echo ""
         exit 1 # Exit with error code
     fi
@@ -69,7 +69,7 @@ if [ "$#" -ne 2 ]
 fi
 
 
-if [[ "$overwriteLogs" = false ]]
+if [ "$overwriteLogs" -eq false ]
   then
     #Check if any previous log files exist
     echo $eyeCatcher "Checking $numLogFilesToCheck files."
