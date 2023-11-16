@@ -16,7 +16,7 @@
 
 
 function stopTail() {
-  if [ "$alreadyTrapped" -eq false ]
+  if [[ "$alreadyTrapped" = false ]]
     then
       alreadyTrapped=true
       echo $eyeCatcher"No longer tailing logs, <ctrl-c> again to stop applications if they are still running."
@@ -31,7 +31,7 @@ eyeCatcher="#### " # Make it easier to spot script messages in terminal
 numInstances=12 # Default number of applications to start
 appClassName=com.ibm.mq.samples.jms.JmsGet # Default jms application for demo (JMS consumers)
 logFileName="log" # Log file name prefix for application instance logs
-maxLogsToTail=6 # Attempt to tail the first $maxLogsToTail for readbility 
+maxLogsToTail=6 # Attempt to tail the first $maxLogsToTail for readbility (should be > 0)
 
 # if you want your logs to be overwritten, set 'overwriteLogs' to true
 overwriteLogs=false # Don't overwrite existing logs by default
@@ -69,11 +69,11 @@ if [ "$#" -ne 2 ]
 fi
 
 
-if [ "$overwriteLogs" -eq false ]
+if [[ "$overwriteLogs" = false ]]
   then
     #Check if any previous log files exist
-    echo $eyeCatcher "Checking $numLogFilesToCheck files."
-    for i in $(seq 1 $numLogFilesToCheck)
+    echo $eyeCatcher "Checking $maxLogsToTail files."
+    for i in $(seq 1 $maxLogsToTail)
       do
         echo $eyeCatcher "Checking if log file $logFileName$i.txt exists"
         if test -f $logFileName$i.txt
@@ -90,6 +90,7 @@ logsToTail=""; # List of log files to tail
 trap stopTail SIGINT
 
 for i in $(seq 1 $numInstances)
+
   do
     echo Starting instance $i
     java -DMQCCDTURL=$MQCCDTURL -DEnvFile=../../env.json -cp $classPath:. $appClassName > $logFileName$i.txt 2>&1 &
