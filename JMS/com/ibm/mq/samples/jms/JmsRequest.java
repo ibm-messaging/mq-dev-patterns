@@ -60,6 +60,7 @@ import com.ibm.mq.samples.jms.SampleEnvSetter;
 
 public class JmsRequest {
 
+    private static final String DEFAULT_APP_NAME = "Dev Experience JmsRequest";
     private static final Level LOGLEVEL = Level.ALL;
     private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
 
@@ -69,6 +70,7 @@ public class JmsRequest {
     private static String QMGR; // Queue manager name
     private static String APP_USER; // User name that application uses to connect to MQ
     private static String APP_PASSWORD; // Password that the application uses to connect to MQ
+    private static String APP_NAME; // Application Name that the application uses
     private static String QUEUE_NAME; // Queue that the application uses to put messages to
     private static String REPLY_QUEUE_NAME; // Queue that the application uses to get messages replies from
     private static String MODEL_QUEUE_NAME; //
@@ -212,11 +214,19 @@ public class JmsRequest {
         SampleEnvSetter env = new SampleEnvSetter();
         int index = 0;
 
-        ConnectionString = env.getConnectionString();
+        CCDTURL = env.getCheckForCCDT();
+
+        // If the CCDT is in use then a connection string will 
+        // not be needed.
+        if (null == CCDTURL) {
+            ConnectionString = env.getConnectionString();
+        }
+
         CHANNEL = env.getEnvValue("CHANNEL", index);
         QMGR = env.getEnvValue("QMGR", index);
         APP_USER = env.getEnvValue("APP_USER", index);
         APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
+        APP_NAME = env.getEnvValueOrDefault("APP_NAME", DEFAULT_APP_NAME, index);
         QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
         REPLY_QUEUE_NAME = env.getEnvValue("REPLY_QUEUE_NAME", index);
         MODEL_QUEUE_NAME = env.getEnvValue("MODEL_QUEUE_NAME", index);
@@ -234,8 +244,6 @@ public class JmsRequest {
         } else {
             REQUEST_MESSAGE_EXPIRY = 900000L;
         }
-
-        CCDTURL = env.getCheckForCCDT();
     }
 
     private static JmsConnectionFactory createJMSConnectionFactory() {
@@ -267,6 +275,10 @@ public class JmsRequest {
             } else {
                 logger.info("Will be making use of CCDT File " + CCDTURL);
                 cf.setStringProperty(WMQConstants.WMQ_CCDTURL, CCDTURL);
+    
+                // Set the WMQ_CLIENT_RECONNECT_OPTIONS property to allow 
+                // the MQ JMS classes to attempt a reconnect 
+                // cf.setIntProperty(WMQConstants.WMQ_CLIENT_RECONNECT_OPTIONS, WMQConstants.WMQ_CLIENT_RECONNECT);
             }
 
             if (BINDINGS) {
@@ -276,7 +288,7 @@ public class JmsRequest {
             }
 
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
-            cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "JmsRequest");
+            cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, APP_NAME);
             if (null != APP_USER && !APP_USER.trim().isEmpty()) {
                 cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
                 cf.setStringProperty(WMQConstants.USERID, APP_USER);

@@ -36,11 +36,21 @@ public class SampleEnvSetter {
     private static final String CCDT = "MQCCDTURL";
     private static final String FILEPREFIX = "file://";
     private static final String ZOS = "z/os";
+    private static final int DEFAULT_MQI_PORT = 1414;
+
+    private static final String ENV_FILE = "EnvFile";
+    private static final String DEFAULT_ENV_FILE = "../env.json";    
+    private static final String DEFAULT_Z_ENV_FILE ="../env-zbindings.json";
 
     public SampleEnvSetter() {
         JSONObject mqEnvSettings = null;
         mqEndPoints = null;  
         File file = getEnvFile();
+
+        if (null == file) {
+            logger.warning("No Environment settings file found");
+            return;
+        }
 
         try {
             String content = new String(Files.readAllBytes(Paths.get(file.toURI())));
@@ -71,22 +81,28 @@ public class SampleEnvSetter {
     private File getEnvFile() {
         File file = null;
         boolean onZ = System.getProperty("os.name").toLowerCase().contains(ZOS);
-        if (onZ) {
+    
+        // Allow system setting to override env file location and name
+        String valueEnvFile = System.getProperty(ENV_FILE);
+        logger.info(ENV_FILE + " is set to " + valueEnvFile);
+
+        if (null != valueEnvFile) {
+        } else if (onZ) {
             logger.info("Running on z/OS");
-            file = new File("../env-zbindings.json");
-            if (! file.exists()){
-                logger.info("Environment settings env-zbindings.json file not found");
-                file = null;
-            }   
+            valueEnvFile = DEFAULT_Z_ENV_FILE;
+        } else {
+            valueEnvFile = DEFAULT_ENV_FILE;
         }
-        if (null == file) {
-            file = new File("../env.json");
-            if (! file.exists()){
-                logger.info("Environment settings env.json file not found");
-                logger.info("If there are no envrionment overrides then the app will not be able to connect to MQ");
-                file = null;
-            }  
-        }   
+
+        logger.info("Looking for environment file " + valueEnvFile);
+
+        file = new File(valueEnvFile);
+        if (! file.exists()){
+            logger.warning("Environment settings " + valueEnvFile + " file not found");
+            logger.warning("As a minimum a queue manager, queue and CCDT will be required");
+            logger.warning("If not provided then the application will throw an exception");
+            file = null;
+        }       
         return file;     
     }
 
@@ -109,6 +125,25 @@ public class SampleEnvSetter {
         if (! key.contains("PASSWORD")) {
           logger.info("returning " + value + " for key " + key);
         }
+        return value;
+    }
+
+    public String getEnvValueOrDefault(String key, String defaultValue, int index) {
+        String value = getEnvValue(key, index);
+
+        return (null == value || value.trim().isEmpty()) 
+                        ? defaultValue
+                        : value;
+    }
+
+    public int getPortEnvValue(String key, int index) {
+        int value = DEFAULT_MQI_PORT;
+        try {
+            value = Integer.parseInt(this.getEnvValue(key, index));
+        } catch (NumberFormatException e) {
+            logger.warning("Unable to parse a number for port ");
+            logger.warning("defaulting port to " + DEFAULT_MQI_PORT);
+        } 
         return value;
     }
 
@@ -170,8 +205,9 @@ public class SampleEnvSetter {
 
                 File tmp = new File(ccdtFile);
                 if (! tmp.exists()) {
+                    logger.info("CCDT file not found");
                     value = null;
-                }
+                } 
             }
         }
         return value;
@@ -193,6 +229,8 @@ public class SampleEnvSetter {
     }
 
     public int getCount() {
-        return mqEndPoints.length();
+        // If there are no endpoints, then values 
+        // need to come from a CCDT and environment settings
+        return (null == mqEndPoints) ? 1 : mqEndPoints.length();
     }
 }
