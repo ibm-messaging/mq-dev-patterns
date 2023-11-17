@@ -299,6 +299,22 @@ Any other value for `REQUEST_MODE` runs in default mode where the request sends 
 random number, which is squared and returned in the response.
 
 
+## scripts/multi-jms-sample-driver.sh
+
+The `scripts` folder contains the `multi-jms-sample-driver.sh` script which enables you to run multiple instances of a JMS application.
+By default, the script will run 6 instances of `JmsGet.java`. To change this you can supply the application class name and the number of instances when you run the script as below from the `scripts` folder
+
+`./multi-jms-sample-driver.sh <jms_application_class_name> <number_of_instances>`
+
+The script will run with the defaults if these values aren't specified.
+
+You can also export a CCDT for the JMS application to use as below
+
+`export MQCCDTURL=file:///<your_CCDT_file>`
+
+The classpath specified will depend on whether or not maven was used to build the samples - uncomment the relevent one within the script (classpath for maven is the default)
+
+
 ## Run the samples with TLS
 
 To run the samples with TLS you need to provide additional arguments;
