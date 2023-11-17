@@ -28,13 +28,13 @@ function stopTail() {
 
 alreadyTrapped=false
 eyeCatcher="#### " # Make it easier to spot script messages in terminal
-numInstances=12 # Default number of applications to start (should be > 0)
+numInstances=6 # Default number of applications to start (should be > 0)
 appClassName=com.ibm.mq.samples.jms.JmsGet # Default jms application for demo (JMS consumers)
 logFileName="log" # Log file name prefix for application instance logs
 maxLogsToTail=6 # Attempt to tail the first $maxLogsToTail for readbility (should be > 0)
 
 # if you want your logs to be overwritten, set 'overwriteLogs' to true
-overwriteLogs=false # Don't overwrite existing logs by default
+overwriteLogs=false # Won't overwrite existing logs by default
 
 envJsonPath=../../env.json
 classPath="../target/mq-dev-patterns-0.1.0.jar" # MAVEN classpath
@@ -55,7 +55,9 @@ if [ "$#" -ne 2 ]
       then 
         # Report proceeding with defaults
         echo $eyeCatcher"Running with defaults: starting "$numInstances" instances of "$appClassName"."
+        echo $eyeCatcher"Using env.json file at $envJsonPath, CCDT at $MQCCDTURL and classpath $classPath"
         echo ""
+        sleep 2 #sleep for 2 seconds for user to read console output
       else 
         echo $eyeCatcher "Invalid arguments."
         echo "Usage: $0 <jms_application_name> <number_of_instances>" # Display usage information for script
