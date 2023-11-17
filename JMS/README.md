@@ -308,7 +308,7 @@ By default, the script will run 6 instances of `JmsGet.java`. To change this you
 
 The script will run with the defaults if these values aren't specified.
 
-You can also export a CCDT for it use by
+You can also export a CCDT for it to use as below
 
 `export MQCCDTURL=file:///<your_CCDT_file>`
 
