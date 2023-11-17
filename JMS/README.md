@@ -301,10 +301,10 @@ random number, which is squared and returned in the response.
 
 ## scripts/multi-jms-sample-driver.sh
 
-The `scripts` folder contains the `multi-jms-sample-driver.sh` script which enables you to easily run multiple instances of a Java application.
-By default, the script will run 6 instances of `JmsGet.java`. To change this you can supply the app class name and the number of instances when you run the script as below from the `scripts` folder
+The `scripts` folder contains the `multi-jms-sample-driver.sh` script which enables you to easily run multiple instances of a JMS application.
+By default, the script will run 6 instances of `JmsGet.java`. To change this you can supply the application class name and the number of instances when you run the script as below from the `scripts` folder
 
-`./multi-jms-sample-driver.sh <jms_application_name> <number_of_instances>`
+`./multi-jms-sample-driver.sh <jms_application_class_name> <number_of_instances>`
 
 The script will run with the defaults if these values aren't specified.
 
