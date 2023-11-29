@@ -5,7 +5,7 @@ The main class for this sample is `Runner` where we create the objects we will n
 To get started, you will need to clone this repository and cd into it:
 
 ```
-cd mq-dev-patterns/amqp-vertx/vertx-tutorial
+cd mq-dev-patterns/reactive-amqp/amqp-vertx
 ```
 
 ## MQ Connection properties
