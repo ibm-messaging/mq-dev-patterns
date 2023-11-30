@@ -234,7 +234,7 @@ Do not install any application requirements until
 #### [Quarkus](/amqp-qpid/qpid-quarkus/README.md)
 
 ### Reactive samples
-#### [Vert.x](/reactive/amqp-vertx/README.md)
+#### [Vert.x](/reactive-amqp/amqp-vertx/README.md)
 
 ### Serverless samples
 #### [AWS Lambda](/serverless/aws-lambda-rest/README.md)
