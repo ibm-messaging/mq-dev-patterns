@@ -97,7 +97,7 @@ func init() {
         // ***********Configuring MQ Credentials***********
         // Read MQ configuration from env.json
         //Check for file path in env variables else default to ../env.json
-        DEFAULT_ENV_FILE := "../env.json"
+        DEFAULT_ENV_FILE := "../../env.json"
         filePath := os.Getenv("ENV_FILE")
         if filePath != ""{
             fmt.Println("ENV file is set to " + filePath)
