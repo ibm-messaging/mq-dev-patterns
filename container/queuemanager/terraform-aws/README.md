@@ -191,5 +191,6 @@ This step needs 4 inputs
 ### terraform destroy
 To remove resources that are not being used run 
 ```
-terraform destroy in each of the steps in reverse order. 
+terraform destroy  
 ```
+in each of the steps in reverse order.
