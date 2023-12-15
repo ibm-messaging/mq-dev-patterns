@@ -18,7 +18,7 @@
 /*                                                                                      */
 /****************************************************************************************/
 /*                                                                                      */
-/*  FILE NAME:      amqpGet.go                                                          */
+/*  FILE NAME:      amqpConsumer.go                                                     */
 /*                                                                                      */
 /*  DESCRIPTION:    A Go applicaton used to receive messages from broker-IBM MQ.        */
 /*  AMQP 1.0 in use. Go-azure library is used.                                          */
@@ -26,9 +26,9 @@
 /*  Documentation: https://pkg.go.dev/github.com/Azure/go-amqp#section-documentation    */
 /*                                                                                      */
 /*  How to Run:                                                                         */
-/*  Usage:  go run amqpGet.go [-t TopicName] [-q QueueName]                             */
+/*  Usage:  go run amqpConsumer.go [-t TopicName] [-q QueueName]                        */
 /*                                                                                      */
-/*  Ex:  go run amqpGet.go -q LOCAL.QUEUE.1                                             */
+/*  Ex:  go run amqpConsumer.go -q LOCAL.QUEUE.1                                        */
 /*                                                                                      */
 /*  Parameters:                                                                         */
 /*  -t ==> TopicName                                                                    */
@@ -70,8 +70,8 @@ var (
 var EnvSettings Env
 var MQ_ENDPOINTS MQEndpoints
 
+//Parsing the command line arguments
 func init() {
-    //Parsing the input
     flag.StringVar(&queueName, "q", "DEMO", "Queue")
     flag.StringVar(&topicName, "t", "TOP", "Topic")
     flag.Parse()
@@ -94,29 +94,7 @@ func init() {
     }
 
     if valid{
-        // ***********Configuring MQ Credentials***********
-        // Read MQ configuration from env.json
-        //Check for file path in env variables else default to ../env.json
-        DEFAULT_ENV_FILE := "../../env.json"
-        filePath := os.Getenv("ENV_FILE")
-        if filePath != ""{
-            fmt.Println("ENV file is set to " + filePath)
-        } else{
-            fmt.Println("Using default ENV file: "+DEFAULT_ENV_FILE)
-            filePath = DEFAULT_ENV_FILE
-        }
-        content, err := ioutil.ReadFile(filePath)
-        if err != nil {
-            log.Fatal("Error when opening file: ", err)
-        }
-        // Unmarshall the data
-        err = json.Unmarshal(content, &MQ_ENDPOINTS)
-        if err != nil {
-            log.Fatal("Error during Unmarshal(): ", err)
-        }
-        if len(MQ_ENDPOINTS.Points) > 0 {
-            EnvSettings = MQ_ENDPOINTS.Points[0]
-        }
+        parseEnv()
     }
 }
 
@@ -125,24 +103,21 @@ func main() {
         fmt.Println("Invalid arguments")
         return
     }
+    fmt.Println("Application is Starting...")
 
-    // Defining  the AMQP URI
+    //Defining the AMQP URI
     uri:= "amqp://"+EnvSettings.Username+":"+EnvSettings.Password+"@"+EnvSettings.Host+":"+EnvSettings.Port
 
-    // Set up connection parameters
-    conn, err := amqp.Dial(context.TODO(), uri, nil)
-    fmt.Println("Connected to host.")
-    if err != nil {
-        fmt.Println("Error in setting up the connection")
-        log.Fatal(err)
+    // Set up a new connection
+    conn, err := connect(uri)
+    if err != nil{
+        log.Fatal("Error in creating connection: ", err)
     }
 
     // Create a session
-    session, err := conn.NewSession(context.TODO(), nil)
-    fmt.Println("Session created.")
-    if err != nil {
-        fmt.Println("Error in creating the session")
-        log.Fatal(err)
+    session, err := createSession(conn)
+    if err != nil{
+        log.Fatal("Error in creating a session: ", err)
     }
 
     //When the destination is a queue, capability must be set to "queue". If not, topic is selected by default.
@@ -155,27 +130,86 @@ func main() {
         }
     }
 
-    // Create a receiver
-    receiver, err := session.NewReceiver(context.TODO(), destination, ReceiverOptions)
-    fmt.Println("Receiver mapped.")
-    if err != nil {
-        fmt.Println("Error in creating Receiver")
-        log.Fatal(err)
+    // Create a Receiver
+    Receiver, err := createReceiver(session, ReceiverOptions)
+    if err != nil{
+        log.Fatal("Error in creating a Receiver: ", err)
     }
-    fmt.Println("Destination :",ReceiverOptions.SourceCapabilities)
 
-    //Get messages
+    //Recieve the messages
+    err = receiveMessages(Receiver)
+    if err != nil{
+        fmt.Println("Error while receiving messages: ",err)
+    }
+    fmt.Println("End of Sample amqpConsumer.go")
+}
+
+func connect(uri string) (*amqp.Conn, error){
+    conn, err := amqp.Dial(context.TODO(), uri, nil)
+    if err != nil {
+        return nil, err
+    }
+    fmt.Println("Connected to host.")
+    return conn, nil
+}
+
+func createSession(conn *amqp.Conn) (*amqp.Session, error){
+    session, err := conn.NewSession(context.TODO(), nil)
+    if err != nil {
+        return nil, err
+    }
+    fmt.Println("Session created.")
+    return session, nil
+}
+
+func createReceiver(session *amqp.Session, receiverOptions *amqp.ReceiverOptions) (*amqp.Receiver, error){
+    receiver, err := session.NewReceiver(context.TODO(), destination, receiverOptions)
+    if err != nil {
+        return nil, err
+    }
+    fmt.Println("Receiver mapped to destination.")
+    fmt.Println("Destination :",receiverOptions.SourceCapabilities)
+    return receiver, nil
+}
+
+func receiveMessages(receiver *amqp.Receiver) error{
     for{
         msg, err := receiver.Receive(context.TODO(), nil)
         if msg != nil{
-            fmt.Println("Received:",string(msg.GetData()))
+            fmt.Println("Received message: ",string(msg.GetData()))
             receiver.AcceptMessage(context.TODO(), msg)
         }else{
             fmt.Println("No More Messages")
-            break
+            return nil
         }
         if err != nil{
-            fmt.Println("Error")
+            return err
         }
+    }
+}
+
+// ***********Configuring MQ Credentials***********
+// Read MQ configuration from env.json
+//Check for file path in env variable ENV_FILE else default to ../env.json
+func parseEnv(){
+    DEFAULT_ENV_FILE := "../env.json"
+    filePath := os.Getenv("ENV_FILE")
+    if filePath != ""{
+        fmt.Println("ENV file is set to " + filePath)
+    } else{
+        fmt.Println("Using default ENV file: "+DEFAULT_ENV_FILE)
+        filePath = DEFAULT_ENV_FILE
+    }
+    content, err := ioutil.ReadFile(filePath)
+    if err != nil {
+        log.Fatal("Error when opening file: ", err)
+    }
+    // Unmarshall the data
+    err = json.Unmarshal(content, &MQ_ENDPOINTS)
+    if err != nil {
+        log.Fatal("Error during Unmarshal(): ", err)
+    }
+    if len(MQ_ENDPOINTS.Points) > 0 {
+        EnvSettings = MQ_ENDPOINTS.Points[0]
     }
 }
