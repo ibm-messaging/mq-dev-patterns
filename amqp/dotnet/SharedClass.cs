@@ -31,7 +31,7 @@
 namespace ibmmq_amqp_samples
 {
     public class SharedClass
-	{
+    {
         public string hostName = null;
         public string symbolName = null;
         public int port = 0;
