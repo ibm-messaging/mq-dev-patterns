@@ -1,4 +1,4 @@
-﻿/****************************************************************************************/
+/****************************************************************************************/
 /*                                                                                      */
 /*                                                                                      */
 /*  Copyright 2023 IBM Corp.                                                            */
@@ -31,87 +31,25 @@ namespace ibmmq_amqp_samples
 {
     class SimpleSub
     {
-        private Env env = new Env();
-        private String hostName = null;
-        private String topicName = null;
-        private int port = 0;
-        private String Username = null;
-        private String Password = null;
+        private static Env env = new Env();
 
         public static void Sub()
         {
             Console.WriteLine("Start of SimpleSub Application\n");
 
-            SimpleSub simpleSub = new SimpleSub();
-            if (simpleSub.env.EnvironmentIsSet())
+            SharedClass sharedClass = new SharedClass();
+            if (env.EnvironmentIsSet())
             {
-                simpleSub.hostName = simpleSub.env.Conn.host;
-                simpleSub.port = simpleSub.env.Conn.port;
-                simpleSub.Username = simpleSub.env.Conn.app_user;
-                simpleSub.Password = simpleSub.env.Conn.app_password;
-                simpleSub.topicName = simpleSub.env.Conn.topic_name;
+                sharedClass.hostName = env.Conn.host;
+                sharedClass.port = env.Conn.port;
+                sharedClass.Username = env.Conn.app_user;
+                sharedClass.Password = env.Conn.app_password;
+                sharedClass.symbolName = env.Conn.topic_name;
 
-                simpleSub.GetMessages();
+                sharedClass.GetMessages("topic");
             }
 
             Console.WriteLine("\nEnd of SimpleSub Application\n");
         }
-
-        void GetMessages()
-        {
-            string add = "amqp://" + Username + ":" + Password + "@" + hostName + ":" + port;
-            Address address = new Address(add);
-
-            // Create Connection
-            Connection connection = new Connection(address);
-
-            // Create Session
-            Session session = new Session(connection);
-
-            // Specify the endpoint as TOPIC
-            Symbol[] s = new Symbol[]{
-                new Symbol("topic")
-            };
-            // Create Source 
-            Source source = new Source();
-            source.Address = topicName;
-            source.Capabilities = s;
-
-            void OnAttached(ILink link, Attach attach)
-            {
-                // Handle the attachment event
-                if (attach != null && source.Address != null)
-                    Console.WriteLine("Receiver link attached successfully!");
-                else
-                    Console.WriteLine("Receiver link attachment failed!");
-            }
-
-            // Create ReceiverLink
-            ReceiverLink receiver = new ReceiverLink(session, "client", source, OnAttached);
-
-            while (true)
-            {
-                // Get the messages from specific topic
-                Message message = receiver.Receive();
-                if (message != null)
-                {
-                    Console.WriteLine("Received " + message.Body.ToString());
-                    receiver.Accept(message);
-                }
-
-                else
-                {
-                    Console.WriteLine("No More Messages");
-                    break;
-                }
-            }
-            Console.WriteLine("Sub Successfull");
-
-            // close the connection
-            receiver.Close();
-            session.Close();
-            connection.Close();
-        }
-
     }
 }
