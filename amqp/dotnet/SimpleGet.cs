@@ -1,4 +1,4 @@
-﻿/****************************************************************************************/
+/****************************************************************************************/
 /*                                                                                      */
 /*                                                                                      */
 /*  Copyright 2023 IBM Corp.                                                            */
@@ -31,87 +31,25 @@ namespace ibmmq_amqp_samples
 {
     class SimpleGet
     {
-        private Env env = new Env();
-        private String hostName = null;
-        private String queueName = null;
-        private int port = 0;
-        private String Username = null;
-        private String Password = null;
+        private static Env env = new Env();
 
         public static void Get()
         {
             Console.WriteLine("Start of SimpleGet Application\n");
 
-            SimpleGet simpleGet = new SimpleGet();
-            if (simpleGet.env.EnvironmentIsSet())
+            SharedClass sharedClass = new SharedClass();
+            if (env.EnvironmentIsSet())
             {
-                simpleGet.hostName = simpleGet.env.Conn.host;
-                simpleGet.port = simpleGet.env.Conn.port;
-                simpleGet.Username = simpleGet.env.Conn.app_user;
-                simpleGet.Password = simpleGet.env.Conn.app_password;
-                simpleGet.queueName = simpleGet.env.Conn.queue_name;
+                sharedClass.hostName = env.Conn.host;
+                sharedClass.port = env.Conn.port;
+                sharedClass.Username = env.Conn.app_user;
+                sharedClass.Password = env.Conn.app_password;
+                sharedClass.symbolName = env.Conn.queue_name;
 
-                simpleGet.GetMessages();
+                sharedClass.GetMessages("queue");
             }
 
             Console.WriteLine("\nEnd of SimpleGet Application\n");
         }
-
-        void GetMessages()
-        {
-            string add = "amqp://" + Username + ":" + Password + "@" + hostName + ":" + port;
-            Address address = new Address(add);
-
-            // Create Connection
-            Connection connection = new Connection(address);
-
-            //Create Session
-            Session session = new Session(connection);
-
-            // Specify the endpoint as QUEUE
-            Symbol[] s = new Symbol[]{
-                new Symbol("queue")
-            };
-            // Create Source
-            Source source = new Source();
-            source.Address = queueName;
-            source.Capabilities = s;
-
-            void OnAttached(ILink link, Attach attach)
-            {
-                // Handle the attachment event
-                if (attach != null && source.Address != null)
-                    Console.WriteLine("Receiver link attached successfully!");
-                else
-                    Console.WriteLine("Receiver link attachment failed!");
-            }
-
-            // Create ReceiverLink
-            ReceiverLink receiver = new ReceiverLink(session, "client", source, OnAttached);
-
-            while (true)
-            {
-                // Get the messages from specific queue
-                Message message = receiver.Receive();
-                if (message != null)
-                {
-                    Console.WriteLine("Received " + message.Body.ToString());
-                    receiver.Accept(message);
-                }
-
-                else
-                {
-                    Console.WriteLine("No More Messages");
-                    break;
-                }
-            }
-            Console.WriteLine("Get Successfull");
-
-            // close the connection
-            receiver.Close();
-            session.Close();
-            connection.Close();
-        }
-
     }
 }
