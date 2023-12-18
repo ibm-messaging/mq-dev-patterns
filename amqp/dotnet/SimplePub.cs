@@ -1,4 +1,4 @@
-﻿/****************************************************************************************/
+/****************************************************************************************/
 /*                                                                                      */
 /*                                                                                      */
 /*  Copyright 2023 IBM Corp.                                                            */
@@ -31,76 +31,26 @@ namespace ibmmq_amqp_samples
 {
     class SimplePub
     {
-        private Env env = new Env();
-        private String hostName = null;
-        private String topicName = null;
-        private int port = 0;
-        private String Username = null;
-        private String Password = null;
+        private static Env env = new Env();
 
         public static void Pub()
         {
             Console.WriteLine("Start of SimplePub Application\n");
 
-            SimplePub simplePub = new SimplePub();
-            if (simplePub.env.EnvironmentIsSet())
+            SharedClass sharedClass = new SharedClass();
+            if (env.EnvironmentIsSet())
             {
-                simplePub.hostName = simplePub.env.Conn.host;
-                simplePub.port = simplePub.env.Conn.port;
-                simplePub.Username = simplePub.env.Conn.app_user;
-                simplePub.Password = simplePub.env.Conn.app_password;
-                simplePub.topicName = simplePub.env.Conn.topic_name;
+                sharedClass.hostName = env.Conn.host;
+                sharedClass.port = env.Conn.port;
+                sharedClass.Username = env.Conn.app_user;
+                sharedClass.Password = env.Conn.app_password;
+                sharedClass.symbolName = env.Conn.topic_name;
 
-                simplePub.PutMessages();
+                sharedClass.PutMessages("topic");
             }
 
             Console.WriteLine("\nEnd of SimplePub Application\n");
         }
 
-        void PutMessages()
-        {
-            string add = "amqp://" + Username + ":" + Password + "@" + hostName + ":" + port;
-            Address address = new Address(add);
-
-            // Create Connection
-            Connection connection = new Connection(address);
-
-            // Create Session
-            Session session = new Session(connection);
-
-            // Create Target and specify the endpoint as TOPIC
-            Target target = new Target();
-            target.Address = topicName;
-            target.Capabilities = new Symbol[]{
-                new Symbol("topic")
-            };
-
-            void OnAttached(ILink link, Attach attach)
-            {
-                // Handle the attachment event
-                if (attach != null && target.Address != null)
-                    Console.WriteLine("Sender link attached successfully!");
-                else
-                    Console.WriteLine("Sender link attachment failed!");
-            }
-
-            // Create SenderLink
-            SenderLink sender = new SenderLink(session, "client", target, OnAttached);
-
-            // Create Message Object pointing to endpoint
-            Message message = new Message("Hello AMQP!");
-            message.Properties = new Properties();
-            message.Properties.To = add;
-
-            // publish the message to specific topic
-            sender.Send(message);
-            Console.WriteLine("message sent < " + message.Body.ToString() + " >.. ");
-            Console.WriteLine("Pub Successfull");
-
-            // close the connection
-            sender.Close();
-            session.Close();
-            connection.Close();
-        }
     }
 }
