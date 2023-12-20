@@ -38,7 +38,7 @@ namespace ibmmq_amqp_samples
         public string Username = null;
         public string Password = null;
 
-        public void PutMessages(string symbolType)
+        public void Produce(string symbolType)
         {
             string add = "amqp://" + Username + ":" + Password + "@" + hostName + ":" + port;
             Address address = new Address(add);
@@ -76,7 +76,7 @@ namespace ibmmq_amqp_samples
             // put/publish the message to specific queue/topic
             sender.Send(message);
             Console.WriteLine("message sent < " + message.Body.ToString() + " >.. ");
-            Console.WriteLine("Put/Pub Successfull");
+            Console.WriteLine("Produce Successfull");
 
             // close the connection
             sender.Close();
@@ -84,7 +84,7 @@ namespace ibmmq_amqp_samples
             connection.Close();
         }
 
-        public void GetMessages(string symbolType)
+        public void Consume(string symbolType)
         {
             string add = "amqp://" + Username + ":" + Password + "@" + hostName + ":" + port;
             Address address = new Address(add);
@@ -132,7 +132,7 @@ namespace ibmmq_amqp_samples
                     break;
                 }
             }
-            Console.WriteLine("Get/Sub Successfull");
+            Console.WriteLine("Consume Successfull");
 
             // close the connection
             receiver.Close();
