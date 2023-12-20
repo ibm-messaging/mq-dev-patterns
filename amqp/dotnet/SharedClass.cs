@@ -21,7 +21,7 @@
 /*  FILE NAME:      SharedClass.cs                                                      */
 /*                                                                                      */
 /*  DESCRIPTION:    A Shared Class with reusable methods namely                         */
-/*                  Produce() and Consume()                                     */
+/*                  Produce() and Consume()                                             */
 /*  AMQP 1.0 in use. amqpnetlite.core library is used.                                  */
 /*  Refer : https://github.com/Azure/amqpnetlite                                        */
 /*                                                                                      */
