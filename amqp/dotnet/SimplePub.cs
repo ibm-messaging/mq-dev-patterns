@@ -46,7 +46,7 @@ namespace ibmmq_amqp_samples
                 sharedClass.Password = env.Conn.app_password;
                 sharedClass.symbolName = env.Conn.topic_name;
 
-                sharedClass.PutMessages("topic");
+                sharedClass.Produce("topic");
             }
 
             Console.WriteLine("\nEnd of SimplePub Application\n");
