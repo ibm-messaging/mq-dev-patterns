@@ -115,7 +115,6 @@ namespace ibmmq_amqp_samples
                 return string.Join(",", connList);
             }
 
-            //return "192.168.252.1(1414),192.168.252.1(1416)";
             return "";
         }
 
