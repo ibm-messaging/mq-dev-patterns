@@ -19,17 +19,17 @@ We drive the running of all the samples through this one module that has the one
 
 For example:
 
-`ibmmq_samples.exe put`
+`ibmmq_amqp_samples.exe put`
 
 ## Put / Get
 
 Run
 
-`ibmmq_samples.exe put`
+`ibmmq_amqp_samples.exe put`
 
 In a separate terminal
 
-`ibmmq_samples.exe get`
+`ibmmq_amqp_samples.exe get`
 
 ## Publish / Subscribe
 
@@ -39,10 +39,10 @@ You have to run the subscriber sample first so it creates a subscription and wai
 
 Run
 
-`ibmmq_samples.exe sub`
+`ibmmq_amqp_samples.exe sub`
 
 In the second terminal;
 
 Run the publisher sample
 
-`ibmmq_samples.exe pub`
+`ibmmq_amqp_samples.exe pub`
