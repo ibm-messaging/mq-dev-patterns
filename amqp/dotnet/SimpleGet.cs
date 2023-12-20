@@ -46,7 +46,7 @@ namespace ibmmq_amqp_samples
                 sharedClass.Password = env.Conn.app_password;
                 sharedClass.symbolName = env.Conn.queue_name;
 
-                sharedClass.GetMessages("queue");
+                sharedClass.Consume("queue");
             }
 
             Console.WriteLine("\nEnd of SimpleGet Application\n");
