@@ -73,7 +73,7 @@ namespace ibmmq_amqp_samples
             message.Properties = new Properties();
             message.Properties.To = add;
 
-            // put/publish the message to specific queue/topic
+            // put/publish a message to specific queue/topic
             sender.Send(message);
             Console.WriteLine("message sent < " + message.Body.ToString() + " >.. ");
             Console.WriteLine("Produce Successfull");
