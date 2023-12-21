@@ -21,8 +21,7 @@
 /*  FILE NAME:      amqpConsumer.go                                                     */
 /*                                                                                      */
 /*  DESCRIPTION:    A Go applicaton used to receive messages from broker-IBM MQ.        */
-/*  AMQP 1.0 in use. An Azure go-amqp library is used.                                          */
-
+/*  AMQP 1.0 in use. An Azure go-amqp library is used.                                  */
 /*  Refer : https://github.com/Azure/go-amqp                                            */
 /*  Documentation: https://pkg.go.dev/github.com/Azure/go-amqp#section-documentation    */
 /*                                                                                      */

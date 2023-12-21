@@ -21,8 +21,7 @@
 /*  FILE NAME:      amqpProducer.go                                                     */
 /*                                                                                      */
 /*  DESCRIPTION:    A Go applicaton used to send 10 messages to broker-IBM MQ.          */
-/*  AMQP 1.0 in use. An Azure go-amqp library is used.                                          */
-
+/*  AMQP 1.0 in use. An Azure go-amqp library is used.                                  */
 /*  Refer : https://github.com/Azure/go-amqp                                            */
 /*  Documentation: https://pkg.go.dev/github.com/Azure/go-amqp#section-documentation    */
 /*                                                                                      */
@@ -149,7 +148,7 @@ func main() {
 
     // Send the messages
     for i:=0; i<10; i++ {
-        err = sendMessages(sender, msg)
+        err = sendMessage(sender, msg)
         if err != nil{
             log.Fatal("Error in sending messages: ", err)
         }
@@ -187,7 +186,7 @@ func createSender(session *amqp.Session, senderOptions *amqp.SenderOptions) (*am
     return sender, nil
 }
 
-func sendMessages(sender *amqp.Sender, msg *amqp.Message) error{
+func sendMessage(sender *amqp.Sender, msg *amqp.Message) error{
     err := sender.Send(context.TODO(), msg, nil)
     return err
 }
