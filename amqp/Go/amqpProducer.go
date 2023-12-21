@@ -21,7 +21,8 @@
 /*  FILE NAME:      amqpProducer.go                                                     */
 /*                                                                                      */
 /*  DESCRIPTION:    A Go applicaton used to send 10 messages to broker-IBM MQ.          */
-/*  AMQP 1.0 in use. Go-azure library is used.                                          */
+/*  AMQP 1.0 in use. An Azure go-amqp library is used.                                          */
+
 /*  Refer : https://github.com/Azure/go-amqp                                            */
 /*  Documentation: https://pkg.go.dev/github.com/Azure/go-amqp#section-documentation    */
 /*                                                                                      */
