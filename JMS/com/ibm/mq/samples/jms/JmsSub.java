@@ -196,28 +196,7 @@ public class JmsSub {
     }
 
     private static void recordFailure(Exception ex) {
-        if (ex != null) {
-            if (ex instanceof JMSException) {
-                processJMSException((JMSException) ex);
-            } else {
-                logger.warning(ex.getMessage());
-            }
-        }
-        logger.info("FAILURE");
-        return;
-    }
-
-    private static void processJMSException(JMSException jmsex) {
-        logger.warning(jmsex.getMessage());
-        Throwable innerException = jmsex.getLinkedException();
-        logger.warning("Exception is: " + jmsex);
-        if (innerException != null) {
-            logger.warning("Inner exception(s):");
-        }
-        while (innerException != null) {
-            logger.warning(innerException.getMessage());
-            innerException = innerException.getCause();
-        }
+        JmsExceptionHelper.recordFailure(logger,ex);
         return;
     }
 

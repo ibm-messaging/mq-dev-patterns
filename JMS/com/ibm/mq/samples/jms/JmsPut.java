@@ -194,27 +194,7 @@ public class JmsPut {
     }
 
     private static void recordFailure(Exception ex) {
-        if (ex != null) {
-            if (ex instanceof JMSException) {
-                processJMSException((JMSException) ex);
-            } else {
-                logger.warning(ex.getMessage());
-            }
-        }
-        logger.warning("FAILURE");
-        return;
-    }
-
-    private static void processJMSException(JMSException jmsex) {
-        logger.warning(jmsex.getMessage());
-        Throwable innerException = jmsex.getLinkedException();
-        if (innerException != null) {
-            logger.warning("Inner exception(s):");
-        }
-        while (innerException != null) {
-            logger.warning(innerException.getMessage());
-            innerException = innerException.getCause();
-        }
+        JmsExceptionHelper.recordFailure(logger,ex);
         return;
     }
 
