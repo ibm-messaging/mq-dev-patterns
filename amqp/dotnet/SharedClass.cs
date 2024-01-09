@@ -118,7 +118,10 @@ namespace ibmmq_amqp_samples
 
             while (true)
             {
-                // Get the messages from specific queue/topic
+                /* Get the messages from specific queue/topic
+                The Receive method waits for 60 secs and 
+                if no action occurs within this period, it closes the connection.
+                */
                 Message message = receiver.Receive();
                 if (message != null)
                 {
