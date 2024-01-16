@@ -206,28 +206,8 @@ public class ConnectionHelper {
     }
 
     public static void recordFailure(Exception ex) {
-        if (ex != null) {
-            if (ex instanceof JMSException) {
-                processJMSException((JMSException) ex);
-            } else {
-                logger.warning(ex.getMessage());
-            }
-        }
-        System.out.println("FAILURE");
+        JmsExceptionHelper.recordFailure(logger,ex);
         return;
     }
 
-    private static void processJMSException(JMSException jmsex) {
-        logger.info(jmsex.getMessage());
-        Throwable innerException = jmsex.getLinkedException();
-        logger.info("Exception is: " + jmsex);
-        if (innerException != null) {
-            logger.info("Inner exception(s):");
-        }
-        while (innerException != null) {
-            logger.warning(innerException.getMessage());
-            innerException = innerException.getCause();
-        }
-        return;
-    }
 }
