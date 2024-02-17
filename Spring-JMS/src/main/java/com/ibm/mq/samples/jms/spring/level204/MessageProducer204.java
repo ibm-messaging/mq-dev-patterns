@@ -47,7 +47,7 @@ public class MessageProducer204 {
 
     @Bean
     public IntegrationFlow myOurDataFlow() {
-        return IntegrationFlows.from(MessageChannels.direct("ourdatainput"))
+        return IntegrationFlow.from(MessageChannels.direct("ourdatainput"))
                 .log()
                 .transform(Transformers.toJson())
                 .log()

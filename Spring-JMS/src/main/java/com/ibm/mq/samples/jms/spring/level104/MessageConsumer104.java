@@ -26,6 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Headers;
+import org.springframework.stereotype.Component;
 
 
 //@Component

@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.Pollers;
 import org.springframework.integration.jms.dsl.Jms;
 import org.springframework.messaging.Message;
@@ -44,7 +43,7 @@ public class MessageConsumer201 {
 
     @Bean
     public IntegrationFlow mqInMessageFlow() {
-        return IntegrationFlows
+        return IntegrationFlow
                 .from(Jms.inboundAdapter(connectionFactory)
                                 .destination(inQueue)
                                 .configureJmsTemplate(template -> template.receiveTimeout(-1))

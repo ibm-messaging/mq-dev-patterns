@@ -25,7 +25,7 @@ import com.ibm.mq.samples.jms.spring.globals.utils.MessageUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jms.annotation.JmsListener;
-
+import org.springframework.stereotype.Component;
 import java.io.Serializable;
 
 

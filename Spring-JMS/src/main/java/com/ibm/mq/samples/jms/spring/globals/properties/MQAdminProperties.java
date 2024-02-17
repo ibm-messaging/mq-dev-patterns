@@ -13,4 +13,7 @@ public class MQAdminProperties {
     private int port;
     private String user;
     private String password;
+    //Uncomment the below lines when connecting to MQ on the cloud
+    //private String sslCipherSpec;
+    //private String clientTruststore;
 }

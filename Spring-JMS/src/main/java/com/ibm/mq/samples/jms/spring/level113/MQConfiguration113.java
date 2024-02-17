@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.annotation.JmsListenerConfigurer;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.config.JmsListenerContainerFactory;
@@ -34,7 +35,7 @@ import org.springframework.jms.support.QosSettings;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.DeliveryMode;
 
-//@Configuration
+@Configuration
 public class MQConfiguration113 implements JmsListenerConfigurer {
     protected final Log logger = LogFactory.getLog(getClass());
 

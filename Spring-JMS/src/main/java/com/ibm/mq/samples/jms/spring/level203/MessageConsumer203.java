@@ -23,13 +23,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.channel.BroadcastCapableChannel;
 import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.Pollers;
 import org.springframework.integration.jms.dsl.Jms;
+import org.springframework.integration.jms.dsl.JmsPublishSubscribeMessageChannelSpec;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
 
 import jakarta.jms.ConnectionFactory;
+
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 
@@ -44,17 +46,16 @@ public class MessageConsumer203 {
     public String inTopic;
 
     @Bean
-    public BroadcastCapableChannel jmsSubscribeChannel() {
+    public JmsPublishSubscribeMessageChannelSpec jmsPublishSubscribeChannel(){
         return Jms.publishSubscribeChannel(connectionFactory)
-                .destination(inTopic)
-                .get();
+                    .destination(inTopic);
     }
 
 
     @Bean
-    public IntegrationFlow subFlow(BroadcastCapableChannel jmsSubscribeChannel) {
+    public IntegrationFlow subFlow(BroadcastCapableChannel jmsPublishSubscribeChannel) {
         return f -> f
-                .publishSubscribeChannel(jmsSubscribeChannel,
+                .publishSubscribeChannel(jmsPublishSubscribeChannel,
                         pubsub -> pubsub
                                 .subscribe(subFlow -> subFlow
                                         .channel(c -> c.queue("jmsPubToSubBridgeChannel1")))
@@ -67,11 +68,10 @@ public class MessageConsumer203 {
                 })
                 .handle(System.out::println);
     }
-
     @Bean
     public IntegrationFlow msgHandler1() {
-        return IntegrationFlows.from("jmsPubToSubBridgeChannel1")
-                .bridge(e -> e.poller(Pollers.fixedRate(1, TimeUnit.SECONDS, 20)))
+        return IntegrationFlow.from("jmsPubToSubBridgeChannel1")
+                .bridge(e -> e.poller(Pollers.fixedRate(Duration.of(1,TimeUnit.SECONDS.toChronoUnit()), Duration.of(20,TimeUnit.SECONDS.toChronoUnit()))))
                 .log()
                 .filter(Message.class, m -> { logger.info(" ch1 : Message Type is : " + m.getClass().getName()); return true; })
                 .<String, String>transform(s -> "processed message in ch1 " + s)
@@ -82,8 +82,8 @@ public class MessageConsumer203 {
 
     @Bean
     public IntegrationFlow msgHandler2() {
-        return IntegrationFlows.from("jmsPubToSubBridgeChannel2")
-                .bridge(e -> e.poller(Pollers.fixedRate(1, TimeUnit.SECONDS, 20)))
+        return IntegrationFlow.from("jmsPubToSubBridgeChannel2")
+                .bridge(e -> e.poller(Pollers.fixedRate(Duration.of(1,TimeUnit.SECONDS.toChronoUnit()), Duration.of(20,TimeUnit.SECONDS.toChronoUnit()))))
                 .log()
                 .filter(Message.class, m -> { logger.info(" ch2 : Message Type is : " + m.getClass().getName()); return true; })
                 .<String, String>transform(s -> "processed message in ch2 " + s)
