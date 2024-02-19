@@ -1,5 +1,5 @@
 /*
- * (c) Copyright IBM Corporation 2021, 2023, 2024
+ * (c) Copyright IBM Corporation 2021, 2024
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,11 +41,12 @@ public class MQConfiguration114 {
     @Bean
     public MQConnectionFactory mqConnectionFactory() throws JMSException {
         MQConfigurationProperties properties = new MQConfigurationProperties();
+        // Uncomment when running the 114 sample
         // properties.setQueueManager("QM1");
         // properties.setChannel("CLOUD.APP.SVRCONN");
         // properties.setConnName("localhost(1414)");
         // properties.setUser("app");
-        // properties.setPassword("Passw0rd1005@#");
+        // properties.setPassword("passw0rd");
         // Properties will be a mix of defaults, and those found in application.properties
         // under ibm.mq
         // Here we can override any of the properties should we need to
