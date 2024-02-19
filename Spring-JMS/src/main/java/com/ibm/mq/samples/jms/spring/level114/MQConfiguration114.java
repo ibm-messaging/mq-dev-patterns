@@ -41,12 +41,6 @@ public class MQConfiguration114 {
     @Bean
     public MQConnectionFactory mqConnectionFactory() throws JMSException {
         MQConfigurationProperties properties = new MQConfigurationProperties();
-        // Uncomment when running the 114 sample
-        // properties.setQueueManager("QM1");
-        // properties.setChannel("DEV.APP.SVRCONN");
-        // properties.setConnName("localhost(1414)");
-        // properties.setUser("app");
-        // properties.setPassword("passw0rd");
         // Properties will be a mix of defaults, and those found in application.properties
         // under ibm.mq
         // Here we can override any of the properties should we need to

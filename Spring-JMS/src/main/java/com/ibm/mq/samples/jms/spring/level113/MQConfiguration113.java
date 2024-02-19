@@ -35,7 +35,7 @@ import org.springframework.jms.support.QosSettings;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.DeliveryMode;
 
-@Configuration
+//@Configuration
 public class MQConfiguration113 implements JmsListenerConfigurer {
     protected final Log logger = LogFactory.getLog(getClass());
 
