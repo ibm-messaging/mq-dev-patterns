@@ -43,7 +43,7 @@ public class MQConfiguration114 {
         MQConfigurationProperties properties = new MQConfigurationProperties();
         // Uncomment when running the 114 sample
         // properties.setQueueManager("QM1");
-        // properties.setChannel("CLOUD.APP.SVRCONN");
+        // properties.setChannel("DEV.APP.SVRCONN");
         // properties.setConnName("localhost(1414)");
         // properties.setUser("app");
         // properties.setPassword("passw0rd");
