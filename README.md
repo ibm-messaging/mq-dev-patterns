@@ -222,6 +222,8 @@ Do not install any application requirements until
 #### [react.js](/reactjs/README.md)
 
 ### AMQP samples
+#### [Go](/amqp/Go/README.md)
+#### [C# .Net](/amqp/dotnet/README.md)
 #### [QPID](/amqp-qpid/README.md)
 
 ### Transaction samples
