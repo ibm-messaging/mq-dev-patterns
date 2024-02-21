@@ -1,5 +1,5 @@
 #
-# * Copyright 2023 IBM Corp.
+# * Copyright 2023, 2024 IBM Corp.
 # *
 # * Licensed under the Apache License, Version 2.0 (the 'License');
 # * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ variable "log_group" {
 # Run terraform apply with these additional variables
 
 variable "vpc_id" {
-  description = "The aws region to apply these services to"
+  description = "The VPC to deploy these services to"
   type        = string
 }
 
@@ -68,3 +68,8 @@ variable "efs_access_point" {
   type        = string
 }
 
+# Suffix to add to uniquely identify created resources
+variable "name_suffix" {
+  description = "name suffix"
+  type        = string
+}

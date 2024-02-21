@@ -1,5 +1,5 @@
 #
-# * Copyright 2023 IBM Corp.
+# * Copyright 2023, 2024 IBM Corp.
 # *
 # * Licensed under the Apache License, Version 2.0 (the 'License');
 # * you may not use this file except in compliance with the License.
@@ -69,19 +69,22 @@ variable "log_group" {
 # Additional vars to located pre-defined VPC and EFS
 
 variable "vpc_id" {
-  description = "The aws region to apply these services to"
-  default     = "vpc-0232e44e5654ad375"
+  description = "The VPC to deploy these services to"
   type        = string
 }
 
 variable "efs_id" {
   description = "EFS that MQ will use for persistent storage"
-  default     = "fs-05f1d829b4183778d"
   type        = string
 }
 
 variable "efs_access_point" {
-  description = "EFS Access poind"
-  default     = "fsap-04eabfd137dfb30df"
+  description = "EFS Access point"
+  type        = string
+}
+
+# Suffix to add to uniquely identify created resources
+variable "name_suffix" {
+  description = "name suffix"
   type        = string
 }
