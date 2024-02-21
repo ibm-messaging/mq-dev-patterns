@@ -81,7 +81,8 @@ public class JmsResponse {
     private static Boolean BINDINGS = false;
     private static Long RESPONDER_INACTIVITY_TIMEOUT = 0L;
 
-    private static Long HOUR = 60* 60 * 1000L; 
+    private static Long SECOND = 1000L;
+    private static Long HOUR = 60 * 60 * SECOND; 
 
     public static void main(String[] args) {
         initialiseLogging();
@@ -124,7 +125,7 @@ public class JmsResponse {
                 // getting the message from the requestor
                 if (0 < RESPONDER_INACTIVITY_TIMEOUT) {
                     logger.info("Responder waiting for " + RESPONDER_INACTIVITY_TIMEOUT + " milliseconds for next request");
-                    receivedMessage = consumer.receive(RESPONDER_INACTIVITY_TIMEOUT);  
+                    receivedMessage = consumer.receive(RESPONDER_INACTIVITY_TIMEOUT); 
                     if (null == receivedMessage) {
                         logger.info("Timed out with no requests received");
                         logger.info("Terminating responder");
@@ -134,7 +135,8 @@ public class JmsResponse {
                     receivedMessage = consumer.receive();
                 }
                 logger.info("Checking message type");
-                checkMessageType(receivedMessage);
+
+                getAndDisplayMessageBody(receivedMessage);
                 replyToMessage(context, receivedMessage);
             } catch (JMSRuntimeException jmsex) {
 
@@ -161,7 +163,7 @@ public class JmsResponse {
 
                 Destination destination = receivedMessage.getJMSReplyTo();
                 String correlationID = receivedMessage.getJMSCorrelationID();   
-               
+                
                 TextMessage message = context.createTextMessage(RequestResponseHelper.buildStringForResponse(requestObject));
                 message.setJMSCorrelationID(correlationID);
 
@@ -237,17 +239,18 @@ public class JmsResponse {
     }
 
     private static void rollbackOrPause(JMSContext context, Message message) {
-        int counter = -1;
+        int backoutCounter = -1;
+        int backoutThreshold = 5;
 
         try {
-            counter = Integer.parseInt(message.getStringProperty("JMSXDeliveryCount"));
-            logger.info("Current counter " + String.valueOf(counter));
+            backoutCounter = Integer.parseInt(message.getStringProperty("JMSXDeliveryCount"));
+            logger.info("Current counter " + String.valueOf(backoutCounter));
         } catch (Exception e) {
             logger.info("Error on getting the counter");
             return;
         }
 
-        if(counter < 5) {
+        if(backoutCounter < backoutThreshold) {
             logger.warning("rolling back the message");
             context.rollback();
         } else {
@@ -268,11 +271,11 @@ public class JmsResponse {
         Destination dest = context.createQueue("queue:///" + BACKOUT_QUEUE);
         JMSProducer producer = context.createProducer();
         producer.send(dest, message);
-        logger.info("Message sent to backup queue" + BACKOUT_QUEUE + " correctly");
+        logger.info("Message sent to backout queue" + BACKOUT_QUEUE + " correctly");
         context.commit();
     }
 
-    private static void checkMessageType(Message receivedMessage) {
+    private static void getAndDisplayMessageBody(Message receivedMessage) {
         if (receivedMessage instanceof TextMessage) {
             TextMessage textMessage = (TextMessage) receivedMessage;
             try {

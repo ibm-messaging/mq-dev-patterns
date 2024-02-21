@@ -97,10 +97,11 @@ public class JmsRequest {
         JMSProducer producer = null;
         
         JmsConnectionFactory connectionFactory = createJMSConnectionFactory();
+        
         setJMSProperties(connectionFactory);
         logger.info("created connection factory");
 
-        context = connectionFactory.createContext();
+        context = connectionFactory.createContext(JMSContext.SESSION_TRANSACTED);
         logger.info("context created");
         destination = context.createQueue("queue:///" + QUEUE_NAME);
         
@@ -153,6 +154,8 @@ public class JmsRequest {
 
             logger.finest("Sending a request message");
             producer.send(destination, message);
+            // commiting to put request to request queue
+            context.commit();
             logger.info("listening for response");
 
             logger.info("Selecting reply based on selector " + selector);
@@ -165,6 +168,8 @@ public class JmsRequest {
             } else {
                 receivedMessage = consumer.receive();
             }
+            // commiting to consuming response
+            context.commit();
 
             if (null != receivedMessage) {
                 getAndDisplayMessageBody(receivedMessage);
