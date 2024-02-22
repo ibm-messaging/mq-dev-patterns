@@ -55,7 +55,7 @@ resource "aws_iam_role_policy_attachment" "ecs_init_task_execution_role" {
 
 
 resource "aws_ecs_task_definition" "mq_task" {
-  family                   = "mq-dev"
+  family                   = "mq-dev-init-${var.name_suffix}"
   network_mode             = "awsvpc"
   execution_role_arn       = aws_iam_role.ecs_init_task_execution_role.arn
   requires_compatibilities = ["FARGATE"]

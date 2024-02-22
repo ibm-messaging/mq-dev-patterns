@@ -147,7 +147,7 @@ resource "aws_lb_listener" "mqon1414" {
 
 # Define the ECS Task and identify underlying container. 
 resource "aws_ecs_task_definition" "mq_task" {
-  family                   = "mq-dev"
+  family                   = "mq-dev-qmgr-${var.name_suffix}"
   network_mode             = "awsvpc"
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   requires_compatibilities = ["FARGATE"]
