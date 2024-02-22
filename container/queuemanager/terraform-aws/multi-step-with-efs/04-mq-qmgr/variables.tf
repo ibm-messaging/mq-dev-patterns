@@ -61,7 +61,7 @@ variable "app_count" {
 # errors when trying to log.  
 variable "log_group" {
   description = "CloudWatch log group"
-  default     = "/devex/mq/terraform/efs"
+  default     = "/devex/mq/terraform/qmgr"
   type        = string
 }
 
