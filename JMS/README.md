@@ -109,15 +109,29 @@ Which will download and copy the dependencies into the current directory.
 
 
 ### Building the samples with maven
-If you are using a Windows machine to build these samples , a symbolic link between the src and com directory is necessary.
-Navigate to src/main/java and run the following command to remove existing com file.
+If you are using a Windows machine to build these samples , a symbolic link between the `./src/main/java/com` and `./com` directory is necessary.
+Navigate to `src/main/java` and run the following command to remove existing com file.
 ````
 del com
 ````
-To create a symbolic link between your current directory and the com directory in the JMS Folder use the following command.
+To create a symbolic link between `./src/main/java/com` and `./com` use the following command.
 ````
 mklink /J com ..\..\..\com
 ````
+If you use maven to build the samples on a Windows machine , the classpath separator needs to be `;` and not `:`.
+eg.
+````
+java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsPut
+````
+will cause an error on windows, and needs to be:
+````
+java -cp target/mq-dev-patterns-0.1.0.jar; com.ibm.mq.samples.jms.JmsPut
+````
+or
+````
+java -cp target/mq-dev-patterns-0.1.0.jar com.ibm.mq.samples.jms.JmsPut
+````
+
 You can build the samples by running the command.
 
 ````
@@ -174,7 +188,7 @@ To run any of the samples you can specify the `.jar` file as the classpath.
 EG. To run the JmsPut sample:
 
 ````
-java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsPut
+java -cp target/mq-dev-patterns-0.1.0.jar com.ibm.mq.samples.jms.JmsPut
 ````
 
 
@@ -202,7 +216,7 @@ and run
 
 If you have used maven to build the samples, you can run
 
-`java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsGet`
+`java -cp target/mq-dev-patterns-0.1.0.jar com.ibm.mq.samples.jms.JmsGet`
 
 ## Publish / Subscribe
 Open two terminals.
@@ -221,7 +235,7 @@ then run
 
 If you have used maven to build the samples, you can run
 
-`java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsSub`
+`java -cp target/mq-dev-patterns-0.1.0.jar com.ibm.mq.samples.jms.JmsSub`
 
 In the second terminal;
 
@@ -237,7 +251,7 @@ then run
 
 If you have used maven to build the samples, you can run
 
-`java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsPub`
+`java -cp target/mq-dev-patterns-0.1.0.jar com.ibm.mq.samples.jms.JmsPub`
 
 ## Request / Response
 Open two terminals.
@@ -257,7 +271,7 @@ then run
 
 If you have used maven to build the samples, you can run
 
-`java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsRequest`
+`java -cp target/mq-dev-patterns-0.1.0.jar com.ibm.mq.samples.jms.JmsRequest`
 
 The request sample will put a message and wait for a response until it either gets a response or you `ctrl+c` interrupt it.
 
@@ -278,7 +292,7 @@ and run
 
 If you have used maven to build the samples, you can run
 
-`java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsResponse`
+`java -cp target/mq-dev-patterns-0.1.0.jar com.ibm.mq.samples.jms.JmsResponse`
 
 The response sample will get a message from the queue, process it and put the response on the reply to queue and keep looking for more messages to respond to till you ctrl+c interrupt it.
 
@@ -301,7 +315,7 @@ The message content to be posted can be controlled by the envionment option `REQ
 
 EG. 
 
-`java -DREQUEST_MODE="REWARDS" -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsRequest`
+`java -DREQUEST_MODE="REWARDS" -cp target/mq-dev-patterns-0.1.0.jar com.ibm.mq.samples.jms.JmsRequest`
 
 A `REQUEST_MODE` of `REWARDS` sends messages posting reward points to a customer id. 
 Any other value for `REQUEST_MODE` runs in default mode where the request sends a 
