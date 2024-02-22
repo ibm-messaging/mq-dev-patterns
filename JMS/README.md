@@ -109,6 +109,15 @@ Which will download and copy the dependencies into the current directory.
 
 
 ### Building the samples with maven
+If you are using a Windows machine to build these samples , a symbolic link between the src and com directory is necessary.
+Navigate to src/main/java and run the following command to remove existing com file.
+````
+del com
+````
+To create a symbolic link between your current directory and the com directory in the JMS Folder use the following command.
+````
+mklink /J com ..\..\..\com
+````
 You can build the samples by running the command.
 
 ````
