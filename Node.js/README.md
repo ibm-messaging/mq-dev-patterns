@@ -31,12 +31,6 @@ prerequsites by running :
 
 `npm install`
 
-Connecting to MQ with TLS
----
-In order to connect the samples to MQ using TLS, 
-- [Follow these steps to create a keystore file of the queue manager.](https://cloud.ibm.com/docs/mqcloud?topic=mqcloud-mqoc_configure_chl_ssl#download_cert)
-
-- In the `env.json` file, replace the value of the `KEY_REPOSITORY` with the location of your kdb file. For e.g. If you have a directory called `/keys/clientkey` with the `key.kdb` in it, the value of `KEY_REPOSITORY` would be : `KEY_REPOSITORY=/keys/clientkey/key.kdb`
 
 ## Intro to Node.js Samples
 
