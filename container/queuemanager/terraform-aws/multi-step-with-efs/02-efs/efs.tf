@@ -1,5 +1,5 @@
 #
-# * Copyright 2023 IBM Corp.
+# * Copyright 2023, 2024 IBM Corp.
 # *
 # * Licensed under the Apache License, Version 2.0 (the 'License');
 # * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # * limitations under the License.
 
 resource "aws_efs_file_system" "efs_persist" {
-  creation_token = "our-efs-creation-token"
+  creation_token = "our-efs-creation-token-${var.name_suffix}"
   encrypted      = true
 
   lifecycle_policy {

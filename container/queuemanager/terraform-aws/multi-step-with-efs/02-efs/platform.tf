@@ -1,5 +1,5 @@
 #
-# * Copyright 2023 IBM Corp.
+# * Copyright 2023, 2024 IBM Corp.
 # *
 # * Licensed under the Apache License, Version 2.0 (the 'License');
 # * you may not use this file except in compliance with the License.
@@ -29,9 +29,9 @@ provider "aws" {
   # Tags to apply to all AWS resources by default
   default_tags {
     tags = {
-      Owner     = "mq-devex"
-      ManagedBy = "mq-devex"
-      Name      = "mq-ecs"
+      Owner     = "mq-devex-${var.name_suffix}"
+      ManagedBy = "mq-devex-${var.name_suffix}"
+      Name      = "mq-ecs-${var.name_suffix}"
     }
   }
 }

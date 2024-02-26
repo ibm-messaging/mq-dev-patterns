@@ -1,5 +1,5 @@
 #
-# * Copyright 2023 IBM Corp.
+# * Copyright 2023, 2024 IBM Corp.
 # *
 # * Licensed under the Apache License, Version 2.0 (the 'License');
 # * you may not use this file except in compliance with the License.
@@ -21,7 +21,12 @@ variable "region" {
 
 # VPC needs to be input as a variable when applying this script
 variable "vpc_id" {
-  description = "The VPC to apply these services to"
+  description = "The VPC to deploy these services to"
   type        = string
 }
 
+# Suffix to add to uniquely identify created resources
+variable "name_suffix" {
+  description = "name suffix"
+  type        = string
+}

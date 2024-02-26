@@ -1,5 +1,5 @@
 #
-# * Copyright 2023 IBM Corp.
+# * Copyright 2023, 2024 IBM Corp.
 # *
 # * Licensed under the Apache License, Version 2.0 (the 'License');
 # * you may not use this file except in compliance with the License.
@@ -75,4 +75,10 @@ variable "private_subnet_cidr_blocks" {
     "10.0.107.0/24",
     "10.0.108.0/24",
   ]
+}
+
+# Suffix to add to uniquely identify created resources
+variable "name_suffix" {
+  description = "name suffix"
+  type        = string
 }

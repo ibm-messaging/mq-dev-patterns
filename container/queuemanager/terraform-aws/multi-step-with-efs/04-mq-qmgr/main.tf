@@ -1,5 +1,5 @@
 #
-# * Copyright 2023 IBM Corp.
+# * Copyright 2023, 2024 IBM Corp.
 # *
 # * Licensed under the Apache License, Version 2.0 (the 'License');
 # * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ data "aws_availability_zones" "available_zones" {
 
 # Task execution role and policy for AssumeRole to enable logging.
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name               = "ecs-staging-execution-role"
+  name               = "ecs-staging-execution-role-${var.name_suffix}"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_execution_role.json
 }
 
@@ -62,7 +62,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role" {
 # All ingress groups are defined as rules, allowing them
 # to be amended.
 resource "aws_security_group" "lb" {
-  name   = "mq-nlb-security-group"
+  name   = "mq-nlb-security-group-${var.name_suffix}"
   vpc_id = data.aws_vpc.mq_vpc.id
 
   egress {
@@ -98,14 +98,14 @@ resource "aws_security_group_rule" "allow_mq_9443_traffic" {
 
 # Add Network Load Balancer which will be acting as a firewall to the queue manager
 resource "aws_lb" "default" {
-  name               = "mq-nlb"
+  name               = "mq-nlb-${var.name_suffix}"
   load_balancer_type = "network"
   subnets            = data.aws_subnets.public.ids
   security_groups    = [aws_security_group.lb.id]
 }
 
 resource "aws_lb_target_group" "mq1414" {
-  name        = "mq1414-target-group"
+  name        = "mq1414-target-group-${var.name_suffix}"
   port        = 1414
   protocol    = "TCP"
   vpc_id      = data.aws_vpc.mq_vpc.id
@@ -113,7 +113,7 @@ resource "aws_lb_target_group" "mq1414" {
 }
 
 resource "aws_lb_target_group" "mq9443" {
-  name        = "mq9443-target-group"
+  name        = "mq9443-target-group-${var.name_suffix}"
   port        = 9443
   protocol    = "TCP"
   vpc_id      = data.aws_vpc.mq_vpc.id
@@ -147,7 +147,7 @@ resource "aws_lb_listener" "mqon1414" {
 
 # Define the ECS Task and identify underlying container. 
 resource "aws_ecs_task_definition" "mq_task" {
-  family                   = "mq-dev"
+  family                   = "mq-dev-qmgr-${var.name_suffix}"
   network_mode             = "awsvpc"
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   requires_compatibilities = ["FARGATE"]
@@ -158,7 +158,7 @@ resource "aws_ecs_task_definition" "mq_task" {
     MQ_HTTP_PORT      = 9443,
     MQ_MQI_PORT       = 1414,
     MQ_CONTAINER_NAME = var.mq_container_name,
-    LOG_GROUP_NAME    = var.log_group,
+    LOG_GROUP_NAME    = "${var.log_group}/${var.name_suffix}",
     MQ_APP_PASSWORD   = var.mq_app_password,
     MQ_ADMIN_PASSWORD = var.mq_admin_password,
     REGION            = var.region,
@@ -182,7 +182,7 @@ resource "aws_ecs_task_definition" "mq_task" {
 # Queue Manager security group. 
 # Ingress rules are defined separately.
 resource "aws_security_group" "mq_task_secuity_group" {
-  name   = "mq-task-security-group"
+  name   = "mq-task-security-group-${var.name_suffix}"
   vpc_id = data.aws_vpc.mq_vpc.id
 
   egress {
@@ -224,7 +224,7 @@ resource "aws_security_group_rule" "allow_hw_9443" {
 # Create the cloudwatch log group. 
 # The log group name used by the ecs task definition must match this name.
 resource "aws_cloudwatch_log_group" "mqlogs" {
-  name = var.log_group
+  name = "${var.log_group}/${var.name_suffix}"
   # skip_destroy = true 
   # retention_in_days = 3
 }
@@ -232,7 +232,7 @@ resource "aws_cloudwatch_log_group" "mqlogs" {
 
 # Create the ECS Cluster
 resource "aws_ecs_cluster" "main" {
-  name = "mq-cluster"
+  name = "mq-cluster-${var.name_suffix}"
 }
 
 # Once all the above pre-reqs are in place the ECS
@@ -242,7 +242,7 @@ resource "aws_ecs_service" "mq-dev-service" {
   # If you want to delete this aws_ecs_service only
   # then set the count to 0 
   # count = 0
-  name            = "mq-development-service"
+  name            = "mq-development-service-${var.name_suffix}"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.mq_task.arn
   desired_count   = var.app_count
