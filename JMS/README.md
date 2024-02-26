@@ -110,7 +110,7 @@ Which will download and copy the dependencies into the current directory.
 
 ### Building and running the samples on windows
 
-If you are using a Windows machine and wish to use maven to build these samples , a symbolic link between the `./src/main/java/com` and `./com` directory is required.
+If you are using a Windows machine and wish to use maven to build these samples , the symbolic link between the `./src/main/java/com` and `./com` directory needs to be repaired.
 Navigate to `src/main/java` and run the following command to remove existing com file.
 ````
 del com
