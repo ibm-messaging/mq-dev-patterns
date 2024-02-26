@@ -17,8 +17,15 @@ Although you won't need to use it directly, the terraform CLI makes use of your 
 If you have configured the AWS CLI with the AWS Account access key, the terraform commands will be able to access AWS using the configuration. That is, if you have have run `aws configure` from the command line, 
 then you do not need to provide AWS access key details to the terraform CLI
 
-## Terraform CLI
+## Terraform / OpenTofu CLI
+These files have been tested with both Terraform and OpenTofu. You can use either.
+
 Install the Terraform CLI following [this Terraform guide](https://developer.hashicorp.com/terraform/downloads).
+
+Install OpenTofu following [this OpenTofu guide](https://opentofu.org/docs/intro/install/).
+
+If you are using OpenTofu, subtitute `tofu` for `terraform` in the `init`, `apply`, `output` and `destroy` steps.
+
 
 ## Flavours of configuration
 There are two sets of configuration in this repository.

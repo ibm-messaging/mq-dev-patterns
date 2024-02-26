@@ -1,5 +1,5 @@
 #
-# * Copyright 2023 IBM Corp.
+# * Copyright 2023, 2024 IBM Corp.
 # *
 # * Licensed under the Apache License, Version 2.0 (the 'License');
 # * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ data "aws_availability_zones" "available_zones" {
 
 # Task execution role and policy for AssumeRole to enable logging.
 resource "aws_iam_role" "ecs_init_task_execution_role" {
-  name               = "ecs-init-staging-execution-role"
+  name               = "ecs-init-staging-execution-role-${var.name_suffix}"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_execution_role.json
 }
 
@@ -55,7 +55,7 @@ resource "aws_iam_role_policy_attachment" "ecs_init_task_execution_role" {
 
 
 resource "aws_ecs_task_definition" "mq_task" {
-  family                   = "mq-dev"
+  family                   = "mq-dev-init-${var.name_suffix}"
   network_mode             = "awsvpc"
   execution_role_arn       = aws_iam_role.ecs_init_task_execution_role.arn
   requires_compatibilities = ["FARGATE"]
@@ -64,7 +64,7 @@ resource "aws_ecs_task_definition" "mq_task" {
 
   container_definitions = templatefile("${path.module}/mq-container-json.tftpl", {
     MQ_CONTAINER_NAME = var.mq_container_name,
-    LOG_GROUP_NAME    = var.log_group,
+    LOG_GROUP_NAME    = "${var.log_group}/${var.name_suffix}",
     REGION            = var.region,
     ENVVARS           = var.envvars
   })
@@ -101,7 +101,7 @@ resource "aws_security_group" "mq_init_task_secuity_group" {
 # Create the cloudwatch log group. 
 # The log group name used by the ecs task definition must match this name.
 resource "aws_cloudwatch_log_group" "mqlogs" {
-  name = var.log_group
+  name = "${var.log_group}/${var.name_suffix}"
   # skip_destroy = true 
   # retention_in_days = 3
 }
@@ -109,7 +109,7 @@ resource "aws_cloudwatch_log_group" "mqlogs" {
 
 # Create the ECS Cluster
 resource "aws_ecs_cluster" "main" {
-  name = "mq-cluster"
+  name = "mq-cluster-${var.name_suffix}"
 }
 
 # Once all the above pre-reqs are in place the ECS
