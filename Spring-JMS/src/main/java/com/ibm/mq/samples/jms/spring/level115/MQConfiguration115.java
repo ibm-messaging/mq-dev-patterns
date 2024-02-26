@@ -1,5 +1,5 @@
 /*
- * (c) Copyright IBM Corporation 2021
+ * (c) Copyright IBM Corporation 2021, 2024
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,18 +39,18 @@ public class MQConfiguration115 {
     public MQConfiguration115(MQAdminProperties adminProperties) {
         this.adminProperties = adminProperties;
     }
-
     @Bean
     public MQQueueManager mqQueueManager() {
         try {
             Hashtable<String,Object> connectionProperties = new Hashtable<String,Object>();
-
             connectionProperties.put(CMQC.CHANNEL_PROPERTY, adminProperties.getChannel());
             connectionProperties.put(CMQC.HOST_NAME_PROPERTY, adminProperties.getHost());
             connectionProperties.put(CMQC.PORT_PROPERTY, adminProperties.getPort());
             connectionProperties.put(CMQC.USER_ID_PROPERTY, adminProperties.getUser());
             connectionProperties.put(CMQC.PASSWORD_PROPERTY, adminProperties.getPassword());
-
+            //Uncomment the below lines and in MQAdminProperties.java when connecting to MQ using TLS
+            //connectionProperties.put(CMQC.SSL_CIPHER_SUITE_PROPERTY, adminProperties.getSslCipherSpec());
+            //connectionProperties.put(CMQC.SSL_CERT_STORE_PROPERTY,adminProperties.getClientTruststore());
             return new MQQueueManager(qMgrName, connectionProperties);
 
         } catch (MQException e) {

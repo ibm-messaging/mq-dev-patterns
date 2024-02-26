@@ -1,5 +1,5 @@
 /*
- * (c) Copyright IBM Corporation 2021
+ * (c) Copyright IBM Corporation 2021, 2024
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 //@Component
-public class CmdRunner115 {
+public class CmdRunner115 implements CommandLineRunner{
     protected final Log logger = LogFactory.getLog(getClass());
 
     @Value("${app.l115.queue.name1:DEV.QUEUE.1}")
@@ -38,18 +37,17 @@ public class CmdRunner115 {
         this.mqQueueManager = mqQueueManager;
     }
 
-    @Bean
-    CommandLineRunner init() {
-        return (args) -> {
-            logger.info("Determining Backout threshold");
+    @Override
+    public void run(String ... args) throws Exception{
+        logger.info("Determining Backout threshold");
             try {
                 int[] selectors = {
                         CMQC.MQIA_BACKOUT_THRESHOLD,
                         CMQC.MQCA_BACKOUT_REQ_Q_NAME };
                 int[] intAttrs = new int[1];
-                byte[] charAttrs = new byte[MQC.MQ_Q_NAME_LENGTH];
+                byte[] charAttrs = new byte[CMQC.MQ_Q_NAME_LENGTH];
 
-                int openOptions = MQC.MQOO_INPUT_AS_Q_DEF | MQC.MQOO_INQUIRE | MQC.MQOO_SAVE_ALL_CONTEXT;
+                int openOptions = CMQC.MQOO_INPUT_AS_Q_DEF | CMQC.MQOO_INQUIRE | CMQC.MQOO_SAVE_ALL_CONTEXT;
                 MQQueue myQueue = mqQueueManager.accessQueue(queueName, openOptions, null, null, null);
                 logger.info("Queue Obtained");
 
@@ -65,7 +63,6 @@ public class CmdRunner115 {
             } catch (MQException e) {
                 logger.warn("MQException Error obtaining backout threshold");
                 logger.warn(e.getMessage());
-            }
-        };
+        }
     }
 }
