@@ -108,7 +108,8 @@ mvn dependency:copy-dependencies -DoutputDirectory=.
 Which will download and copy the dependencies into the current directory.
 
 
-### Building the samples with maven
+### Building and running the samples on windows
+
 If you are using a Windows machine to build these samples , a symbolic link between the `./src/main/java/com` and `./com` directory is necessary.
 Navigate to `src/main/java` and run the following command to remove existing com file.
 ````
@@ -118,19 +119,16 @@ To create a symbolic link between `./src/main/java/com` and `./com` use the foll
 ````
 mklink /J com ..\..\..\com
 ````
-If you use maven to build the samples on a Windows machine , the classpath separator needs to be `;` and not `:`.
+If you are running the samples on a Windows machine , the classpath separator needs to be `;` and not `:`.
 eg.
 ````
-java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsPut
+javac -cp ./com.ibm.mq.allclient-9.2.5.0.jar:./javax.jms-api-2.0.1.jar:./json-20230227.jar:. com/ibm/mq/samples/jms/JmsPut.java
 ````
 will cause an error on windows, and needs to be:
 ````
-java -cp target/mq-dev-patterns-0.1.0.jar; com.ibm.mq.samples.jms.JmsPut
+javac -cp ./com.ibm.mq.allclient-9.2.5.0.jar;./javax.jms-api-2.0.1.jar;./json-20230227.jar;. com/ibm/mq/samples/jms/JmsPut.java
 ````
-or
-````
-java -cp target/mq-dev-patterns-0.1.0.jar com.ibm.mq.samples.jms.JmsPut
-````
+### Building the samples with maven
 
 You can build the samples by running the command.
 
