@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 IBM Corp.
+ * Copyright 2019, 2024 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@ var StringDecoder = require('string_decoder').StringDecoder;
 var decoder = new StringDecoder('utf8');
 
 // Set up debug logging options
-var debug_info = require('debug')('sampleget:info');
-var debug_warn = require('debug')('sampleget:warn');
+var debug_info = require('debug')('samplesub:info');
+var debug_warn = require('debug')('samplesub:warn');
 
 var MQBoilerPlate = require('./boilerplate');
 
@@ -68,6 +68,7 @@ mqBoilerPlate.initialise('SUBSCRIBE')
     mqBoilerPlate.teardown();
   })
   .catch((err) => {
+    debug_warn(err);
     mqBoilerPlate.teardown();
   })
 

@@ -1,6 +1,6 @@
 # IBM MQ Node.js samples
 The Node.js samples are based on https://github.com/ibm-messaging/mq-mqi-nodejs/tree/master/samples
-and have been tested with Node.js v16.8.1
+and have been tested with Node.js v20.11.1
 
 
 Install/unzip IBM MQ client
@@ -31,6 +31,12 @@ prerequsites by running :
 
 `npm install`
 
+Connecting to MQ with TLS
+---
+In order to connect the samples to MQ on cloud using TLS, 
+- [Follow these steps to create a keystore file of the queue manager.](https://cloud.ibm.com/docs/mqcloud?topic=mqcloud-mqoc_configure_chl_ssl#download_cert)
+
+- In the `env.json` file, replace the value of the `KEY_REPOSITORY` with the location of your kdb file. For e.g. If you have a directory called `/keys/clientkey` with the `key.kdb` in it, the value of `KEY_REPOSITORY` would be : `KEY_REPOSITORY=/keys/clientkey/key.kdb`
 
 ## Intro to Node.js Samples
 
@@ -72,11 +78,11 @@ To run with logging, run
 
 On Mac and Linux:
 
-`DEBUG=amqs*:* node basicput.js`
+`export DEBUG=amqs*:* node basicput.js`
 
 On Windows:
 ````
-export DEBUG=amqs*:*
+SET DEBUG=amqs*:*
 node basicput.js
 ````
 
@@ -84,30 +90,65 @@ The get application reads a json object from the queue.
 
 To run with logging, run
 
-`DEBUG=amqs*:* node basicget.js`
+On Mac and Linux:
+
+`export DEBUG=amqs*:* node basicget.js`
+
+On Windows:
+````
+SET DEBUG=amqs*:*
+node basicget.js
+````
 
 The get and put applications have the common MQ boiler plate
 factorised into a library and make use of
 promises.
 
 To run with logging, run
-`DEBUG=sample*:*,boiler:* node sampleput.js`
+
+On Mac and Linux: <br>
+`export DEBUG=sample*:*,boiler:* node sampleput.js` <br>
+and <br>
+`export DEBUG=sample*:*,boiler:* node sampleget.js`
+
+On Windows:
+````
+SET DEBUG=sample*:*,boiler:*
+node sampleput.js
+````
 and
-`DEBUG=sample*:*,boiler:* node sampleget.js`
+````
+SET DEBUG=sample*:*,boiler:*
+node sampleget.js
+````
 
 
 ## Publish / Subscribe
 The publish application publishes a json object onto a topic.
 To run with logging, run
 
-`DEBUG=amqs*:* node basicpublish.js`
+On Mac and Linux: <br>
+`export DEBUG=amqs*:* node basicpublish.js`
+
+On Windows:
+````
+SET DEBUG=amqs*:*
+node basicpublish.js
+````
 
 The subscribe application subscribes to a
 topic.
 
 To run with logging, run
 
-`DEBUG=amqs*:* node basicsubscribe.js`
+On Mac and Linux: <br>
+`export DEBUG=amqs*:* node basicsubscribe.js`
+
+On Windows:
+````
+SET DEBUG=amqs*:*
+node basicsubcscribe.js
+````
 
 The publish and subscribe applications have the common MQ boiler plate
 factorised into a library and makes use of
@@ -115,11 +156,23 @@ promises.
 
 To run with logging, run
 
-`DEBUG=sample*:*,boiler:* node samplepublish.js`
+On Mac and Linux <br>
+`export DEBUG=sample*:*,boiler:* node samplepublish.js`
 
 and
 
-`DEBUG=sample*:*,boiler:* node samplesubscribe.js`
+`export DEBUG=sample*:*,boiler:* node samplesubscribe.js`
+
+On Windows:
+````
+SET DEBUG=sample*:*,boiler:*
+node samplepublish.js
+````
+and
+````
+SET DEBUG=sample*:*,boiler:*
+node samplesubscribe.js
+````
 
 
 ## Request / Response
@@ -129,21 +182,47 @@ for a response to the request.
 
 To run with logging, run
 
-`DEBUG=amqs*:* node basicrequest.js`
+On Mac and Linux:
+
+`export DEBUG=amqs*:* node basicrequest.js`
 
 and
 
-`DEBUG=amqs*:* node basicresponse.js`
+`export DEBUG=amqs*:* node basicresponse.js`
 
-
+On Windows:
+````
+SET DEBUG=amqs*:*
+node basicrequest.js
+````
+and
+````
+SET DEBUG=amqs*:*
+node basicresponse.js
+````
 The request / response applications have the common MQ boiler plate
 factorised into a library and makes use of
 promises.
 
 To run with logging, run
 
-`DEBUG=sample*:*,boiler:* node sampleresponse.js`
+On Mac and Linux:
+
+`export DEBUG=sample*:*,boiler:* node sampleresponse.js`
 
 and
 
-`DEBUG=sample*:*,boiler:* node samplerequest.js`
+`export DEBUG=sample*:*,boiler:* node samplerequest.js`
+
+On Windows:
+````
+SET DEBUG=sample*:*,boiler:*
+node sampleresponse.js
+````
+
+and
+
+````
+SET DEBUG=sample*:*,boiler:*
+node samplerequest.js
+````

@@ -4,7 +4,7 @@
   "description": "",
   "author": "",
   "dependencies": {
-    "ibmmq": "^1.0.5"
+    "ibmmq": "2.0.2"
   },
   "engines": {
     "node": ">16.0.0"

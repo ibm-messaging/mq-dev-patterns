@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, 2022 IBM Corp.
+ * Copyright 2018, 2024 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -201,6 +201,7 @@ mqBoilerPlate.initialise('GET', true)
     mqBoilerPlate.teardown();
   })
   .catch((err) => {
+    debug_warn(err);
     mqBoilerPlate.teardown();
   })
 
