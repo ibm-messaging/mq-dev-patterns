@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, 2024 IBM Corp.
+ * Copyright 2019 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ var mqBoilerPlate = new MQBoilerPlate();
 function msgCB(md, buf) {
   debug_info('Message Received');
   if (md.Format == "MQSTR") {
-    var msgObject = null;
+    let msgObject = null;
     try {
       msgObject = JSON.parse(buf);
       debug_info("JSON Message Object found", msgObject);
@@ -61,9 +61,17 @@ mqBoilerPlate.initialise('SUBSCRIBE')
     return mqBoilerPlate.getMessages(null, msgCB);
   })
   .then(() => {
+    debug_info('Kick start the get callback');
+    return mqBoilerPlate.startGetAsyncProcess();
+  })  
+  .then(() => {
     debug_info('Waiting for termination');
     return mqBoilerPlate.checkForTermination();
   })
+  .then(() => {
+    debug_info('Signal termination of the callback thread');
+    return mqBoilerPlate.signalDone();
+  })    
   .then(() => {
     mqBoilerPlate.teardown();
   })

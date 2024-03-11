@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, 2024 IBM Corp.
+ * Copyright 2018, 2022 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -40,14 +40,16 @@ var mqBoilerPlate = new MQBoilerPlate();
 
 async function msgCB(md, buf) {
   debug_info('Message Received');
-  var ok = true
+  let ok = true;
   if (md.Format == "MQSTR") {
-    var msgObject = null;
+    let msgObject = null;
     try {
       msgObject = JSON.parse(buf);
-      debug_info("JSON Message Object found", msgObject);
-      ok= await respondToRequest(msgObject, md);
-     
+      debug_info('JSON Message Object found', msgObject);
+      if (ok) {
+        debug_info('Starting response sequence');
+        ok = await respondToRequest(msgObject, md);
+      }
     } catch (err) {
       debug_info("Not JSON message <%s>", decoder.write(buf));
       ok = false;      
@@ -61,13 +63,19 @@ async function msgCB(md, buf) {
 }
 
 function handleSyncPoint(buf, md , ok) {
-  
   if (!ok) {
-    mqBoilerPlate.rollback(buf, md, poisoningMessageHandler,callbackOnRollback);
+    mqBoilerPlate.suspendAsyncProcess()
+    .then(()=>{
+      mqBoilerPlate.rollback(buf, md, poisoningMessageHandler,callbackOnRollback);
+      return Promise.resolve();
+    })
+    .then(() => {
+      debug_info('Resuming the async get process');
+      return mqBoilerPlate.resumeAsyncProcess();
+    });
   } else {
     mqBoilerPlate.commit(callbackOnCommit);
   }
-
 }
 
 function poisoningMessageHandler(buf,md) {
@@ -76,13 +84,13 @@ function poisoningMessageHandler(buf,md) {
   // with the back out threshold for the queue manager
   // see - https://stackoverflow.com/questions/64680808/ibm-mq-cmit-and-rollback-with-syncpoint
   debug_warn ('A potential poison message scenario has been detected.');
-  var rollback = false;
-  var backoutCounter = md.BackoutCount;
+  let rollback = false;
+  let backoutCounter = md.BackoutCount;
 
   if(backoutCounter >= MSG_TRESHOLD) {
     
     debug_info("Redirecting to the backout queue");
-    var BACKOUT_QUEUE = mqBoilerPlate.MQDetails.BACKOUT_QUEUE;
+    let BACKOUT_QUEUE = mqBoilerPlate.MQDetails.BACKOUT_QUEUE;
 
     sendToQueue(buf, md,BACKOUT_QUEUE).then(() => {
       debug_info('Reply Posted');
@@ -101,13 +109,19 @@ function poisoningMessageHandler(buf,md) {
 }
 
 function sendToQueue(buf, md, queue) {
-
   return mqBoilerPlate.openMQReplyToConnection(queue, 'DYNREP')
+  .then(() => {
+    debug_info('Suspending the async get process');
+    return mqBoilerPlate.suspendAsyncProcess();
+  })
   .then(() => {
     debug_info('Reply To Queue is ready');
     return mqBoilerPlate.replyMessage(md.MsgId, md.CorrelId, buf)
+  })
+  .then(() => {
+    debug_info('Resuming the async get process');
+    return mqBoilerPlate.resumeAsyncProcess();
   });
-  
 }
 
 function callbackOnCommit(err) {
@@ -136,11 +150,11 @@ function respondToRequest(msgObject, mqmdRequest) {
   debug_info('Request ', msgObject);
   debug_info(typeof msgObject, msgObject.value);
 
-  var replyObject = {
+  let replyObject = {
     'Greeting': "Reply",
     'result': performCalc(msgObject.value)
   }
-  var msg = JSON.stringify(replyObject);
+  let msg = JSON.stringify(replyObject);
 
   debug_info('Response will be ', msg);
   debug_info('Opening Reply To Connection');
@@ -167,7 +181,7 @@ function toHexString(byteArray) {
 function performCalc(n) {
   let sqRoot = Math.floor(Math.sqrt(n));
   let a = [];
-  var i, j;
+  let i, j;
 
   i = 2;
   while (sqRoot <= n && i <= sqRoot) {
@@ -194,9 +208,17 @@ mqBoilerPlate.initialise('GET', true)
     return mqBoilerPlate.getMessages(null, msgCB);
   })
   .then(() => {
+    debug_info('Kick start the get callback');
+    return mqBoilerPlate.startGetAsyncProcess();
+  })  
+  .then(() => {
     debug_info('Waiting for termination');
     return mqBoilerPlate.checkForTermination();
   })
+  .then(() => {
+    debug_info('Signal termination of the callback thread');
+    return mqBoilerPlate.signalDone();
+  })    
   .then(() => {
     mqBoilerPlate.teardown();
   })

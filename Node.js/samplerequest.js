@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, 2024 IBM Corp.
+ * Copyright 2019 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -72,6 +72,10 @@ mqBoilerPlate.initialise('PUT')
     return mqBoilerPlate.getMessagesDynamicQueue(msgID, msgCB);
   })
   .then(() => {
+    debug_info('Kick start the get callback');
+    return mqBoilerPlate.startGetAsyncProcess();
+  })  
+  .then(() => {
     debug_info('Waiting for termination');
     return mqBoilerPlate.checkForTermination();
   })
@@ -79,7 +83,6 @@ mqBoilerPlate.initialise('PUT')
     mqBoilerPlate.teardown();
   })
   .catch((err) => {
-    debug_warn(err);
     mqBoilerPlate.teardown();
   })
 

@@ -37,7 +37,7 @@ var activeCB = null;
 
 // Set up Constants
 const CCDT = "MQCCDTURL";
-const FILEPREFIX = "file://";
+const	FILEPREFIX = "file://";
 
 
 class MQBoilerPlate {
@@ -49,17 +49,17 @@ class MQBoilerPlate {
     this.hObjSubscription = null;
     this.modeType = null;
     this.index = 0;
-    this.beSync = null;
+    this.beSync=null;
     this.MQDetails = {};
     this.credentials = {};
     debug_info('MQi Boilerplate constructed');
   }
 
-  initialise(type, sync = false, i = 0) {
+  initialise(type, sync=false, i = 0) {
     let me = this;
     me.modeType = type;
     me.index = i;
-    me.beSync = sync;
+    me.beSync=sync;
 
     return new Promise(function resolver(resolve, reject) {
       me.buildMQDetails()
@@ -113,11 +113,11 @@ class MQBoilerPlate {
     let i = this.index;
     if (env.MQ_ENDPOINTS.length > i) {
       ['QMGR', 'QUEUE_NAME', 'TOPIC_NAME',
-        'MODEL_QUEUE_NAME', 'DYNAMIC_QUEUE_PREFIX', 'BACKOUT_QUEUE',
-        'HOST', 'PORT',
-        'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach((f) => {
-          this.MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[i][f];
-        });
+       'MODEL_QUEUE_NAME', 'DYNAMIC_QUEUE_PREFIX', 'BACKOUT_QUEUE',
+       'HOST', 'PORT',
+       'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach((f) => {
+        this.MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[i][f];
+      });
       ['USER', 'PASSWORD'].forEach((f) => {
         let pField = 'APP_' + f;
         this.credentials[f] = process.env[pField] || env.MQ_ENDPOINTS[i][pField];
@@ -164,7 +164,6 @@ class MQBoilerPlate {
 
       if ('REPLY' === mode) {
         queue = me.mqDynReplyObj;
-        pmo.Options = MQC.MQPMO_SYNCPOINT;
       } else {
         pmo.Options |= MQC.MQPMO_NEW_MSG_ID |
           MQC.MQPMO_NEW_CORREL_ID;
@@ -175,44 +174,34 @@ class MQBoilerPlate {
       }
 
       debug_info('Putting Message on Queue in mode ', mode);
-      if (mode==='REPLY') {
-        mq.Ctl(me.mqConn,mq.MQC.MQOP_SUSPEND);
-        mq.PutSync(queue,mqmd,pmo,msg,function(err){
-          if(err){
-            debug_warn('Error Detected in Put operation',err);
-            throw new Error(err);
-          }else{
-            debug_info('MQPUT successful');
-            var msgId = MQBoilerPlate.toHexString(mqmd.MsgId);
-            debug_info('MsgId : ',msgId);
-            resolve(msgId);
-          }
-        })
-        mq.Ctl(me.mqConn,mq.MQC.MQOP_RESUME);
-      } else {
-        mq.Put(queue, mqmd, pmo, msg, function (err) {
-          if (MQBoilerPlate.isPublishNoSubscriptions(me.modeType, err)) {
-            debug_info('Publish unsuccessful because there are no subscribers', err.mqrcstr);
-          } else if (err) {
-            MQBoilerPlate.reportError(err);
-            reject();
-          } else {
-            debug_info("MQPUT successful ", me.modeType);
-            var msgId = MQBoilerPlate.toHexString(mqmd.MsgId);
-            debug_info('MsgId: ', msgId);
-            debug_info("MQPUT successful");
-            resolve(msgId);
-          }
-        });
+      let putCall = mq.Put; 
+      if ('REPLY' === mode) {
+        debug_info('Switching to PutSync')
+        putCall = mq.PutSync
       }
+      putCall(queue, mqmd, pmo, msg, function(err) {
+        if (MQBoilerPlate.isPublishNoSubscriptions(me.modeType, err)) {
+          debug_info('Publish unsuccessful because there are no subscribers', err.mqrcstr);
+        } else if (err) {
+          MQBoilerPlate.reportError(err);
+          reject();
+        } else {
+          debug_info("MQPUT successful ", me.modeType);
+          var msgId = MQBoilerPlate.toHexString(mqmd.MsgId);
+          debug_info('MsgId: ', msgId);
+          debug_info("MQPUT successful");
+          resolve(msgId);
+        }
+      });
+
     });
   }
 
-  rollback(buf, md, poisoningMessageHandle, callbackOnRollback) {
+  rollback(buf,md, poisoningMessageHandle, callbackOnRollback) {
 
-    var rollback = poisoningMessageHandle(buf, md);
+    var rollback= poisoningMessageHandle(buf, md);
     if (rollback) {
-      mq.Back(this.mqConn, function (err) {
+      mq.Back(this.mqConn, function(err) {
         callbackOnRollback(err);
       });
     }
@@ -220,11 +209,9 @@ class MQBoilerPlate {
   }
 
   commit(callbackOnCommit) {
-    mq.Ctl(this.mqConn,mq.MQC.MQOP_SUSPEND);
-    mq.Cmit(this.mqConn, function (err) {
+    mq.Cmit(this.mqConn, function(err) {
       callbackOnCommit(err);
     });
-    mq.Ctl(this.mqConn,mq.MQC.MQOP_RESUME);
   }
 
   getMessagesDynamicQueue(msgId, cb) {
@@ -256,8 +243,6 @@ class MQBoilerPlate {
         MQC.MQGMO_FAIL_IF_QUIESCING;
       }
 
-
-
       switch (me.modeType) {
         case 'GET':
         case 'SUBSCRIBE':
@@ -275,14 +260,73 @@ class MQBoilerPlate {
       // Set up the callback handler to be invoked when there
       // are any incoming messages. As this is a sample, I'm going
       // to tune down the poll interval from default 10 seconds to 0.5s.
-      mq.setTuningParameters({
-        useCtl: false
-      });
+      // mq.setTuningParameters( {
+      //   getLoopPollTimeMs: 500
+      // });
 
       mq.Get(queueObj, md, gmo, me.getCallback);
       resolve();
     });
   }
+
+  startGetAsyncProcess() {
+    debug_info('Enabling callback');
+    let me = this;
+    return new Promise(function resolver(resolve, reject){
+      mq.Ctl(me.mqConn, MQC.MQOP_START, (err) => {
+        if (err) {
+          debug_warn('Error enabling get callback ', err);
+          reject(err);
+        } else {
+          debug_info('Get Async callback now running');
+          resolve();
+        }
+      });
+    });
+  }
+
+  suspendAsyncProcess() {
+    debug_info('Suspending callback');
+    let me = this;
+    return new Promise(function resolver(resolve, reject){
+      mq.Ctl(me.mqConn, MQC.MQOP_SUSPEND, (err) => {
+        if (err) {
+          debug_warn('Error suspending get callback ', err);
+          reject(err);
+        } else {
+          debug_info('Get Async callback now suspended');
+          resolve();
+        }
+      });
+    });
+  }
+
+  resumeAsyncProcess() {
+    debug_info('Resuming callback');
+    let me = this;
+    return new Promise(function resolver(resolve, reject){
+      mq.Ctl(me.mqConn, MQC.MQOP_SUSPEND, (err) => {
+        if (err) {
+          debug_warn('Error resuming get callback ', err);
+          reject(err);
+        } else {
+          debug_info('Get Async callback now resumed');
+          resolve();
+        }
+      });
+    });
+  }
+
+
+  signalDone() {
+    debug_info('Signalling callback thread to terminate');
+    let me = this;
+    return new Promise(function resolver(resolve, reject){
+      mq.GetDone(me.mqObj);
+      resolve();
+    });  
+  }
+
 
   checkForTermination() {
     return new Promise(function resolver(resolve, reject) {
@@ -354,7 +398,7 @@ class MQBoilerPlate {
       mqcno.SecurityParms = csp;
     }
 
-    if (!MQBoilerPlate.ccdtCheck()) {
+    if (! MQBoilerPlate.ccdtCheck()) {
       debug_info('CCDT URL export is not set, will be using json envrionment client connections settings');
       // And then fill in relevant fields for the MQCD
       var cd = new mq.MQCD();
@@ -411,7 +455,7 @@ class MQBoilerPlate {
     let me = this;
     return new Promise(function resolver(resolve, reject) {
       debug_info('Attempting Connection to MQ');
-      mq.Connx(me.MQDetails.QMGR, cno, function (err, hConn) {
+      mq.Connx(me.MQDetails.QMGR, cno, function(err, hConn) {
         debug_info('Inside Connection Callback function');
         if (err) {
           reject(err);
@@ -447,6 +491,7 @@ class MQBoilerPlate {
     let me = this;
     me.MQDetails.ReplyQueue = replyToQ;
     return new Promise(function resolver(resolve, reject) {
+      debug_info('Opening reply to connection');
       me.openMQConnection(me.mqConn, type)
         .then((data) => {
           if (data.hObj) {
@@ -456,7 +501,7 @@ class MQBoilerPlate {
         })
         .catch((err) => {
           MQBoilerPlate.reportError(err);
-          reject();
+          reject(err);
         });
     });
   }
@@ -497,7 +542,7 @@ class MQBoilerPlate {
           openOptions = MQC.MQOO_OUTPUT;
           break;
         case 'GET':
-          openOptions = (me.beSync) ? MQC.MQPMO_SYNCPOINT : MQC.MQOO_INPUT_AS_Q_DEF;
+          openOptions = (me.beSync) ?  MQC.MQPMO_SYNCPOINT : MQC.MQOO_INPUT_AS_Q_DEF;
           break;
         case 'DYNPUT':
           openOptions = MQC.MQOO_INPUT_EXCLUSIVE;
@@ -505,33 +550,25 @@ class MQBoilerPlate {
       }
 
       debug_info('Attempting connection to MQ ', od.ObjectName);
-      if (type === 'DYNREP') {
-        mq.OpenSync(hConn, od, openOptions, function (err, hObj) {
-          if (err) {
-            debug_warn('Error Detected Opening MQ Connection for Reply', err);
-            throw new Error(err);
-          } else {
-            debug_info("MQOPEN of %s successful", od.ObjectName);
-            let data = {
-              'hObj': hObj
-            };
-            resolve(data);
-          }
-        })
-      } else {
-        mq.Open(hConn, od, openOptions, function (err, hObj) {
-          debug_info('Inside MQ Open Callback function');
-          if (err) {
-            reject(err);
-          } else {
-            debug_info("MQOPEN of %s successful", od.ObjectName);
-            let data = {
-              'hObj': hObj
-            };
-            resolve(data);
-          }
-        });
+
+      let openCall = mq.Open;
+      if ('DYNREP' === type) {
+        debug_info('Switching to Synchronous Open');
+        openCall = mq.OpenSync;
       }
+
+      openCall(hConn, od, openOptions, function(err, hObj) {
+        debug_info('Inside MQ Open Callback function');
+        if (err) {
+          reject(err);
+        } else {
+          debug_info("MQOPEN of %s successful", od.ObjectName);
+          let data = {
+            'hObj': hObj
+          };
+          resolve(data);
+        }
+      });
     });
   }
 
@@ -548,7 +585,7 @@ class MQBoilerPlate {
 
       debug_info('Opening Connection running mode ', type);
 
-      mq.Sub(hConn, null, sd, function (err, hObj, hObjSubscription) {
+      mq.Sub(hConn, null, sd, function(err, hObj, hObjSubscription) {
         debug_info('Inside MQ Open Callback function');
         if (err) {
           reject(err);
@@ -564,14 +601,15 @@ class MQBoilerPlate {
     });
   }
 
+
   static closeSubscription(hObjSubscription) {
     if (hObjSubscription) {
       try {
-        mq.Close(hObjSubscription, 0, function (err) {
-          if (err) {
+        mq.Close(hObjSubscription, 0,function (err){
+          if(err){
             MQBoilerPlate.reportError(err);
-          } else {
-            debug_info("MQCLOSE(Subscription) successful");
+          }else{
+            debug_info("MQCLOSE (Subscription) successful");
           }
         });
       } catch (err) {
@@ -583,7 +621,7 @@ class MQBoilerPlate {
   static closeMQConnection(hObj) {
     return new Promise(function resolver(resolve, reject) {
       if (hObj) {
-        mq.Close(hObj, 0, function (err) {
+        mq.Close(hObj, 0, function(err) {
           if (err) {
             //console.log(formatErr(err));
             MQBoilerPlate.reportError(err);
@@ -593,7 +631,7 @@ class MQBoilerPlate {
           resolve();
         });
       } else {
-        reject();
+        resolve();
       }
     });
   }
@@ -601,7 +639,7 @@ class MQBoilerPlate {
   static disconnectFromMQ(hConn) {
     return new Promise(function resolver(resolve, reject) {
       if (hConn) {
-        mq.Disc(hConn, function (err) {
+        mq.Disc(hConn, function(err) {
           if (err) {
             debug_warn('Error Detected in Disconnect operation', err);
           } else {
@@ -637,10 +675,9 @@ class MQBoilerPlate {
         canExit = !activeCB(md, buf);
       }
     }
-    if (canExit) {
-      mq.GetDone(hObj);
-    }
   }
+
+  
 
   static reportError(err) {
     var errMsg = err.message ? err.message : err;
@@ -648,7 +685,7 @@ class MQBoilerPlate {
   }
 
 
-  static ccdtCheck() {
+  static ccdtCheck () {
     if (CCDT in process.env) {
       let ccdtFile = process.env[CCDT].replace(FILEPREFIX, '');
       debug_info(ccdtFile);
