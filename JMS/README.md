@@ -335,7 +335,7 @@ You can also export a CCDT for the JMS application to use as below
 
 The classpath specified will depend on whether or not maven was used to build the samples - uncomment the relevent one within the script (classpath for maven is the default)
 
-If you are on a Windows machine and wish to run this script , then you can make use of [WSL (Windows Subsystem For Linux)](https://learn.microsoft.com/en-us/windows/wsl/install). This script has been tested on Ubuntu Distribution in WSL, feel free to use any other linux distribution. Since you might have edited the script using a windows text editor , the endline formatting needs to be changed to avoid bad interpreter exception. Use the following commands in wsl :
+If you are on a Windows machine and wish to run this script , then you can make use of [WSL (Windows Subsystem For Linux)](https://learn.microsoft.com/en-us/windows/wsl/install). This script has been tested on Ubuntu Distribution in WSL, feel free to use any other linux distribution. Since you might have edited the script using a windows text editor , the endline formatting needs to be changed to avoid bad interpreter exception. Use the following commands in WSL :
 
 `sudo apt install dos2unix`
 
