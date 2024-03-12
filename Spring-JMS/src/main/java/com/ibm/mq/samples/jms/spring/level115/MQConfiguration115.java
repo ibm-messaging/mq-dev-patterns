@@ -27,7 +27,7 @@ import com.ibm.mq.constants.CMQC;
 
 import java.util.Hashtable;
 
-@Configuration
+//@Configuration
 public class MQConfiguration115 {
     protected final Log logger = LogFactory.getLog(getClass());
 
