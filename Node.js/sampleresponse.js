@@ -63,7 +63,11 @@ async function msgCB(md, buf) {
 }
 
 function handleSyncPoint(buf, md , ok) {
-  if (!ok) {
+  if (!ok) { 
+    // If the value of ok is returned as false, reason being some problem with the Request application which might have
+    // caused the Dynamic Reply to Queue to not exist anymore, the Response application will throw a MQ Error with
+    // reason code 2085 : MQRC_UNKNOWN_OBJECT_NAME. In this case, we need the listener to suspend in order to kickstart
+    // the rollback process of the hung message so that it can succesfully be rolled back into our current active queue.
     mqBoilerPlate.suspendAsyncProcess()
     .then(()=>{
       mqBoilerPlate.rollback(buf, md, poisoningMessageHandler,callbackOnRollback);
@@ -87,7 +91,7 @@ function poisoningMessageHandler(buf,md) {
   let rollback = false;
   let backoutCounter = md.BackoutCount;
 
-  if(backoutCounter >= MSG_TRESHOLD) {
+  if (backoutCounter >= MSG_TRESHOLD) {
     
     debug_info("Redirecting to the backout queue");
     let BACKOUT_QUEUE = mqBoilerPlate.MQDetails.BACKOUT_QUEUE;
@@ -110,6 +114,9 @@ function poisoningMessageHandler(buf,md) {
 
 function sendToQueue(buf, md, queue) {
   return mqBoilerPlate.openMQReplyToConnection(queue, 'DYNREP')
+  // Suspend the current listener on the Reply To Queue belonging to the Request application, so that the Response Application
+  // can open the queue and put the response message. If this is not performed, MQ throws an error with reason code 2500 : 
+  // MQRC_HCONN_ASYNC_ACTIVE, as two processes cannot open the same queue at the same time in a Queue Manager.
   .then(() => {
     debug_info('Suspending the async get process');
     return mqBoilerPlate.suspendAsyncProcess();
@@ -118,6 +125,8 @@ function sendToQueue(buf, md, queue) {
     debug_info('Reply To Queue is ready');
     return mqBoilerPlate.replyMessage(md.MsgId, md.CorrelId, buf)
   })
+  // Once the Response is posted on the Reply to Queue, the suspended listener can be resumed to listen for responses 
+  // from the Responding Application.
   .then(() => {
     debug_info('Resuming the async get process');
     return mqBoilerPlate.resumeAsyncProcess();
@@ -207,6 +216,7 @@ mqBoilerPlate.initialise('GET', true)
     debug_info('Getting Messages');
     return mqBoilerPlate.getMessages(null, msgCB);
   })
+  // The Async Process is started to invoke the Get message callback.
   .then(() => {
     debug_info('Kick start the get callback');
     return mqBoilerPlate.startGetAsyncProcess();

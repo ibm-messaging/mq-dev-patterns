@@ -128,7 +128,7 @@ class MQBoilerPlate {
 
   putRequest(msg) {
     debug_info('Preparing for Request');
-    var mqmd = new mq.MQMD(); // Defaults are fine.
+    let mqmd = new mq.MQMD(); // Defaults are fine.
     mqmd.ReplyToQ = this.mqDynObj._name;
     mqmd.MsgType = MQC.MQMT_REQUEST;
     return this.send(msg, mqmd, 'NORMAL');
@@ -137,7 +137,7 @@ class MQBoilerPlate {
   putMessage(msg) {
     debug_info('Preparing for Put');
     // Defaults are fine.
-    var mqmd = new mq.MQMD()
+    let mqmd = new mq.MQMD()
     mqmd.Persistence = MQC.MQPER_PERSISTENT;
     return this.send(msg, mqmd, 'NORMAL');
   }
@@ -145,7 +145,7 @@ class MQBoilerPlate {
   replyMessage(msgId, correlId, msg) {
     debug_info('Preparing for Reply Put');
     // Defaults are fine.
-    var mqmd = new mq.MQMD();
+    let mqmd = new mq.MQMD();
     mqmd.CorrelId = correlId;
     mqmd.MsgId = msgId;
 
@@ -154,10 +154,10 @@ class MQBoilerPlate {
 
   send(msg, mqmd, mode) {
     debug_info('Preparing for MQPUT');
-    var me = this;
+    let me = this;
     return new Promise(function resolver(resolve, reject) {
-      var pmo = new mq.MQPMO();
-      var queue = me.mqObj;
+      let pmo = new mq.MQPMO();
+      let queue = me.mqObj;
 
       // Describe how the Put should behave
       pmo.Options =  MQC.MQPMO_NO_SYNCPOINT;
@@ -174,6 +174,12 @@ class MQBoilerPlate {
       }
 
       debug_info('Putting Message on Queue in mode ', mode);
+      // We initialise the putCall variable with the default Put function of MQ when the mode is not a Request-Response
+      // type. When the mode is of type "REPLY", belonging to the Request-Response scenario, we switch to the Synchronous
+      // version of Put, since in this scenario, a message is sent to the request queue, and the requestor awaits a reply
+      // in the reply to queue, which is simultaneously being used by the responding application to put the response into.
+      // So we use the PutSync function to simultaneously Put in the already open queue, which is prevented by the default
+      // Put function.
       let putCall = mq.Put; 
       if ('REPLY' === mode) {
         debug_info('Switching to PutSync')
@@ -187,7 +193,7 @@ class MQBoilerPlate {
           reject();
         } else {
           debug_info("MQPUT successful ", me.modeType);
-          var msgId = MQBoilerPlate.toHexString(mqmd.MsgId);
+          let msgId = MQBoilerPlate.toHexString(mqmd.MsgId);
           debug_info('MsgId: ', msgId);
           debug_info("MQPUT successful");
           resolve(msgId);
@@ -199,7 +205,7 @@ class MQBoilerPlate {
 
   rollback(buf,md, poisoningMessageHandle, callbackOnRollback) {
 
-    var rollback= poisoningMessageHandle(buf, md);
+    let rollback= poisoningMessageHandle(buf, md);
     if (rollback) {
       mq.Back(this.mqConn, function(err) {
         callbackOnRollback(err);
@@ -225,13 +231,13 @@ class MQBoilerPlate {
 
   getMessagesFromQueue(queueObj, msgId, cb) {
     debug_info('In getMessagesFromQueue');
-    var me = this;
+    let me = this;
     activeCB = cb;
     return new Promise(function resolver(resolve, reject) {
-      var md = new mq.MQMD();
-      var gmo = new mq.MQGMO();
+      let md = new mq.MQMD();
+      let gmo = new mq.MQGMO();
 
-      if(me.beSync) {
+      if (me.beSync) {
         gmo.Options = MQC.MQPMO_SYNCPOINT |
         MQC.MQGMO_WAIT |
         MQC.MQGMO_CONVERT |
@@ -257,18 +263,12 @@ class MQBoilerPlate {
         md.MsgId = MQBoilerPlate.hexToBytes(msgId);
       }
 
-      // Set up the callback handler to be invoked when there
-      // are any incoming messages. As this is a sample, I'm going
-      // to tune down the poll interval from default 10 seconds to 0.5s.
-      // mq.setTuningParameters( {
-      //   getLoopPollTimeMs: 500
-      // });
-
       mq.Get(queueObj, md, gmo, me.getCallback);
       resolve();
     });
   }
 
+  // Starts the Async process to invoke the Get message callback in mq.Get
   startGetAsyncProcess() {
     debug_info('Enabling callback');
     let me = this;
@@ -285,6 +285,9 @@ class MQBoilerPlate {
     });
   }
 
+  // Suspends the Async Get process of the request application temporarily so that the reply to queue can be accessed by 
+  // the response application to put messages into the queue. If this is not suspended, MQ throws an error with reason
+  // code 2500 : MQRC_HCONN_ASYNC_ACTIVE
   suspendAsyncProcess() {
     debug_info('Suspending callback');
     let me = this;
@@ -301,6 +304,7 @@ class MQBoilerPlate {
     });
   }
 
+  // Resumes the suspended Async Get process of the request application
   resumeAsyncProcess() {
     debug_info('Resuming callback');
     let me = this;
@@ -317,7 +321,7 @@ class MQBoilerPlate {
     });
   }
 
-
+  // Function to signal the callback thread to terminate listening to the Queue for anymore messages.
   signalDone() {
     debug_info('Signalling callback thread to terminate');
     let me = this;
@@ -330,7 +334,7 @@ class MQBoilerPlate {
 
   checkForTermination() {
     return new Promise(function resolver(resolve, reject) {
-      var timerID = setInterval(() => {
+      let timerID = setInterval(() => {
         debug_info('Checking for termination signal');
         count++;
 
@@ -354,7 +358,7 @@ class MQBoilerPlate {
   }
 
   static hexToBytes(hex) {
-    for (var bytes = [], c = 0; c < hex.length; c += 2)
+    for (let bytes = [], c = 0; c < hex.length; c += 2)
       bytes.push(parseInt(hex.substr(c, 2), 16));
     return bytes;
   }
@@ -385,23 +389,42 @@ class MQBoilerPlate {
 
   buildMQCNO() {
     debug_info('Establishing connection details');
-    var mqcno = new mq.MQCNO();
+    let mqcno = new mq.MQCNO();
     // use MQCNO_CLIENT_BINDING to connect as client
     // cno.Options = MQC.MQCNO_NONE;
     mqcno.Options = MQC.MQCNO_CLIENT_BINDING;
 
     // For no authentication, disable this block
     if (this.credentials.USER) {
-      var csp = new mq.MQCSP();
+      let csp = new mq.MQCSP();
       csp.UserId = this.credentials.USER;
       csp.Password = this.credentials.PASSWORD;
       mqcno.SecurityParms = csp;
     }
 
+    let sco = null;
+
+    if (this.MQDetails.KEY_REPOSITORY) {
+      debug_info('Key Repository has been specified');
+      // *** For TLS ***
+      sco = new mq.MQSCO();
+
+      // *** For TLS ***
+      // Set the SSL/TLS Configuration Options structure field that
+      // specifies the keystore (expect to see a .kdb, .sth and .rdb
+      // with the same root name). For this program, all we need is for
+      // the keystore to contain the signing information for the queue manager's
+      // cert.
+      sco.KeyRepository = this.MQDetails.KEY_REPOSITORY;
+      // And make the CNO refer to the SSL Connection Options
+      mqcno.SSLConfig = sco;
+    }
+    
+
     if (! MQBoilerPlate.ccdtCheck()) {
       debug_info('CCDT URL export is not set, will be using json envrionment client connections settings');
       // And then fill in relevant fields for the MQCD
-      var cd = new mq.MQCD();
+      let cd = new mq.MQCD();
       cd.ChannelName = this.MQDetails.CHANNEL;
 
       if ('GET' === this.modeType) {
@@ -432,22 +455,6 @@ class MQBoilerPlate {
       mqcno.ClientConn = cd;
     }
 
-    if (this.MQDetails.KEY_REPOSITORY) {
-      debug_info('Key Repository has been specified');
-      // *** For TLS ***
-      var sco = new mq.MQSCO();
-
-      // *** For TLS ***
-      // Set the SSL/TLS Configuration Options structure field that
-      // specifies the keystore (expect to see a .kdb, .sth and .rdb
-      // with the same root name). For this program, all we need is for
-      // the keystore to contain the signing information for the queue manager's
-      // cert.
-      sco.KeyRepository = this.MQDetails.KEY_REPOSITORY;
-      // And make the CNO refer to the SSL Connection Options
-      mqcno.SSLConfig = sco;
-    }
-
     return Promise.resolve(mqcno);
   }
 
@@ -468,7 +475,7 @@ class MQBoilerPlate {
   }
 
   openMQDynamicConnection() {
-    var me = this;
+    let me = this;
     debug_info('About to build dynamic connection');
 
     return new Promise(function resolver(resolve, reject) {
@@ -510,7 +517,7 @@ class MQBoilerPlate {
   openMQConnection(hConn, type) {
     let me = this;
     return new Promise(function resolver(resolve, reject) {
-      var od = new mq.MQOD();
+      let od = new mq.MQOD();
 
       debug_info('Opening Connection running mode ', type);
 
@@ -534,7 +541,7 @@ class MQBoilerPlate {
           break;
       }
 
-      var openOptions = null;
+      let openOptions = null;
       switch (type) {
         case 'PUT':
         case 'PUBLISH':
@@ -576,7 +583,7 @@ class MQBoilerPlate {
     let me = this;
     return new Promise(function resolver(resolve, reject) {
       // Define what we want to open, and how we want to open it.
-      var sd = new mq.MQSD();
+      let sd = new mq.MQSD();
       sd.ObjectString = me.MQDetails.TOPIC_NAME;
       sd.Options = MQC.MQSO_CREATE |
         MQC.MQSO_NON_DURABLE |
@@ -606,7 +613,7 @@ class MQBoilerPlate {
     if (hObjSubscription) {
       try {
         mq.Close(hObjSubscription, 0,function (err){
-          if(err){
+          if (err){
             MQBoilerPlate.reportError(err);
           }else{
             debug_info("MQCLOSE (Subscription) successful");
@@ -680,7 +687,7 @@ class MQBoilerPlate {
   
 
   static reportError(err) {
-    var errMsg = err.message ? err.message : err;
+    let errMsg = err.message ? err.message : err;
     debug_warn("MQ call failed with error : " + errMsg);
   }
 

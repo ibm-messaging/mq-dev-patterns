@@ -71,7 +71,7 @@ mqBoilerPlate.initialise('PUT')
     debug_info('Getting Response for ', msgID);
     return mqBoilerPlate.getMessagesDynamicQueue(msgID, msgCB);
   })
-  .then(() => {
+  .then(() => { // We kickstart the async process to listen for any messages on the Reply to Queue.
     debug_info('Kick start the get callback');
     return mqBoilerPlate.startGetAsyncProcess();
   })  
@@ -83,6 +83,7 @@ mqBoilerPlate.initialise('PUT')
     mqBoilerPlate.teardown();
   })
   .catch((err) => {
+    debug_warn(err);
     mqBoilerPlate.teardown();
   })
 
