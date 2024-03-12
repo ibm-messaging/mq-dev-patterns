@@ -2,7 +2,7 @@
 
 ## Description
 
-A detailed usage of this IBM MQ Messaging Playground Application is provided in the following tutorial: [AWS-TUTORIAL-URL]. The application is underpinned by three containers (frontend, backend, MQ).
+A detailed usage of this IBM MQ Messaging Playground Application is provided in the following tutorial: [AWS-TUTORIAL-URL](https://developer.ibm.com/tutorials/mq-build-deploy-ibm-mq-app-to-aws-cloud/). The application is underpinned by three containers (frontend, backend, MQ).
 
 Before deploying the containers, configure the following variables in the `.env` file:
 
@@ -17,7 +17,7 @@ There are three different yaml files for deploying the application, depending on
 
 ### AWS Cloud
 
-To deploy the containers on AWS ECS, follow the instructions in the [AWS-TUTORIAL-URL].
+To deploy the containers on AWS ECS, follow the instructions in the [AWS-TUTORIAL-URL](https://developer.ibm.com/tutorials/mq-build-deploy-ibm-mq-app-to-aws-cloud/).
 
 ### Local Machine
 
