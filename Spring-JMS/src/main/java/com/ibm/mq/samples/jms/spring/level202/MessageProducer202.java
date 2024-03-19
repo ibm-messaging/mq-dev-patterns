@@ -1,5 +1,5 @@
 /*
- * (c) Copyright IBM Corporation 2021, 2023
+ * (c) Copyright IBM Corporation 2021, 2024
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +27,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.Pollers;
 import org.springframework.integration.dsl.Transformers;
 import org.springframework.integration.jms.dsl.Jms;
 import org.springframework.stereotype.Component;
 
 import jakarta.jms.ConnectionFactory;
+
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 //@Component
@@ -52,7 +53,7 @@ public class MessageProducer202 {
 
     @Bean
     public IntegrationFlow myOurDataFlow() {
-        return IntegrationFlows.fromSupplier(new DataSource(), e -> e.poller(Pollers.fixedRate(120, TimeUnit.SECONDS, 60)))
+        return IntegrationFlow.fromSupplier(new DataSource(), e -> e.poller(Pollers.fixedRate(Duration.of(120,TimeUnit.SECONDS.toChronoUnit()), Duration.of(60,TimeUnit.SECONDS.toChronoUnit()))))
                 .log()
                 .transform(Transformers.toJson())
                 .log()

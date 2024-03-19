@@ -1,5 +1,5 @@
 /*
- * (c) Copyright IBM Corporation 2021, 2023
+ * (c) Copyright IBM Corporation 2021, 2024
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.Pollers;
 import org.springframework.integration.jms.dsl.Jms;
 import org.springframework.messaging.Message;
@@ -44,7 +43,7 @@ public class MessageConsumer201 {
 
     @Bean
     public IntegrationFlow mqInMessageFlow() {
-        return IntegrationFlows
+        return IntegrationFlow
                 .from(Jms.inboundAdapter(connectionFactory)
                                 .destination(inQueue)
                                 .configureJmsTemplate(template -> template.receiveTimeout(-1))

@@ -108,7 +108,28 @@ mvn dependency:copy-dependencies -DoutputDirectory=.
 Which will download and copy the dependencies into the current directory.
 
 
+### Building and running the samples on windows
+
+If you are using a Windows machine and wish to use maven to build these samples , the symbolic link between the `./src/main/java/com` and `./com` directory needs to be repaired.
+Navigate to `src/main/java` and run the following command to remove existing com file.
+````
+del com
+````
+To create a symbolic link between `./src/main/java/com` and `./com` use the following command.
+````
+mklink /J com ..\..\..\com
+````
+If you are running the samples on a Windows machine , the classpath separator needs to be `;` and not `:`.
+eg.
+````
+javac -cp ./com.ibm.mq.allclient-9.2.5.0.jar:./javax.jms-api-2.0.1.jar:./json-20230227.jar:. com/ibm/mq/samples/jms/JmsPut.java
+````
+will cause an error on windows, and needs to be:
+````
+javac -cp ./com.ibm.mq.allclient-9.2.5.0.jar;./javax.jms-api-2.0.1.jar;./json-20230227.jar;. com/ibm/mq/samples/jms/JmsPut.java
+````
 ### Building the samples with maven
+
 You can build the samples by running the command.
 
 ````
@@ -165,7 +186,7 @@ To run any of the samples you can specify the `.jar` file as the classpath.
 EG. To run the JmsPut sample:
 
 ````
-java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsPut
+java -cp target/mq-dev-patterns-0.1.0.jar com.ibm.mq.samples.jms.JmsPut
 ````
 
 
@@ -193,7 +214,7 @@ and run
 
 If you have used maven to build the samples, you can run
 
-`java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsGet`
+`java -cp target/mq-dev-patterns-0.1.0.jar com.ibm.mq.samples.jms.JmsGet`
 
 ## Publish / Subscribe
 Open two terminals.
@@ -212,7 +233,7 @@ then run
 
 If you have used maven to build the samples, you can run
 
-`java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsSub`
+`java -cp target/mq-dev-patterns-0.1.0.jar com.ibm.mq.samples.jms.JmsSub`
 
 In the second terminal;
 
@@ -228,7 +249,7 @@ then run
 
 If you have used maven to build the samples, you can run
 
-`java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsPub`
+`java -cp target/mq-dev-patterns-0.1.0.jar com.ibm.mq.samples.jms.JmsPub`
 
 ## Request / Response
 Open two terminals.
@@ -248,7 +269,7 @@ then run
 
 If you have used maven to build the samples, you can run
 
-`java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsRequest`
+`java -cp target/mq-dev-patterns-0.1.0.jar com.ibm.mq.samples.jms.JmsRequest`
 
 The request sample will put a message and wait for a response until it either gets a response or you `ctrl+c` interrupt it.
 
@@ -269,7 +290,7 @@ and run
 
 If you have used maven to build the samples, you can run
 
-`java -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsResponse`
+`java -cp target/mq-dev-patterns-0.1.0.jar com.ibm.mq.samples.jms.JmsResponse`
 
 The response sample will get a message from the queue, process it and put the response on the reply to queue and keep looking for more messages to respond to till you ctrl+c interrupt it.
 
@@ -292,7 +313,7 @@ The message content to be posted can be controlled by the envionment option `REQ
 
 EG. 
 
-`java -DREQUEST_MODE="REWARDS" -cp target/mq-dev-patterns-0.1.0.jar: com.ibm.mq.samples.jms.JmsRequest`
+`java -DREQUEST_MODE="REWARDS" -cp target/mq-dev-patterns-0.1.0.jar com.ibm.mq.samples.jms.JmsRequest`
 
 A `REQUEST_MODE` of `REWARDS` sends messages posting reward points to a customer id. 
 Any other value for `REQUEST_MODE` runs in default mode where the request sends a 
@@ -314,6 +335,13 @@ You can also export a CCDT for the JMS application to use as below
 
 The classpath specified will depend on whether or not maven was used to build the samples - uncomment the relevent one within the script (classpath for maven is the default)
 
+If you are on a Windows machine and wish to run this script , then you can make use of [WSL (Windows Subsystem For Linux)](https://learn.microsoft.com/en-us/windows/wsl/install). This script has been tested on Ubuntu Distribution in WSL, feel free to use any other linux distribution. Since you might have edited the script using a windows text editor , the endline formatting needs to be changed to avoid bad interpreter exception. Use the following commands in WSL :
+
+`sudo apt install dos2unix`
+
+`dos2unix ./multi-jms-sample-driver.sh`
+
+You can now run the script using the command mentioned above.
 
 ## Run the samples with TLS
 
