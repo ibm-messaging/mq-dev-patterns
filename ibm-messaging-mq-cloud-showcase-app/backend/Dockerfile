@@ -31,7 +31,7 @@ ENV APP_DIR /usr/local/AWS-showcase-backend/
 WORKDIR ${APP_DIR}
 #install packages for the application
 RUN npm install --only=prod \
-   && apt-get autoremove -y curl make gcc g++ python3 git \
+   && apt-get autoremove -y curl make gcc g++ git \
    && apt-get purge -y \   
    && chmod a+rx ${APP_DIR}/*
 
