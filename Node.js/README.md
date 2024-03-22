@@ -71,7 +71,7 @@ To run with logging, run
 
 On Mac and Linux:
 
-`export DEBUG=amqs*:* node basicput.js`
+`DEBUG=amqs*:* node basicput.js`
 
 On Windows:
 ````
@@ -85,7 +85,7 @@ To run with logging, run
 
 On Mac and Linux:
 
-`export DEBUG=amqs*:* node basicget.js`
+`DEBUG=amqs*:* node basicget.js`
 
 On Windows:
 ````
@@ -100,9 +100,9 @@ promises.
 To run with logging, run
 
 On Mac and Linux: <br>
-`export DEBUG=sample*:*,boiler:* node sampleput.js` <br>
+`DEBUG=sample*:*,boiler:* node sampleput.js` <br>
 and <br>
-`export DEBUG=sample*:*,boiler:* node sampleget.js`
+`DEBUG=sample*:*,boiler:* node sampleget.js`
 
 On Windows:
 ````
@@ -121,7 +121,7 @@ The publish application publishes a json object onto a topic.
 To run with logging, run
 
 On Mac and Linux: <br>
-`export DEBUG=amqs*:* node basicpublish.js`
+`DEBUG=amqs*:* node basicpublish.js`
 
 On Windows:
 ````
@@ -135,7 +135,7 @@ topic.
 To run with logging, run
 
 On Mac and Linux: <br>
-`export DEBUG=amqs*:* node basicsubscribe.js`
+`DEBUG=amqs*:* node basicsubscribe.js`
 
 On Windows:
 ````
@@ -150,11 +150,11 @@ promises.
 To run with logging, run
 
 On Mac and Linux <br>
-`export DEBUG=sample*:*,boiler:* node samplepublish.js`
+`DEBUG=sample*:*,boiler:* node samplepublish.js`
 
 and
 
-`export DEBUG=sample*:*,boiler:* node samplesubscribe.js`
+`DEBUG=sample*:*,boiler:* node samplesubscribe.js`
 
 On Windows:
 ````
@@ -177,11 +177,11 @@ To run with logging, run
 
 On Mac and Linux:
 
-`export DEBUG=amqs*:* node basicrequest.js`
+`DEBUG=amqs*:* node basicrequest.js`
 
 and
 
-`export DEBUG=amqs*:* node basicresponse.js`
+`DEBUG=amqs*:* node basicresponse.js`
 
 On Windows:
 ````
@@ -201,11 +201,11 @@ To run with logging, run
 
 On Mac and Linux:
 
-`export DEBUG=sample*:*,boiler:* node sampleresponse.js`
+`DEBUG=sample*:*,boiler:* node sampleresponse.js`
 
 and
 
-`export DEBUG=sample*:*,boiler:* node samplerequest.js`
+`DEBUG=sample*:*,boiler:* node samplerequest.js`
 
 On Windows:
 ````

@@ -178,7 +178,8 @@ class MQBoilerPlate {
       // type. When the mode is of type "REPLY", belonging to the Request-Response scenario, we switch to the Synchronous
       // version of Put, since in this scenario, a message is sent to the request queue, and the requestor awaits a reply
       // in the reply to queue, which is simultaneously being used by the responding application to put the response into.
-      // So we use the PutSync function to simultaneously Put in the already open queue, which is prevented by the default
+      // So we use the PutSync function, which is neccessary as this call invocation is being made in the asynchronous 
+      // thread that is reading requests, to simultaneously Put in the already open queue, which is prevented by the default
       // Put function.
       let putCall = mq.Put; 
       if ('REPLY' === mode) {
@@ -304,7 +305,8 @@ class MQBoilerPlate {
     });
   }
 
-  // Resumes the suspended Async Get process of the request application
+  // Suspends the background Get process of the Response Application, which in turn resumes the Get process of the
+  // Request application, so that it can process the response posted on the reply to queue.
   resumeAsyncProcess() {
     debug_info('Resuming callback');
     let me = this;
@@ -358,7 +360,7 @@ class MQBoilerPlate {
   }
 
   static hexToBytes(hex) {
-    for (let bytes = [], c = 0; c < hex.length; c += 2)
+    for (var bytes = [], c = 0; c < hex.length; c += 2)
       bytes.push(parseInt(hex.substr(c, 2), 16));
     return bytes;
   }
