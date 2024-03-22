@@ -305,8 +305,7 @@ class MQBoilerPlate {
     });
   }
 
-  // Suspends the background Get process of the Response Application, which in turn resumes the Get process of the
-  // Request application, so that it can process the response posted on the reply to queue.
+  // Suspends the background process that is running the Get in the response application.
   resumeAsyncProcess() {
     debug_info('Resuming callback');
     let me = this;
