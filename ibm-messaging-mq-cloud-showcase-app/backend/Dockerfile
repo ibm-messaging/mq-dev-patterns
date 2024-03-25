@@ -1,5 +1,5 @@
 
-#  Copyright 2022, 2023 IBM Corp.
+#  Copyright 2022, 2023 , 2024 IBM Corp.
 #  Licensed under the Apache License, Version 2.0 (the 'License');
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
@@ -12,6 +12,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+# This Dockerfile has two separate stages.
+#The first stage is builds the Node program.
+# The second stage is a runtime-only container that holds just the things we need to
+# execute the compiled program.
+
+###########################################################
+# This starts the BUILD phase
+###########################################################
 FROM ubuntu:20.04 as builder
 
 ENV NODE_VERSION 18
@@ -19,21 +27,72 @@ ENV NODE_VERSION 18
 #get the application
 ENV APP_DIR /usr/local
 WORKDIR ${APP_DIR}
+
+# Update the base image and make sure we've installed basic capabilities.
+# Also install node and npm.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl gcc g++ make git ca-certificates \    
     && curl --silent -k --location https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
-    && apt-get install -y  nodejs  \
+    && apt-get install -y  nodejs \
     && npm install -g npm
 
-
+# Copy project files into the container
 COPY ./AWS-showcase-backend ./AWS-showcase-backend
 ENV APP_DIR /usr/local/AWS-showcase-backend/
 WORKDIR ${APP_DIR}
+
 #install packages for the application
 RUN npm install --only=prod \
-   && apt-get autoremove -y curl make gcc g++ git \
-   && apt-get purge -y \   
-   && chmod a+rx ${APP_DIR}/*
+    && apt-get autoremove -y curl make gcc g++ git \
+    && apt-get purge -y \
+    && rm -rf /var/lib/apt/lists/* \   
+    && chmod a+rx ${APP_DIR}/*
+
+#Cleaning
+ENV APP_DIR /usr/local/AWS-showcase-backend/node_modules/ibmmq/lib
+WORKDIR ${APP_DIR}
+RUN rm mqidefs_aix.js \
+    && rm mqidefs_darwin.js \
+    && rm mqidefs_linuxPowerLE.js \
+    && rm mqidefs_linuxS390.js \
+    && rm mqidefs_windows.js \
+    && rm mqidefs_linuxARM.js
+
+ENV APP_DIR /usr/local/AWS-showcase-backend/node_modules/ibmmq/redist
+WORKDIR ${APP_DIR}
+RUN rm -r msg \
+    && rm -r bin \
+    && rm -r lap
+
+ENV APP_DIR /usr/local/AWS-showcase-backend/node_modules/ibmmq/redist/lib64
+WORKDIR ${APP_DIR}
+RUN rm libcurl.so \
+    && rm libmqz_r.so \
+    && rm libedit.so \
+    && rm libmqzsd_r.so \
+    && rm libmqcxa64_r.so \ 
+    && rm libmqcxa_r.so \
+    && rm libmqdc_r.so \
+    && rm libmqecs_r.so \
+    && rm libmqic_r.so \
+    && rm libmqiz_r.so \
+    && rm libmqjx_r.so \
+    && rm libmqmcs_r.so \
+    && rm libmqmzse.so \
+    && rm libmqxzu_r.so
+
+###########################################################
+# This starts the RUNTIME phase
+###########################################################
+# Now that there is a container with the compiled program we can build a smaller
+# runtime image. Start from one of the smaller base container images. This container
+# is an official Node image with the runtime already embedded
+FROM node:18-slim as backendImage
+
+ENV APP_DIR /usr/local/AWS-showcase-backend/
+WORKDIR ${APP_DIR}
+# Copy over the tree containing the program and all its dependencies
+COPY --from=builder ${APP_DIR}/ ${APP_DIR}
 
 EXPOSE 8080
 
