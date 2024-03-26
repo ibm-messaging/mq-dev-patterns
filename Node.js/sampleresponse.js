@@ -63,23 +63,25 @@ async function msgCB(md, buf) {
 }
 
 function handleSyncPoint(buf, md , ok) {
-  if (!ok) { 
+  //Suspending the background async get process to avoid MQRC 2500 : MQRC_HCONN_ASYNC_ACTIVE.
+  debug_info("Suspending the async get process");
+  mqBoilerPlate.suspendAsyncProcess()
+  .then(()=>{
     // If the value of ok is returned as false, reason being some problem with the Request application which might have
     // caused the Dynamic Reply to Queue to not exist anymore, the Response application will throw a MQ Error with
     // reason code 2085 : MQRC_UNKNOWN_OBJECT_NAME. In this case, we need the listener to suspend in order to kickstart
     // the rollback process of the hung message so that it can succesfully be rolled back into our current active queue.
-    mqBoilerPlate.suspendAsyncProcess()
-    .then(()=>{
-      mqBoilerPlate.rollback(buf, md, poisoningMessageHandler,callbackOnRollback);
-      return Promise.resolve();
-    })
-    .then(() => {
-      debug_info('Resuming the async get process');
-      return mqBoilerPlate.resumeAsyncProcess();
-    });
-  } else {
-    mqBoilerPlate.commit(callbackOnCommit);
-  }
+    if (!ok) {
+      return mqBoilerPlate.rollback(buf,md,poisoningMessageHandler);
+    } else {
+      debug_info('Performing Commit')
+      return mqBoilerPlate.commit();
+    }
+  })
+  .then(()=>{
+    debug_info('Resuming the async get process');
+    return mqBoilerPlate.resumeAsyncProcess();
+  })
 }
 
 function poisoningMessageHandler(buf,md) {
@@ -96,12 +98,19 @@ function poisoningMessageHandler(buf,md) {
     debug_info("Redirecting to the backout queue");
     let BACKOUT_QUEUE = mqBoilerPlate.MQDetails.BACKOUT_QUEUE;
 
-    sendToQueue(buf, md,BACKOUT_QUEUE).then(() => {
-      debug_info('Reply Posted');
-      mqBoilerPlate.commit(callbackOnCommit);
+    sendToQueue(buf, md,BACKOUT_QUEUE)
+      .then(() => {
+        return mqBoilerPlate.suspendAsyncProcess()
+      .then(()=> {
+        debug_info('Reply Posted');
+        return mqBoilerPlate.commit();
+      })
+      .then(()=>{
+        return mqBoilerPlate.resumeAsyncProcess();
+      })
     })
     .catch((err) => {
-      debug_warn('Error redirecting to the backout queue ');
+      debug_warn('Error redirecting to the backout queue ',err);
     });
    
     rollback = false;
@@ -114,9 +123,9 @@ function poisoningMessageHandler(buf,md) {
 
 function sendToQueue(buf, md, queue) {
   return mqBoilerPlate.openMQReplyToConnection(queue, 'DYNREP')
-  // Suspend the current listener on the Reply To Queue belonging to the Request application, so that the Response Application
-  // can open the queue and put the response message. If this is not performed, MQ throws an error with reason code 2500 : 
-  // MQRC_HCONN_ASYNC_ACTIVE, as two processes cannot open the same queue at the same time in a Queue Manager.
+  // Suspend the current async get callback in the Response application, so that the response can be posted onto
+  // the Reply to Queue. If this is not performed, MQ throws an error with reason code 2500 : MQRC_HCONN_ASYNC_ACTIVE, 
+  // as one async process is already accessing the Reply to queue, and therefore another async call on top of the existing one cannot access the Reply to Queue.
   .then(() => {
     debug_info('Suspending the async get process');
     return mqBoilerPlate.suspendAsyncProcess();
@@ -133,21 +142,6 @@ function sendToQueue(buf, md, queue) {
   });
 }
 
-function callbackOnCommit(err) {
-  if (err) {
-    debug_warn('Error on commit', err);
-  } else {
-    debug_info('Commit Successful');
-  }
-}
-
-function callbackOnRollback(err) {
-  if (err) {
-    debug_warn('Error on rollback', err);
-  } else {
-    debug_info('Rollback Successful');
-  }
-}
 
 
 function respondToRequest(msgObject, mqmdRequest) {
@@ -231,11 +225,11 @@ mqBoilerPlate.initialise('GET', true)
   })    
   .then(() => {
     mqBoilerPlate.teardown();
+    debug_info('Application Completed');
+    process.exit(0);
   })
   .catch((err) => {
     debug_warn(err);
     mqBoilerPlate.teardown();
+    process.exit(1);
   })
-
-
-debug_info('Application Completed');

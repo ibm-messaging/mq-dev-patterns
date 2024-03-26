@@ -176,11 +176,9 @@ class MQBoilerPlate {
       debug_info('Putting Message on Queue in mode ', mode);
       // We initialise the putCall variable with the default Put function of MQ when the mode is not a Request-Response
       // type. When the mode is of type "REPLY", belonging to the Request-Response scenario, we switch to the Synchronous
-      // version of Put, since in this scenario, a message is sent to the request queue, and the requestor awaits a reply
-      // in the reply to queue, which is simultaneously being used by the responding application to put the response into.
-      // So we use the PutSync function, which is neccessary as this call invocation is being made in the asynchronous 
-      // thread that is reading requests, to simultaneously Put in the already open queue, which is prevented by the default
-      // Put function.
+      // version of Put. This is necessary, since there is already an async get callback in the responder application.
+      // Adding another async on top of the async callback, causes the MQRC 2500. To avoid this, we use the synchronous version
+      // of Put.
       let putCall = mq.Put; 
       if ('REPLY' === mode) {
         debug_info('Switching to PutSync')
@@ -204,22 +202,38 @@ class MQBoilerPlate {
     });
   }
 
-  rollback(buf,md, poisoningMessageHandle, callbackOnRollback) {
-
+  rollback(buf,md, poisoningMessageHandle) {
+    let me = this;
     let rollback= poisoningMessageHandle(buf, md);
-    if (rollback) {
-      mq.Back(this.mqConn, function(err) {
-        callbackOnRollback(err);
-      });
-    }
-
+    return new Promise(function resolver(resolve, reject){
+      if (rollback) {
+        mq.Back(me.mqConn, function(err) {
+          if (err) {
+            debug_warn('Error on rollback', err);
+            reject(err);
+          } else {
+            debug_info('Rollback Succesful');
+            resolve();
+          }
+        })
+      }
+    })
   }
 
-  commit(callbackOnCommit) {
-    mq.Cmit(this.mqConn, function(err) {
-      callbackOnCommit(err);
-    });
-  }
+  commit() {
+    let me = this;
+    return new Promise(function resolver(resolve,reject){
+      mq.Cmit(me.mqConn, function(err) {
+        if(err){
+          debug_warn('Error on Commit', err);
+          reject(err);
+        } else {
+          debug_info('Commit Successful');
+          resolve();
+        }
+      })
+    })
+  };
 
   getMessagesDynamicQueue(msgId, cb) {
     return this.getMessagesFromQueue(this.mqDynObj, msgId, cb);
@@ -286,9 +300,9 @@ class MQBoilerPlate {
     });
   }
 
-  // Suspends the Async Get process of the request application temporarily so that the reply to queue can be accessed by 
-  // the response application to put messages into the queue. If this is not suspended, MQ throws an error with reason
-  // code 2500 : MQRC_HCONN_ASYNC_ACTIVE
+  // Suspends the Async Get process of the response application temporarily so that the reply to queue can be accessed.
+  // If this is not suspended, MQ throws an error with reason code 2500 : MQRC_HCONN_ASYNC_ACTIVE, since an async call is already
+  // active, so another async call on top of it cannot be processed.
   suspendAsyncProcess() {
     debug_info('Suspending callback');
     let me = this;
@@ -305,12 +319,12 @@ class MQBoilerPlate {
     });
   }
 
-  // Suspends the background process that is running the Get in the response application.
+  // Resumes the background async Get in the response application.
   resumeAsyncProcess() {
     debug_info('Resuming callback');
     let me = this;
     return new Promise(function resolver(resolve, reject){
-      mq.Ctl(me.mqConn, MQC.MQOP_SUSPEND, (err) => {
+      mq.Ctl(me.mqConn, MQC.MQOP_RESUME, (err) => {
         if (err) {
           debug_warn('Error resuming get callback ', err);
           reject(err);
@@ -652,7 +666,6 @@ class MQBoilerPlate {
             debug_warn('Error Detected in Disconnect operation', err);
           } else {
             debug_info("MQDISC successful");
-            process.exit(0);
           }
         });
       } else {

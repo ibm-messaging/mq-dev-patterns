@@ -81,10 +81,11 @@ mqBoilerPlate.initialise('PUT')
   })
   .then(() => {
     mqBoilerPlate.teardown();
+    debug_info('Application Completed');
+    process.exit(0);
   })
   .catch((err) => {
     debug_warn(err);
     mqBoilerPlate.teardown();
+    process.exit(1);
   })
-
-debug_info('Application Completed');
