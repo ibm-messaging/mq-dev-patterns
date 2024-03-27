@@ -54,34 +54,31 @@ async function msgCB(md, buf) {
       debug_info("Not JSON message <%s>", decoder.write(buf));
       ok = false;      
     }
-    handleSyncPoint(buf, md, ok);
+    await handleSyncPoint(buf, md, ok);
   } else {
     debug_info("binary message: " + buf);
   }
   // Keep listening
-  return true;
+  return ok;
 }
 
-function handleSyncPoint(buf, md , ok) {
-  //Suspending the background async get process to avoid MQRC 2500 : MQRC_HCONN_ASYNC_ACTIVE.
-  debug_info("Suspending the async get process");
-  mqBoilerPlate.suspendAsyncProcess()
-  .then(()=>{
-    // If the value of ok is returned as false, reason being some problem with the Request application which might have
-    // caused the Dynamic Reply to Queue to not exist anymore, the Response application will throw a MQ Error with
-    // reason code 2085 : MQRC_UNKNOWN_OBJECT_NAME. In this case, we need the listener to suspend in order to kickstart
-    // the rollback process of the hung message so that it can succesfully be rolled back into our current active queue.
+async function handleSyncPoint(buf, md, ok){
+  debug_info('Suspending the async get process');
+  try{
+    await mqBoilerPlate.suspendAsyncProcess();
+
     if (!ok) {
-      return mqBoilerPlate.rollback(buf,md,poisoningMessageHandler);
+      await mqBoilerPlate.rollback(buf, md , poisoningMessageHandler);
     } else {
-      debug_info('Performing Commit')
-      return mqBoilerPlate.commit();
+      debug_info('Performing Commit');
+      await mqBoilerPlate.commit();
     }
-  })
-  .then(()=>{
+
     debug_info('Resuming the async get process');
-    return mqBoilerPlate.resumeAsyncProcess();
-  })
+    await mqBoilerPlate.resumeAsyncProcess();
+  } catch (err) {
+    debug_warn(err);
+  }
 }
 
 function poisoningMessageHandler(buf,md) {
@@ -123,9 +120,9 @@ function poisoningMessageHandler(buf,md) {
 
 function sendToQueue(buf, md, queue) {
   return mqBoilerPlate.openMQReplyToConnection(queue, 'DYNREP')
-  // Suspend the current async get callback in the Response application, so that the response can be posted onto
-  // the Reply to Queue. If this is not performed, MQ throws an error with reason code 2500 : MQRC_HCONN_ASYNC_ACTIVE, 
-  // as one async process is already accessing the Reply to queue, and therefore another async call on top of the existing one cannot access the Reply to Queue.
+  // Suspend the current async get callback in the Response application. If this is not performed, 
+  // MQ throws an error with reason code 2500 : MQRC_HCONN_ASYNC_ACTIVE, as one async process is already 
+  // accessing the Get Queue, and therefore another async call on top of the existing one cannot access the Queue.
   .then(() => {
     debug_info('Suspending the async get process');
     return mqBoilerPlate.suspendAsyncProcess();
@@ -223,13 +220,14 @@ mqBoilerPlate.initialise('GET', true)
     debug_info('Signal termination of the callback thread');
     return mqBoilerPlate.signalDone();
   })    
-  .then(() => {
-    mqBoilerPlate.teardown();
+  .then(async () => {
+    await mqBoilerPlate.teardown();
     debug_info('Application Completed');
     process.exit(0);
   })
-  .catch((err) => {
+  .catch(async (err) => {
     debug_warn(err);
-    mqBoilerPlate.teardown();
+    await mqBoilerPlate.teardown();
+    debug_info('Application Completed');
     process.exit(1);
   })

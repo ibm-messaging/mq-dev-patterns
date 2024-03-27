@@ -28,6 +28,8 @@ var debug_info = require('debug')('samplereq:info');
 var debug_warn = require('debug')('samplereq:warn');
 
 var MQBoilerPlate = require('./boilerplate');
+
+debug_info('Starting up Application');
 var mqBoilerPlate = new MQBoilerPlate();
 
 function msgCB(md, buf) {
@@ -46,8 +48,6 @@ function msgCB(md, buf) {
   // Stop listening
   return false;
 }
-
-debug_info('Starting up Application');
 
 mqBoilerPlate.initialise('PUT')
   .then(() => {
@@ -79,13 +79,14 @@ mqBoilerPlate.initialise('PUT')
     debug_info('Waiting for termination');
     return mqBoilerPlate.checkForTermination();
   })
-  .then(() => {
-    mqBoilerPlate.teardown();
+  .then(async () => {
+    await mqBoilerPlate.teardown()
     debug_info('Application Completed');
     process.exit(0);
   })
-  .catch((err) => {
+  .catch(async (err) => {
     debug_warn(err);
-    mqBoilerPlate.teardown();
+    await mqBoilerPlate.teardown();
+    debug_info('Application Completed');
     process.exit(1);
   })

@@ -95,14 +95,22 @@ class MQBoilerPlate {
   teardown() {
     debug_info('Closing MQ');
     MQBoilerPlate.closeSubscription(this.hObjSubscription);
-    MQBoilerPlate.closeMQConnection(this.mqObj)
-      .then(() => {
-        this.mqObj = null;
-        return MQBoilerPlate.disconnectFromMQ(this.mqConn);
+    let me = this;
+    return new Promise(function resolver(resolve, reject) {
+      MQBoilerPlate.closeMQConnection(me.mqObj)
+      .then(()=>{
+        me.mqObj = null;
+        return MQBoilerPlate.disconnectFromMQ(me.mqConn);
       })
-      .then(() => {
-        this.mqConn = null;
+      .then(()=>{
+        me.mqConn = null;
+        resolve();
       })
+      .catch((err) => {
+        debug_warn(err);
+        reject(err);
+      });
+    });
   }
 
   // Load the MQ Endpoint details either from the envrionment or from the
@@ -206,7 +214,9 @@ class MQBoilerPlate {
     let me = this;
     let rollback= poisoningMessageHandle(buf, md);
     return new Promise(function resolver(resolve, reject){
-      if (rollback) {
+      if (!rollback) {
+        resolve();
+      } else {
         mq.Back(me.mqConn, function(err) {
           if (err) {
             debug_warn('Error on rollback', err);
@@ -273,7 +283,7 @@ class MQBoilerPlate {
       gmo.WaitInterval = waitInterval * 1000; //
 
       if (msgId != null) {
-        console.log("Setting Match Option for MsgId");
+        debug_info("Setting Match Option for MsgId");
         gmo.MatchOptions = MQC.MQMO_MATCH_MSG_ID;
         md.MsgId = MQBoilerPlate.hexToBytes(msgId);
       }
@@ -573,6 +583,11 @@ class MQBoilerPlate {
 
       debug_info('Attempting connection to MQ ', od.ObjectName);
 
+      // We initialise the openCall variable with the default Open call of MQ when the type is not part of the
+      // Request-Response scenario. When the type is "DYNREP", we refer to the response application, which is trying to open
+      // the dynamic reply to queue. Since the default Open call is an asynchronous call, and the responder application has a 
+      // background async get call, adding another async on top of the async callback, causes the MQRC 2500. 
+      // To avoid this, we switch to the synchronous version of Open when in a Request-Response scenario.
       let openCall = mq.Open;
       if ('DYNREP' === type) {
         debug_info('Switching to Synchronous Open');
@@ -628,9 +643,9 @@ class MQBoilerPlate {
     if (hObjSubscription) {
       try {
         mq.Close(hObjSubscription, 0,function (err){
-          if (err){
+          if (err) {
             MQBoilerPlate.reportError(err);
-          }else{
+          } else {
             debug_info("MQCLOSE (Subscription) successful");
           }
         });
@@ -647,10 +662,11 @@ class MQBoilerPlate {
           if (err) {
             //console.log(formatErr(err));
             MQBoilerPlate.reportError(err);
+            reject(err);
           } else {
             debug_info("MQCLOSE successful");
+            resolve();
           }
-          resolve();
         });
       } else {
         resolve();
@@ -664,8 +680,10 @@ class MQBoilerPlate {
         mq.Disc(hConn, function(err) {
           if (err) {
             debug_warn('Error Detected in Disconnect operation', err);
+            reject(err);
           } else {
             debug_info("MQDISC successful");
+            resolve();
           }
         });
       } else {
@@ -693,7 +711,12 @@ class MQBoilerPlate {
       //mq.GetDone(hObj);
     } else {
       if (activeCB) {
-        canExit = !activeCB(md, buf);
+        if (activeCB instanceof Promise) {
+          activeCB(md,buf)
+            .then((mustContinue) => {canExit = ! mustContinue;})
+        } else {
+          canExit = !activeCB(md,buf);
+        }
       }
     }
   }
