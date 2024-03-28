@@ -20,21 +20,16 @@
 ###########################################################
 # This starts the BUILD phase
 ###########################################################
-FROM ubuntu:20.04 as builder
+FROM node:latest as builder
 
-ENV NODE_VERSION 18
+# ENV NODE_VERSION 18
 
 #get the application
 ENV APP_DIR /usr/local
 WORKDIR ${APP_DIR}
 
-# Update the base image and make sure we've installed basic capabilities.
-# Also install node and npm.
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl gcc g++ make git ca-certificates \    
-    && curl --silent -k --location https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
-    && apt-get install -y  nodejs \
-    && npm install -g npm
+# Update npm to latest version
+RUN npm install -g npm
 
 # Copy project files into the container
 COPY ./AWS-showcase-backend ./AWS-showcase-backend
@@ -42,10 +37,7 @@ ENV APP_DIR /usr/local/AWS-showcase-backend/
 WORKDIR ${APP_DIR}
 
 #install packages for the application
-RUN npm install --only=prod \
-    && apt-get autoremove -y curl make gcc g++ git \
-    && apt-get purge -y \
-    && rm -rf /var/lib/apt/lists/* \   
+RUN npm install --only=prod \   
     && chmod a+rx ${APP_DIR}/*
 
 #Cleaning

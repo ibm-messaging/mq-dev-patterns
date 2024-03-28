@@ -29,6 +29,8 @@ services:
     environment:
       - REACT_APP_BE_HOST=be
       - REACT_APP_IS_FOR_CODING_CHALLENGE=false
+      - REACT_APP_BE_PORT=8080
+      - REACT_APP_BE_TLS=false
   be:
     build:
       context: backend/.
