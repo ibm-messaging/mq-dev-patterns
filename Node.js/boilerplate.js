@@ -640,27 +640,31 @@ class MQBoilerPlate {
 
 
   static closeSubscription(hObjSubscription) {
-    if (hObjSubscription) {
-      try {
-        mq.Close(hObjSubscription, 0,function (err){
+    return new Promise(function resolver(resolve, reject){
+      if (! hObjSubscription) {
+        resolve();
+      } else {
+        mq.Close(hObjSubscription, 0, function(err) {
           if (err) {
             MQBoilerPlate.reportError(err);
+            debug_info("MQCLOSE (Subscription) ended with reason "+err.mqrc);
+            reject(err);
           } else {
-            debug_info("MQCLOSE (Subscription) successful");
+            debug_info("MQCLOSE (Subcscription) sucessful");
+            resolve();
           }
         });
-      } catch (err) {
-        debug_warn("MQCLOSE (Subscription) ended with reason " + err.mqrc);
       }
-    }
+    });
   }
 
   static closeMQConnection(hObj) {
     return new Promise(function resolver(resolve, reject) {
-      if (hObj) {
+      if (! hObj) {
+        resolve();
+      } else {
         mq.Close(hObj, 0, function(err) {
           if (err) {
-            //console.log(formatErr(err));
             MQBoilerPlate.reportError(err);
             reject(err);
           } else {
@@ -668,15 +672,15 @@ class MQBoilerPlate {
             resolve();
           }
         });
-      } else {
-        resolve();
       }
     });
   }
 
   static disconnectFromMQ(hConn) {
     return new Promise(function resolver(resolve, reject) {
-      if (hConn) {
+      if (! hConn) {
+        resolve();
+      } else {
         mq.Disc(hConn, function(err) {
           if (err) {
             debug_warn('Error Detected in Disconnect operation', err);
@@ -686,8 +690,6 @@ class MQBoilerPlate {
             resolve();
           }
         });
-      } else {
-        resolve();
       }
     });
   }
@@ -712,6 +714,7 @@ class MQBoilerPlate {
     } else {
       if (activeCB) {
         if (activeCB instanceof Promise) {
+          debug_info("Callback is an instance of a Promise");
           activeCB(md,buf)
             .then((mustContinue) => {canExit = ! mustContinue;})
         } else {

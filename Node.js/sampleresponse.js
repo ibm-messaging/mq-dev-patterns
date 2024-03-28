@@ -220,14 +220,18 @@ mqBoilerPlate.initialise('GET', true)
     debug_info('Signal termination of the callback thread');
     return mqBoilerPlate.signalDone();
   })    
-  .then(async () => {
-    await mqBoilerPlate.teardown();
+  .then(() => {
+    return mqBoilerPlate.teardown();
+  })
+  .then(() => {
     debug_info('Application Completed');
     process.exit(0);
   })
-  .catch(async (err) => {
+  .catch((err) => {
     debug_warn(err);
-    await mqBoilerPlate.teardown();
+    return mqBoilerPlate.teardown();
+  })
+  .then(() => {
     debug_info('Application Completed');
     process.exit(1);
   })

@@ -79,14 +79,18 @@ mqBoilerPlate.initialise('PUT')
     debug_info('Waiting for termination');
     return mqBoilerPlate.checkForTermination();
   })
-  .then(async () => {
-    await mqBoilerPlate.teardown()
+  .then(() => {
+    return mqBoilerPlate.teardown();
+  })
+  .then(() => {
     debug_info('Application Completed');
     process.exit(0);
   })
-  .catch(async (err) => {
+  .catch((err) => {
     debug_warn(err);
-    await mqBoilerPlate.teardown();
+    return mqBoilerPlate.teardown();
+  })
+  .then(()=>{
     debug_info('Application Completed');
     process.exit(1);
-  })
+  });
