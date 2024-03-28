@@ -17,8 +17,8 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const be = process.env.REACT_APP_BE_HOST;
-const be_port = process.env.REACT_APP_BE_PORT || "8080";
-const be_tls = process.env.REACT_APP_BE_TLS || false;
+const be_port = process.env.REACT_APP_BE_PORT;
+const be_tls = process.env.REACT_APP_BE_TLS;
 const HTTP_PROTOCOL = be_tls ? "https://" : "http://";
 
 const be_host = HTTP_PROTOCOL + be + ":" + be_port;
