@@ -212,9 +212,8 @@ class MQBoilerPlate {
 
   rollback(buf,md, poisoningMessageHandle) {
     let me = this;
-    let rollback= poisoningMessageHandle(buf, md);
     return new Promise(function resolver(resolve, reject){
-      if (!rollback) {
+      if (! poisoningMessageHandle(buf, md)) {
         resolve();
       } else {
         mq.Back(me.mqConn, function(err) {
