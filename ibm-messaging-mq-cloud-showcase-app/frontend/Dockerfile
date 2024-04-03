@@ -1,5 +1,5 @@
 
-#  Copyright 2022, 2023, 2024 IBM Corp.
+#  Copyright 2022 , 2024 IBM Corp.
 #  Licensed under the Apache License, Version 2.0 (the 'License');
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
@@ -43,10 +43,12 @@ RUN yarn run build
 ###########################################################
 # Now that there is a container with the compiled program we can have a smaller
 # runtime image.
-FROM nginx:stable-alpine3.17-slim as frontendImage
+FROM nginx:stable-alpine3.17 as frontendImage
 
 #Set nginx configuration as per application requirements
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf.template /etc/nginx/conf.d/default.conf.template
+COPY docker-entrypoint.sh /
+ENTRYPOINT ["/docker-entrypoint.sh"]
 #Copy over only the built code to the default nginx location
 COPY --from=builder /usr/local/build /usr/share/nginx/html
 
