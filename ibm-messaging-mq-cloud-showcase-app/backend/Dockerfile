@@ -1,4 +1,4 @@
-#  Copyright 2022 , 2024 IBM Corp.
+#  Copyright 2022, 2024 IBM Corp.
 #  Licensed under the Apache License, Version 2.0 (the 'License');
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
@@ -77,7 +77,7 @@ RUN rm libcurl.so \
 # Now that there is a container with the compiled program we can build a smaller
 # runtime image. Start from one of the smaller base container images. This container
 # is an official Node image with the runtime already embedded
-FROM node:18-slim as backendImage
+FROM node:20-slim as backendImage
 
 ENV APP_DIR /usr/local/AWS-showcase-backend/
 WORKDIR ${APP_DIR}
