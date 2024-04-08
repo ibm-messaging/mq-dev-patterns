@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2024 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import { Handle } from 'react-flow-renderer';
 import { Send } from '@carbon/react/icons';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PointToPoint/store';
-import NumberInput from '@carbon/react/lib/components/NumberInput/NumberInput';
+import {NumberInput} from '@carbon/react';
 import './map.css';
 import TextInput from '@carbon/react/lib/components/TextInput';
 
@@ -84,7 +84,7 @@ const ProducerNode = ({ id, data }) => {
   };
 
   const handleOnChange = (e, value) => {
-    var delta = value === 'up' ? 1 : -1;
+    var delta = value.direction === 'up' ? 1 : -1;
     setQuantity(quantity + delta);
   };
 

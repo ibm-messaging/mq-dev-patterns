@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2024 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const be = process.env.REACT_APP_BE_HOST;
-const be_port = process.env.REACT_APP_BE_PORT || "8080";
-const be_tls = process.env.REACT_APP_BE_TLS || false;
+const be_port = process.env.REACT_APP_BE_PORT;
+const be_tls = process.env.REACT_APP_BE_TLS;
 const HTTP_PROTOCOL = be_tls ? "https://" : "http://";
 
 const be_host = HTTP_PROTOCOL + be + ":" + be_port;

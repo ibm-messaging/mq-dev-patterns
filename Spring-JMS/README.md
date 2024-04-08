@@ -78,7 +78,7 @@ spring.jms.pub-sub-domain=true
 ### Level 102 Sample
 **An app that does both Point/Point and Pub/Sub**
 
-The Level 102 sample show an application that is performing both
+The Level 102 sample shows an application that is performing both
 put/get point to point messaging as well as pub/sub.
 
 It consists of 4 modules.

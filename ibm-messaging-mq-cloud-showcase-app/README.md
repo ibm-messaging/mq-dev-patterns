@@ -2,7 +2,7 @@
 
 ## Description
 
-A detailed usage of this IBM MQ Messaging Playground Application is provided in the following tutorial: [AWS-TUTORIAL-URL]. The application is underpinned by three containers (frontend, backend, MQ).
+A detailed usage of this IBM MQ Messaging Playground Application is provided in the following tutorial: [AWS-TUTORIAL-URL](https://developer.ibm.com/tutorials/mq-build-deploy-ibm-mq-app-to-aws-cloud/). The application is underpinned by three containers (frontend, backend, MQ).
 
 Before deploying the containers, configure the following variables in the `.env` file:
 
@@ -17,16 +17,16 @@ There are three different yaml files for deploying the application, depending on
 
 ### AWS Cloud
 
-To deploy the containers on AWS ECS, follow the instructions in the [AWS-TUTORIAL-URL].
+To deploy the containers on AWS ECS, follow the instructions in the [AWS-TUTORIAL-URL](https://developer.ibm.com/tutorials/mq-build-deploy-ibm-mq-app-to-aws-cloud/).
 
 ### Local Machine
 
 To deploy the containers on your local machine (requires docker and docker-compose), run the following commands in your terminal:
 
     cd mq-dev-patterns/ibm-messaging-mq-cloud-showcase-app/
-    docker-compose -f aws-docker-compose.yaml build
-    docker-compose -f aws-docker-compose.yaml up
+    docker-compose -f docker-compose.yaml build
+    docker-compose -f docker-compose.yaml up
     
 After starting the three containers, you can now access:
-    - the playground app on the following URL: http://<your-local-machine-IP>:3000
-    - the MQ web console on the following URL: http://<your-local-machine-IP>:9443/ibmmq/console
+    - the playground app on the following URL: http://\<your-local-machine-IP>:3000
+    - the MQ web console on the following URL: http://\<your-local-machine-IP>:9443/ibmmq/console

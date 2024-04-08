@@ -70,7 +70,8 @@ class Requestor {
                 resolve(hObjDyn);
             })
             .catch((err) => {
-                debug_warn(`requester ${this.myID} error putting message onto queue ${hObjDyn}`);
+                debug_warn(`requester ${this.myID} error putting message onto queue`);
+                debug_warn(err);
                 reject(err);
             })
         });
