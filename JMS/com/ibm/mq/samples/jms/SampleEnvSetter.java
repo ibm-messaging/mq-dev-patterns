@@ -1,5 +1,5 @@
 /*
-* (c) Copyright IBM Corporation 2019, 2023
+* (c) Copyright IBM Corporation 2019, 2024
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -229,7 +229,7 @@ public class SampleEnvSetter {
     }
 
     public int getCount() {
-        // If there are n endpoints, then values 
+        // If there are no endpoints, then values 
         // need to come from a CCDT and environment settings
         return (null == mqEndPoints) ? 1 : mqEndPoints.length();
     }
