@@ -229,8 +229,12 @@ public class SampleEnvSetter {
     }
 
     public int getCount() {
-        // If there are no endpoints, then values 
+        // If there are n endpoints, then values 
         // need to come from a CCDT and environment settings
         return (null == mqEndPoints) ? 1 : mqEndPoints.length();
+    }
+
+    public void setMqEndpoints(JSONArray mqEndPoints){
+        this.mqEndPoints = mqEndPoints;
     }
 }
