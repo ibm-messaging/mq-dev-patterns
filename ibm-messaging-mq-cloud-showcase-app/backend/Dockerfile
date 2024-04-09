@@ -19,7 +19,7 @@
 ###########################################################
 # This starts the BUILD phase
 ###########################################################
-FROM node:20.9.0 as builder
+FROM --platform=linux/amd64 node:20.9.0 as builder
 # ENV NODE_VERSION 18
 
 #get the application
@@ -58,7 +58,7 @@ ENV APP_DIR /usr/local/AWS-showcase-backend/node_modules/ibmmq/redist/lib64
 WORKDIR ${APP_DIR}
 RUN rm libcurl.so \
     && rm libmqz_r.so \
-    && rm libedit.so \
+    # && rm libedit.so \ Does not exist 
     && rm libmqzsd_r.so \
     && rm libmqcxa64_r.so \ 
     && rm libmqcxa_r.so \
@@ -77,7 +77,7 @@ RUN rm libcurl.so \
 # Now that there is a container with the compiled program we can build a smaller
 # runtime image. Start from one of the smaller base container images. This container
 # is an official Node image with the runtime already embedded
-FROM node:20-slim as backendImage
+FROM --platform=linux/amd64 node:20-slim as backendImage
 
 ENV APP_DIR /usr/local/AWS-showcase-backend/
 WORKDIR ${APP_DIR}
