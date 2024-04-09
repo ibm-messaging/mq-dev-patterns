@@ -27,7 +27,7 @@ ENV APP_DIR /usr/local
 WORKDIR ${APP_DIR}
 
 # Update npm to latest version
-RUN npm install -g npm
+# RUN npm install -g npm
 
 # Copy project files into the container
 COPY ./AWS-showcase-backend ./AWS-showcase-backend
@@ -36,8 +36,7 @@ WORKDIR ${APP_DIR}
 
 # Force clean the cache, to prevent "Class extends value undefined ... " error  
 # Install packages for the application
-RUN npm cache clean --force \
-    && npm install --omit=dev \   
+RUN npm install --omit=dev \   
     && chmod a+rx ${APP_DIR}/*
 
 #Cleaning
