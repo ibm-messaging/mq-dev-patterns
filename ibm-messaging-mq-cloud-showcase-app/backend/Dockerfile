@@ -27,15 +27,16 @@ ENV APP_DIR /usr/local
 WORKDIR ${APP_DIR}
 
 # Update npm to latest version
-RUN npm install -g npm
+# Removed as was causing "Class extends ..." error
+# RUN npm install -g npm
 
 # Copy project files into the container
 COPY ./AWS-showcase-backend ./AWS-showcase-backend
 ENV APP_DIR /usr/local/AWS-showcase-backend/
 WORKDIR ${APP_DIR}
 
-#install packages for the application
-RUN npm install --only=prod \   
+# Install packages for the application
+RUN npm install --omit=dev \   
     && chmod a+rx ${APP_DIR}/*
 
 #Cleaning
