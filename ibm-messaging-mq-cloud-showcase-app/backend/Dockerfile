@@ -34,8 +34,10 @@ COPY ./AWS-showcase-backend ./AWS-showcase-backend
 ENV APP_DIR /usr/local/AWS-showcase-backend/
 WORKDIR ${APP_DIR}
 
-#install packages for the application
-RUN npm install --omit=dev \   
+# Force clean the cache, to prevent "Class extends value undefined ... " error  
+# Install packages for the application
+RUN npm cache clean --force \
+    && npm install --omit=dev \   
     && chmod a+rx ${APP_DIR}/*
 
 #Cleaning
