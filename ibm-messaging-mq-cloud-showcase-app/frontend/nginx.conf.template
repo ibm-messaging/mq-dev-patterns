@@ -27,7 +27,7 @@ server {
 
     #Set up reverse proxy to redirect requests to backend
     location /api/ {
-        proxy_pass http://$REACT_APP_BE_HOST:$REACT_APP_BE_PORT/api/;
+        proxy_pass https://$REACT_APP_BE_HOST:$REACT_APP_BE_PORT/api/;
     }
 
     #error_page  404              /404.html;
