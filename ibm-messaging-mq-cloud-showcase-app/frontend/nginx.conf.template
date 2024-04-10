@@ -12,7 +12,7 @@
 #  limitations under the License.
 
 
-upstream $REACT_APP_BE_HOST {
+upstream $REACT_APP_BE_HOST:$REACT_APP_BE_PORT {
     server $REACT_APP_BE_HOST;
     server $REACT_APP_BE_HOST max_fails=0;
 }
