@@ -12,8 +12,8 @@
 #  limitations under the License.
 
 upstream backend {
-    server $REACT_APP_BE_HOST slow_start=120s;
-    server $REACT_APP_BE_HOST max_fails=50 fail_timeout=60s;
+    server $REACT_APP_BE_HOST;
+    server $REACT_APP_BE_HOST max_fails=0 slow_start=120s;
 }
 
 server {
