@@ -13,7 +13,7 @@
 
 upstream backend {
     server $REACT_APP_BE_HOST;
-    server $REACT_APP_BE_HOST max_fails=0 slow_start=120s;
+    server $REACT_APP_BE_HOST max_fails=0;
 }
 
 server {
