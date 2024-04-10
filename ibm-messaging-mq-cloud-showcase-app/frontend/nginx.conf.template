@@ -11,6 +11,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+upstream backend {
+    server $REACT_APP_BE_HOST slow_start=120s;
+    server $REACT_APP_BE_HOST max_fails=50 fail_timeout=60s;
+}
 
 server {
     listen       80;
