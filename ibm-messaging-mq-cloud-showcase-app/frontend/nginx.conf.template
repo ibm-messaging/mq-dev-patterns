@@ -18,8 +18,8 @@ upstream $REACT_APP_BE_HOST {
 }
 
 server {
-    listen       80;
-    listen  [::]:80;
+    listen       443;
+    listen  [::]:443;
     server_name  localhost;
 
     #access_log  /var/log/nginx/host.access.log  main;
@@ -34,6 +34,7 @@ server {
     location /api/ {
         proxy_pass https://$REACT_APP_BE_HOST:$REACT_APP_BE_PORT/api/;
         proxy_read_timeout 5m;
+        proxy_ssl_verify off;
     }
 
     #error_page  404              /404.html;
