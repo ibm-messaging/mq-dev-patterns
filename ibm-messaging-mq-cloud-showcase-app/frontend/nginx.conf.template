@@ -12,7 +12,6 @@
 #  limitations under the License.
 
 upstream backend {
-    server $REACT_APP_BE_HOST;
     server $REACT_APP_BE_HOST max_fails=0;
 }
 
@@ -32,6 +31,7 @@ server {
     #Set up reverse proxy to redirect requests to backend
     location /api/ {
         proxy_pass https://$REACT_APP_BE_HOST:$REACT_APP_BE_PORT/api/;
+        proxy_read_timeout 5m;
     }
 
     #error_page  404              /404.html;
