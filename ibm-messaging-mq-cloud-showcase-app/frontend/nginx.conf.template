@@ -11,7 +11,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-upstream backend {
+
+upstream $REACT_APP_BE_HOST {
+    server $REACT_APP_BE_HOST;
     server $REACT_APP_BE_HOST max_fails=0;
 }
 
