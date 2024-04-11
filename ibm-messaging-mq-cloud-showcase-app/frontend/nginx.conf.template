@@ -35,13 +35,25 @@ server {
     location /api/ {
     #    #proxy_pass https://$REACT_APP_BE_HOST:$REACT_APP_BE_PORT/api/;
         proxy_pass https://$REACT_APP_BE_HOST/api/;
-        proxy_read_timeout 5m;
+        proxy_read_timeout 1m;
         proxy_ssl_verify off;
     }
 
-    location /api/qdepth/ {
+    location /api/qdepth {
         proxy_pass https://$REACT_APP_BE_HOST/api/qdepth;
-        proxy_read_timeout 5m;
+        proxy_read_timeout 1m;
+        proxy_ssl_verify off;
+    }
+
+    location /api/sub {
+        proxy_pass https://$REACT_APP_BE_HOST/api/sub;
+        proxy_read_timeout 1m;
+        proxy_ssl_verify off;
+    }
+
+    location /api/unsub {
+        proxy_pass https://$REACT_APP_BE_HOST/api/unsub;
+        proxy_read_timeout 1m;
         proxy_ssl_verify off;
     }
 
@@ -72,13 +84,25 @@ server {
     location /api/ {
         # proxy_pass https://$REACT_APP_BE_HOST:$REACT_APP_BE_PORT/api/;
         proxy_pass https://$REACT_APP_BE_HOST/api/;
-        proxy_read_timeout 5m;
+        proxy_read_timeout 1m;
         proxy_ssl_verify off;
     }
 
-    location /api/qdepth/ {
+    location /api/qdepth {
         proxy_pass https://$REACT_APP_BE_HOST/api/qdepth;
-        proxy_read_timeout 5m;
+        proxy_read_timeout 1m;
+        proxy_ssl_verify off;
+    }
+
+    location /api/sub {
+        proxy_pass https://$REACT_APP_BE_HOST/api/sub;
+        proxy_read_timeout 1m;
+        proxy_ssl_verify off;
+    }
+
+    location /api/unsub {
+        proxy_pass https://$REACT_APP_BE_HOST/api/unsub;
+        proxy_read_timeout 1m;
         proxy_ssl_verify off;
     }
 
