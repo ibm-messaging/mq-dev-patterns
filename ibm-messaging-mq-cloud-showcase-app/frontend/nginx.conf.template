@@ -44,7 +44,7 @@ server {
         #proxy_read_timeout 1m;
         #proxy_ssl_verify off;
 
-    #    return 302 https:$REACT_APP_BE_HOST/$request_uri;
+    #    return 302 https:$REACT_APP_BE_HOST$request_uri;
     #}
 
     location /api/qdepth {
@@ -52,7 +52,7 @@ server {
     #    proxy_read_timeout 1m;
     #    proxy_ssl_verify off;
 
-        return 302 https://be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud/api/qdepth;
+        return 302 https://$REACT_APP_BE_HOST/api/qdepth;
     }
 
     location /api/sub {
@@ -60,14 +60,16 @@ server {
     #    proxy_read_timeout 1m;
     #    proxy_ssl_verify off;
 
-        return 302 https://be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud/$request_uri;
+        return 302 https://be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud$request_uri;
     }
 
-    #location /api/unsub {
+    location /api/unsub {
     #    proxy_pass https://$REACT_APP_BE_HOST/api/unsub;
     #    proxy_read_timeout 1m;
     #    proxy_ssl_verify off;
-    #}
+
+        return 302 https://be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud$request_uri;
+    }
 
     #error_page  404              /404.html;
 
