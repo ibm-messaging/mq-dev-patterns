@@ -32,12 +32,12 @@ server {
     }
 
     #Set up reverse proxy to redirect requests to backend
-    #location /api/ {
+    location /api/* {
     #    #proxy_pass https://$REACT_APP_BE_HOST:$REACT_APP_BE_PORT/api/;
-    #    proxy_pass https://$REACT_APP_BE_HOST/api/;
-    #    proxy_read_timeout 5m;
-    #    proxy_ssl_verify off;
-    #}
+        proxy_pass https://$REACT_APP_BE_HOST/api/;
+        proxy_read_timeout 5m;
+        proxy_ssl_verify off;
+    }
 
     #error_page  404              /404.html;
 
@@ -63,7 +63,7 @@ server {
     }
 
     # Set up reverse proxy to redirect requests to backend
-    location /api/ {
+    location /api/* {
         # proxy_pass https://$REACT_APP_BE_HOST:$REACT_APP_BE_PORT/api/;
         proxy_pass https://$REACT_APP_BE_HOST/api/;
         proxy_read_timeout 5m;
