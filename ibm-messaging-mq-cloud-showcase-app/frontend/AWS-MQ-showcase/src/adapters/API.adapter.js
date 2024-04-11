@@ -23,19 +23,20 @@ const HTTP_PROTOCOL = be_tls ? "https://" : "http://";
 
 const be_host = HTTP_PROTOCOL + be + ":" + be_port;
 
+console.log(`Input backend is ${be}`)
 
-const END_POINT_GET_DEPTHS = HTTP_PROTOCOL + '/api/qdepth';
-const END_POINT_PUT =  HTTP_PROTOCOL + '/api/mqput';
-const END_POINT_GET =  HTTP_PROTOCOL + '/api/mqget?limit=';
-const END_POINT_PUB =  HTTP_PROTOCOL + '/api/pub';
-const END_POINT_SUB =  HTTP_PROTOCOL + '/api/sub';
-const END_POINT_UNSUB =  HTTP_PROTOCOL + '/api/unsub';
-const END_POINT_GETLASTMESSAGEFORSUB =  HTTP_PROTOCOL + '/api/getLastMessage';
-const END_POINT_DYNPUT =  HTTP_PROTOCOL + '/api/putReq';
-const END_POINT_GETDYN =  HTTP_PROTOCOL + '/api/getRes?'; 
-const END_POINT_GET_CODING_CHALLENGE = HTTP_PROTOCOL + '/api/getCodingChallange?limit='
-const END_POINT_CLOSE_CONSUMER_CONNECTION = HTTP_PROTOCOL + '/api/closeConsumer';
-const END_POINT_CLOSE_PRODUCER_CONNECTION = HTTP_PROTOCOL + '/api/closeProducer';
+const END_POINT_GET_DEPTHS = be_host + '/api/qdepth';
+const END_POINT_PUT =  be_host + '/api/mqput';
+const END_POINT_GET =  be_host + '/api/mqget?limit=';
+const END_POINT_PUB =  be_host + '/api/pub';
+const END_POINT_SUB =  be_host + '/api/sub';
+const END_POINT_UNSUB =  be_host + '/api/unsub';
+const END_POINT_GETLASTMESSAGEFORSUB =  be_host + '/api/getLastMessage';
+const END_POINT_DYNPUT =  be_host + '/api/putReq';
+const END_POINT_GETDYN =  be_host + '/api/getRes?'; 
+const END_POINT_GET_CODING_CHALLENGE = be_host + '/api/getCodingChallange?limit='
+const END_POINT_CLOSE_CONSUMER_CONNECTION = be_host + '/api/closeConsumer';
+const END_POINT_CLOSE_PRODUCER_CONNECTION = be_host + '/api/closeProducer';
 
 class APIAdapter {
 
