@@ -13,6 +13,7 @@
 
 
 upstream $REACT_APP_BE_HOST {
+    server $REACT_APP_BE_HOST max_fails=0;
     server $REACT_APP_BE_HOST:$REACT_APP_BE_PORT;
     server $REACT_APP_BE_HOST:$REACT_APP_BE_PORT max_fails=0;
 }
@@ -31,8 +32,39 @@ server {
     }
 
     #Set up reverse proxy to redirect requests to backend
+    #location /api/ {
+    #    #proxy_pass https://$REACT_APP_BE_HOST:$REACT_APP_BE_PORT/api/;
+    #    proxy_pass https://$REACT_APP_BE_HOST/api/;
+    #    proxy_read_timeout 5m;
+    #    proxy_ssl_verify off;
+    #}
+
+    #error_page  404              /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+}
+
+server {
+    listen       443;
+    listen  [::]:443;
+    server_name  localhost;
+
+    #access_log  /var/log/nginx/host.access.log  main;
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+        try_files $uri $uri/ /index.html;
+    }
+
+    Set up reverse proxy to redirect requests to backend
     location /api/ {
-        #proxy_pass https://$REACT_APP_BE_HOST:$REACT_APP_BE_PORT/api/;
+    #    #proxy_pass https://$REACT_APP_BE_HOST:$REACT_APP_BE_PORT/api/;
         proxy_pass https://$REACT_APP_BE_HOST/api/;
         proxy_read_timeout 5m;
         proxy_ssl_verify off;
@@ -47,3 +79,4 @@ server {
         root   /usr/share/nginx/html;
     }
 }
+
