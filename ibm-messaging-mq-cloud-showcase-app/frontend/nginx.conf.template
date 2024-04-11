@@ -49,6 +49,8 @@ server {
         proxy_pass https://be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud/api/qdepth;
         proxy_read_timeout 1m;
         proxy_ssl_verify off;
+
+        return 302 https://be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud/api/qdepth;
     }
 
     location /api/sub {
