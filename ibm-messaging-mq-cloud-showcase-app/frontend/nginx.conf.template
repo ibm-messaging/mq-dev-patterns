@@ -13,8 +13,8 @@
 
 
 upstream $REACT_APP_BE_HOST {
-    server $REACT_APP_BE_HOST max_fails=0;
-    server $REACT_APP_BE_HOST:$REACT_APP_BE_PORT;
+    #server $REACT_APP_BE_HOST max_fails=0;
+    #server $REACT_APP_BE_HOST:$REACT_APP_BE_PORT;
     server $REACT_APP_BE_HOST:$REACT_APP_BE_PORT max_fails=0;
 }
 
@@ -32,9 +32,15 @@ server {
     }
 
     #Set up reverse proxy to redirect requests to backend
-    location /api/* {
+    location /api/ {
     #    #proxy_pass https://$REACT_APP_BE_HOST:$REACT_APP_BE_PORT/api/;
         proxy_pass https://$REACT_APP_BE_HOST/api/;
+        proxy_read_timeout 5m;
+        proxy_ssl_verify off;
+    }
+
+    location /api/qdepth/ {
+        proxy_pass https://$REACT_APP_BE_HOST/api/qdepth;
         proxy_read_timeout 5m;
         proxy_ssl_verify off;
     }
@@ -63,9 +69,15 @@ server {
     }
 
     # Set up reverse proxy to redirect requests to backend
-    location /api/* {
+    location /api/ {
         # proxy_pass https://$REACT_APP_BE_HOST:$REACT_APP_BE_PORT/api/;
         proxy_pass https://$REACT_APP_BE_HOST/api/;
+        proxy_read_timeout 5m;
+        proxy_ssl_verify off;
+    }
+
+    location /api/qdepth/ {
+        proxy_pass https://$REACT_APP_BE_HOST/api/qdepth;
         proxy_read_timeout 5m;
         proxy_ssl_verify off;
     }
