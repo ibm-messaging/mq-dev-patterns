@@ -16,19 +16,26 @@
 
 import axios from 'axios';
 
+const be = process.env.REACT_APP_BE_HOST;
+const be_port = process.env.REACT_APP_BE_PORT;
+const be_tls = process.env.REACT_APP_BE_TLS;
+const HTTP_PROTOCOL = be_tls ? "https://" : "http://";
 
-const END_POINT_GET_DEPTHS =  '/api/qdepth';
-const END_POINT_PUT =  '/api/mqput';
-const END_POINT_GET =  '/api/mqget?limit=';
-const END_POINT_PUB =  '/api/pub';
-const END_POINT_SUB =  '/api/sub';
-const END_POINT_UNSUB =  '/api/unsub';
-const END_POINT_GETLASTMESSAGEFORSUB =  '/api/getLastMessage';
-const END_POINT_DYNPUT =  '/api/putReq';
-const END_POINT_GETDYN =  '/api/getRes?'; 
-const END_POINT_GET_CODING_CHALLENGE = '/api/getCodingChallange?limit='
-const END_POINT_CLOSE_CONSUMER_CONNECTION = '/api/closeConsumer';
-const END_POINT_CLOSE_PRODUCER_CONNECTION = '/api/closeProducer';
+const be_host = HTTP_PROTOCOL + be + ":" + be_port;
+
+
+const END_POINT_GET_DEPTHS = HTTP_PROTOCOL + '/api/qdepth';
+const END_POINT_PUT =  HTTP_PROTOCOL + '/api/mqput';
+const END_POINT_GET =  HTTP_PROTOCOL + '/api/mqget?limit=';
+const END_POINT_PUB =  HTTP_PROTOCOL + '/api/pub';
+const END_POINT_SUB =  HTTP_PROTOCOL + '/api/sub';
+const END_POINT_UNSUB =  HTTP_PROTOCOL + '/api/unsub';
+const END_POINT_GETLASTMESSAGEFORSUB =  HTTP_PROTOCOL + '/api/getLastMessage';
+const END_POINT_DYNPUT =  HTTP_PROTOCOL + '/api/putReq';
+const END_POINT_GETDYN =  HTTP_PROTOCOL + '/api/getRes?'; 
+const END_POINT_GET_CODING_CHALLENGE = HTTP_PROTOCOL + '/api/getCodingChallange?limit='
+const END_POINT_CLOSE_CONSUMER_CONNECTION = HTTP_PROTOCOL + '/api/closeConsumer';
+const END_POINT_CLOSE_PRODUCER_CONNECTION = HTTP_PROTOCOL + '/api/closeProducer';
 
 class APIAdapter {
 
