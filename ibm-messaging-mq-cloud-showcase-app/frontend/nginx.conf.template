@@ -62,9 +62,9 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
-    Set up reverse proxy to redirect requests to backend
+    # Set up reverse proxy to redirect requests to backend
     location /api/ {
-    #    #proxy_pass https://$REACT_APP_BE_HOST:$REACT_APP_BE_PORT/api/;
+        # proxy_pass https://$REACT_APP_BE_HOST:$REACT_APP_BE_PORT/api/;
         proxy_pass https://$REACT_APP_BE_HOST/api/;
         proxy_read_timeout 5m;
         proxy_ssl_verify off;
