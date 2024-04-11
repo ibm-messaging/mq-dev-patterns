@@ -12,11 +12,17 @@
 #  limitations under the License.
 
 
-upstream $REACT_APP_BE_HOST {
+#upstream $REACT_APP_BE_HOST {
     #server $REACT_APP_BE_HOST max_fails=0;
     #server $REACT_APP_BE_HOST:$REACT_APP_BE_PORT;
-    server $REACT_APP_BE_HOST:$REACT_APP_BE_PORT max_fails=0;
+#    server $REACT_APP_BE_HOST:$REACT_APP_BE_PORT max_fails=0;
+#}
+
+upstream be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud {
+    server be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud:443 max_fails=0;
 }
+
+
 
 server {
     listen       80;
@@ -40,7 +46,7 @@ server {
     }
 
     location /api/qdepth {
-        proxy_pass https://$REACT_APP_BE_HOST/api/qdepth;
+        proxy_pass https://be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud/api/qdepth;
         proxy_read_timeout 1m;
         proxy_ssl_verify off;
     }
