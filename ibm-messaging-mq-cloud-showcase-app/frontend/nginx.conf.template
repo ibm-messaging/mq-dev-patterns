@@ -38,38 +38,38 @@ server {
     }
 
     #Set up reverse proxy to redirect requests to backend
-    #location /api/ {
+    location /api/ {
         # proxy_pass https://$REACT_APP_BE_HOST:$REACT_APP_BE_PORT/api/;
         #proxy_pass https://$REACT_APP_BE_HOST/api/;
         #proxy_read_timeout 1m;
         #proxy_ssl_verify off;
 
-    #    return 302 https:$REACT_APP_BE_HOST$request_uri;
-    #}
+        return 302 https:$REACT_APP_BE_HOST$request_uri;
+    }
 
-    location /api/qdepth {
+    #location /api/qdepth {
     #    proxy_pass https://be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud/api/qdepth;
     #    proxy_read_timeout 1m;
     #    proxy_ssl_verify off;
 
-        return 302 https://$REACT_APP_BE_HOST/api/qdepth;
-    }
+    #    return 302 https://$REACT_APP_BE_HOST/api/qdepth;
+    #}
 
-    location /api/sub {
+    #location /api/sub {
     #    proxy_pass https://$REACT_APP_BE_HOST/api/sub;
     #    proxy_read_timeout 1m;
     #    proxy_ssl_verify off;
 
-        return 302 https://be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud$request_uri;
-    }
+    #    return 302 https://be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud$request_uri;
+    #}
 
-    location /api/unsub {
+    #location /api/unsub {
     #    proxy_pass https://$REACT_APP_BE_HOST/api/unsub;
     #    proxy_read_timeout 1m;
     #    proxy_ssl_verify off;
 
-        return 302 https://be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud$request_uri;
-    }
+    #    return 302 https://be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud$request_uri;
+    #}
 
     #error_page  404              /404.html;
 
