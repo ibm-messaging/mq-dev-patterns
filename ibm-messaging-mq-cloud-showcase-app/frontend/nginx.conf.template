@@ -40,7 +40,7 @@ server {
     }
 
     location /api/qdepth {
-        proxy_pass https://$REACT_APP_BE_HOST:$REACT_APP_BE_PORT/api/qdepth;
+        proxy_pass https://$REACT_APP_BE_HOST/api/qdepth;
         proxy_read_timeout 1m;
         proxy_ssl_verify off;
     }
