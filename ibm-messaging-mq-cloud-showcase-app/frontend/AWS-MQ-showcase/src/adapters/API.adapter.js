@@ -27,8 +27,6 @@ if (be) {
   be_host = HTTP_PROTOCOL + be + ":" + be_port;
 }
 
-console.log(`Input backend is ${be}`);
-console.log(`Directing api to ${be_host}`)
 
 const END_POINT_GET_DEPTHS = be_host + '/api/qdepth';
 const END_POINT_PUT =  be_host + '/api/mqput';

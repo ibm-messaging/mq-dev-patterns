@@ -11,25 +11,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-
-#upstream $REACT_APP_BE_HOST {
-    #server $REACT_APP_BE_HOST max_fails=0;
-    #server $REACT_APP_BE_HOST:$REACT_APP_BE_PORT;
-#    server $REACT_APP_BE_HOST:$REACT_APP_BE_PORT max_fails=0;
-#}
-
-#upstream be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud {
-#    server be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud:443 max_fails=0;
-#}
-
-
-
 server {
     listen       80;
     listen  [::]:80;
     server_name  $hostname;
-
-    #access_log  /var/log/nginx/host.access.log  main;
 
     location / {
         root   /usr/share/nginx/html;
@@ -37,41 +22,10 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
-    #Set up reverse proxy to redirect requests to backend
+    #Set up redirect for requests to backend
     location /api/ {
-        # proxy_pass https://$REACT_APP_BE_HOST:$REACT_APP_BE_PORT/api/;
-        #proxy_pass https://$REACT_APP_BE_HOST/api/;
-        #proxy_read_timeout 1m;
-        #proxy_ssl_verify off;
-
         return 308 https:$REACT_APP_BE_HOST:$REACT_APP_BE_PORT$request_uri;
     }
-
-    #location /api/qdepth {
-    #    proxy_pass https://be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud/api/qdepth;
-    #    proxy_read_timeout 1m;
-    #    proxy_ssl_verify off;
-
-    #    return 302 https://$REACT_APP_BE_HOST/api/qdepth;
-    #}
-
-    #location /api/sub {
-    #    proxy_pass https://$REACT_APP_BE_HOST/api/sub;
-    #    proxy_read_timeout 1m;
-    #    proxy_ssl_verify off;
-
-    #    return 302 https://be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud$request_uri;
-    #}
-
-    #location /api/unsub {
-    #    proxy_pass https://$REACT_APP_BE_HOST/api/unsub;
-    #    proxy_read_timeout 1m;
-    #    proxy_ssl_verify off;
-
-    #    return 302 https://be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud$request_uri;
-    #}
-
-    #error_page  404              /404.html;
 
     # redirect server error pages to the static page /50x.html
     #
