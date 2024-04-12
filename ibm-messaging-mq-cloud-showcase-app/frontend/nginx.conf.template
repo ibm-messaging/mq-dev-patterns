@@ -44,7 +44,7 @@ server {
         #proxy_read_timeout 1m;
         #proxy_ssl_verify off;
 
-        return 308 https:$REACT_APP_BE_HOST$request_uri;
+        return 308 https:$REACT_APP_BE_HOST:$REACT_APP_BE_PORT$request_uri;
     }
 
     #location /api/qdepth {
