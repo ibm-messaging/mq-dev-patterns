@@ -21,12 +21,13 @@ const be_port = process.env.REACT_APP_BE_PORT;
 const be_tls = process.env.REACT_APP_BE_TLS;
 const HTTP_PROTOCOL = be_tls ? "https://" : "http://";
 
-//const be_host = HTTP_PROTOCOL + be + ":" + be_port;
+let be_host = '';
+
+if (be) {
+  be_host = HTTP_PROTOCOL + be + ":" + be_port;
+}
 
 console.log(`Input backend is ${be}`);
-
-const be_host = "https://be.1ervx8evaqko.eu-gb.codeengine.appdomain.cloud";
-
 console.log(`Directing api to ${be_host}`)
 
 const END_POINT_GET_DEPTHS = be_host + '/api/qdepth';
