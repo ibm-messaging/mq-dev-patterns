@@ -233,8 +233,4 @@ public class SampleEnvSetter {
         // need to come from a CCDT and environment settings
         return (null == mqEndPoints) ? 1 : mqEndPoints.length();
     }
-
-    public void setMqEndpoints(JSONArray mqEndPoints){
-        this.mqEndPoints = mqEndPoints;
-    }
 }

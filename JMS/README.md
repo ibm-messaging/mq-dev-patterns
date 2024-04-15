@@ -362,3 +362,10 @@ By default these samples will run in client mode. If you do want to run the samp
 ````
 
 to the `env.json` file.
+
+## Unit Test
+The samples also contain unit tests in `src/test` , which you can run using maven with the following command :
+
+````
+mvn test
+````

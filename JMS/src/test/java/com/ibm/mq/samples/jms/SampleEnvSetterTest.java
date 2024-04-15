@@ -17,6 +17,7 @@
 package com.ibm.mq.samples.jms;
 
 import static org.junit.jupiter.api.Assertions.*;
+import java.lang.reflect.Field;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
@@ -28,8 +29,9 @@ import java.util.List;
 public class SampleEnvSetterTest {
 
     static SampleEnvSetter envSetter;
+    
     @BeforeAll
-    public static void setUp(){
+    public static void setUp() throws NoSuchFieldException, IllegalAccessException{
         envSetter = new SampleEnvSetter();
 
         //Mock endpoints
@@ -64,8 +66,16 @@ public class SampleEnvSetterTest {
         JSONArray mockEndPoints = new JSONArray();
         mockEndPoints.put(endpoint1);
         mockEndPoints.put(endpoint2);
-        
-        envSetter.setMqEndpoints(mockEndPoints);
+
+        Field field = envSetter.getClass().getDeclaredField("mqEndPoints");
+        field.setAccessible(true);
+        field.set(envSetter, mockEndPoints);
+    }
+    @Test
+    public void testEnvFile(){
+        SampleEnvSetter envSetter2 = new SampleEnvSetter();
+        String value = envSetter2.getEnvValue("HOST", 0);
+        assertNotNull(value);
     }
 
     @Test
