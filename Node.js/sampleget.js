@@ -79,10 +79,18 @@ function cycleEndpoint(index) {
         mqBoilerPlate.teardown();
         resolve();
       })
+      .then(() => {
+        debug_info("Application Completed");
+        process.exit(0);
+      })
       .catch((err) => {
         debug_warn(err);
         mqBoilerPlate.teardown();
-        resolve();
+        reject();
+      })
+      .then(() => {
+        debug_info("Application Completed");
+        process.exit(1);
       })
     });
   }

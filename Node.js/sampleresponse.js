@@ -38,6 +38,14 @@ var MQBoilerPlate = require('./boilerplate');
 debug_info('Starting up Application');
 var mqBoilerPlate = new MQBoilerPlate();
 
+// Function to invoke a timeout for a specified duration of time.
+function waitForDuration(duration) {
+  return new Promise(function resolver(resolve,reject) {
+    debug_info(`Waiting for ${duration} microseconds`);
+    setTimeout(resolve,duration);
+  })
+}
+
 async function msgCB(md, buf) {
   debug_info('Message Received');
   let ok = true;
@@ -48,6 +56,14 @@ async function msgCB(md, buf) {
       debug_info('JSON Message Object found', msgObject);
       if (ok) {
         debug_info('Starting response sequence');
+
+        // We invoke a timeout of 10 seconds, to handle any resume side effects, before invoking the suspend of the background async callback.
+        await waitForDuration(10000);
+
+        // Suspend the current async get callback in the Response application. If this is not performed, 
+        // MQ throws an error with reason code 2500 : MQRC_HCONN_ASYNC_ACTIVE, as one async process is already 
+        // accessing the Get Queue, and therefore another async call on top of the existing one cannot access the Queue.
+        await mqBoilerPlate.suspendAsyncProcess();
         ok = await respondToRequest(msgObject, md);
       }
     } catch (err) {
@@ -55,6 +71,10 @@ async function msgCB(md, buf) {
       ok = false;      
     }
     await handleSyncPoint(buf, md, ok);
+
+    // Once the Response is posted on the Reply to Queue, the suspended listener can be resumed to listen for responses 
+    // from the Responding Application.
+    await mqBoilerPlate.resumeAsyncProcess();
   } else {
     debug_info("binary message: " + buf);
   }
@@ -63,19 +83,13 @@ async function msgCB(md, buf) {
 }
 
 async function handleSyncPoint(buf, md, ok){
-  debug_info('Suspending the async get process');
   try{
-    await mqBoilerPlate.suspendAsyncProcess();
-
     if (!ok) {
       await mqBoilerPlate.rollback(buf, md , poisoningMessageHandler);
     } else {
       debug_info('Performing Commit');
       await mqBoilerPlate.commit();
     }
-
-    debug_info('Resuming the async get process');
-    await mqBoilerPlate.resumeAsyncProcess();
   } catch (err) {
     debug_warn(err);
   }
@@ -96,19 +110,13 @@ function poisoningMessageHandler(buf,md) {
     let BACKOUT_QUEUE = mqBoilerPlate.MQDetails.BACKOUT_QUEUE;
 
     sendToQueue(buf, md,BACKOUT_QUEUE)
-      .then(() => {
-        return mqBoilerPlate.suspendAsyncProcess()
       .then(()=> {
         debug_info('Reply Posted');
         return mqBoilerPlate.commit();
       })
-      .then(()=>{
-        return mqBoilerPlate.resumeAsyncProcess();
-      })
-    })
-    .catch((err) => {
-      debug_warn('Error redirecting to the backout queue ',err);
-    });
+      .catch((err) => {
+        debug_warn('Error redirecting to the backout queue ',err);
+      });
    
     rollback = false;
   } else {
@@ -120,23 +128,10 @@ function poisoningMessageHandler(buf,md) {
 
 function sendToQueue(buf, md, queue) {
   return mqBoilerPlate.openMQReplyToConnection(queue, 'DYNREP')
-  // Suspend the current async get callback in the Response application. If this is not performed, 
-  // MQ throws an error with reason code 2500 : MQRC_HCONN_ASYNC_ACTIVE, as one async process is already 
-  // accessing the Get Queue, and therefore another async call on top of the existing one cannot access the Queue.
-  .then(() => {
-    debug_info('Suspending the async get process');
-    return mqBoilerPlate.suspendAsyncProcess();
+    .then(() => {
+      debug_info('Reply To Queue is ready');
+      return mqBoilerPlate.replyMessage(md.MsgId, md.CorrelId, buf)
   })
-  .then(() => {
-    debug_info('Reply To Queue is ready');
-    return mqBoilerPlate.replyMessage(md.MsgId, md.CorrelId, buf)
-  })
-  // Once the Response is posted on the Reply to Queue, the suspended listener can be resumed to listen for responses 
-  // from the Responding Application.
-  .then(() => {
-    debug_info('Resuming the async get process');
-    return mqBoilerPlate.resumeAsyncProcess();
-  });
 }
 
 

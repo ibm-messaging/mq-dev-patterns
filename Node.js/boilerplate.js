@@ -34,10 +34,11 @@ var LIMIT = 5;
 var waitInterval = 10; // max seconds to wait for a new message
 var canExit = false;
 var activeCB = null;
+var bpInstance = null;
 
 // Set up Constants
 const CCDT = "MQCCDTURL";
-const	FILEPREFIX = "file://";
+const FILEPREFIX = "file://";
 
 
 class MQBoilerPlate {
@@ -49,17 +50,18 @@ class MQBoilerPlate {
     this.hObjSubscription = null;
     this.modeType = null;
     this.index = 0;
-    this.beSync=null;
+    this.beSync = null;
     this.MQDetails = {};
     this.credentials = {};
+    bpInstance = this;
     debug_info('MQi Boilerplate constructed');
   }
 
-  initialise(type, sync=false, i = 0) {
+  initialise(type, sync = false, i = 0) {
     let me = this;
     me.modeType = type;
     me.index = i;
-    me.beSync=sync;
+    me.beSync = sync;
 
     return new Promise(function resolver(resolve, reject) {
       me.buildMQDetails()
@@ -98,18 +100,18 @@ class MQBoilerPlate {
     let me = this;
     return new Promise(function resolver(resolve, reject) {
       MQBoilerPlate.closeMQConnection(me.mqObj)
-      .then(()=>{
-        me.mqObj = null;
-        return MQBoilerPlate.disconnectFromMQ(me.mqConn);
-      })
-      .then(()=>{
-        me.mqConn = null;
-        resolve();
-      })
-      .catch((err) => {
-        debug_warn(err);
-        reject(err);
-      });
+        .then(() => {
+          me.mqObj = null;
+          return MQBoilerPlate.disconnectFromMQ(me.mqConn);
+        })
+        .then(() => {
+          me.mqConn = null;
+          resolve();
+        })
+        .catch((err) => {
+          debug_warn(err);
+          reject(err);
+        });
     });
   }
 
@@ -121,11 +123,11 @@ class MQBoilerPlate {
     let i = this.index;
     if (env.MQ_ENDPOINTS.length > i) {
       ['QMGR', 'QUEUE_NAME', 'TOPIC_NAME',
-       'MODEL_QUEUE_NAME', 'DYNAMIC_QUEUE_PREFIX', 'BACKOUT_QUEUE',
-       'HOST', 'PORT',
-       'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach((f) => {
-        this.MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[i][f];
-      });
+        'MODEL_QUEUE_NAME', 'DYNAMIC_QUEUE_PREFIX', 'BACKOUT_QUEUE',
+        'HOST', 'PORT',
+        'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach((f) => {
+          this.MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[i][f];
+        });
       ['USER', 'PASSWORD'].forEach((f) => {
         let pField = 'APP_' + f;
         this.credentials[f] = process.env[pField] || env.MQ_ENDPOINTS[i][pField];
@@ -168,7 +170,7 @@ class MQBoilerPlate {
       let queue = me.mqObj;
 
       // Describe how the Put should behave
-      pmo.Options =  MQC.MQPMO_NO_SYNCPOINT;
+      pmo.Options = MQC.MQPMO_NO_SYNCPOINT;
 
       if ('REPLY' === mode) {
         queue = me.mqDynReplyObj;
@@ -187,12 +189,12 @@ class MQBoilerPlate {
       // version of Put. This is necessary, since there is already an async get callback in the responder application.
       // Adding another async on top of the async callback, causes the MQRC 2500. To avoid this, we use the synchronous version
       // of Put.
-      let putCall = mq.Put; 
+      let putCall = mq.Put;
       if ('REPLY' === mode) {
         debug_info('Switching to PutSync')
         putCall = mq.PutSync
       }
-      putCall(queue, mqmd, pmo, msg, function(err) {
+      putCall(queue, mqmd, pmo, msg, function (err) {
         if (MQBoilerPlate.isPublishNoSubscriptions(me.modeType, err)) {
           debug_info('Publish unsuccessful because there are no subscribers', err.mqrcstr);
         } else if (err) {
@@ -210,13 +212,13 @@ class MQBoilerPlate {
     });
   }
 
-  rollback(buf,md, poisoningMessageHandle) {
+  rollback(buf, md, poisoningMessageHandle) {
     let me = this;
-    return new Promise(function resolver(resolve, reject){
-      if (! poisoningMessageHandle(buf, md)) {
+    return new Promise(function resolver(resolve, reject) {
+      if (!poisoningMessageHandle(buf, md)) {
         resolve();
       } else {
-        mq.Back(me.mqConn, function(err) {
+        mq.Back(me.mqConn, function (err) {
           if (err) {
             debug_warn('Error on rollback', err);
             reject(err);
@@ -231,9 +233,9 @@ class MQBoilerPlate {
 
   commit() {
     let me = this;
-    return new Promise(function resolver(resolve,reject){
-      mq.Cmit(me.mqConn, function(err) {
-        if(err){
+    return new Promise(function resolver(resolve, reject) {
+      mq.Cmit(me.mqConn, function (err) {
+        if (err) {
           debug_warn('Error on Commit', err);
           reject(err);
         } else {
@@ -263,14 +265,14 @@ class MQBoilerPlate {
 
       if (me.beSync) {
         gmo.Options = MQC.MQPMO_SYNCPOINT |
-        MQC.MQGMO_WAIT |
-        MQC.MQGMO_CONVERT |
-        MQC.MQGMO_FAIL_IF_QUIESCING;
+          MQC.MQGMO_WAIT |
+          MQC.MQGMO_CONVERT |
+          MQC.MQGMO_FAIL_IF_QUIESCING;
       } else {
         gmo.Options = MQC.MQPMO_NO_SYNCPOINT |
-        MQC.MQGMO_WAIT |
-        MQC.MQGMO_CONVERT |
-        MQC.MQGMO_FAIL_IF_QUIESCING;
+          MQC.MQGMO_WAIT |
+          MQC.MQGMO_CONVERT |
+          MQC.MQGMO_FAIL_IF_QUIESCING;
       }
 
       switch (me.modeType) {
@@ -296,7 +298,7 @@ class MQBoilerPlate {
   startGetAsyncProcess() {
     debug_info('Enabling callback');
     let me = this;
-    return new Promise(function resolver(resolve, reject){
+    return new Promise(function resolver(resolve, reject) {
       mq.Ctl(me.mqConn, MQC.MQOP_START, (err) => {
         if (err) {
           debug_warn('Error enabling get callback ', err);
@@ -315,7 +317,7 @@ class MQBoilerPlate {
   suspendAsyncProcess() {
     debug_info('Suspending callback');
     let me = this;
-    return new Promise(function resolver(resolve, reject){
+    return new Promise(function resolver(resolve, reject) {
       mq.Ctl(me.mqConn, MQC.MQOP_SUSPEND, (err) => {
         if (err) {
           debug_warn('Error suspending get callback ', err);
@@ -332,7 +334,7 @@ class MQBoilerPlate {
   resumeAsyncProcess() {
     debug_info('Resuming callback');
     let me = this;
-    return new Promise(function resolver(resolve, reject){
+    return new Promise(function resolver(resolve, reject) {
       mq.Ctl(me.mqConn, MQC.MQOP_RESUME, (err) => {
         if (err) {
           debug_warn('Error resuming get callback ', err);
@@ -349,10 +351,10 @@ class MQBoilerPlate {
   signalDone() {
     debug_info('Signalling callback thread to terminate');
     let me = this;
-    return new Promise(function resolver(resolve, reject){
+    return new Promise(function resolver(resolve, reject) {
       mq.GetDone(me.mqObj);
       resolve();
-    });  
+    });
   }
 
 
@@ -443,9 +445,9 @@ class MQBoilerPlate {
       // And make the CNO refer to the SSL Connection Options
       mqcno.SSLConfig = sco;
     }
-    
 
-    if (! MQBoilerPlate.ccdtCheck()) {
+
+    if (!MQBoilerPlate.ccdtCheck()) {
       debug_info('CCDT URL export is not set, will be using json envrionment client connections settings');
       // And then fill in relevant fields for the MQCD
       let cd = new mq.MQCD();
@@ -486,7 +488,7 @@ class MQBoilerPlate {
     let me = this;
     return new Promise(function resolver(resolve, reject) {
       debug_info('Attempting Connection to MQ');
-      mq.Connx(me.MQDetails.QMGR, cno, function(err, hConn) {
+      mq.Connx(me.MQDetails.QMGR, cno, function (err, hConn) {
         debug_info('Inside Connection Callback function');
         if (err) {
           reject(err);
@@ -543,8 +545,6 @@ class MQBoilerPlate {
     return new Promise(function resolver(resolve, reject) {
       let od = new mq.MQOD();
 
-      debug_info('Opening Connection running mode ', type);
-
       switch (type) {
         case 'PUT':
         case 'GET':
@@ -565,6 +565,8 @@ class MQBoilerPlate {
           break;
       }
 
+      debug_info(`Opening Connection to ${od.ObjectName} in mode ${type}`);
+
       let openOptions = null;
       switch (type) {
         case 'PUT':
@@ -573,7 +575,7 @@ class MQBoilerPlate {
           openOptions = MQC.MQOO_OUTPUT;
           break;
         case 'GET':
-          openOptions = (me.beSync) ?  MQC.MQPMO_SYNCPOINT : MQC.MQOO_INPUT_AS_Q_DEF;
+          openOptions = (me.beSync) ? MQC.MQPMO_SYNCPOINT : MQC.MQOO_INPUT_AS_Q_DEF;
           break;
         case 'DYNPUT':
           openOptions = MQC.MQOO_INPUT_EXCLUSIVE;
@@ -593,7 +595,7 @@ class MQBoilerPlate {
         openCall = mq.OpenSync;
       }
 
-      openCall(hConn, od, openOptions, function(err, hObj) {
+      openCall(hConn, od, openOptions, function (err, hObj) {
         debug_info('Inside MQ Open Callback function');
         if (err) {
           reject(err);
@@ -621,7 +623,7 @@ class MQBoilerPlate {
 
       debug_info('Opening Connection running mode ', type);
 
-      mq.Sub(hConn, null, sd, function(err, hObj, hObjSubscription) {
+      mq.Sub(hConn, null, sd, function (err, hObj, hObjSubscription) {
         debug_info('Inside MQ Open Callback function');
         if (err) {
           reject(err);
@@ -639,14 +641,14 @@ class MQBoilerPlate {
 
 
   static closeSubscription(hObjSubscription) {
-    return new Promise(function resolver(resolve, reject){
-      if (! hObjSubscription) {
+    return new Promise(function resolver(resolve, reject) {
+      if (!hObjSubscription) {
         resolve();
       } else {
-        mq.Close(hObjSubscription, 0, function(err) {
+        mq.Close(hObjSubscription, 0, function (err) {
           if (err) {
             MQBoilerPlate.reportError(err);
-            debug_info("MQCLOSE (Subscription) ended with reason "+err.mqrc);
+            debug_info("MQCLOSE (Subscription) ended with reason " + err.mqrc);
             reject(err);
           } else {
             debug_info("MQCLOSE (Subcscription) sucessful");
@@ -659,10 +661,10 @@ class MQBoilerPlate {
 
   static closeMQConnection(hObj) {
     return new Promise(function resolver(resolve, reject) {
-      if (! hObj) {
+      if (!hObj) {
         resolve();
       } else {
-        mq.Close(hObj, 0, function(err) {
+        mq.Close(hObj, 0, function (err) {
           if (err) {
             MQBoilerPlate.reportError(err);
             reject(err);
@@ -677,10 +679,10 @@ class MQBoilerPlate {
 
   static disconnectFromMQ(hConn) {
     return new Promise(function resolver(resolve, reject) {
-      if (! hConn) {
+      if (!hConn) {
         resolve();
       } else {
-        mq.Disc(hConn, function(err) {
+        mq.Disc(hConn, function (err) {
           if (err) {
             debug_warn('Error Detected in Disconnect operation', err);
             reject(err);
@@ -707,23 +709,57 @@ class MQBoilerPlate {
         MQBoilerPlate.reportError(err);
       }
       canExit = true;
-      // We don't need any more messages delivered, so cause the
-      // callback to be deleted after this one has completed.
-      //mq.GetDone(hObj);
     } else {
+      let cbProcessResponse = null;
       if (activeCB) {
-        if (activeCB instanceof Promise) {
-          debug_info("Callback is an instance of a Promise");
-          activeCB(md,buf)
-            .then((mustContinue) => {canExit = ! mustContinue;})
-        } else {
-          canExit = !activeCB(md,buf);
-        }
+        cbProcessResponse = bpInstance.activeCBReturnsPromise(md, buf);
+      } else {
+        cbProcessResponse = bpInstance.activeCBReturnsNoPromise(md, buf);
       }
+
+      cbProcessResponse
+        .then(() => {
+          debug_info("Processing complete")
+        })
+        .catch((err) => {
+          debug_warn("Error! : ", err)
+        })
     }
   }
 
-  
+  // This is a helper function which is invoked in the scenario when the callback function returns an instance of a Promise.
+  activeCBReturnsPromise(md, buf) {
+    return new Promise(function resolver(resolve, reject) {
+      let cbResponse = activeCB(md, buf);
+      if (cbResponse instanceof Promise) {
+        debug_info("Callback has returned an instance of a Promise");
+        cbResponse
+          .then((mustContinue) => {
+            debug_info("INSIDE THE .then of the cbResponse")
+            canExit = !mustContinue
+          })
+          .then(() => {
+            debug_info("After the resume")
+            resolve();
+          })
+          .catch((err) => {
+            debug_warn(`Error invoking callback : ${err}`)
+            canExit = true;
+            reject();
+          })
+      } else {
+        resolve();
+      }
+    })
+  }
+
+  // This is a helper function which is invoked in the scenario when the callback function does not returns an instance of a Promise.
+  activeCBReturnsNoPromise(md, buf) {
+    return new Promise(function resolver(resolve, reject) {
+      canExit = !activeCB(md, buf);
+      resolve();
+    })
+  }
 
   static reportError(err) {
     let errMsg = err.message ? err.message : err;
@@ -731,7 +767,7 @@ class MQBoilerPlate {
   }
 
 
-  static ccdtCheck () {
+  static ccdtCheck() {
     if (CCDT in process.env) {
       let ccdtFile = process.env[CCDT].replace(FILEPREFIX, '');
       debug_info(ccdtFile);
