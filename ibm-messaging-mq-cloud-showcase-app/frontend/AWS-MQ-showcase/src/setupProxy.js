@@ -14,6 +14,8 @@
  * limitations under the License.
  **/
 
+// Only used to in development mode
+
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const be = process.env.REACT_APP_BE_HOST;
