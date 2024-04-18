@@ -369,3 +369,5 @@ The samples also contain unit tests in `src/test` , which you can run using mave
 ````
 mvn test
 ````
+
+NOTE : If you are on a windows machine make sure you have the symbolic link between `./src/main/java/com` and `./com` as mentioned above.
