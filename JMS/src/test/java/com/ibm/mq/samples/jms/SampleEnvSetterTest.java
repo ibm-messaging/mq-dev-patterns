@@ -23,8 +23,6 @@ import org.junit.jupiter.api.BeforeAll;
 public class SampleEnvSetterTest {
 
     private static SampleEnvSetter envSetter;
-    private static final String ENV_FILE = "EnvFile";
-    private static final String ENV_LOCATION = "../env.json";
     
     @BeforeAll
     public static void setUp(){
