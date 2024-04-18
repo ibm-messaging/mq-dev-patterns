@@ -66,7 +66,7 @@ function cycleEndpoint(index) {
       .then(() => {
         debug_info('Kick start the get callback');
         return mqBoilerPlate.startGetAsyncProcess();
-      })  
+      })
       .then(() => {
         debug_info('Waiting for termination');
         return mqBoilerPlate.checkForTermination();
@@ -74,7 +74,7 @@ function cycleEndpoint(index) {
       .then(() => {
         debug_info('Signal termination of the callback thread');
         return mqBoilerPlate.signalDone();
-      })    
+      })
       .then(() => {
         mqBoilerPlate.teardown();
         resolve();
@@ -85,24 +85,24 @@ function cycleEndpoint(index) {
       })
       .catch((err) => {
         debug_warn(err);
-        mqBoilerPlate.teardown();
-        reject();
+        mqBoilerPlate.teardown()
+          .then(() => {
+            debug_info("Application Completed");
+            reject();
+            process.exit(1);
+          })
       })
-      .then(() => {
-        debug_info("Application Completed");
-        process.exit(1);
-      })
-    });
-  }
-
-
-  var promises = [];
-  // Process each endpoint in turn
-  env.MQ_ENDPOINTS.forEach((point, index) => {
-    promises.push(cycleEndpoint(index));
   });
+}
 
-  // Wait for all the connections to the endpoints to report back
-  Promise.all(promises).then(() => {
-    debug_info('Application Completed');
-  });
+
+var promises = [];
+// Process each endpoint in turn
+env.MQ_ENDPOINTS.forEach((point, index) => {
+  promises.push(cycleEndpoint(index));
+});
+
+// Wait for all the connections to the endpoints to report back
+Promise.all(promises).then(() => {
+  debug_info('Application Completed');
+});

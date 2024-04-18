@@ -40,9 +40,9 @@ var mqBoilerPlate = new MQBoilerPlate();
 
 // Function to invoke a timeout for a specified duration of time.
 function waitForDuration(duration) {
-  return new Promise(function resolver(resolve,reject) {
+  return new Promise(function resolver(resolve, reject) {
     debug_info(`Waiting for ${duration} microseconds`);
-    setTimeout(resolve,duration);
+    setTimeout(resolve, duration);
   })
 }
 
@@ -68,7 +68,7 @@ async function msgCB(md, buf) {
       }
     } catch (err) {
       debug_info("Not JSON message <%s>", decoder.write(buf));
-      ok = false;      
+      ok = false;
     }
     await handleSyncPoint(buf, md, ok);
 
@@ -82,10 +82,10 @@ async function msgCB(md, buf) {
   return ok;
 }
 
-async function handleSyncPoint(buf, md, ok){
-  try{
+async function handleSyncPoint(buf, md, ok) {
+  try {
     if (!ok) {
-      await mqBoilerPlate.rollback(buf, md , poisoningMessageHandler);
+      await mqBoilerPlate.rollback(buf, md, poisoningMessageHandler);
     } else {
       debug_info('Performing Commit');
       await mqBoilerPlate.commit();
@@ -95,29 +95,29 @@ async function handleSyncPoint(buf, md, ok){
   }
 }
 
-function poisoningMessageHandler(buf,md) {
+function poisoningMessageHandler(buf, md) {
   // The application is going to end as a potential poison message scenario has been detected.
   // To prevent a recursive loop this application would need to compare the back out count for the message
   // with the back out threshold for the queue manager
   // see - https://stackoverflow.com/questions/64680808/ibm-mq-cmit-and-rollback-with-syncpoint
-  debug_warn ('A potential poison message scenario has been detected.');
+  debug_warn('A potential poison message scenario has been detected.');
   let rollback = false;
   let backoutCounter = md.BackoutCount;
 
   if (backoutCounter >= MSG_TRESHOLD) {
-    
+
     debug_info("Redirecting to the backout queue");
     let BACKOUT_QUEUE = mqBoilerPlate.MQDetails.BACKOUT_QUEUE;
 
-    sendToQueue(buf, md,BACKOUT_QUEUE)
-      .then(()=> {
+    sendToQueue(buf, md, BACKOUT_QUEUE)
+      .then(() => {
         debug_info('Reply Posted');
         return mqBoilerPlate.commit();
       })
       .catch((err) => {
-        debug_warn('Error redirecting to the backout queue ',err);
+        debug_warn('Error redirecting to the backout queue ', err);
       });
-   
+
     rollback = false;
   } else {
     rollback = true;
@@ -154,7 +154,7 @@ function respondToRequest(msgObject, mqmdRequest) {
   debug_info('Response will be ', msg);
   debug_info('Opening Reply To Connection');
   // Create ReplyToQ
-  return sendToQueue(msg,mqmdRequest , mqmdRequest.ReplyToQ)
+  return sendToQueue(msg, mqmdRequest, mqmdRequest.ReplyToQ)
     .then(() => {
       debug_info('Reply Posted');
       return true
@@ -224,9 +224,9 @@ mqBoilerPlate.initialise('GET', true)
   })
   .catch((err) => {
     debug_warn(err);
-    return mqBoilerPlate.teardown();
-  })
-  .then(() => {
-    debug_info('Application Completed');
-    process.exit(1);
+    mqBoilerPlate.teardown()
+      .then(() => {
+        debug_info("Application Completed");
+        process.exit(1);
+      })
   })
