@@ -26,8 +26,8 @@ var StringDecoder = require('string_decoder').StringDecoder;
 var decoder = new StringDecoder('utf8');
 
 // Set up debug logging options
-var debug_info = require('debug')('sampleget:info');
-var debug_warn = require('debug')('sampleget:warn');
+var debug_info = require('debug')('samplesub:info');
+var debug_warn = require('debug')('samplesub:warn');
 
 var MQBoilerPlate = require('./boilerplate');
 
@@ -37,7 +37,7 @@ var mqBoilerPlate = new MQBoilerPlate();
 function msgCB(md, buf) {
   debug_info('Message Received');
   if (md.Format == "MQSTR") {
-    var msgObject = null;
+    let msgObject = null;
     try {
       msgObject = JSON.parse(buf);
       debug_info("JSON Message Object found", msgObject);
@@ -61,15 +61,29 @@ mqBoilerPlate.initialise('SUBSCRIBE')
     return mqBoilerPlate.getMessages(null, msgCB);
   })
   .then(() => {
+    debug_info('Kick start the get callback');
+    return mqBoilerPlate.startGetAsyncProcess();
+  })  
+  .then(() => {
     debug_info('Waiting for termination');
     return mqBoilerPlate.checkForTermination();
   })
   .then(() => {
+    debug_info('Signal termination of the callback thread');
+    return mqBoilerPlate.signalDone();
+  })    
+  .then(() => {
     mqBoilerPlate.teardown();
+  })
+  .then(() => {
+    debug_info("Application Completed");
+    process.exit(0);
   })
   .catch((err) => {
-    mqBoilerPlate.teardown();
+    debug_warn(err);
+    mqBoilerPlate.teardown()
+      .then(() => {
+        debug_info("Application Completed");
+        process.exit(1);
+      })
   })
-
-
-debug_info('Application Completed');

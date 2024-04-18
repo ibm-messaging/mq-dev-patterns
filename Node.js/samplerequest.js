@@ -28,6 +28,8 @@ var debug_info = require('debug')('samplereq:info');
 var debug_warn = require('debug')('samplereq:warn');
 
 var MQBoilerPlate = require('./boilerplate');
+
+debug_info('Starting up Application');
 var mqBoilerPlate = new MQBoilerPlate();
 
 function msgCB(md, buf) {
@@ -46,8 +48,6 @@ function msgCB(md, buf) {
   // Stop listening
   return false;
 }
-
-debug_info('Starting up Application');
 
 mqBoilerPlate.initialise('PUT')
   .then(() => {
@@ -71,15 +71,26 @@ mqBoilerPlate.initialise('PUT')
     debug_info('Getting Response for ', msgID);
     return mqBoilerPlate.getMessagesDynamicQueue(msgID, msgCB);
   })
+  .then(() => { // We kickstart the async process to listen for any messages on the Reply to Queue.
+    debug_info('Kick start the get callback');
+    return mqBoilerPlate.startGetAsyncProcess();
+  })  
   .then(() => {
     debug_info('Waiting for termination');
     return mqBoilerPlate.checkForTermination();
   })
   .then(() => {
-    mqBoilerPlate.teardown();
+    return mqBoilerPlate.teardown();
+  })
+  .then(() => {
+    debug_info('Application Completed');
+    process.exit(0);
   })
   .catch((err) => {
-    mqBoilerPlate.teardown();
-  })
-
-debug_info('Application Completed');
+    debug_warn(err);
+    mqBoilerPlate.teardown()
+      .then(() => {
+        debug_info("Application Completed");
+        process.exit(1);
+      })
+  });
