@@ -24,7 +24,7 @@ server {
 
     #Set up redirect for requests to backend
     location /api/ {
-        return 308 https:$REACT_APP_BE_HOST:$REACT_APP_BE_PORT$request_uri;
+        return 308 ${HTTP_PROTOCOL}://${REACT_APP_BE_HOST}:${REACT_APP_BE_PORT}$request_uri;
     }
 
     # redirect server error pages to the static page /50x.html
