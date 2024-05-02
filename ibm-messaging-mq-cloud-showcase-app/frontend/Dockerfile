@@ -46,8 +46,8 @@ RUN yarn run build
 FROM nginx:stable-alpine3.17 as frontendImage
 
 #Set nginx configuration as per application requirements
-COPY nginx.conf.template /etc/nginx/conf.d
-COPY nginx.conf.proxy.template /etc/nginx/conf.d
+COPY nginx.conf.template /etc/nginx/conf.d/
+COPY nginx.conf.proxy.template /etc/nginx/conf.d/
 COPY docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
 #Copy over only the built code to the default nginx location
