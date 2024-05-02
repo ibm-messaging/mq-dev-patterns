@@ -1,7 +1,12 @@
 const { buildMQDetails, ccdtCheck, initialise, connx, open, close, disconnect, getMessage } = require('../basicget');
 const mq = require('ibmmq');
+const exec = require('child_process').exec;
 const envConfig = require('../../env.json');
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised'); // Assertion library of Chai which handles testing of Promise related functions
 const { assert, expect } = require('chai');
+
+chai.use(chaiAsPromised);
 const envConfigLength = envConfig['MQ_ENDPOINTS'].length;
 const MQC = mq.MQC;
 
@@ -93,10 +98,9 @@ describe('connx function', () => {
             await buildMQDetails(MQDetails, credentials, i);
             await initialise(cno, MQDetails, credentials);
             try {
-                await connx(cno, MQDetails);
-                assert(true)
+                return assert.isFulfilled(connx(cno, MQDetails));
             } catch (err) {
-                assert(false)
+                return assert.isRejected(connx(cno, MQDetails));
             }
         }
     }).timeout(5000);
@@ -107,7 +111,7 @@ describe('open function', () => {
     let MQDetails;
     let credentials;
     let od;
-    let result;
+    let hConn;
 
     beforeEach(() => {
         MQDetails = {};
@@ -119,8 +123,8 @@ describe('open function', () => {
         for (let i = 0; i < envConfigLength; i++) {
             await buildMQDetails(MQDetails, credentials, i);
             await initialise(cno, MQDetails, credentials);
-            result = await connx(cno, MQDetails);
-            od = await open(result, MQDetails);
+            hConn = await connx(cno, MQDetails);
+            od = await open(hConn, MQDetails);
             expect(od._name).to.equal(envConfig.MQ_ENDPOINTS[i].QUEUE_NAME);
             expect(od._mqQueueManager._name).to.equal(envConfig.MQ_ENDPOINTS[i].QMGR);
             expect(od._hObj).to.equal(101);
@@ -132,8 +136,9 @@ describe('close function', () => {
     let cno;
     let MQDetails;
     let credentials;
-    let result;
+    let hConn;
     let od;
+    let returnedPromiseVal;
 
     beforeEach(() => {
         MQDetails = {};
@@ -145,10 +150,9 @@ describe('close function', () => {
         for (let i = 0; i < envConfigLength; i++) {
             await buildMQDetails(MQDetails, credentials, i);
             await initialise(cno, MQDetails, credentials);
-            result = await connx(cno, MQDetails);
-            od = await open(result, MQDetails);
-            await close(od, i);
-            assert.equal(true, true);
+            hConn = await connx(cno, MQDetails);
+            od = await open(hConn, MQDetails);
+            return assert.isFulfilled(close(od, i));
         }
     }).timeout(5000);
 });
@@ -157,7 +161,7 @@ describe('disc function', () => {
     let cno;
     let MQDetails;
     let credentials;
-    let result;
+    let hConn;
 
     beforeEach(() => {
         MQDetails = {};
@@ -169,10 +173,9 @@ describe('disc function', () => {
         for (let i = 0; i < envConfigLength; i++) {
             await buildMQDetails(MQDetails, credentials, i);
             await initialise(cno, MQDetails, credentials);
-            result = await connx(cno, MQDetails);
-            await open(result, MQDetails);
-            await disconnect(result, i);
-            assert.equal(true, true);
+            hConn = await connx(cno, MQDetails);
+            await open(hConn, MQDetails);
+            return assert.isFulfilled(disconnect(hConn, i));
         }
     }).timeout(5000);
 });
@@ -181,54 +184,29 @@ describe('getMessage function', async () => {
     let cno;
     let MQDetails;
     let credentials;
-    let result;
-    let od;
-    let openOptions;
-    let msgObject;
-    let msg;
-    let mqmd;
-    let pmo;
+    let hConn;
+    let hObj;
     let rcvMsg;
 
     beforeEach(() => {
         MQDetails = {};
         credentials = {};
         cno = new mq.MQCNO();
-        od = new mq.MQOD();
-        mqmd = new mq.MQMD();
-        pmo = new mq.MQPMO();
-        openOptions = MQC.MQOO_OUTPUT;
-        pmo.Options = MQC.MQPMO_NO_SYNCPOINT | MQC.MQPMO_NEW_MSG_ID | MQC.MQPMO_NEW_CORREL_ID;
-        mqmd.Persistence = MQC.MQPER_PERSISTENT;
-        msgObject = {
-            "Key": "0"
-        }        
-        msg = JSON.stringify(msgObject);
-
     });
 
     it('Should perform MQGET', async () => {
         for (let i = 0; i < envConfigLength; i++) {
             await buildMQDetails(MQDetails, credentials, i);
             await initialise(cno, MQDetails, credentials);
-            result = await connx(cno, MQDetails);
-            od.ObjectName = MQDetails.QUEUE_NAME;
-            od.ObjectType = MQC.MQOT_Q;
-            let getHobj;
-            mq.Open(result, od, openOptions, async function (err, hObj) {
-                if (err) {
-                    console.warn("Error Opening for Put : ", err);
-                } else {
-                    mq.Put(hObj, mqmd, pmo, msg, function (err) {
-                        if (err) {
-                            console.warn(err);
-                        }
-                    })
-                }
+            hConn = await connx(cno, MQDetails);
+            hObj = await open(hConn, MQDetails);
+
+            // We run the basicput sample to put a message into the queue, following which we run the getMessage
+            // function to retrieve the message we just put.
+            exec('node basicput.js',async function(err, stdout, stderr){
+                rcvMsg = await getMessage(hObj);
+                expect(rcvMsg).to.eventually.equal(true); // This is the method to test a function that returns a promise.
             })
-            getHobj = await open(result, MQDetails);
-            rcvMsg = await getMessage(getHobj);
-            expect(rcvMsg).to.equal(true);
         }
     }).timeout(5000);
 });
