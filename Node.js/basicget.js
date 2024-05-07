@@ -330,3 +330,5 @@ debug_info('Awaiting for endpoint processing to complete');
 Promise.all(promises).then(() => {
   debug_info("Sample MQ GET application ending");
 });
+
+module.exports = { buildMQDetails, ccdtCheck, initialise, connx, open, close, disconnect, getMessage };
