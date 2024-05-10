@@ -1,6 +1,6 @@
 # IBM MQ Node.js samples
 The Node.js samples are based on https://github.com/ibm-messaging/mq-mqi-nodejs/tree/master/samples
-and have been tested with Node.js v16.8.1
+and have been tested with Node.js v20.11.1
 
 
 Install/unzip IBM MQ client
@@ -30,7 +30,6 @@ To run the examples cd to the Node.js directory and install the
 prerequsites by running :
 
 `npm install`
-
 
 ## Intro to Node.js Samples
 
@@ -76,7 +75,7 @@ On Mac and Linux:
 
 On Windows:
 ````
-export DEBUG=amqs*:*
+SET DEBUG=amqs*:*
 node basicput.js
 ````
 
@@ -84,30 +83,65 @@ The get application reads a json object from the queue.
 
 To run with logging, run
 
+On Mac and Linux:
+
 `DEBUG=amqs*:* node basicget.js`
+
+On Windows:
+````
+SET DEBUG=amqs*:*
+node basicget.js
+````
 
 The get and put applications have the common MQ boiler plate
 factorised into a library and make use of
 promises.
 
 To run with logging, run
-`DEBUG=sample*:*,boiler:* node sampleput.js`
-and
+
+On Mac and Linux: <br>
+`DEBUG=sample*:*,boiler:* node sampleput.js` <br>
+and <br>
 `DEBUG=sample*:*,boiler:* node sampleget.js`
+
+On Windows:
+````
+SET DEBUG=sample*:*,boiler:*
+node sampleput.js
+````
+and
+````
+SET DEBUG=sample*:*,boiler:*
+node sampleget.js
+````
 
 
 ## Publish / Subscribe
 The publish application publishes a json object onto a topic.
 To run with logging, run
 
+On Mac and Linux: <br>
 `DEBUG=amqs*:* node basicpublish.js`
+
+On Windows:
+````
+SET DEBUG=amqs*:*
+node basicpublish.js
+````
 
 The subscribe application subscribes to a
 topic.
 
 To run with logging, run
 
+On Mac and Linux: <br>
 `DEBUG=amqs*:* node basicsubscribe.js`
+
+On Windows:
+````
+SET DEBUG=amqs*:*
+node basicsubcscribe.js
+````
 
 The publish and subscribe applications have the common MQ boiler plate
 factorised into a library and makes use of
@@ -115,11 +149,23 @@ promises.
 
 To run with logging, run
 
+On Mac and Linux <br>
 `DEBUG=sample*:*,boiler:* node samplepublish.js`
 
 and
 
 `DEBUG=sample*:*,boiler:* node samplesubscribe.js`
+
+On Windows:
+````
+SET DEBUG=sample*:*,boiler:*
+node samplepublish.js
+````
+and
+````
+SET DEBUG=sample*:*,boiler:*
+node samplesubscribe.js
+````
 
 
 ## Request / Response
@@ -129,21 +175,47 @@ for a response to the request.
 
 To run with logging, run
 
+On Mac and Linux:
+
 `DEBUG=amqs*:* node basicrequest.js`
 
 and
 
 `DEBUG=amqs*:* node basicresponse.js`
 
-
+On Windows:
+````
+SET DEBUG=amqs*:*
+node basicrequest.js
+````
+and
+````
+SET DEBUG=amqs*:*
+node basicresponse.js
+````
 The request / response applications have the common MQ boiler plate
 factorised into a library and makes use of
 promises.
 
 To run with logging, run
 
+On Mac and Linux:
+
 `DEBUG=sample*:*,boiler:* node sampleresponse.js`
 
 and
 
 `DEBUG=sample*:*,boiler:* node samplerequest.js`
+
+On Windows:
+````
+SET DEBUG=sample*:*,boiler:*
+node sampleresponse.js
+````
+
+and
+
+````
+SET DEBUG=sample*:*,boiler:*
+node samplerequest.js
+````

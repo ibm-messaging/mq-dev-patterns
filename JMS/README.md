@@ -22,7 +22,7 @@ If you want to use Jakarta Messaging in place of JMS, then use the following jar
 This will generate compilation errors. The code, however contains commented out blocks (mainly the import blocks) that you can uncomment to overcome the compilation errors. Remember to remove the JMS code blocks that need removing.
 
 If you are using maven then add -P JAKARTA to the mvn commands.
-eg. 
+eg.
 ```
 mvn clean package -P JAKARTA
 ```
@@ -33,6 +33,9 @@ Alternatively a Jakarta enabled `pom-jakarta.xml` can be used.
 ## Intro to JMS Samples
 
 ### Stand alone JMS samples
+
+**ConversationSharingTest.java** - Creates and closes two JMSContexts and sleeps after each call, to give time to check  
+                                   how many conversations have been started with the queue manager.
 
 **JmsPut.java** - Puts message to a queue
 
@@ -51,18 +54,18 @@ Alternatively a Jakarta enabled `pom-jakarta.xml` can be used.
 **SampleEnvSetter.java** - Used by all stand alone samples to read the variable from the env.json. Used by the decoupled samples through the ConnectionHelper.
 Encapsulates the reading of MQ environment variables and allows all the samples to use a common set.
 
-The location and name of the env.json file defaults 
-to `../env.json`. This can be overriden by setting the environment option `EnvFile`. 
+The location and name of the env.json file defaults
+to `../env.json`. This can be overriden by setting the environment option `EnvFile`.
 
-eg. 
+eg.
 
 ````
-java -DEnvFile=../env.json -jar target/mq-dev-patterns-0.1.0.jar put 
+java -DEnvFile=../env.json -jar target/mq-dev-patterns-0.1.0.jar put
 ````
 If the environment settings file isn't found then the CCDT, Queue Manager, Queue, and user credentials need to be provided as environment settings.
 
 ````
-java -DEnvFile=../env-not-found.json -DQMGR=QM1 -DAPP_USER=app -DAPP_PASSWORD=app-passw0rd -DQUEUE_NAME=DEV.QUEUE.1 -DMQCCDTURL=file:///location/ccdt.json -jar target/mq-dev-patterns-0.1.0.jar put 
+java -DEnvFile=../env-not-found.json -DQMGR=QM1 -DAPP_USER=app -DAPP_PASSWORD=app-passw0rd -DQUEUE_NAME=DEV.QUEUE.1 -DMQCCDTURL=file:///location/ccdt.json -jar target/mq-dev-patterns-0.1.0.jar put
 ````
 
 ### Refactored samples to reduce duplication
@@ -136,7 +139,7 @@ You can build the samples by running the command.
 mvn clean package
 ````
 
-If you want to use the Jakarta messaging dependencies then run 
+If you want to use the Jakarta messaging dependencies then run
 either
 
 ````
@@ -273,8 +276,8 @@ If you have used maven to build the samples, you can run
 
 The request sample will put a message and wait for a response until it either gets a response or you `ctrl+c` interrupt it.
 
-If you set the environment variable `REPLY_QUEUE_NAME` then the reply to queue will be set 
-to that queue, otherwise a temporary queue is created. 
+If you set the environment variable `REPLY_QUEUE_NAME` then the reply to queue will be set
+to that queue, otherwise a temporary queue is created.
 
 In the second terminal;
 
@@ -306,17 +309,17 @@ Used by all samples to read the JSON file. Will be compiled when you compile any
 
 ## The RequestResponseHelper
 
-Used in the request / response samples to parse messages into and out of JSON. 
+Used in the request / response samples to parse messages into and out of JSON.
 Will be compiled when you compile either request / response samples.
 
-The message content to be posted can be controlled by the envionment option `REQUEST_MODE`. 
+The message content to be posted can be controlled by the envionment option `REQUEST_MODE`.
 
-EG. 
+EG.
 
 `java -DREQUEST_MODE="REWARDS" -cp target/mq-dev-patterns-0.1.0.jar com.ibm.mq.samples.jms.JmsRequest`
 
-A `REQUEST_MODE` of `REWARDS` sends messages posting reward points to a customer id. 
-Any other value for `REQUEST_MODE` runs in default mode where the request sends a 
+A `REQUEST_MODE` of `REWARDS` sends messages posting reward points to a customer id.
+Any other value for `REQUEST_MODE` runs in default mode where the request sends a
 random number, which is squared and returned in the response.
 
 
@@ -355,10 +358,19 @@ This is needed as the samples were tested in an enviroment with the Oracle JRE i
 
 ## Bindings mode
 
-By default these samples will run in client mode. If you do want to run the samples in `bindings` mode, then add 
+By default these samples will run in client mode. If you do want to run the samples in `bindings` mode, then add
 
 ````
     "BINDINGS": true
 ````
 
 to the `env.json` file.
+
+## Unit Test
+The samples also contain unit tests in `src/test` , which you can run using maven with the following command :
+
+````
+mvn test
+````
+
+NOTE : If you are on a windows machine make sure you have the symbolic link between `./src/main/java/com` and `./com` as mentioned above.

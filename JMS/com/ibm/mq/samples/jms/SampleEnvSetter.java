@@ -1,5 +1,5 @@
 /*
-* (c) Copyright IBM Corporation 2019, 2023
+* (c) Copyright IBM Corporation 2019, 2024
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -38,9 +38,9 @@ public class SampleEnvSetter {
     private static final String ZOS = "z/os";
     private static final int DEFAULT_MQI_PORT = 1414;
 
-    private static final String ENV_FILE = "EnvFile";
-    private static final String DEFAULT_ENV_FILE = "../env.json";    
-    private static final String DEFAULT_Z_ENV_FILE ="../env-zbindings.json";
+    public static final String ENV_FILE = "EnvFile";
+    public static final String DEFAULT_ENV_FILE = "../env.json";    
+    public static final String DEFAULT_Z_ENV_FILE ="../env-zbindings.json";
 
     public SampleEnvSetter() {
         JSONObject mqEnvSettings = null;
