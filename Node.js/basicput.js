@@ -219,3 +219,5 @@ mq.Connx(MQDetails.QMGR, cno, function(err, hConn) {
 });
 
 debug_info('Application Start Completed');
+
+module.exports = { toHexString, getConnection, putMessage, ccdtCheck };
