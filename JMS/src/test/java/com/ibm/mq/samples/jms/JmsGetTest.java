@@ -32,9 +32,13 @@ public class JmsGetTest {
     private Queue destination = null;
     private QueueBrowser browser = null;
     private ConnectionHelper ch = null;
+
+    //Test to verify working of JmsGet
     @Test
     public void testJmsGet(){
+        //Put messages to the queue
         JmsPut.main(null);
+        //Run JmsGet to get all the messages
         JmsGet.main(null);
         
         ch = new ConnectionHelper("Basic Get", 0);
@@ -42,6 +46,7 @@ public class JmsGetTest {
         destination = (Queue)ch.getDestination();
         browser = context.createBrowser(destination);
         try {
+            //Browse the queue to verify no existing messages in the queue as JmsGet was called.
             Enumeration<?> messages = browser.getEnumeration();
             assertFalse(messages.hasMoreElements());
         } catch (JMSException jmsex) {

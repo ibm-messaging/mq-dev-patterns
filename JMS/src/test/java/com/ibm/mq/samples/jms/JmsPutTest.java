@@ -38,20 +38,27 @@ public class JmsPutTest {
     private JMSConsumer consumer = null;
     private ConnectionHelper ch = null;
     private static long TIMEOUTTIME = 5000;
+
+    //Test to verify the working of JmsPut application
+    //It first runs the JmsPut, the creates a consumer to consume and verify those messages
     @Test
     public void testJmsPut(){
+        //Clear the queue for any existing messages
         clearQueue();
+        //Run JmsPut application
         JmsPut.main(null);
-        
+        //Create a connection for consumer
         ch = new ConnectionHelper("Basic Get", 0);
         context = ch.getContext();
         destination = ch.getDestination();
         consumer = context.createConsumer(destination);
+        //Consume the messages put by JmsPut
         for(int i = 1 ; i <= 10 ; i++){
             try {
                 Message recievedMessage = consumer.receive(TIMEOUTTIME);
                 String value = "This is message number " + i + ".";
                 String message = getMessageBody(recievedMessage);
+                //assert each message
                 assertEquals(value, message);
                 waitAWhile(1000);
             } catch (JMSRuntimeException jmsex) {
@@ -59,10 +66,11 @@ public class JmsPutTest {
                 waitAWhile(1000);
             }
         }
+        //Close the connection
         ch.closeContext();
     }
 
-
+    //Test to verify the execption thrown when the QM name is Invalid
     @Test
     public void testIncorrectQM(){ 
         System.setProperty("QMGR", "INVALID_QM");
@@ -75,6 +83,7 @@ public class JmsPutTest {
         System.clearProperty("QMGR");
     }
 
+    //Test to verify the execption thrown when Queue name is Invalid
     @Test
     public void testIncorrectQueue(){
         System.setProperty("QUEUE_NAME" , "INVALID_QUEUE");
@@ -87,6 +96,7 @@ public class JmsPutTest {
         System.clearProperty("QUEUE_NAME");
     }
 
+    //Test to verify the execption thrown when Channel name is Incorrect
     @Test
     public void testIncorrectChannel(){
         System.setProperty("CHANNEL" , "INCORRECT_CHANNEL");
@@ -98,13 +108,15 @@ public class JmsPutTest {
         System.clearProperty("CHANNEL");
     }
 
-
+    //This function creates a consumer and consumes any messages on the queue
     private void clearQueue(){
         BasicConsumer bc = new BasicConsumer(BasicConsumer.CONSUMER_GET, 0);
+        //Timesout if no message is recieved after 1000ms
         bc.receive(1000);
         bc.close();
     }
 
+    //Return the message string from Message object
     private static String getMessageBody(Message receivedMessage) {
         if (receivedMessage instanceof TextMessage) {
             TextMessage textMessage = (TextMessage) receivedMessage;

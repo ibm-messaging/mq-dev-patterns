@@ -367,7 +367,7 @@ By default these samples will run in client mode. If you do want to run the samp
 to the `env.json` file.
 
 ## Unit Test
-The samples also contain unit tests in `src/test`. These tests require connection with a Queue Manager and use the default `env.json` present in the repository, hence make sure you have atleast one valid endpoint in the `env.json`.
+The samples also contain unit tests in `src/test`. These tests require connection with a Queue Manager and use the default `env.json` present in the repository, hence make sure you have at least one valid endpoint in the `env.json`.
 
 To run these tests, Use the following command:
 
