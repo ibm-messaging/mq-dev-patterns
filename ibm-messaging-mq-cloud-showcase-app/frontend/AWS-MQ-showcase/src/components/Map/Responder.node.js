@@ -75,6 +75,7 @@ const ResponderNode = ({ id, data }) => {
             }
             setSessionCount(state => state + 1);
           } catch (e) {
+            toast.error('Potential poison message detected, redirecting to poison queue');
             console.log(e);
           }
         }
