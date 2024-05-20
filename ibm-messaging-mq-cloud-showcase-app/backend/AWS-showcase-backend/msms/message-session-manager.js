@@ -90,6 +90,89 @@ class MQClient {
     this.myID = uuidv4();    
   }
 
+  poisonMessageHandler(){
+    debug_info("Inside the poison message handler");
+    let cno = new mq.MQCNO();
+    cno.Options = MQC.MQCNO_CLIENT_BINDING;
+    let csp = new mq.MQCSP();
+    csp.UserId = 'app';
+    csp.Password = 'yourAppPassword';
+    cno.SecurityParms = csp;
+
+    let cd = new mq.MQCD();
+    cd.ChannelName = MQDetails.CHANNEL;
+    cd.ConnectionName = this.getConnection();
+    cno.ClientConn = cd;
+
+    mq.ConnxSync("QM1", cno, function (err, hConn) {
+
+      if (err) {
+        debug_warn("Connx to QM failed with error : ",err);
+      } else {
+        let od = new mq.MQOD();
+        od.ObjectName = "DEV.QUEUE.3";
+        let openOptions = MQC.MQOO_INPUT_AS_Q_DEF;
+
+        // We open the queue consisiting of the Poison message and retrieve it using a MQGET call in order to remove it
+        // from the queue.
+        mq.Open(hConn, od, openOptions, function (err, hObj) {
+          if (err) {
+            debug_warn("MQOPEN failed with error : ",err);
+          } else {
+            let gmo = new mq.MQGMO();
+            let buf = Buffer.alloc(1024);
+            let mqmd = new mq.MQMD();
+            gmo.Options = MQC.MQGMO_NO_SYNCPOINT | 
+                          MQC.MQGMO_NO_WAIT |
+                          MQC.MQGMO_CONVERT |
+                          MQC.MQGMO_FAIL_IF_QUIESCING;
+
+            mq.GetSync(hObj, mqmd, gmo, buf, function (err, len) {
+              if (err) {
+                if (err.mqrc === MQC.MQRC_NO_MSG_AVAILABLE) {
+                  debug_info("No more messages available");
+                } else {
+                  debug_warn("MQGET failed with error : ", err);
+                }
+              } else if (mqmd.Format === "MQSTR") {
+                let buffString = decoder.write(buf.slice(0, len));
+                try {
+                  let parsedMsgObj = JSON.parse(buffString);
+                  let backoutQOd = new mq.MQOD();
+                  backoutQOd.ObjectName = env.MQ_ENDPOINTS[0]['POISONINIG_QUEUE'];
+                  let backoutQOpenOptions = MQC.MQOO_OUTPUT;
+                  
+                  // Once the poison message has been taken out of the main queue successfully, we proceed to open the backout
+                  // queue so we can move this poison message into it via a MQPUT call.
+                  mq.Open(hConn, backoutQOd, backoutQOpenOptions, function (err, backoutQHobj) {
+                    if (err) {
+                      debug_warn("MQOPEN of Backout Queue failed with error : ", err);
+                    } else {
+                      let poisonMsgMqmd = new mq.MQMD();
+                      let poisonMsgPmo = new mq.MQPMO();
+
+                      poisonMsgPmo.Options = MQC.MQPMO_NO_SYNCPOINT | MQC.MQPMO_NEW_MSG_ID | MQC.MQPMO_NEW_CORREL_ID;
+                      let msg = JSON.stringify(parsedMsgObj);
+                      mq.Put(backoutQHobj, poisonMsgMqmd, poisonMsgPmo, msg, function (err) {
+                        if (err) {
+                          debug_warn("MQPUT failed with error : ", err);
+                        } else {
+                          debug_info("MQPUT into backout queue successful");
+                        }
+                      })
+                    }
+                  })
+                } catch (err) {
+                  debug_warn("Some error occured : ",err);
+                }
+              } 
+            })
+          }
+        })
+      }
+    })
+  }
+
 
   /**
    * 

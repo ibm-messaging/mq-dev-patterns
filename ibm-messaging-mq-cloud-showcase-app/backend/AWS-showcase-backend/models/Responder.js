@@ -43,7 +43,9 @@ class Responder {
             })
             .catch((err) => {
                 debug_warn(`Responder ${this.myID} error obtaining message ${err}`);
-                reject();
+                debug_warn("Potential Poison Message scenario encountered, invoking the poison message handler");
+                this.mqclient.poisonMessageHandler();
+                reject(err);
             })
         });
     }
