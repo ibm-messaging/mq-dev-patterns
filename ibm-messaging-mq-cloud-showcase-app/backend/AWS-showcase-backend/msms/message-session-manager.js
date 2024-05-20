@@ -95,8 +95,8 @@ class MQClient {
     let cno = new mq.MQCNO();
     cno.Options = MQC.MQCNO_CLIENT_BINDING;
     let csp = new mq.MQCSP();
-    csp.UserId = 'app';
-    csp.Password = 'yourAppPassword';
+    csp.UserId = credentials.USER;
+    csp.Password = credentials.APP_PASSWORD;
     cno.SecurityParms = csp;
 
     let cd = new mq.MQCD();
