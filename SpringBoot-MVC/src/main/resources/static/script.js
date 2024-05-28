@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2024 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -94,8 +94,6 @@ async function sendMessage() {
 
   if (res.status === true) {
     addMessage(res.data);
-  } else {
-    addMessage(res.data);
   }
 
   spinner.style.display = "none";
@@ -104,8 +102,10 @@ async function sendMessage() {
 async function getMessage() {
   const spinner = document.querySelector(".spinner");
   spinner.style.display = "block";
-  let msg = await performGet();
-  addMessage(msg.data);
+  let res = await performGet();
+  if (res.status == true) {
+    addMessage(res.data);
+  }
   spinner.style.display = "none";
 }
 
