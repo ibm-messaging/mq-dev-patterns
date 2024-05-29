@@ -14,6 +14,8 @@
  * limitations under the License.
  **/
 
+
+const fs = require('fs');
 // Import the MQ package
 const mq = require('ibmmq');
 
@@ -35,6 +37,8 @@ const _HOBJKEY = Symbol('hObj');
 
 const BROWSEWAITINTERVAL = 10 * 1000; // 10 seconds
 
+const CCDT = "MQCCDTURL";
+const FILEPREFIX = "file://";
 
 // Load the MQ Endpoint details either from the envrionment or from the
 // env.json file. The envrionment takes precedence.
@@ -232,6 +236,18 @@ class MQClient {
     return connectionPromise;
   }
 
+  ccdtCheck() {
+    if (CCDT in process.env) {
+      let ccdtFile = process.env[CCDT].replace(FILEPREFIX, '');
+      debug_info(ccdtFile);
+      if (fs.existsSync(ccdtFile)) {
+        debug_info("CCDT File found at ", ccdtFile);
+        return true;
+      }
+    }
+    return false;
+  }
+
 
   buildCNO() {
     return new Promise((resolve, reject) => {
@@ -264,14 +280,38 @@ class MQClient {
       // The location of the KeyRepository is not specified in the CCDT, so regardless
       // of whether a CCDT is being used, need to specify the KeyRepository location
       // if it has been provided in the environment json settings.
+      var sco = null;
       if (MQDetails.KEY_REPOSITORY) {
         debug_info('Key Repository has been specified');
         // *** For TLS ***
-        var sco = new mq.MQSCO();
+        sco = new mq.MQSCO();
 
         sco.KeyRepository = MQDetails.KEY_REPOSITORY;
         // And make the CNO refer to the SSL Connection Options
         cno.SSLConfig = sco;
+      }
+
+      if (!this.ccdtCheck()) {
+        debug_info('CCDT URL export is not set, will be using json environment client connections settings');
+        let cd = new mq.MQCD();
+        cd.ChannelName = MQDetails.CHANNEL;
+
+        cd.ConnectionName = this.getConnection();
+
+        debug_info('Connections string is ', cd.ConnectionName);
+
+        if (MQDetails.KEY_REPOSITORY) {
+          debug_info("Will be running in TLS Mode");
+
+          cd.SSLCipherSpec = MQDetails.CIPHER;
+          cd.SSLClientAuth = MQC.MQSCA_OPTIONAL;
+
+          cno.SSLConfig = sco;
+        }
+
+        cno.ClientConn = cd;
+      } else {
+        cno.ClientConn = cd;
       }
 
       resolve(cno);
