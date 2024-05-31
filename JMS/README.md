@@ -372,7 +372,7 @@ The samples also contain unit tests in `src/test`. These tests require connectio
 To run these tests, Use the following command:
 
 ````
-mvn test
+mvn -Dmaven.test.skip=false test
 ````
 
 NOTE : If you are on a windows machine make sure you have the symbolic link between `./src/main/java/com` and `./com` as mentioned above.
