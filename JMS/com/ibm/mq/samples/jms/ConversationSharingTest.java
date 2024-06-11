@@ -66,6 +66,11 @@ public class ConversationSharingTest {
       cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
       cf.setStringProperty(WMQConstants.USERID, APP_USER);
       cf.setStringProperty(WMQConstants.PASSWORD, APP_PASSWORD);
+      
+      // Uncomment the lines below to set the connection factory property SHARECONVALLOWED 
+      // to NO, which turns off conversation sharing from the application side.
+      //System.out.println("Setting SHARECONVALLOWED to NO on the connection factory");
+      //cf.setIntProperty(WMQConstants.WMQ_SHARE_CONV_ALLOWED, WMQConstants.WMQ_SHARE_CONV_ALLOWED_NO);
 
       // Create JMS objects
 	  
