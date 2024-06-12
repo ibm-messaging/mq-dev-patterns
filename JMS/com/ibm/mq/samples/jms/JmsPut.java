@@ -32,12 +32,6 @@ import com.ibm.msg.client.wmq.WMQConstants;
 
 import com.ibm.mq.jms.MQDestination;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
-
 // Use these imports for building with Jakarta Messaging
 // import jakarta.jms.Destination;
 // import jakarta.jms.JMSConsumer;
@@ -87,8 +81,8 @@ public class JmsPut {
         JmsConnectionFactory connectionFactory = createJMSConnectionFactory();
         setJMSProperties(connectionFactory);
         logger.info("created connection factory");
-        String access_token = obtainToken();
-        context = connectionFactory.createContext(null , access_token);
+
+        context = connectionFactory.createContext();
         logger.info("context created");
 
         // Set targetClient to be non JMS, so no JMS headers are transmitted.
@@ -178,8 +172,8 @@ public class JmsPut {
             cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, APP_NAME);
             if (null != APP_USER && !APP_USER.trim().isEmpty()) {
                 cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
-                // cf.setStringProperty(WMQConstants.USERID, APP_USER);
-                // cf.setStringProperty(WMQConstants.PASSWORD, APP_PASSWORD);
+                cf.setStringProperty(WMQConstants.USERID, APP_USER);
+                cf.setStringProperty(WMQConstants.PASSWORD, APP_PASSWORD);
             }
             if (CIPHER_SUITE != null && !CIPHER_SUITE.isEmpty()) {
                 cf.setStringProperty(WMQConstants.WMQ_SSL_CIPHER_SUITE, CIPHER_SUITE);
@@ -219,40 +213,4 @@ public class JmsPut {
         logger.finest("Logging initialised");
     }
 
-    public static String obtainToken() {
-        String access_token = "";
-        String tokenEndpoint = System.getenv("JWT_TOKEN_ENDPOINT");
-        String tokenUsername = System.getenv("JWT_TOKEN_USERNAME");
-        String tokenPassword = System.getenv("JWT_TOKEN_PWD");
-        String tokenClientId = System.getenv("JWT_TOKEN_CLIENTID");
-  
-        //build the string with parameters provided as environment variables, to include in the POST request to the token issuer
-        String postBuild = String.format("client_id=%s&username=%s&password=%s&grant_type=password",tokenClientId, tokenUsername, tokenPassword);
-        logger.info("parameter string: " + postBuild);
-        HttpClient client = HttpClient.newHttpClient();
-  
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(
-    //            "<keycloak URL>/realms/master/protocol/openid-connect/token"
-                tokenEndpoint
-                ))
-            .POST(
-                BodyPublishers.ofString(postBuild))
-            .setHeader("Content-Type", "application/x-www-form-urlencoded")
-            .build();
-            logger.info("obtaining token from:" + tokenEndpoint);
-        try {
-          HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-          logger.fine(String.valueOf(response.statusCode()));
-          logger.fine(response.body());
-  
-          JSONObject myJsonObject = new JSONObject(response.body());
-          access_token = myJsonObject.getString("access_token");
-          logger.info("Using token:" + access_token);
-        } catch (Exception e) {
-          logger.info("Using token:" + access_token);
-          e.printStackTrace();
-        }
-        return access_token;
-      }
 }
