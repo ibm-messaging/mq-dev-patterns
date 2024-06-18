@@ -34,12 +34,28 @@ class Responder {
             this.mqclient.get(queueName,1,null, 'DYNAMIC', this.appId)
             .then((messages) => {
                 debug_warn(`The producer retrieved this message ${JSON.stringify(messages)}`);
-                if(!messages[0].replyToMsg) {
+                if(messages.length === 0) {
+                    debug_info("Poison Message");
+                    resolve();
+                } else if(!messages[0].replyToMsg) {
                     debug_warn("This is not a reply to queue valid message");
                     resolve(null);
+                } else if(messages[0].replyToMsg) {
+                    this.mqclient.checkQueueExists(messages[0].replyToMsg, this.appId)
+                    .then((flag) => {
+                        if (flag === false) {
+                            debug_info("Some Poison Message");
+                            resolve(null);
+                        } else {
+                            debug_info(`Responder ${this.myID} obtained message from queue`);
+                            resolve(messages);
+                        }
+                    })
+                    .catch((err) => {
+                        debug_warn("Some error has occured : ", err);
+                        reject(err);
+                    })
                 }
-                debug_info(`Responder ${this.myID} obtained message from queue`);
-                resolve(messages);
             })
             .catch((err) => {
                 debug_warn(`Responder ${this.myID} error obtaining message ${err}`);

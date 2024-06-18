@@ -90,6 +90,50 @@ class MQClient {
     this.myID = uuidv4();    
   }
 
+  /**
+ * Checks if a reply to queue exists or not
+ * @param {Object} replyToMsg The reply to queue value
+ * @param {Object} appId The current session id.
+ * @returns {Promise<any>} Returns a promise resolving to true if the reply to queue exists, else resolves with a false.
+ */
+  checkQueueExists(replyToMsg, appId) {
+    // If the HCONN doesn't exist, that means the Requesting application did not perform a connection to the queue, and the message being consumed is a potential poison message.
+    if (this[_HCONNKEY]===null) {
+      let qmgr = MQDetails.QMGR;
+      return new Promise((resolve,reject) => {
+        this.buildCNO()
+          .then((cno) => {
+            return mq.ConnxPromise(qmgr, cno);
+          })
+          .then((hConn) => {
+            debug_info("HCONN IS : ", hConn);
+            try {
+              let od = new mq.MQOD();
+              od.ObjectName = replyToMsg;
+              od.ObjectType = MQC.MQOT_Q;
+              let openOptions = MQC.MQOO_OUTPUT;
+
+              mq.Open(hConn, od, openOptions, function (err, hObj) {
+                if (err) {
+                  if (err.mqrc === MQC.MQRC_UNKNOWN_OBJECT_NAME) {
+                    debug_warn("REPLY TO Q DOES NOT EXIST");
+                    resolve(false);
+                  }
+                } else {
+                  resolve(true);
+                }
+              })
+            } catch (err) {
+              debug_warn("Some error has occured : ", err);
+              reject(null);
+            }
+          })
+      });
+    } else {
+      return Promise.resolve(true);
+    }
+  }
+
 
   /**
    * 
