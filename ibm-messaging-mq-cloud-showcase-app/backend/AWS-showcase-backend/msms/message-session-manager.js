@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2024 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -120,6 +120,14 @@ class MQClient {
                     resolve(false);
                   }
                 } else {
+                  mq.Close(hObj, 0, function(err) {
+                    if (err) {
+                      debug_warn("Error while closing connection : ", err);
+                    } else {
+                      debug_info("MQCLOSE successfull");
+                    }
+                  });
+
                   resolve(true);
                 }
               })
