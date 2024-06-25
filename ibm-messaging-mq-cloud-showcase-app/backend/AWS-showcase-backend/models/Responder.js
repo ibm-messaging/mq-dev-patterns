@@ -45,11 +45,10 @@ class Responder {
                     .then((flag) => {
                         if (flag === false) {
                             debug_info("Some Poison Message");
-                            resolve(messages);
                         } else {
                             debug_info(`Responder ${this.myID} obtained message from queue`);
-                            resolve(messages);
                         }
+                        resolve(messages);
                     })
                     .catch((err) => {
                         debug_warn("Some error has occured : ", err);
