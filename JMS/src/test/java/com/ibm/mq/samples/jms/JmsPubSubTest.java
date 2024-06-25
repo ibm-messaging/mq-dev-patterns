@@ -13,7 +13,6 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
 package com.ibm.mq.samples.jms;
 
 import org.junit.jupiter.api.Test;
@@ -25,11 +24,9 @@ import java.util.logging.Logger;
 
 import org.junit.jupiter.api.BeforeAll;
 
-public class JmsSubTest {
-
-    private static TestLogHandler logHandler;
-
+public class JmsPubSubTest {
     //Add a custom logHandler to the logger to get the logs
+    private static TestLogHandler logHandler;
     @BeforeAll
     public static void setUp(){
         Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
@@ -38,10 +35,9 @@ public class JmsSubTest {
         logger.addHandler(logHandler);
     }
 
-    //Test to verify JmsSub
+    //Test to verify JmsPub and JmsSub
     @Test
-    public void testJmsSub(){
-
+    public void testJmsPubSub(){
         //Create a thread for Subscription using JmsSub
         Thread subThread = new Thread(() -> {
             try {
@@ -51,19 +47,15 @@ public class JmsSubTest {
             }
         });
 
-        //Create a thread for Publisher 
         Thread pubThread = new Thread(() -> {
             try {
-                BasicProducer bp = new BasicProducer(BasicProducer.PRODUCER_PUB);
-                bp.send("This is a published message from JMS Basic Pub", 1);
-                bp.close();
+                JmsPub.main(null);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
 
         subThread.start();
-
         //Wait for subscription to take place before publishing
         try {
             Thread.sleep(2000);
@@ -78,12 +70,15 @@ public class JmsSubTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        
         //Assert successful subscription using the logs
         String logs = logHandler.getLogs();
         assertTrue(logs.contains("Sub application is starting"));
         assertTrue(logs.contains("consumer created"));
-        assertTrue(logs.contains("Received message: This is a published message from JMS Basic Pub"));
+        assertTrue(logs.contains("Pub application is starting"));
+        assertTrue(logs.contains("Publishing messages."));
+        assertTrue(logs.contains("message was sent"));
+        assertTrue(logs.contains("Received message: this is a message 0"));
+        assertTrue(logs.contains("Received message: this is a message 19"));
     }
 }
-
