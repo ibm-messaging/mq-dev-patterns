@@ -36,7 +36,7 @@ class Responder {
                 debug_warn(`The producer retrieved this message ${JSON.stringify(messages)}`);
                 if (messages.length === 0) {
                     debug_info("Poison Message");
-                    resolve();
+                    resolve(null);
                 } else if (!messages[0].replyToMsg) {
                     debug_warn("This is not a reply to queue valid message");
                     resolve(null);
@@ -44,11 +44,14 @@ class Responder {
                     this.mqclient.checkQueueExists(messages[0].replyToMsg, this.appId)
                     .then((flag) => {
                         if (flag === false) {
-                            debug_info("Some Poison Message");
+                            debug_warn("Some Poison Message");
+                            messages[0].replyToMsg = null;
+                            messages[0].msgObject = null;
+                            resolve(messages);
                         } else {
                             debug_info(`Responder ${this.myID} obtained message from queue`);
+                            resolve(messages);
                         }
-                        resolve(messages);
                     })
                     .catch((err) => {
                         debug_warn("Some error has occured : ", err);
