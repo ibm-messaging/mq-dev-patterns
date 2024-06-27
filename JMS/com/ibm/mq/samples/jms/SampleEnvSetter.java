@@ -32,7 +32,7 @@ public class SampleEnvSetter {
 
     private static final Logger logger = Logger.getLogger("com.ibm.mq.samples.jms");
     private JSONArray mqEndPoints;
-
+    private JSONObject jwtEndPoints;
     private static final String CCDT = "MQCCDTURL";
     private static final String FILEPREFIX = "file://";
     private static final String ZOS = "z/os";
@@ -61,6 +61,9 @@ public class SampleEnvSetter {
             if (mqEnvSettings != null) {
               logger.info("JSON Data Found");
               mqEndPoints = (JSONArray) mqEnvSettings.getJSONArray("MQ_ENDPOINTS");
+              if(mqEnvSettings.has("JWT_ISSUER") ){
+                  jwtEndPoints = (JSONObject) mqEnvSettings.getJSONObject("JWT_ISSUER");
+              }
             }
 
             if (mqEndPoints == null || mqEndPoints.isEmpty()) {
@@ -68,6 +71,9 @@ public class SampleEnvSetter {
                                  "will raise a null pointer exception");
             } else {
                 logger.info("There is at least one MQ endpoint in the .json file");
+                if(jwtEndPoints != null){
+                    logger.info("JWT endpoints found, will be using JWT to Authenticate");
+                }
             }
         } catch (IOException e) {
             logger.warning("Error processing env.json file");
@@ -232,5 +238,24 @@ public class SampleEnvSetter {
         // If there are no endpoints, then values 
         // need to come from a CCDT and environment settings
         return (null == mqEndPoints) ? 1 : mqEndPoints.length();
+    }
+
+    public String getJwtEnv(String key){
+        String value = System.getProperty(key);
+        try {
+            if((value == null || value.isEmpty()) && 
+            jwtEndPoints != null && 
+            !jwtEndPoints.isEmpty()){
+                value = (String) jwtEndPoints.getString(key);
+            }
+        } catch (JSONException e) {
+            logger.warning("Error looking for json key " + key);
+            logger.warning(e.getMessage());
+        }
+
+        if(! key.contains("JWT_TOKEN_PWD")){
+            logger.info("returning " + value + " for key " + key);
+        }
+        return value;
     }
 }
