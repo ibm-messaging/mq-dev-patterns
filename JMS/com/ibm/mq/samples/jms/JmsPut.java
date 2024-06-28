@@ -221,13 +221,17 @@ public class JmsPut {
     }
 
     private static void setUserCredentials(JmsConnectionFactory cf) {
-        if (accessToken != null) {
-            cf.setStringProperty(WMQConstants.PASSWORD, accessToken);
-        } else {
-            if (null != APP_USER && !APP_USER.trim().isEmpty()) {
-                cf.setStringProperty(WMQConstants.USERID, APP_USER);
-                cf.setStringProperty(WMQConstants.PASSWORD, APP_PASSWORD);
+        try {
+            if (accessToken != null) {
+                cf.setStringProperty(WMQConstants.PASSWORD, accessToken);
+            } else {
+                if (null != APP_USER && !APP_USER.trim().isEmpty()) {
+                    cf.setStringProperty(WMQConstants.USERID, APP_USER);
+                    cf.setStringProperty(WMQConstants.PASSWORD, APP_PASSWORD);
+                }
             }
+        } catch (JMSException jmsex) {
+            recordFailure(jmsex);
         }
     }
 }
