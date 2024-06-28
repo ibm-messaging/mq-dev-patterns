@@ -61,7 +61,7 @@ public class SampleEnvSetter {
             if (mqEnvSettings != null) {
               logger.info("JSON Data Found");
               mqEndPoints = (JSONArray) mqEnvSettings.getJSONArray("MQ_ENDPOINTS");
-              if(mqEnvSettings.has("JWT_ISSUER") ){
+              if (mqEnvSettings.has("JWT_ISSUER")) {
                   jwtEndPoints = (JSONObject) mqEnvSettings.getJSONObject("JWT_ISSUER");
               }
             }
@@ -71,7 +71,7 @@ public class SampleEnvSetter {
                                  "will raise a null pointer exception");
             } else {
                 logger.info("There is at least one MQ endpoint in the .json file");
-                if(jwtEndPoints != null){
+                if (jwtEndPoints != null) {
                     logger.info("JWT endpoints found, will be using JWT to Authenticate");
                 }
             }
@@ -240,12 +240,12 @@ public class SampleEnvSetter {
         return (null == mqEndPoints) ? 1 : mqEndPoints.length();
     }
 
-    public String getJwtEnv(String key){
+    public String getJwtEnv(String key) {
         String value = System.getProperty(key);
         try {
-            if((value == null || value.isEmpty()) && 
+            if ((value == null || value.isEmpty()) && 
             jwtEndPoints != null && 
-            !jwtEndPoints.isEmpty()){
+            !jwtEndPoints.isEmpty()) {
                 value = (String) jwtEndPoints.getString(key);
             }
         } catch (JSONException e) {
@@ -253,7 +253,7 @@ public class SampleEnvSetter {
             logger.warning(e.getMessage());
         }
 
-        if(! key.contains("JWT_TOKEN_PWD")){
+        if (! key.contains("JWT_TOKEN_PWD")) {
             logger.info("returning " + value + " for key " + key);
         }
         return value;

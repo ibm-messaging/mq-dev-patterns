@@ -71,12 +71,12 @@ public class JwtHelper {
         return access_token;
     }
 
-    public boolean isJwtEnabled(){
+    public boolean isJwtEnabled() {
 
-        if((tokenEndpoint == null || tokenEndpoint.isEmpty()) || 
-        (tokenUsername == null || tokenUsername.isEmpty()) || 
-        (tokenPassword == null || tokenPassword.isEmpty()) ||
-        (tokenClientId == null || tokenClientId.isEmpty())){
+        if ((tokenEndpoint == null || tokenEndpoint.trim().isEmpty()) || 
+        (tokenUsername == null || tokenUsername.trim().isEmpty()) || 
+        (tokenPassword == null || tokenPassword.trim().isEmpty()) ||
+        (tokenClientId == null || tokenClientId.trim().isEmpty())) {
             return false;
         }
 

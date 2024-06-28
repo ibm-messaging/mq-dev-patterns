@@ -75,10 +75,10 @@ public class JmsPut {
         initialiseLogging();
         SampleEnvSetter env = new SampleEnvSetter();
         jh = new JwtHelper(env);
-        if(jh.isJwtEnabled()){
+        if (jh.isJwtEnabled()) {
             accessToken = jh.obtainToken();
-        }else{
-            logger.warning("One or more JWT Credentials missing! Expected APP_USER and APP_PASSWORD in MQ Endpoints");
+        } else {
+            logger.info("One or more JWT Credentials missing! Expected APP_USER and APP_PASSWORD in MQ Endpoints");
         }
         mqConnectionVariables(env);
         logger.info("Put application is starting");
@@ -126,7 +126,7 @@ public class JmsPut {
 
         CHANNEL = env.getEnvValue("CHANNEL", index);
         QMGR = env.getEnvValue("QMGR", index);
-        if(accessToken == null){
+        if (accessToken == null) {
             APP_USER = env.getEnvValue("APP_USER", index);
             APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
         }
@@ -180,15 +180,8 @@ public class JmsPut {
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
             cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, APP_NAME);
             cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
-            if(accessToken != null){
-                cf.setStringProperty(WMQConstants.USERID, null);
-                cf.setStringProperty(WMQConstants.PASSWORD, accessToken);
-            }else{
-                if(null != APP_USER && !APP_USER.trim().isEmpty()){
-                    cf.setStringProperty(WMQConstants.USERID, APP_USER);
-                    cf.setStringProperty(WMQConstants.PASSWORD, APP_PASSWORD);
-                }
-            }
+            
+            setUserCredentials(cf);
 
             if (CIPHER_SUITE != null && !CIPHER_SUITE.isEmpty()) {
                 cf.setStringProperty(WMQConstants.WMQ_SSL_CIPHER_SUITE, CIPHER_SUITE);
@@ -225,5 +218,16 @@ public class JmsPut {
 
         logger.setLevel(LOGLEVEL);
         logger.finest("Logging initialised");
+    }
+
+    private static void setUserCredentials(JmsConnectionFactory cf) {
+        if (accessToken != null) {
+            cf.setStringProperty(WMQConstants.PASSWORD, accessToken);
+        } else {
+            if (null != APP_USER && !APP_USER.trim().isEmpty()) {
+                cf.setStringProperty(WMQConstants.USERID, APP_USER);
+                cf.setStringProperty(WMQConstants.PASSWORD, APP_PASSWORD);
+            }
+        }
     }
 }
