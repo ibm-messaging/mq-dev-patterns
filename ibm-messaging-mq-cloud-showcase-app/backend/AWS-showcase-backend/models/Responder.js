@@ -43,7 +43,7 @@ class Responder {
                 } else if (messages[0].replyToMsg) {
                     this.mqclient.checkQueueExists(messages[0].replyToMsg, this.appId)
                     .then((flag) => {
-                        if (flag === false) {
+                        if (!flag) {
                             debug_warn("Some Poison Message");
                             messages[0].replyToMsg = null;
                             messages[0].msgObject = null;
