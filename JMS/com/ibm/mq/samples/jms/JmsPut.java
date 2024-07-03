@@ -78,7 +78,7 @@ public class JmsPut {
         if (jh.isJwtEnabled()) {
             accessToken = jh.obtainToken();
         } else {
-            logger.info("One or more JWT Credentials missing! Expected APP_USER and APP_PASSWORD in MQ Endpoints");
+            logger.info("One or more JWT Credentials missing! Will not be using JWT for authentication");
         }
         mqConnectionVariables(env);
         logger.info("Put application is starting");

@@ -61,9 +61,10 @@ public class SampleEnvSetter {
             if (mqEnvSettings != null) {
               logger.info("JSON Data Found");
               mqEndPoints = (JSONArray) mqEnvSettings.getJSONArray("MQ_ENDPOINTS");
-              if (mqEnvSettings.has("JWT_ISSUER")) {
-                  jwtEndPoints = (JSONObject) mqEnvSettings.getJSONObject("JWT_ISSUER");
-              }
+            }
+
+            if (mqEnvSettings.has("JWT_ISSUER")) {
+                jwtEndPoints = (JSONObject) mqEnvSettings.getJSONObject("JWT_ISSUER");
             }
 
             if (mqEndPoints == null || mqEndPoints.isEmpty()) {
@@ -71,10 +72,12 @@ public class SampleEnvSetter {
                                  "will raise a null pointer exception");
             } else {
                 logger.info("There is at least one MQ endpoint in the .json file");
-                if (jwtEndPoints != null) {
-                    logger.info("JWT endpoints found, will be using JWT to Authenticate");
-                }
             }
+
+            if (jwtEndPoints != null) {
+                logger.info("JWT endpoints found, will be using JWT to Authenticate");
+            }
+
         } catch (IOException e) {
             logger.warning("Error processing env.json file");
             logger.warning(e.getMessage());

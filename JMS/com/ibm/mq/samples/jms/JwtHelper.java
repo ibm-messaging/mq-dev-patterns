@@ -32,10 +32,20 @@ public class JwtHelper {
     private static String tokenClientId = "";
     
     public JwtHelper(SampleEnvSetter env) {
-        tokenEndpoint = env.getJwtEnv("JWT_TOKEN_ENDPOINT");
-        tokenUsername = env.getJwtEnv("JWT_TOKEN_USERNAME");
-        tokenPassword = env.getJwtEnv("JWT_TOKEN_PWD");
-        tokenClientId = env.getJwtEnv("JWT_TOKEN_CLIENTID");
+        if (tokenEndpoint.trim().isEmpty()) {
+            tokenEndpoint = env.getJwtEnv("JWT_TOKEN_ENDPOINT");
+        }
+        if (tokenUsername.trim().isEmpty()) {
+            tokenUsername = env.getJwtEnv("JWT_TOKEN_USERNAME");
+        }
+
+        if (tokenPassword.trim().isEmpty()) {
+            tokenPassword = env.getJwtEnv("JWT_TOKEN_PWD");
+        }
+
+        if (tokenClientId.trim().isEmpty()) {
+            tokenClientId = env.getJwtEnv("JWT_TOKEN_CLIENTID");
+        }
     }
     
     public String obtainToken() {
@@ -58,8 +68,6 @@ public class JwtHelper {
             logger.info("obtaining token from:" + tokenEndpoint);
         try {
           HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-          logger.fine(String.valueOf(response.statusCode()));
-          logger.fine(response.body());
   
           JSONObject myJsonObject = new JSONObject(response.body());
           access_token = myJsonObject.getString("access_token");
