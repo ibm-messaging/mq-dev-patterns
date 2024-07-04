@@ -63,7 +63,7 @@ public class SampleEnvSetter {
               mqEndPoints = (JSONArray) mqEnvSettings.getJSONArray("MQ_ENDPOINTS");
             }
 
-            if (mqEnvSettings.has("JWT_ISSUER")) {
+            if (mqEnvSettings != null && mqEnvSettings.has("JWT_ISSUER")) {
                 jwtEndPoints = (JSONObject) mqEnvSettings.getJSONObject("JWT_ISSUER");
             }
 
