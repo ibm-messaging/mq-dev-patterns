@@ -71,6 +71,7 @@ public class JmsPut {
     private static Boolean BINDINGS = false;
     private static JwtHelper jh = null;
     private static String accessToken = null;
+    
     public static void main(String[] args) {
         initialiseLogging();
         SampleEnvSetter env = new SampleEnvSetter();
