@@ -41,7 +41,7 @@ class Responder {
                     debug_warn("This is not a reply to queue valid message");
                     resolve(null);
                 } else if (messages[0].replyToMsg) {
-                    this.mqclient.checkQueueExists(messages[0].replyToMsg, this.appId)
+                    this.mqclient.checkReplyToQueueExists(messages[0].replyToMsg)
                     .then((flag) => {
                         if (!flag) {
                             debug_warn("Some Poison Message");

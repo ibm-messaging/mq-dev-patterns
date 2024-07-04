@@ -91,12 +91,11 @@ class MQClient {
   }
 
   /**
- * Checks if a reply to queue exists or not
- * @param {Object} replyToMsg The reply to queue value
- * @param {Object} appId The current session id.
+ * Checks if a Reply to Queue needed in a Req-Rep scenario exists or not.
+ * @param {Object} replyToMsg The reply to queue value present in the message body. (This is present in the message structure of the Put function)
  * @returns {Promise<any>} Returns a promise resolving to true if the reply to queue exists, else resolves with a false.
  */
-  checkQueueExists(replyToMsg, appId) {
+  checkReplyToQueueExists(replyToMsg) {
     // If the HCONN doesn't exist, that means the Requesting application did not perform a connection to the queue, and the message being consumed is a potential poison message.
     if (this[_HCONNKEY]===null) {
       let qmgr = MQDetails.QMGR;
