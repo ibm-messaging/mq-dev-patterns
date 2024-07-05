@@ -30,21 +30,18 @@ public class JwtHelper {
     private static String tokenUsername = "";
     private static String tokenPassword = "";
     private static String tokenClientId = "";
-    
+    private static Boolean isInitialised = false;
+
     public JwtHelper(SampleEnvSetter env) {
-        if (tokenEndpoint.trim().isEmpty()) {
+
+        if (!isInitialised) {
+
             tokenEndpoint = env.getJwtEnv("JWT_TOKEN_ENDPOINT");
-        }
-        if (tokenUsername.trim().isEmpty()) {
             tokenUsername = env.getJwtEnv("JWT_TOKEN_USERNAME");
-        }
-
-        if (tokenPassword.trim().isEmpty()) {
             tokenPassword = env.getJwtEnv("JWT_TOKEN_PWD");
-        }
-
-        if (tokenClientId.trim().isEmpty()) {
             tokenClientId = env.getJwtEnv("JWT_TOKEN_CLIENTID");
+
+            isInitialised = true;
         }
     }
     
