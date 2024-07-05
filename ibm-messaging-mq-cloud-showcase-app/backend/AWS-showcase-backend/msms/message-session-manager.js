@@ -91,12 +91,12 @@ class MQClient {
   }
 
   /**
- * Checks if a Reply to Queue needed in a Req-Rep scenario exists or not.
- * @param {Object} replyToMsg The reply to queue value present in the message body. (This is present in the message structure of the Put function)
- * @returns {Promise<any>} Returns a promise resolving to true if the reply to queue exists, else resolves with a false.
+ * Checks if a particular queue definition exists or not.
+ * @param {Object} queueName Name of the queue whose definition is to be checked of whether it exists or not. 
+ * @returns {Promise<any>} Returns a promise resolving to true if the queue definition exists, else resolves with a false.
  */
-  checkReplyToQueueExists(replyToMsg) {
-    // If the HCONN doesn't exist, that means the Requesting application did not perform a connection to the queue, and the message being consumed is a potential poison message.
+  checkQueueExists(queueName) {
+    // If the HCONN doesn't exist, that means a connection to the Queue Manager was not performed.
     if (this[_HCONNKEY]===null) {
       let qmgr = MQDetails.QMGR;
       return new Promise((resolve,reject) => {
@@ -108,14 +108,14 @@ class MQClient {
             debug_info("HCONN IS : ", hConn);
             try {
               let od = new mq.MQOD();
-              od.ObjectName = replyToMsg;
+              od.ObjectName = queueName;
               od.ObjectType = MQC.MQOT_Q;
               let openOptions = MQC.MQOO_OUTPUT;
 
               mq.Open(hConn, od, openOptions, function (err, hObj) {
                 if (err) {
                   if (err.mqrc === MQC.MQRC_UNKNOWN_OBJECT_NAME) {
-                    debug_warn("REPLY TO Q DOES NOT EXIST");
+                    debug_warn("Queue does not exist");
                     resolve(false);
                   }
                 } else {
