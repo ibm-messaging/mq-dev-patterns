@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2024 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -34,12 +34,30 @@ class Responder {
             this.mqclient.get(queueName,1,null, 'DYNAMIC', this.appId)
             .then((messages) => {
                 debug_warn(`The producer retrieved this message ${JSON.stringify(messages)}`);
-                if(!messages[0].replyToMsg) {
+                if (messages.length === 0) {
+                    debug_info("Poison Message");
+                    resolve(null);
+                } else if (!messages[0].replyToMsg) {
                     debug_warn("This is not a reply to queue valid message");
                     resolve(null);
+                } else if (messages[0].replyToMsg) {
+                    this.mqclient.checkQueueExists(messages[0].replyToMsg)
+                    .then((flag) => {
+                        if (!flag) {
+                            debug_warn("Some Poison Message");
+                            messages[0].replyToMsg = null;
+                            messages[0].msgObject = null;
+                            resolve(messages);
+                        } else {
+                            debug_info(`Responder ${this.myID} obtained message from queue`);
+                            resolve(messages);
+                        }
+                    })
+                    .catch((err) => {
+                        debug_warn("Some error has occured : ", err);
+                        reject(err);
+                    })
                 }
-                debug_info(`Responder ${this.myID} obtained message from queue`);
-                resolve(messages);
             })
             .catch((err) => {
                 debug_warn(`Responder ${this.myID} error obtaining message ${err}`);
