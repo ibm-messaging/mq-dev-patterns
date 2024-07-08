@@ -1,5 +1,5 @@
 /*
-* (c) Copyright IBM Corporation 2019, 2023
+* (c) Copyright IBM Corporation 2019, 2024
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ import com.ibm.mq.jms.MQDestination;
 // import com.ibm.mq.jakarta.jms.MQDestination;
 
 import com.ibm.mq.samples.jms.SampleEnvSetter;
+import com.ibm.mq.samples.jms.JwtHelper;
 
 public class JmsPub {
   private static final String DEFAULT_APP_NAME = "Dev Experience JmsPub";
@@ -68,11 +69,20 @@ public class JmsPub {
   private static String CIPHER_SUITE;
   private static String CCDTURL;
   private static Boolean BINDINGS = false;
+  private static JwtHelper jh = null;
+  private static String accessToken = null;
 
   public static void main(String[] args) {
     initialiseLogging();
-    mqConnectionVariables();
-    logger.info("Put application is starting");
+    SampleEnvSetter env = new SampleEnvSetter();
+    jh = new JwtHelper(env);
+    if (jh.isJwtEnabled()) {
+      accessToken = jh.obtainToken();
+    } else {
+      logger.info("One or more JWT Credentials missing! Will not be using JWT for authentication");
+    }
+    mqConnectionVariables(env);
+    logger.info("Pub application is starting");
 
     JMSContext context = null;
     Destination destination = null;
@@ -115,8 +125,8 @@ public class JmsPub {
     }
   }
 
-  private static void mqConnectionVariables() {
-    SampleEnvSetter env = new SampleEnvSetter();
+  private static void mqConnectionVariables(SampleEnvSetter env) {
+    
     int index = 0;
 
     CCDTURL = env.getCheckForCCDT();
@@ -129,8 +139,10 @@ public class JmsPub {
 
     CHANNEL = env.getEnvValue("CHANNEL", index);
     QMGR = env.getEnvValue("QMGR", index);
-    APP_USER = env.getEnvValue("APP_USER", index);
-    APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
+    if (accessToken == null) {
+      APP_USER = env.getEnvValue("APP_USER", index);
+      APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
+    }
     APP_NAME = env.getEnvValueOrDefault("APP_NAME", DEFAULT_APP_NAME, index);
     TOPIC_NAME = env.getEnvValue("TOPIC_NAME", index);
     CIPHER_SUITE = env.getEnvValue("CIPHER_SUITE", index);
@@ -180,11 +192,8 @@ public class JmsPub {
 
       cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
       cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, APP_NAME);
-      if (null != APP_USER && !APP_USER.trim().isEmpty()) {
-        cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
-        cf.setStringProperty(WMQConstants.USERID, APP_USER);
-        cf.setStringProperty(WMQConstants.PASSWORD, APP_PASSWORD);
-      }
+      cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
+      setUserCredentials(cf);
       cf.setStringProperty(WMQConstants.CLIENT_ID, PUBLICATION_NAME);
       if (CIPHER_SUITE != null && !CIPHER_SUITE.isEmpty()) {
         cf.setStringProperty(WMQConstants.WMQ_SSL_CIPHER_SUITE, CIPHER_SUITE);
@@ -222,6 +231,21 @@ public class JmsPub {
 
     logger.setLevel(LOGLEVEL);
     logger.finest("Logging initialised");
+  }
+
+  private static void setUserCredentials(JmsConnectionFactory cf) {
+    try {
+        if (accessToken != null) {
+            cf.setStringProperty(WMQConstants.PASSWORD, accessToken);
+        } else {
+            if (null != APP_USER && !APP_USER.trim().isEmpty()) {
+                cf.setStringProperty(WMQConstants.USERID, APP_USER);
+                cf.setStringProperty(WMQConstants.PASSWORD, APP_PASSWORD);
+            }
+        }
+    } catch (JMSException jmsex) {
+        recordFailure(jmsex);
+    }
   }
 
 }
