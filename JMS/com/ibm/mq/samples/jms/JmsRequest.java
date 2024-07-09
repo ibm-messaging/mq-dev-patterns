@@ -57,6 +57,7 @@ import com.ibm.msg.client.jms.DetailedInvalidDestinationRuntimeException;
 // import com.ibm.msg.client.jakarta.jms.DetailedInvalidDestinationRuntimeException;
 
 import com.ibm.mq.samples.jms.SampleEnvSetter;
+import com.ibm.mq.samples.jms.JwtHelper;
 
 public class JmsRequest {
 
@@ -78,6 +79,8 @@ public class JmsRequest {
     private static String CCDTURL;
     private static Boolean BINDINGS = false;
     private static String REQUEST_MODE = "";
+    private static JwtHelper jh = null;
+    private static String accessToken = null;
 
     private static Long REQUEST_MESSAGE_EXPIRY = 0L;
 
@@ -89,8 +92,15 @@ public class JmsRequest {
 
     public static void main(String[] args) {
         initialiseLogging();
-        mqConnectionVariables();
-        logger.info("Put application is starting");
+        SampleEnvSetter env = new SampleEnvSetter();
+        jh = new JwtHelper(env);
+        if (jh.isJwtEnabled()) {
+            accessToken = jh.obtainToken();
+        } else {
+            logger.info("One or more JWT Credentials missing! Will not be using JWT for authentication");
+        }
+        mqConnectionVariables(env);
+        logger.info("Request application is starting");
 
         JMSContext context = null;
         Destination destination = null;
@@ -215,8 +225,8 @@ public class JmsRequest {
         }
     }
 
-    private static void mqConnectionVariables() {
-        SampleEnvSetter env = new SampleEnvSetter();
+    private static void mqConnectionVariables(SampleEnvSetter env) {
+        
         int index = 0;
 
         CCDTURL = env.getCheckForCCDT();
@@ -229,8 +239,10 @@ public class JmsRequest {
 
         CHANNEL = env.getEnvValue("CHANNEL", index);
         QMGR = env.getEnvValue("QMGR", index);
-        APP_USER = env.getEnvValue("APP_USER", index);
-        APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
+        if (accessToken == null) {
+            APP_USER = env.getEnvValue("APP_USER", index);
+            APP_PASSWORD = env.getEnvValue("APP_PASSWORD", index);
+        }
         APP_NAME = env.getEnvValueOrDefault("APP_NAME", DEFAULT_APP_NAME, index);
         QUEUE_NAME = env.getEnvValue("QUEUE_NAME", index);
         REPLY_QUEUE_NAME = env.getEnvValue("REPLY_QUEUE_NAME", index);
@@ -294,11 +306,8 @@ public class JmsRequest {
 
             cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
             cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, APP_NAME);
-            if (null != APP_USER && !APP_USER.trim().isEmpty()) {
-                cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
-                cf.setStringProperty(WMQConstants.USERID, APP_USER);
-                cf.setStringProperty(WMQConstants.PASSWORD, APP_PASSWORD);
-            }
+            cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
+            setUserCredentials(cf);
             cf.setStringProperty(WMQConstants.WMQ_TEMPORARY_MODEL, MODEL_QUEUE_NAME);
             if (CIPHER_SUITE != null && !CIPHER_SUITE.isEmpty()) {
                 cf.setStringProperty(WMQConstants.WMQ_SSL_CIPHER_SUITE, CIPHER_SUITE);
@@ -332,6 +341,21 @@ public class JmsRequest {
 
         logger.setLevel(LOGLEVEL);
         logger.finest("Logging initialised");
+    }
+
+    private static void setUserCredentials(JmsConnectionFactory cf) {
+        try {
+            if (accessToken != null) {
+                cf.setStringProperty(WMQConstants.PASSWORD, accessToken);
+            } else {
+                if (null != APP_USER && !APP_USER.trim().isEmpty()) {
+                    cf.setStringProperty(WMQConstants.USERID, APP_USER);
+                    cf.setStringProperty(WMQConstants.PASSWORD, APP_PASSWORD);
+                }
+            }
+        } catch (JMSException jmsex) {
+            recordFailure(jmsex);
+        }
     }
 
 }
