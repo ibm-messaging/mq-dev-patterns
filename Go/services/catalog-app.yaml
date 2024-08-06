@@ -6,3 +6,4 @@ spec:
   type: service
   owner: ibm-mq-devex
   lifecycle: production
+  consumesApis: ibm-mq-go-api
