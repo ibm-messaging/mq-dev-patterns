@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.name | dump }}
+spec:
+  type: service
+  owner: ibm-mq-devex
+  lifecycle: production
+  consumesApis: 
+    - ibm-mq-python-api
