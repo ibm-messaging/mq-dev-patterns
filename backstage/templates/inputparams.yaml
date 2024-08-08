@@ -1,0 +1,40 @@
+- title: Fill in some steps
+  required:
+    - name
+  properties:
+    name:
+      title: Name
+      type: string
+      description: Unique name of the component
+      ui:autofocus: true
+      ui:options:
+        rows: 5
+- title: Choose a location
+  required:
+    - repoUrl
+  properties:
+    repoUrl:
+      title: Repository Location
+      type: string
+      ui:field: RepoUrlPicker
+      ui:options:
+        # Additional oath  option you can pass to the RepoUrlPicker
+        # See https://backstage.io/docs/features/software-templates/writing-templates
+        # requestUserCredentials:
+        #   secretsKey: USER_OAUTH_TOKEN
+        #   additionalScopes:
+        #     github:
+        #       - workflow
+        allowedHosts:
+          - github.com
+          - github.ibm.com
+      default: github.ibm.com
+- title: Select Visibility
+  required:
+    - visibility
+  properties:
+    visibility:
+      title: Repository Visibility
+      type: string
+      enum: ['public', 'private']
+      default: 'private'   

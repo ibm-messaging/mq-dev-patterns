@@ -1,0 +1,6 @@
+allowedHosts: ['github.com', 'github.ibm.com']
+description: This is ${{ parameters.name }}
+repoUrl: ${{ parameters.repoUrl }}
+repoVisibility: ${{ parameters.visibility }}
+# here's where the secret can be used
+# token: ${{ secrets.USER_OAUTH_TOKEN }}

@@ -1,0 +1,295 @@
+# To be able to add a Group need to edit
+# catalog.rules.allow in app-config.yaml
+# and ad Group
+# apiVersion: backstage.io/v1alpha1
+# kind: Group
+# metadata:
+#   name: ibm-mq-devex
+# spec:
+#   type: development
+#   children: []
+# ---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: ibm-mq-dev-portal
+  description: Dev tools and patterns for IBM MQ applications
+spec:
+  type: service
+  owner: ibm-mq-devex
+  lifecycle: production
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: "ibm-mq-dev-resources"
+  title: "IBM MQ resources for developers"
+  description: Developer resources for IBM MQ
+  links: 
+    $yaml : ./components/resource-links.yaml
+  tags:
+    - java
+    - node
+    - go
+    - python
+    - cloud
+    - containers
+  annotations:
+    backstage.io/techdocs-ref: dir:.  
+spec:
+  type: service
+  owner: ibm-mq-devex
+  lifecycle: production
+  providesApis: 
+    - ibm-mq-node-api
+    - ibm-mq-go-api
+    - ibm-mq-jms-api
+    - ibm-mq-python-api
+    - ibm-mq-async-api
+  dependsOn:
+    - resource:default/queue-manager
+  subcomponentOf: ibm-mq-dev-portal
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: ibm-mq-node-api
+  description: IBM MQ API for Node
+  links: 
+    - url: https://github.com/ibm-messaging/mq-mqi-nodejs
+      title: Node API
+      type: API  
+spec:
+  type: library
+  owner: ibm-mq-devex
+  lifecycle: production
+  definition: 
+    $text : ./nodeapi/sample.yaml  
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: ibm-mq-jms-api
+  description: IBM MQ API for Java JMS
+  links: 
+    - url: https://www.ibm.com/docs/en/ibm-mq/latest?topic=messaging-mq-classes-jakarta-overview
+      title: Java API
+      type: API  
+spec:
+  type: library
+  owner: ibm-mq-devex
+  lifecycle: production
+  definition: 
+    $text : ./jmsapi/sample.yaml  
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: ibm-mq-python-api
+  description: IBM MQ API for Python
+  links: 
+    - url: https://pypi.org/project/pymqi/
+      title: Python API
+      type: API  
+spec:
+  type: library
+  owner: ibm-mq-devex
+  lifecycle: production
+  definition: 
+    $text : ./pythonapi/sample.yaml  
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: ibm-mq-go-api
+  description: IBM MQ API for Go
+  links: 
+    - url: https://github.com/ibm-messaging/mq-golang
+      title: Go API
+      type: API 
+spec:
+  type: library
+  owner: ibm-mq-devex
+  lifecycle: production
+  definition: 
+    $text : ./goapi/sample.yaml
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: queue-manager
+  description: IBM MQ Queue Manager
+spec:
+  type: qmgr
+  owner: ibm-mq-devex
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: ibm-mq-async-api
+  description: AsyncAPI bindings for IBM MQ
+  links: 
+    - url: https://github.com/asyncapi/bindings/tree/master/ibmmq
+      title: Async Bindings
+      type: API   
+spec:
+  type: asyncapi
+  owner: ibm-mq-devex
+  lifecycle: production
+  definition: 
+    $text : ./asyncapi/sample.yaml
+---
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: mq-nodejs-template
+  title: MQ Node.js Template
+  description: A template for the scaffolder that creates a MQ Node.js repository
+  annotations: 
+    backstage.io/techdocs-ref: dir:.  
+  tags:
+    - node
+    - javascript
+    - mq 
+spec:
+  owner: ibm-mq-devex
+  type: service
+
+  # These parameters are used to generate the input form in the frontend, and are
+  # used to gather input data for the execution of the template.
+  parameters:
+    $yaml : ./templates/inputparams.yaml
+
+  # These steps are executed in the scaffolder backend, using data that we gathered
+  # via the parameters above.
+  steps:
+    $yaml : ./templates/node-steps.yaml
+  # Outputs are displayed to the user after a successful execution of the template.
+  output:
+    $yaml : ./templates/outputlinks.yaml
+---
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: mq-jms-template
+  title: MQ JMS Template
+  description: A template for the scaffolder that creates a MQ JMS repository
+  annotations: 
+    backstage.io/techdocs-ref: dir:.  
+  tags:
+    - jms
+    - java
+    - jakarta
+    - mq 
+spec:
+  owner: ibm-mq-devex
+  type: service
+
+  # These parameters are used to generate the input form in the frontend, and are
+  # used to gather input data for the execution of the template.
+  parameters:
+    $yaml : ./templates/inputparams.yaml
+
+  # These steps are executed in the scaffolder backend, using data that we gathered
+  # via the parameters above.
+  steps:
+    $yaml : ./templates/jms-steps.yaml
+  # Outputs are displayed to the user after a successful execution of the template.
+  output:
+    $yaml : ./templates/outputlinks.yaml
+---
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: mq-python-template
+  title: MQ Python Template
+  description: A template for the scaffolder that creates a MQ Python repository
+  annotations: 
+    backstage.io/techdocs-ref: dir:.  
+  tags:
+    - python
+    - mq 
+spec:
+  owner: ibm-mq-devex
+  type: service
+
+  # These parameters are used to generate the input form in the frontend, and are
+  # used to gather input data for the execution of the template.
+  parameters:
+    $yaml : ./templates/inputparams.yaml
+
+  # These steps are executed in the scaffolder backend, using data that we gathered
+  # via the parameters above.
+  steps:
+    $yaml : ./templates/python-steps.yaml
+  # Outputs are displayed to the user after a successful execution of the template.
+  output:
+    $yaml : ./templates/outputlinks.yaml
+---
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: mq-go-template
+  title: MQ Go Template
+  description: A template for the scaffolder that creates a MQ Go repository
+  annotations: 
+    backstage.io/techdocs-ref: dir:. 
+  tags:
+    - go
+    - mq    
+spec:
+  owner: ibm-mq-devex
+  type: service
+
+  # These parameters are used to generate the input form in the frontend, and are
+  # used to gather input data for the execution of the template.
+  parameters:
+    $yaml : ./templates/inputparams.yaml
+
+  # These steps are executed in the scaffolder backend, using data that we gathered
+  # via the parameters above.
+  steps:
+    $yaml : ./templates/go-steps.yaml
+  # Outputs are displayed to the user after a successful execution of the template.
+  output:
+    $yaml : ./templates/outputlinks.yaml
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: mq-dev-patterns
+  annotations:
+    # this could also be `url:<url>` if the documentation isn't in the same location
+    backstage.io/techdocs-ref: url:https://github.com/ibm-messaging/mq-dev-patterns/blob/master
+spec:
+  type: documentation
+  lifecycle: production
+  owner: ibm-mq-devex
+  subcomponentOf: ibm-mq-dev-portal
+---
+# apiVersion: scaffolder.backstage.io/v1beta3
+# kind: Template
+# metadata:
+#   name: 04-mq-nodejs-template
+#   title: 04 Partial MQ Node.js Template
+#   description: A template for the scaffolder that creates a MQ Node.js repository
+#   annotations: 
+#     backstage.io/techdocs-ref: dir:.    
+# spec:
+#   owner: ibm-mq-devex
+#   type: service
+
+#   # These parameters are used to generate the input form in the frontend, and are
+#   # used to gather input data for the execution of the template.
+#   parameters:
+#     $yaml : ./templates/inputparams.yaml
+
+#   # These steps are executed in the scaffolder backend, using data that we gathered
+#   # via the parameters above.
+#   steps:
+#     $yaml : ./templates/node-steps-test.yaml
+
+#   # Outputs are displayed to the user after a successful execution of the template.
+#   output:
+#     $yaml : ./templates/outputlinks.yaml
+

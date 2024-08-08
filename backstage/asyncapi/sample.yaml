@@ -1,0 +1,52 @@
+asyncapi: 2.0.0
+info:
+  title: Account Service
+  version: 1.0.0
+  description: This service is in charge of processing user signups
+servers:
+  production1:
+    url: ibmmq://qmgr1host:1414/qm1/DEV.APP.SVRCONN
+    protocol: ibmmq-secure
+    description: Production Instance 1
+    bindings:
+      ibmmq: 
+        groupId: PRODCLSTR1
+        cipherSpec: ANY_TLS12_OR_HIGHER
+        bindingVersion: 0.1.0
+  production2:
+    url: ibmmq://qmgr2host:1414/qm2/DEV.APP.SVRCONN
+    protocol: ibmmq-secure
+    description: Production Instance 2
+    bindings:
+      ibmmq: 
+        groupId: PRODCLSTR1
+        cipherSpec: ANY_TLS12_OR_HIGHER
+        bindingVersion: 0.1.0
+channels:
+  user/signedup:
+    bindings:
+      ibmmq:
+        topic:
+          durablePermitted: true
+        bindingVersion: 0.1.0
+    subscribe:
+      message:
+        $ref: '#/components/messages/UserSignedUp'
+        bindings:
+          ibmmq:
+            type: jms
+            description: JMS bytes message
+            bindingVersion: 0.1.0
+components:
+  messages:
+    UserSignedUp:
+      payload:
+        type: object
+        properties:
+          displayName:
+            type: string
+            description: Name of the user
+          email:
+            type: string
+            format: email
+            description: Email of the user
