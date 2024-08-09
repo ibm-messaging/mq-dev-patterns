@@ -1,14 +1,18 @@
-# To be able to add a Group need to edit
-# catalog.rules.allow in app-config.yaml
-# and ad Group
-# apiVersion: backstage.io/v1alpha1
-# kind: Group
-# metadata:
-#   name: ibm-mq-devex
-# spec:
-#   type: development
-#   children: []
-# ---
+#
+# * Copyright 2024 IBM Corp.
+# *
+# * Licensed under the Apache License, Version 2.0 (the 'License');
+# * you may not use this file except in compliance with the License.
+# * You may obtain a copy of the License at
+# *
+# * http://www.apache.org/licenses/LICENSE-2.0
+# *
+# * Unless required by applicable law or agreed to in writing, software
+# * distributed under the License is distributed on an "AS IS" BASIS,
+# * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# * See the License for the specific language governing permissions and
+# * limitations under the License.
+
 apiVersion: backstage.io/v1alpha1
 kind: System
 metadata:
@@ -267,29 +271,3 @@ spec:
   owner: ibm-mq-devex
   subcomponentOf: ibm-mq-dev-portal
 ---
-# apiVersion: scaffolder.backstage.io/v1beta3
-# kind: Template
-# metadata:
-#   name: 04-mq-nodejs-template
-#   title: 04 Partial MQ Node.js Template
-#   description: A template for the scaffolder that creates a MQ Node.js repository
-#   annotations: 
-#     backstage.io/techdocs-ref: dir:.    
-# spec:
-#   owner: ibm-mq-devex
-#   type: service
-
-#   # These parameters are used to generate the input form in the frontend, and are
-#   # used to gather input data for the execution of the template.
-#   parameters:
-#     $yaml : ./templates/inputparams.yaml
-
-#   # These steps are executed in the scaffolder backend, using data that we gathered
-#   # via the parameters above.
-#   steps:
-#     $yaml : ./templates/node-steps-test.yaml
-
-#   # Outputs are displayed to the user after a successful execution of the template.
-#   output:
-#     $yaml : ./templates/outputlinks.yaml
-
