@@ -27,4 +27,4 @@ spec:
   owner: ibm-mq-devex
   lifecycle: production
   consumesApis: 
-    - ibm-mq-go-api
+    - ibm-mq-dotnet-api
