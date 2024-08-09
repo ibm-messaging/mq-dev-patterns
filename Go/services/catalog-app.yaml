@@ -2,6 +2,11 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: ${{ values.name | dump }}
+    links: 
+      - url: https://github.com/ibm-messaging/mq-golang
+        title: Go API for IBM MQ
+        type: API
+        icon: api      
 spec:
   type: service
   owner: ibm-mq-devex
