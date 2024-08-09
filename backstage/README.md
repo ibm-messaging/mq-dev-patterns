@@ -35,9 +35,6 @@ The code templates require github personal access tokens. Add these to `app-conf
 ````
 integrations:
   github:
-    - host: github.ibm.com
-      apiBaseUrl: https://github.ibm.com/api/v3
-      token: ghp_123 # this should be the token from gitHub.ibm.com
     - host: github.com
       token: ghp_456 # this should be the token from gitHub.com
 ````
