@@ -18,7 +18,7 @@
   name: Fetch Base
   action: fetch:template
   input:
-    url: https://github.com/chughts/mq-dev-patterns/tree/backstage/Python
+    url: https://github.com/ibm-messaging/mq-dev-patterns/tree/main/Python
     values:
       name: ${{ parameters.name }}
 
