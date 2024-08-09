@@ -49,6 +49,8 @@ spec:
     - ibm-mq-go-api
     - ibm-mq-jms-api
     - ibm-mq-python-api
+    - ibm-mq-spring-api
+    - ibm-mq-dotnet-api
     - ibm-mq-async-api
   dependsOn:
     - resource:default/queue-manager
@@ -133,6 +135,22 @@ spec:
   lifecycle: production
   definition: 
     $text : ./goapi/sample.yaml
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: ibm-mq-dotnet-api
+  description: XMS dotnet API for IBM MQ
+  links: 
+    - url: https://github.com/ibm-messaging/dotnet
+      title: XMS API
+      type: API 
+spec:
+  type: library
+  owner: ibm-mq-devex
+  lifecycle: production
+  definition: 
+    $text : ./dotnetapi/sample.yaml
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Resource
