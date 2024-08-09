@@ -84,7 +84,23 @@ spec:
   owner: ibm-mq-devex
   lifecycle: production
   definition: 
-    $text : ./jmsapi/sample.yaml  
+    $text : ./jmsapi/sample.yaml 
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: ibm-mq-spring-api
+  description: Spring boot starter for MQ
+  links: 
+    - url: https://github.com/ibm-messaging/mq-jms-spring
+      title: Spring Boot API for MQ
+      type: API  
+spec:
+  type: library
+  owner: ibm-mq-devex
+  lifecycle: production
+  definition: 
+    $text : ./springapi/sample.yaml           
 ---
 apiVersion: backstage.io/v1alpha1
 kind: API
@@ -198,6 +214,37 @@ spec:
   # via the parameters above.
   steps:
     $yaml : ./templates/jms-steps.yaml
+  # Outputs are displayed to the user after a successful execution of the template.
+  output:
+    $yaml : ./templates/outputlinks.yaml
+---
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: mq-spring-template
+  title: MQ Spring Template
+  description: A template for the scaffolder that creates a MQ Spring Boot repository
+  annotations: 
+    backstage.io/techdocs-ref: dir:.  
+  tags:
+    - jms
+    - java
+    - jakarta
+    - spring
+    - mq 
+spec:
+  owner: ibm-mq-devex
+  type: service
+
+  # These parameters are used to generate the input form in the frontend, and are
+  # used to gather input data for the execution of the template.
+  parameters:
+    $yaml : ./templates/inputparams.yaml
+
+  # These steps are executed in the scaffolder backend, using data that we gathered
+  # via the parameters above.
+  steps:
+    $yaml : ./templates/spring-steps.yaml
   # Outputs are displayed to the user after a successful execution of the template.
   output:
     $yaml : ./templates/outputlinks.yaml

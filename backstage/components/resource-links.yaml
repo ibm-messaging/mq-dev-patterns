@@ -52,7 +52,15 @@
 - url: https://mvnrepository.com/artifact/com.ibm.mq/com.ibm.mq.jakarta.client
   title: Jakarta API for IBM MQ
   type: API
-  icon: api   
+  icon: api  
+- url: https://github.com/ibm-messaging/mq-jms-spring
+  title: Spring boot starter for IBM MQ
+  type: API
+  icon: api    
+- url: https://mvnrepository.com/artifact/com.ibm.mq/mq-jms-spring-boot-starter
+  title: Maven repositiry for spring boot starter for IBM MQ
+  type: API
+  icon: api     
 - url: https://pypi.org/project/pymqi/
   title: Python API for IBM MQ
   type: API
