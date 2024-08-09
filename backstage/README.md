@@ -24,7 +24,7 @@ You can set up postgres in a container. The steps are:
 
 ## Registering the MQ components in backstage
 To register this component in your backstage deployment, [elect to create an existing component](https://backstage.io/docs/getting-started/register-a-component) and
-specify this url `https://github.com/ibm-messaging/mq-dev-patterns/blob/main/backstage/catalog-info.yaml` 
+specify this url `https://github.com/ibm-messaging/mq-dev-patterns/blob/master/backstage/catalog-info.yaml` 
 
 ## Making updates to the MQ components
 The [catalog-info.yaml](catalog-info.yaml) file in this repo is used to register MQ related catalog entities into Backstage. [Format documention can be found in the backstage documentation](https://backstage.io/docs/features/software-catalog/descriptor-format).
