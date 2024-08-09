@@ -298,6 +298,36 @@ spec:
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
+  name: mq-dotnet-template
+  title: MQ XMS dotnet Template
+  description: A template for the scaffolder that creates a MQ XMS dotnet repository
+  annotations: 
+    backstage.io/techdocs-ref: dir:.  
+  tags:
+    - xms
+    - dotnet
+    - c#
+    - mq 
+spec:
+  owner: ibm-mq-devex
+  type: service
+
+  # These parameters are used to generate the input form in the frontend, and are
+  # used to gather input data for the execution of the template.
+  parameters:
+    $yaml : ./templates/inputparams.yaml
+
+  # These steps are executed in the scaffolder backend, using data that we gathered
+  # via the parameters above.
+  steps:
+    $yaml : ./templates/dotnet-steps.yaml
+  # Outputs are displayed to the user after a successful execution of the template.
+  output:
+    $yaml : ./templates/outputlinks.yaml
+---
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
   name: mq-go-template
   title: MQ Go Template
   description: A template for the scaffolder that creates a MQ Go repository
