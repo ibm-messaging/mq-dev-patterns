@@ -18,7 +18,7 @@
   name: Fetch Base
   action: fetch:template
   input:
-    url: https://github.com/ibm-messaging/mq-dev-patterns/tree/main/dotnet
+    url: https://github.com/ibm-messaging/mq-dev-patterns/tree/master/dotnet
     values:
       name: ${{ parameters.name }}
 # This step publishes the contents of the working directory to GitHub.
