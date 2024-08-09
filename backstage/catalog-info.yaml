@@ -258,16 +258,3 @@ spec:
   output:
     $yaml : ./templates/outputlinks.yaml
 ---
-apiVersion: backstage.io/v1alpha1
-kind: Component
-metadata:
-  name: mq-dev-patterns
-  annotations:
-    # this could also be `url:<url>` if the documentation isn't in the same location
-    backstage.io/techdocs-ref: url:https://github.com/ibm-messaging/mq-dev-patterns/blob/master
-spec:
-  type: documentation
-  lifecycle: production
-  owner: ibm-mq-devex
-  subcomponentOf: ibm-mq-dev-portal
----
