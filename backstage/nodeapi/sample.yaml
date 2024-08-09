@@ -1,0 +1,7 @@
+// Package.json
+"dependencies": {"ibmmq": "^2.1.0"},
+
+
+// Application
+// Import the MQ package
+const mq = require('ibmmq');

@@ -1,0 +1,79 @@
+#
+# * Copyright 2024 IBM Corp.
+# *
+# * Licensed under the Apache License, Version 2.0 (the 'License');
+# * you may not use this file except in compliance with the License.
+# * You may obtain a copy of the License at
+# *
+# * http://www.apache.org/licenses/LICENSE-2.0
+# *
+# * Unless required by applicable law or agreed to in writing, software
+# * distributed under the License is distributed on an "AS IS" BASIS,
+# * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# * See the License for the specific language governing permissions and
+# * limitations under the License.
+
+- url: http://ibm.biz/learn-mq
+  title: Learn IBM MQ 
+  type: guide
+  icon: catalog
+- url: https://developer.ibm.com/components/ibm-mq/learningpaths/
+  title: IBM MQ Learning Paths 
+  type: guide
+  icon: catalog
+- url: http://ibm.biz/mq-playlist
+  title: YouTube playlist for IBM MQ concepts
+  type: guide
+  icon: catalog
+- url: http://ibm.biz/mq-playlist-advanced
+  title: YouTube playlist for advanced IBM MQ concepts
+  type: guide
+  icon: catalog
+- url: http://ibm.biz/mq-playlist-zxplore
+  title: YouTube playlist for IBM MQ on z/OS
+  type: guide
+  icon: catalog
+- url: http://ibm.biz/mq-dev-patterns
+  title: IBM MQ developer patterns
+  type: samples
+  icon: github
+- url: https://github.com/ibm-messaging/mq-golang
+  title: Go API for IBM MQ
+  type: API
+  icon: api
+- url: https://www.npmjs.com/package/ibmmq
+  title: Node API for IBM MQ
+  type: API
+  icon: api
+- url: https://mvnrepository.com/artifact/com.ibm.mq/com.ibm.mq.allclient
+  title: JMS API for IBM MQ
+  type: API
+  icon: api 
+- url: https://mvnrepository.com/artifact/com.ibm.mq/com.ibm.mq.jakarta.client
+  title: Jakarta API for IBM MQ
+  type: API
+  icon: api  
+- url: https://github.com/ibm-messaging/mq-jms-spring
+  title: Spring boot starter for IBM MQ
+  type: API
+  icon: api    
+- url: https://mvnrepository.com/artifact/com.ibm.mq/mq-jms-spring-boot-starter
+  title: Maven repositiry for spring boot starter for IBM MQ
+  type: API
+  icon: api     
+- url: https://pypi.org/project/pymqi/
+  title: Python API for IBM MQ
+  type: API
+  icon: api 
+- url: https://www.nuget.org/packages/IBMXMSDotnetClient/
+  title: XMS dotnet API for IBM MQ
+  type: API
+  icon: api      
+- url: https://github.com/ibm-messaging/mq-asyncapi-java-template/blob/main/tutorials/IBMMQ.md
+  title: AsyncAPI API for IBM MQ
+  type: API
+  icon: api    
+- url: https://stackoverflow.com/questions/tagged/ibm-mq
+  title: ibm-mq on Stack Overflow
+  type: Q&A
+  icon: chat

@@ -1,0 +1,67 @@
+#
+# * Copyright 2024 IBM Corp.
+# *
+# * Licensed under the Apache License, Version 2.0 (the 'License');
+# * you may not use this file except in compliance with the License.
+# * You may obtain a copy of the License at
+# *
+# * http://www.apache.org/licenses/LICENSE-2.0
+# *
+# * Unless required by applicable law or agreed to in writing, software
+# * distributed under the License is distributed on an "AS IS" BASIS,
+# * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# * See the License for the specific language governing permissions and
+# * limitations under the License.
+
+asyncapi: 2.0.0
+info:
+  title: Account Service
+  version: 1.0.0
+  description: This service is in charge of processing user signups
+servers:
+  production1:
+    url: ibmmq://qmgr1host:1414/qm1/DEV.APP.SVRCONN
+    protocol: ibmmq-secure
+    description: Production Instance 1
+    bindings:
+      ibmmq: 
+        groupId: PRODCLSTR1
+        cipherSpec: ANY_TLS12_OR_HIGHER
+        bindingVersion: 0.1.0
+  production2:
+    url: ibmmq://qmgr2host:1414/qm2/DEV.APP.SVRCONN
+    protocol: ibmmq-secure
+    description: Production Instance 2
+    bindings:
+      ibmmq: 
+        groupId: PRODCLSTR1
+        cipherSpec: ANY_TLS12_OR_HIGHER
+        bindingVersion: 0.1.0
+channels:
+  user/signedup:
+    bindings:
+      ibmmq:
+        topic:
+          durablePermitted: true
+        bindingVersion: 0.1.0
+    subscribe:
+      message:
+        $ref: '#/components/messages/UserSignedUp'
+        bindings:
+          ibmmq:
+            type: jms
+            description: JMS bytes message
+            bindingVersion: 0.1.0
+components:
+  messages:
+    UserSignedUp:
+      payload:
+        type: object
+        properties:
+          displayName:
+            type: string
+            description: Name of the user
+          email:
+            type: string
+            format: email
+            description: Email of the user
