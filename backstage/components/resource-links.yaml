@@ -64,7 +64,11 @@
 - url: https://pypi.org/project/pymqi/
   title: Python API for IBM MQ
   type: API
-  icon: api   
+  icon: api 
+- url: https://www.nuget.org/packages/IBMXMSDotnetClient/
+  title: XMS dotnet API for IBM MQ
+  type: API
+  icon: api      
 - url: https://github.com/ibm-messaging/mq-asyncapi-java-template/blob/main/tutorials/IBMMQ.md
   title: AsyncAPI API for IBM MQ
   type: API
