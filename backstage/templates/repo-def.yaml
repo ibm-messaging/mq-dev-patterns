@@ -13,7 +13,7 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-allowedHosts: ['github.com', 'github.ibm.com']
+allowedHosts: ['github.com']
 description: This is ${{ parameters.name }}
 repoUrl: ${{ parameters.repoUrl }}
 repoVisibility: ${{ parameters.visibility }}

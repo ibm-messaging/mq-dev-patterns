@@ -24,7 +24,7 @@
       description: Unique name of the component
       ui:autofocus: true
       ui:options:
-        rows: 5
+        rows: 5   
 - title: Choose a location
   required:
     - repoUrl
@@ -43,8 +43,7 @@
         #       - workflow
         allowedHosts:
           - github.com
-          - github.ibm.com
-      default: github.ibm.com
+      default: github.com
 - title: Select Visibility
   required:
     - visibility
