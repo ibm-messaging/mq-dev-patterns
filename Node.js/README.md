@@ -67,7 +67,7 @@ prerequsites by running :
 
 ## Put / Get
 The put application places a json object onto the queue.
-To run with logging, run
+To run the basic application with logging, run
 
 On Mac and Linux:
 
@@ -81,7 +81,7 @@ node basicput.js
 
 The get application reads a json object from the queue.
 
-To run with logging, run
+To run the basic application with logging, run
 
 On Mac and Linux:
 
@@ -93,7 +93,7 @@ SET DEBUG=amqs*:*
 node basicget.js
 ````
 
-The get and put applications have the common MQ boiler plate
+The sample get and put applications have the common MQ boiler plate
 factorised into a library and make use of
 promises.
 
@@ -115,10 +115,16 @@ SET DEBUG=sample*:*,boiler:*
 node sampleget.js
 ````
 
+To set the application name, which is useful for problem determination, `SET` the envrionment variable `ApplName`. eg.
+On Mac and Linux: <br>
+`DEBUG=sample*:*,boiler:* ApplName="sample put app" node sampleput.js` <br>
+and <br>
+`DEBUG=sample*:*,boiler:* ApplName="sample get app" node sampleget.js`
+
 
 ## Publish / Subscribe
 The publish application publishes a json object onto a topic.
-To run with logging, run
+To run the basic applications with logging, run
 
 On Mac and Linux: <br>
 `DEBUG=amqs*:* node basicpublish.js`
@@ -143,7 +149,7 @@ SET DEBUG=amqs*:*
 node basicsubcscribe.js
 ````
 
-The publish and subscribe applications have the common MQ boiler plate
+The sample publish and subscribe applications have the common MQ boiler plate
 factorised into a library and makes use of
 promises.
 
@@ -155,6 +161,12 @@ On Mac and Linux <br>
 and
 
 `DEBUG=sample*:*,boiler:* node samplesubscribe.js`
+
+It is possible to set the application name, by setting the environment value `ApplName`.
+
+To create a durable subscription set the envrionment variable `DURABLE` to any value. eg.
+
+`DEBUG=sample*:*,boiler:* DURABLE=1 ApplName="sample durable subscriber" node samplesubscribe.js`
 
 On Windows:
 ````
@@ -173,7 +185,7 @@ The request application create a dynamic queue for a reply, and
 places a json object consisting of the request onto a queue, then waits
 for a response to the request.
 
-To run with logging, run
+To run the basic applications with logging, run
 
 On Mac and Linux:
 
@@ -197,7 +209,7 @@ The request / response applications have the common MQ boiler plate
 factorised into a library and makes use of
 promises.
 
-To run with logging, run
+To run the sample applications with logging, run
 
 On Mac and Linux:
 
@@ -219,3 +231,5 @@ and
 SET DEBUG=sample*:*,boiler:*
 node samplerequest.js
 ````
+
+It is possible to set the application name, by setting the environment value `ApplName`.
