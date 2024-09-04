@@ -53,8 +53,17 @@ class MQBoilerPlate {
     this.beSync = null;
     this.MQDetails = {};
     this.credentials = {};
+    this.applName = this.determineApplName();
     bpInstance = this;
     debug_info('MQi Boilerplate constructed');
+  }
+
+  determineApplName() {
+    let name = process.env["ApplName"];
+    if (name && name.trim().length !== 0) { 
+      return name;
+    }
+    return "Sample node app";
   }
 
   initialise(type, sync = false, i = 0) {
@@ -281,7 +290,7 @@ class MQBoilerPlate {
           gmo.MatchOptions = MQC.MQMO_NONE;
       }
 
-      gmo.WaitInterval = waitInterval * 1000; //
+      gmo.WaitInterval = waitInterval * 1000; 
 
       if (msgId != null) {
         debug_info("Setting Match Option for MsgId");
@@ -419,6 +428,9 @@ class MQBoilerPlate {
     // use MQCNO_CLIENT_BINDING to connect as client
     // cno.Options = MQC.MQCNO_NONE;
     mqcno.Options = MQC.MQCNO_CLIENT_BINDING;
+
+    // Set Application name
+    mqcno.ApplName = this.applName;
 
     // For no authentication, disable this block
     if (this.credentials.USER) {
