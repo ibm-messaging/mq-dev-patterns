@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2024 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -88,6 +88,57 @@ class MQClient {
     this._DYNAMIC = undefined;
     this._HEALTHY = true;
     this.myID = uuidv4();    
+  }
+
+  /**
+ * Checks if a particular queue definition exists or not.
+ * @param {Object} queueName Name of the queue whose definition is to be checked of whether it exists or not. 
+ * @returns {Promise<any>} Returns a promise resolving to true if the queue definition exists, else resolves with a false.
+ */
+  checkQueueExists(queueName) {
+    // If the HCONN doesn't exist, that means a connection to the Queue Manager was not performed.
+    if (this[_HCONNKEY]===null) {
+      let qmgr = MQDetails.QMGR;
+      return new Promise((resolve,reject) => {
+        this.buildCNO()
+          .then((cno) => {
+            return mq.ConnxPromise(qmgr, cno);
+          })
+          .then((hConn) => {
+            debug_info("HCONN IS : ", hConn);
+            try {
+              let od = new mq.MQOD();
+              od.ObjectName = queueName;
+              od.ObjectType = MQC.MQOT_Q;
+              let openOptions = MQC.MQOO_OUTPUT;
+
+              mq.Open(hConn, od, openOptions, function (err, hObj) {
+                if (err) {
+                  if (err.mqrc === MQC.MQRC_UNKNOWN_OBJECT_NAME) {
+                    debug_warn("Queue does not exist");
+                    resolve(false);
+                  }
+                } else {
+                  mq.Close(hObj, 0, function(err) {
+                    if (err) {
+                      debug_warn("Error while closing connection : ", err);
+                    } else {
+                      debug_info("MQCLOSE successfull");
+                    }
+                  });
+
+                  resolve(true);
+                }
+              })
+            } catch (err) {
+              debug_warn("Some error has occured : ", err);
+              reject(null);
+            }
+          })
+      });
+    } else {
+      return Promise.resolve(true);
+    }
   }
 
 

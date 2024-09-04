@@ -354,7 +354,7 @@ To run the samples with TLS you need to provide additional arguments;
 
  *A note on the* `Dcom.ibm.mq.cfg.useIBMCipherMappings=false` property
 
-This is needed as the samples were tested in an enviroment with the Oracle JRE installed. Depending on whether you have Oracle or IBM JRE installed, you also need to name the cipher suite/spec accordingly. See the table here [TLS CipherSpecs and CipherSuites in IBM MQ classes for JMS](https://www.ibm.com/support/knowledgecenter/SSFKSJ_9.1.0/com.ibm.mq.dev.doc/q113220_.htm)
+This is needed as the samples were tested in an enviroment with the Oracle JRE installed. Depending on whether you have Oracle or IBM JRE installed, you also need to name the cipher suite/spec accordingly. See the table here [TLS CipherSpecs and CipherSuites in IBM MQ classes for JMS](https://www.ibm.com/docs/en/ibm-mq/latest?topic=jms-tls-cipherspecs-ciphersuites-in-mq-classes)
 
 ## Bindings mode
 
@@ -367,12 +367,12 @@ By default these samples will run in client mode. If you do want to run the samp
 to the `env.json` file.
 
 ## Unit Test
-The samples also contain unit tests in `src/test`. These tests require connection with a Queue Manager and use the default `env.json` present in the repository, hence make sure you have at least one valid endpoint in the `env.json`.
+The samples also contain unit tests in `src/test`. These tests require connection with a Queue Manager and use the default `env.json` present in the repository, hence make sure you have at least one valid endpoint in the `env.json`.Also these tests have not been run on a single CPU machine where the behaviour might be different.
 
 To run these tests, Use the following command:
 
 ````
-mvn test
+mvn -Dmaven.test.skip=false test
 ````
 
 NOTE : If you are on a windows machine make sure you have the symbolic link between `./src/main/java/com` and `./com` as mentioned above.

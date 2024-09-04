@@ -1,0 +1,11 @@
+// go.mod
+require github.com/ibm-messaging/mq-golang/v5 v5.6.0
+
+
+// application
+package mqgosample
+
+import (
+	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
+)
+

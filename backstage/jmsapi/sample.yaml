@@ -1,0 +1,14 @@
+// pom.xml
+
+  <dependencies>
+    <dependency>
+        <groupId>jakarta.jms</groupId>
+        <artifactId>jakarta.jms-api</artifactId>
+        <version>3.1.0</version>
+    </dependency>
+    <dependency>
+        <groupId>com.ibm.mq</groupId>
+        <artifactId>com.ibm.mq.jakarta.client</artifactId>
+        <version>9.4.0.0</version>
+    </dependency>
+  </dependencies>
