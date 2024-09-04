@@ -54,6 +54,7 @@ class MQBoilerPlate {
     this.MQDetails = {};
     this.credentials = {};
     this.applName = this.determineApplName();
+    this.isDurable = this.determineDurability();
     bpInstance = this;
     debug_info('MQi Boilerplate constructed');
   }
@@ -64,6 +65,15 @@ class MQBoilerPlate {
       return name;
     }
     return "Sample node app";
+  }
+
+  determineDurability() {
+    let durable = process.env["DURABLE"];
+    // Just check if the envrionment value is set
+    if (durable) { 
+      return true;
+    }
+    return false;
   }
 
   initialise(type, sync = false, i = 0) {
@@ -629,9 +639,17 @@ class MQBoilerPlate {
       let sd = new mq.MQSD();
       sd.ObjectString = me.MQDetails.TOPIC_NAME;
       sd.Options = MQC.MQSO_CREATE |
-        MQC.MQSO_NON_DURABLE |
         MQC.MQSO_FAIL_IF_QUIESCING |
         MQC.MQSO_MANAGED;
+
+      if (me.isDurable) {
+        debug_info('Durable subscription being created'); 
+        sd.SubName = me.applName; 
+        sd.Options |= MQC.MQSO_DURABLE | MQC.MQSO_RESUME;     
+      } else {
+        debug_info('Non durable subscription being created');
+        sd.Options |= MQC.MQSO_NON_DURABLE
+      }
 
       debug_info('Opening Connection running mode ', type);
 

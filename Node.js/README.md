@@ -164,6 +164,10 @@ and
 
 It is possible to set the application name, by setting the environment value `ApplName`.
 
+To create a durable subscription set the envrionment variable `DURABLE` to any value. eg.
+
+`DEBUG=sample*:*,boiler:* DURABLE=1 ApplName="sample durable subscriber" node samplesubscribe.js`
+
 On Windows:
 ````
 SET DEBUG=sample*:*,boiler:*
