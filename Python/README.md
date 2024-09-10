@@ -1,6 +1,6 @@
 # IBM MQ Python samples
 The python samples are based on https://dsuch.github.io/pymqi/
-and have been tested with python 2.7.10 and 3.5.1
+and have been tested with python 3.10.12,3.11.9 and 3.12.5
 
 Python PyMQI library uses the IBM MQ C client libraries through the MQI interface.
 
@@ -18,18 +18,19 @@ Add
 `/opt/mqm/bin` and
 `/opt/mqm/samp/bin`, to the PATH by editing `/etc/paths`
 
+execute the following command:
 `export DYLD_LIBRARY_PATH=/opt/mqm/lib64`
 
 ## Windows
 
-[Windows MQ client v 9.1.1.0 download](https://www-945.ibm.com/support/fixcentral/swg/selectFixes?parent=ibm~WebSphere&product=ibm/WebSphere/WebSphere+MQ&release=9.1.1&platform=Windows+64-bit,+x86&function=fixId&fixids=9.1.1.0-IBM-MQC-Win64+&useReleaseAsTarget=true&includeSupersedes=0)
+[Windows MQ redist client download](https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist/)
 
+## Linux Ubuntu
 
+[Linux MQ redist client download](https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist/)
 
-## Linux
-
-[Linux Ubuntu MQ client v 9.1.1.0 download](https://www-945.ibm.com/support/fixcentral/swg/selectFixes?parent=ibm~WebSphere&product=ibm/WebSphere/WebSphere+MQ&release=9.1.1&platform=Linux+64-bit,x86_64&function=fixId&fixids=9.1.1.0-IBM-MQC-UbuntuLinuxX64+&useReleaseAsTarget=true&includeSupersedes=0)
-
+For installation instructions please go to 
+#### [linux installation](../../mq-dev-patterns/installationDocs/linuxUbuntu-installationSteps.md)
 
 
 ## Run samples
