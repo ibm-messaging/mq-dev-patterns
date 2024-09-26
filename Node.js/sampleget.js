@@ -54,7 +54,8 @@ function msgCB(md, buf) {
 function cycleEndpoint(index) {
   return p = new Promise(function resolver(resolve, reject) {
     let mqBoilerPlate = new MQBoilerPlate();
-    mqBoilerPlate.initialise('GET', index)
+    // Second option is sync 
+    mqBoilerPlate.initialise('GET', false,  index)
       .then(() => {
         debug_info('MQ Connection is established');
         return Promise.resolve();
