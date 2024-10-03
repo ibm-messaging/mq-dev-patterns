@@ -18,7 +18,7 @@ You need an MQ server with a queue or topic to run these samples against. To fin
 
 To get your MQ server set up, check out [Ready, Set, Connect](https://developer.ibm.com/series/mq-ready-set-connect/).
 
-You can use your own MQ server, you'll just have to adjust the MQ objects accordingly so they match on both the server and the client side.
+You can use your own MQ server, you'll just have to adjust the MQ objects accordingly so they match on both the server and the client side. The samples in this repository inspect the following environment variables for their Queue Manager and messaging configuration. These values can also be provided via a `env.json` file.
 
 * **HOST** - Host name or IP address of your queue manager
 * **PORT** - Listener port for your queue manager
@@ -71,9 +71,11 @@ You can use the MQ Web Console to create the model queue. Access the MQ Web Cons
 
 ## Environment variables
 
-All the samples make use of the same environment variables to define MQ connection settings - these match the default developer config objects on the MQ server.
+All the samples make use of the same environment variables to define MQ connection settings - these match the default developer config objects on the MQ server. This separates configuration and credentials details from the code, and conforms to standard configuration injection mechanisms used in Cloud and DevOps environments. 
 
-We've tried to make this easier by providing one `env.json` file in the main `samples` directory;
+With so many many environment variables needed, we've tried to make this easier by providing one `env.json` file in the main `samples` directory, that all the samples use for default configuration setting. Default values specfied in the `env.json` file are overridden by envrionment variables. 
+
+### env.json format
 
 ```JSON
 {
@@ -100,8 +102,8 @@ If you are running these samples on IBM Z Xplore then you can use the
 
 You can use the `env.json` file to 'switch on' or 'switch off' parts of the code.
 
-## Endpoints Array
-Having the endpoints defined as an array allows us to define multiple endpoints
+### Endpoints Array
+Having the endpoints in the `env.json` defined as an array allows us to define multiple endpoints
 for the sample applications to use.  
 
 ## TLS
