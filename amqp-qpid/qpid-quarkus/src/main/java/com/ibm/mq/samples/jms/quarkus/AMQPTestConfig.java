@@ -1,5 +1,5 @@
 /*
-* (c) Copyright IBM Corporation 2020
+* (c) Copyright IBM Corporation 2020, 2024
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -19,13 +19,20 @@ package com.ibm.mq.samples.jms.quarkus;
 import java.util.List;
 import java.util.Optional;
 
-import io.quarkus.arc.config.ConfigProperties;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@ConfigProperties(prefix = "amqp-mqtest")
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+@ApplicationScoped
 public class AMQPTestConfig {
 
+    @ConfigProperty(name = "amqp-mqtest.queuename")
     private Optional<String> queuename;
+
+    @ConfigProperty(name = "amqp-mqtest.topicname")
     private Optional<String> topicname;
+
+    @ConfigProperty(name = "amqp-mqtest.replyqueuename")
     private Optional<String> replyqueuename;
 
     private List<String> appargs;
