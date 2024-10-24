@@ -1,5 +1,5 @@
 /*
-* (c) Copyright IBM Corporation 2020
+* (c) Copyright IBM Corporation 2020, 2024
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -21,11 +21,11 @@ import java.util.concurrent.Executors;
 
 import java.util.logging.*;
 
-import javax.inject.Inject;
-import javax.jms.ConnectionFactory;
+import jakarta.inject.Inject;
+import jakarta.jms.ConnectionFactory;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
 
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
