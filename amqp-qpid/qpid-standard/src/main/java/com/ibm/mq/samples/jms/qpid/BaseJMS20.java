@@ -21,10 +21,10 @@ import java.util.logging.*;
 import javax.naming.NamingException;
 import javax.naming.InitialContext;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSContext;
-import javax.jms.Queue;
-import javax.jms.Topic;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSContext;
+import jakarta.jms.Queue;
+import jakarta.jms.Topic;
 
 
 public class BaseJMS20 {
