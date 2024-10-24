@@ -12,6 +12,14 @@ You don't need to generate the project, just clone the repository and
 cd mq-dev-patterns/amqp-qpid/qpid-quarkus
 ````
 
+tested native build `mvn package -Pnative` with Java `23.0.1-graalce`, installed using [sdkman](https://sdkman.io)
+
+````
+sdk install java 23.0.1-graalce
+sdk use java 23.0.1-graalce
+````
+
+
 ## MQ Connection properties
 The properties that the samples need to connect to MQ are in the
 `resources/application.properties` file.
