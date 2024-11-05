@@ -1,5 +1,5 @@
 /*
-* (c) Copyright IBM Corporation 2020
+* (c) Copyright IBM Corporation 2020, 2024
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@ package com.ibm.mq.samples.jms.qpid;
 
 import java.util.logging.*;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.JMSConsumer;
-import javax.jms.JMSException;
-import javax.jms.Message;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.DeliveryMode;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSConsumer;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
 
 public class GetJMS20 extends BaseJMS20 {
 

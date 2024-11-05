@@ -2,6 +2,8 @@
 The main class for this sample is `JMS20Tester` which parses the arguments
 and determines the mode and options for the run.
 
+Tested with openjdk version 17.0.9 and 17.0.12 
+
 ## MQ Connection properties
 The properties that the samples need to connect to MQ are in the
 `resources/jndi.properties` file.
