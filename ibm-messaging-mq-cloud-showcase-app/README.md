@@ -31,9 +31,9 @@ After starting the three containers, you can now access:
     - the playground app on the following URL: http://\<your-local-machine-IP>:3000
     - the MQ web console on the following URL: http://\<your-local-machine-IP>:9443/ibmmq/console
 
-#### Running on Apple Silicon (Arm64)
+#### Running on Apple Silicon (ARM64)
 
-For ARM64 machines, including Apple Silicon a prebuilt queue manager container isn't available in a container image repository so needs to be built. Follow [this link](https://community.ibm.com/community/user/integration/blogs/richard-coppen/2023/06/30/ibm-mq-9330-container-image-now-available-for-appl) for simplified instructions for building an Arm64 image, which in turn refers to instructions published the [MQ Container GitHub repo](https://github.com/ibm-messaging/mq-container/blob/master/docs/building.md).
+A Prebuilt queue manager container for ARM64 isn't available in a container image repository so needs to be built. Follow [this link](https://community.ibm.com/community/user/integration/blogs/richard-coppen/2023/06/30/ibm-mq-9330-container-image-now-available-for-appl) for simplified instructions for building an Arm64 image, which in turn refers to instructions published the [MQ Container GitHub repo](https://github.com/ibm-messaging/mq-container/blob/master/docs/building.md).
 
 After the image build you will end up with an image name resembling `ibm-mqadvanced-server-dev:9.4.1.0-arm64` 
 To use this image Edit `docker-compose.yaml` and change
