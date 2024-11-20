@@ -33,16 +33,16 @@ After starting the three containers, you can now access:
 
 #### Running on Apple Silicon (ARM64)
 
-A Prebuilt queue manager container for ARM64 isn't available in a container image repository so needs to be built. Follow [this link](https://community.ibm.com/community/user/integration/blogs/richard-coppen/2023/06/30/ibm-mq-9330-container-image-now-available-for-appl) for simplified instructions for building an Arm64 image, which in turn refers to instructions published the [MQ Container GitHub repo](https://github.com/ibm-messaging/mq-container/blob/master/docs/building.md).
+A prebuilt queue manager container for ARM64 isn't available in a container image repository so needs to be built. Follow [this link](https://community.ibm.com/community/user/integration/blogs/richard-coppen/2023/06/30/ibm-mq-9330-container-image-now-available-for-appl) for simplified instructions for building an ARM64 image, which in turn refers to the instructions in the [MQ Container GitHub repo.](https://github.com/ibm-messaging/mq-container/blob/master/docs/building.md)
 
-After the image build you will end up with an image name resembling `ibm-mqadvanced-server-dev:9.4.1.0-arm64` 
-To use this image Edit `docker-compose.yaml` and change
+After building the image you will end up with an image name resembling `ibm-mqadvanced-server-dev:9.4.1.0-arm64` 
+To use this image, edit `docker-compose.yaml` and change
 
 ````
 image: "icr.io/ibm-messaging/mq:latest"
 ````
 
-to the name of your ARM64 image. 
+to the name of ARM64 image you built. 
 
 ````
 image: "ibm-mqadvanced-server-dev:9.4.1.0-arm64"
