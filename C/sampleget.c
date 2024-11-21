@@ -14,9 +14,8 @@
  * limitations under the License.
  **/
 
-/*
- * This is a demonstration showing the PUT operation onto a MQ Queue
- * using the MQI C interface
+/* This is a demonstration showing the GET operations from an MQ Queue
+ * using the MQI C interface.
  */
 
 #include <stdio.h>
@@ -30,7 +29,7 @@
 #include "config.h"
 
 static int openQueue(MQHCONN hConn, PMQHOBJ pHObj);
-static int putMessage(MQHCONN hConn, MQHOBJ hObj, char *msg);
+static int getMessages(MQHCONN hConn, MQHOBJ hObj);
 
 // There are no command line parameters to this program
 int main(int argc, char **argv) {
@@ -39,7 +38,7 @@ int main(int argc, char **argv) {
   MQHCONN hConn = MQHC_UNUSABLE_HCONN;
   MQHOBJ hObj = MQHO_UNUSABLE_HOBJ;
 
-   if (getenv(CONFIG_DEBUG)) {
+  if (getenv(CONFIG_DEBUG)) {
     debug = 1;
   }
 
@@ -57,14 +56,8 @@ int main(int argc, char **argv) {
   if (rc == 0) {
     rc = openQueue(hConn, &hObj);
   }
-
   if (rc == 0) {
-    char msgData[DEFAULT_BUFFER_LENGTH];
-    time(&now);
-    // ctime always returns a 26-byte buffer. But we want to strip off the trailing "\n" and NUL.
-    // So force the buffer to use 24 chars.
-    sprintf(msgData, "Hello from C at %24.24s", ctime(&now));
-    rc = putMessage(hConn, hObj, msgData);
+    rc = getMessages(hConn, hObj);
   }
 
   if (hObj != MQHO_UNUSABLE_HOBJ) {
@@ -80,7 +73,7 @@ int main(int argc, char **argv) {
 }
 
 /*
- * Open a queue for OUTPUT as we will be putting a message
+ * Open a queue for INPUT as we will be getting messages
  *
  * Return 0 if OK; -1 otherwise
  */
@@ -90,7 +83,7 @@ static int openQueue(MQHCONN hConn, PMQHOBJ pHObj) {
   int rc = 0;
 
   MQOD mqod = {MQOD_DEFAULT};
-  MQLONG options = MQOO_OUTPUT;
+  MQLONG options = MQOO_INPUT_EXCLUSIVE;
 
   strncpy(mqod.ObjectName, mqEndpoints[0].queueName, MQ_Q_NAME_LENGTH);
   mqod.ObjectType = MQOT_Q;
@@ -106,31 +99,63 @@ static int openQueue(MQHCONN hConn, PMQHOBJ pHObj) {
 }
 
 /*
- * Put the message to the queue.
- *
+ * Get all available messages from the queue, printing the contents.
  * Return 0 if OK; -1 otherwise
  */
-static int putMessage(MQHCONN hConn, MQHOBJ hObj, char *msg) {
+static int getMessages(MQHCONN hConn, MQHOBJ hObj) {
+
   MQLONG compCode;
   MQLONG reason;
   int rc = 0;
+  int ok = 1;
   MQMD mqmd = {MQMD_DEFAULT};
-  MQPMO mqpmo = {MQPMO_DEFAULT};
+  MQGMO mqgmo = {MQGMO_DEFAULT};
+  char buffer[DEFAULT_BUFFER_LENGTH];
+  MQLONG datalength;
 
-  // Various options to control how the message is put
-  mqpmo.Options = MQPMO_FAIL_IF_QUIESCING;
-  mqpmo.Options |= MQPMO_NO_SYNCPOINT;
-  mqpmo.Options |= MQPMO_NEW_MSG_ID;
+  // Structure version must be high enough to recognise the MatchOptions field
+  mqgmo.Version = MQGMO_VERSION_2;
 
-  // We are sending a character string. Set the format to indicate
-  // that, so that the recipient can convert the codepage if necessary
-  memcpy(mqmd.Format,MQFMT_STRING,MQ_FORMAT_LENGTH);
+  // Various options to control retrieval
+  mqgmo.Options = MQGMO_NO_SYNCPOINT;
+  mqgmo.Options |= MQGMO_FAIL_IF_QUIESCING;
+  mqgmo.Options |= MQGMO_NO_WAIT;
+  mqgmo.Options |= MQGMO_CONVERT;
 
-  // Now put the message to the queue
-  MQPUT(hConn, hObj, &mqmd, &mqpmo, strlen(msg), msg, &compCode, &reason);
-  if (reason != MQRC_NONE) {
-    printError("MQPUT", compCode, reason);
-    rc = -1;
+  mqgmo.Options |= MQGMO_ACCEPT_TRUNCATED_MSG; // Process the message even if it is too long for the buffer
+
+  // Not going to try to match on MsgId or CorrelId
+  mqgmo.MatchOptions = MQMO_NONE;
+
+  // Loop until there are no more messages on the queue
+  while (ok) {
+
+    MQGET(hConn, hObj, &mqmd, &mqgmo, sizeof(buffer), buffer, &datalength, &compCode, &reason);
+
+    if (reason == MQRC_NONE) {
+      if (!strncmp(mqmd.Format, MQFMT_STRING, MQ_FORMAT_LENGTH)) {
+        printf("Message: %*.*s\n", datalength, datalength, buffer);
+      } else {
+        char title[32];
+        sprintf(title, "Message Type:%*.*s", MQ_FORMAT_LENGTH, MQ_FORMAT_LENGTH, mqmd.Format);
+        dumpHex(title, buffer, datalength);
+      }
+    } else {
+      printError("MQGET", compCode, reason);
+      switch (reason) {
+      case MQRC_NO_MSG_AVAILABLE:
+        // This is not really an error but we do need to break from the loop
+        ok = 0;
+        break;
+      case MQRC_TRUNCATED_MSG_ACCEPTED:
+        // Carry on if there are more messages
+        break;
+      default:
+        rc = -1;
+        ok = 0;
+        break;
+      }
+    }
   }
 
   return rc;

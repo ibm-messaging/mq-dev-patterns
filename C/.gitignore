@@ -1,12 +1,15 @@
 
-parse
+# Don't try to track the binary programs
 sampleput
+sampleget
+samplerequest
+sampleresponse
+samplepublish
+samplesubscribe
 
-
-main.c
-
+# My test scripts
 doit
-
 .gdbrc
 
-*.js
+# On MacOS these directories may be created with debug info
+*.dSYM

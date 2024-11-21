@@ -29,7 +29,7 @@ static int overrideEnv(char **p, char *field);
 
 static char *cfStrdup(char *);
 static void cfFree(void *);
-static void dumpConfig();
+static void dumpConfig(char *);
 
 #define LINE_LENGTH 255 // Long enough for the input file
 
@@ -200,7 +200,7 @@ int parseConfig(char *filename) {
 
   // Call this if we want to check the config has been correctly parsed
   if (debug) {
-    dumpConfig();
+    dumpConfig(filename);
   }
 
   return rc;
@@ -284,8 +284,10 @@ static int overrideEnv(char **p, char *field) {
   return rc;
 }
 
-static void dumpConfig() {
+static void dumpConfig(char *filename) {
   int i;
+
+  printf("Configuration read from %s\n",N(filename));
   for (i = 0; i <= epIdx; i++) {
     mqEndpoint_t *ep = &mqEndpoints[i];
     printf("MQ Endpoint: %d\n", i);

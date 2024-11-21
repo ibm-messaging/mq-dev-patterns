@@ -1,16 +1,37 @@
-SRC = common.c config.c
-INC = common.h config.h
+COMMONSRC = common.c config.c
+COMMONINC = common.h config.h
 
 MQINC=/opt/mqm/inc
 MQLIB=/opt/mqm/lib64
 
-all: parse \
-     sampleput
+APPS = sampleput \
+       sampleget \
+	   samplerequest \
+	   sampleresponse \
+	   samplepublish \
+	   samplesubscribe
 
-parse: main.c config.c $(INC) Makefile
-	cc -g -o $@ main.c config.c
-	# parse
+all: $(APPS)
+	@rm -rf *.dSYM
 
-sampleput: sampleput.c $(SRC) $(INC) Makefile
-	cc -g -o $@ $@.c $(SRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
+clean:
+	rm -f $(APPS)
+	@rm -rf *.dSYM
 
+sampleput: sampleput.c $(COMMONSRC) $(COMMONINC) Makefile
+	cc -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
+
+sampleget: sampleget.c $(COMMONSRC) $(COMMONINC) Makefile
+	cc -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
+
+samplerequest: samplerequest.c $(COMMONSRC) $(COMMONINC) Makefile
+	cc -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
+
+sampleresponse: sampleresponse.c $(COMMONSRC) $(COMMONINC) Makefile
+	cc -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
+
+samplepublish: samplepublish.c $(COMMONSRC) $(COMMONINC) Makefile
+	cc -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
+
+samplesubscribe: samplesubscribe.c $(COMMONSRC) $(COMMONINC) Makefile
+	cc -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r

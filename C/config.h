@@ -3,7 +3,7 @@
 
 // Where to read the configuration from unless overridden
 #define DEFAULT_CONFIG_FILE "../env.json"
-#define CONFIG_ENV_VAR "JSON_CONFIG"
+#define CONFIG_JSON_FILE "JSON_CONFIG"
 
 // Structures to hold configuration values
 typedef struct mqEndpoint {
@@ -67,5 +67,8 @@ void freeConfig();
 #define CONFIG_JWT_TOKEN_USERNAME   "JWT_TOKEN_USERNAME"
 #define CONFIG_JWT_TOKEN_PWD        "JWT_TOKEN_PWD"
 #define CONFIG_JWT_TOKEN_CLIENTID   "JWT_TOKEN_CLIENTID"
+
+// Environment variable only
+#define CONFIG_DEBUG "DEBUG"
 
 #endif

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include <cmqc.h>
 #include <cmqstrc.h>
@@ -8,6 +9,7 @@
 #include "common.h"
 #include "config.h"
 
+static const char *hexChars = "0123456789ABCDEF";
 
 /*
  * Connect to a queue manager
@@ -34,7 +36,8 @@ int connectQMgr(PMQHCONN pHConn) {
 
   // Build the connection information. If there is a CCDT, then point at that.
   // Otherwise build the MQCD client channel structure if we have configuration for that
-  // Otherwise attempt a local bindings connection
+  // Otherwise attempt the default type of connection which might be local bindings or client
+  // - MQSERVER and MQ_CONNECT_TYPE environment variables can control that process
   if (ep.ccdtUrl) {
     mqcno.Options |= MQCNO_CLIENT_BINDING;
     mqcno.CCDTUrlPtr = ep.ccdtUrl;
@@ -42,11 +45,14 @@ int connectQMgr(PMQHCONN pHConn) {
   } else {
     if (ep.channel && ep.host) {
       mqcno.Options |= MQCNO_CLIENT_BINDING;
+
+      // Use strncpy with the maximum length of the field in the structure
+      // The MQI does not use NULL-terminated strings in its char fields.
       strncpy(mqcd.ChannelName,ep.channel,MQ_CHANNEL_NAME_LENGTH);
 
       // Build the connname. If there are multiple endpoints defined,
       // then we use the host/port info from all of them to build the conname.
-      // Should end up with a string like "host1(port),host2,host3(port3)"
+      // Should end up with a string like "host1(port1),host2,host3(port3)"
       for (i=0;i<=epIdx;i++) {
         if (i > 0) {
             strncat(ConnectionName,",", s);
@@ -79,8 +85,10 @@ int connectQMgr(PMQHCONN pHConn) {
       mqcno.ClientConnPtr = &mqcd;
 
     } else {
-      mqcno.Options |= MQCNO_LOCAL_BINDING;
+      // Just take the default connection type. Don't try to explicitly set
+      // client or local bindings.
     }
+
   }
 
   // Authentication can apply for both local and client connections
@@ -95,10 +103,14 @@ int connectQMgr(PMQHCONN pHConn) {
     mqcno.SecurityParmsPtr = &mqcsp;
   }
 
+  if (ep.applName) {
+    strncpy(mqcno.ApplName,ep.applName,MQ_APPL_NAME_LENGTH);
+  }
+
   // Finally we can try to connect to the queue manager
   MQCONNX(ep.qmgr, &mqcno, pHConn, &compCode, &reason);
   if (reason != MQRC_NONE) {
-    printError(compCode, reason);
+    printError("MQCONNX", compCode, reason);
     rc = -1;
   }
 
@@ -114,7 +126,7 @@ void disconnectQMgr(PMQHCONN pHConn) {
 
   MQDISC(pHConn, &compCode, &reason);
   if (reason != MQRC_NONE) {
-    printError(compCode, reason);
+    printError("MQDISC", compCode, reason);
   }
 }
 
@@ -129,13 +141,59 @@ void closeQueue(MQHCONN hConn, PMQHOBJ pHObj) {
   MQCLOSE(hConn, pHObj, options, &compCode, &reason);
 
   if (reason != MQRC_NONE) {
-    printError(compCode, reason);
+    printError("MQCLOSE", compCode, reason);
   }
 
   return;
 }
 
-void printError(MQLONG compCode, MQLONG reason) {
-  printf("CompCode: %d [%s] Reason: %d [%s]\n", compCode, MQCC_STR(compCode), reason, MQRC_STR(reason));
+// Print the CC/RC values in a formatted string. Show both the numeric and string values
+void printError(char *verb, MQLONG compCode, MQLONG reason) {
+  printf("Call: %s CompCode: %d [%s] Reason: %d [%s]\n", verb, compCode, MQCC_STR(compCode), reason, MQRC_STR(reason));
+  return;
+}
+
+
+/* A simple formatter for hex data showing chars and bytes */
+void dumpHex(const char *title, void *buf, int length) {
+  int i, j;
+  unsigned char *p = (unsigned char *)buf;
+  int rows;
+  int o;
+  char line[80];
+  FILE *fp = stdout;
+
+  fprintf(fp, "-- %s -- (%d bytes) --------------------\n", title, length);
+
+  rows = (length + 15) / 16;
+  for (i = 0; i < rows; i++) {
+
+    memset(line, ' ', sizeof(line));
+    o = snprintf(line, sizeof(line)-1, "%8.8X : ", i * 16);
+
+    for (j = 0; j < 16 && (j + (i * 16) < length); j++) {
+      line[o++] = hexChars[p[j] >> 4];
+      line[o++] = hexChars[p[j] & 0x0F];
+      if (j % 4 == 3)
+        line[o++] = ' ';
+    }
+
+    o = 48;
+    line[o++] = '|';
+    for (j = 0; j < 16 && (j + (i * 16) < length); j++) {
+      char c = p[j];
+      if (!isalnum((int)c) && !ispunct((int)c) && (c != ' '))
+        c = '.';
+      line[o++] = c;
+    }
+
+    o = 65;
+    line[o++] = '|';
+    line[o++] = 0;
+
+    fprintf(fp, "%s\n", line);
+    p += 16;
+  }
+
   return;
 }
