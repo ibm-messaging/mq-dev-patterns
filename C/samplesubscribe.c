@@ -104,6 +104,7 @@ static int subscribeTopic(MQHCONN hConn, PMQHOBJ pTopicHObj, PMQHOBJ pQueueHObj)
   topic = mqEndpoints[0].topicName;
   objectString.VSPtr = topic;
   objectString.VSLength = (MQLONG)strlen(topic);
+  mqsd.ObjectString = objectString;
 
   MQSUB(hConn, &mqsd, pQueueHObj, pTopicHObj, &compCode, &reason);
 
