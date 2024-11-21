@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 }
 
 /*
- * Open a queue for INPUT as we will be getting messages
+ * Subscribe to a topic
  *
  * Return 0 if OK; -1 otherwise
  */
@@ -88,7 +88,7 @@ static int subscribeTopic(MQHCONN hConn, PMQHOBJ pTopicHObj, PMQHOBJ pQueueHObj)
   MQLONG compCode;
   MQLONG reason;
   MQCHARV objectString = {MQCHARV_DEFAULT};
-  char *topic;
+  char topic[1024] = {0};
 
   int rc = 0;
 
@@ -101,11 +101,23 @@ static int subscribeTopic(MQHCONN hConn, PMQHOBJ pTopicHObj, PMQHOBJ pQueueHObj)
   // The objectString contains the full topic string that we
   // want to use. Alternatives allow a combination of administered object
   // names and the objectString value, but that's more advanced.
-  topic = mqEndpoints[0].topicName;
+  // Add a wildcard to the subscription by appending the '#'. And potentially
+  // a "/" separator, depending on the configured topic string
+  strncpy(topic, mqEndpoints[0].topicName, sizeof(topic) - 1);
+  if (topic[strlen(topic) - 1] != '/') {
+    strncat(topic, "/", sizeof(topic) - 1);
+  }
+  strncat(topic, "#", sizeof(topic) - 1);
+
+  printf("Subscribing to %s\n", topic);
+
   objectString.VSPtr = topic;
   objectString.VSLength = (MQLONG)strlen(topic);
   mqsd.ObjectString = objectString;
 
+  // Using the MANAGED option tells the queue manager to create a dynamic
+  // queue from which we can read the messages. A handle to that queue
+  // is returned from MQSUB, and we then use that for MQGET.
   MQSUB(hConn, &mqsd, pQueueHObj, pTopicHObj, &compCode, &reason);
 
   if (reason != MQRC_NONE) {

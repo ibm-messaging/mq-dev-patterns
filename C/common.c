@@ -130,10 +130,16 @@ void disconnectQMgr(PMQHCONN pHConn) {
   }
 }
 
-// Close the queue. No need for
+// Close the object. No need for
 // any error return code as there's no sensible recovery possible
-// if it went wrong.
+// if it went wrong. Closing a queue is more common than closing other
+// object types so we've got an explicitly-named function that does no more
+// than calling the generic one.
 void closeQueue(MQHCONN hConn, PMQHOBJ pHObj) {
+   closeObject(hConn,pHObj);
+}
+
+void closeObject(MQHCONN hConn, PMQHOBJ pHObj) {
   MQLONG compCode;
   MQLONG reason;
   MQLONG options = 0;
