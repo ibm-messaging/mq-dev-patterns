@@ -31,7 +31,8 @@
 static int openQueue(MQHCONN hConn, PMQHOBJ pHObj);
 static int getMessages(MQHCONN hConn, MQHOBJ hObj);
 
-// There are no command line parameters to this program
+// The only (optional) parameter to this program is the name of the
+// configuration file
 int main(int argc, char **argv) {
   int rc = 0;
   time_t now;
@@ -43,6 +44,9 @@ int main(int argc, char **argv) {
   }
 
   char *configFile = getenv(CONFIG_JSON_FILE);
+  if (argc > 1) {
+    configFile = argv[1];
+  }
   if (!configFile) {
     configFile = DEFAULT_CONFIG_FILE;
   }
@@ -122,7 +126,8 @@ static int getMessages(MQHCONN hConn, MQHOBJ hObj) {
   mqgmo.Options |= MQGMO_NO_WAIT;
   mqgmo.Options |= MQGMO_CONVERT;
 
-  mqgmo.Options |= MQGMO_ACCEPT_TRUNCATED_MSG; // Process the message even if it is too long for the buffer
+  mqgmo.Options |= MQGMO_ACCEPT_TRUNCATED_MSG; // Process the message even if it
+                                               // is too long for the buffer
 
   // Not going to try to match on MsgId or CorrelId
   mqgmo.MatchOptions = MQMO_NONE;
@@ -130,14 +135,16 @@ static int getMessages(MQHCONN hConn, MQHOBJ hObj) {
   // Loop until there are no more messages on the queue
   while (ok) {
 
-    MQGET(hConn, hObj, &mqmd, &mqgmo, sizeof(buffer), buffer, &datalength, &compCode, &reason);
+    MQGET(hConn, hObj, &mqmd, &mqgmo, sizeof(buffer), buffer, &datalength,
+          &compCode, &reason);
 
     if (reason == MQRC_NONE) {
       if (!strncmp(mqmd.Format, MQFMT_STRING, MQ_FORMAT_LENGTH)) {
         printf("Message: %*.*s\n", datalength, datalength, buffer);
       } else {
         char title[32];
-        sprintf(title, "Message Type:%*.*s", MQ_FORMAT_LENGTH, MQ_FORMAT_LENGTH, mqmd.Format);
+        sprintf(title, "Message Type:%*.*s", MQ_FORMAT_LENGTH, MQ_FORMAT_LENGTH,
+                mqmd.Format);
         dumpHex(title, buffer, datalength);
       }
     } else {

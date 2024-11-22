@@ -115,8 +115,8 @@ If you have two docker containers, one with TLS and one without, changing the po
 
 ### Apple Silicon
 
-The IBM MQ Client Toolkit on Apple Silicon (ARM64) makes use of OpenSSL libraries
-for TLS. For the MQI based samples in this repository, this means that
+The IBM MQ Client Toolkit on Apple Silicon (ARM64) made use of OpenSSL libraries
+for TLS before version 9.4.1. For the MQI based samples in this repository, this means that
 `KEY_REPOSITORY` in the `env.json` file or environment
 variable `KEY_REPOSITORY` be set to the path for the queue manager's exported `.pem` file. eg. If you have exported the `qmgrcert.pem` file to the root directory of this repository, then set `KEY_REPOSITORY` to `../qmgrcert.pem` .
 
@@ -217,6 +217,7 @@ Do not install any application requirements until
 #### [Python](/Python/README.md)
 #### [C# .Net](/dotnet/README.md)
 #### [Go](/Go/README.md)
+#### [C](/C/README.md)
 
 ### REST samples
 #### [Rust](/Rust-REST/README.md)

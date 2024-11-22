@@ -32,18 +32,21 @@
 static int openTopic(MQHCONN hConn, PMQHOBJ pHObj);
 static int publishMessage(MQHCONN hConn, MQHOBJ hObj, char *msg);
 
-// There are no command line parameters to this program
+// The only (optional) parameter to this program is the name of the configuration file
 int main(int argc, char **argv) {
   int rc = 0;
   time_t now;
   MQHCONN hConn = MQHC_UNUSABLE_HCONN;
   MQHOBJ hObj = MQHO_UNUSABLE_HOBJ;
 
-   if (getenv(CONFIG_DEBUG)) {
+  if (getenv(CONFIG_DEBUG)) {
     debug = 1;
   }
 
   char *configFile = getenv(CONFIG_JSON_FILE);
+  if (argc > 1) {
+    configFile = argv[1];
+  }
   if (!configFile) {
     configFile = DEFAULT_CONFIG_FILE;
   }

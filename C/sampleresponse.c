@@ -36,7 +36,7 @@ static int processRequests(MQHCONN, MQHOBJ);
 
 #define WAIT_INTERVAL 10 // seconds to wait for a new request
 
-// There are no command line parameters to this program
+// The only (optional) parameter to this program is the name of the configuration file
 int main(int argc, char **argv) {
   int rc = 0;
   time_t now;
@@ -48,6 +48,9 @@ int main(int argc, char **argv) {
   }
 
   char *configFile = getenv(CONFIG_JSON_FILE);
+  if (argc > 1) {
+    configFile = argv[1];
+  }
   if (!configFile) {
     configFile = DEFAULT_CONFIG_FILE;
   }

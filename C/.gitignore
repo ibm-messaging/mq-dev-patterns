@@ -7,6 +7,10 @@ sampleresponse
 samplepublish
 samplesubscribe
 
+# Windows builds
+*.exe
+*.obj
+
 # My test scripts
 doit
 .gdbrc

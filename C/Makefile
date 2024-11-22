@@ -17,21 +17,22 @@ all: $(APPS)
 clean:
 	rm -f $(APPS)
 	@rm -rf *.dSYM
+	@rm -f *.exe *.obj
 
 sampleput: sampleput.c $(COMMONSRC) $(COMMONINC) Makefile
-	cc -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
+	$(CC) -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
 
 sampleget: sampleget.c $(COMMONSRC) $(COMMONINC) Makefile
-	cc -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
+	$(CC) -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
 
 samplerequest: samplerequest.c $(COMMONSRC) $(COMMONINC) Makefile
-	cc -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
+	$(CC) -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
 
 sampleresponse: sampleresponse.c $(COMMONSRC) $(COMMONINC) Makefile
-	cc -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
+	$(CC) -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
 
 samplepublish: samplepublish.c $(COMMONSRC) $(COMMONINC) Makefile
-	cc -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
+	$(CC) -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
 
 samplesubscribe: samplesubscribe.c $(COMMONSRC) $(COMMONINC) Makefile
-	cc -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
+	$(CC) -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r

@@ -44,7 +44,7 @@ static MQBYTE24 msgId = {MQMI_NONE_ARRAY};
 
 #define WAIT_INTERVAL 2 // seconds to wait for a reply
 
-// There are no command line parameters to this program
+// The only (optional) parameter to this program is the name of the configuration file
 int main(int argc, char **argv) {
   int rc = 0;
   time_t now;
@@ -57,6 +57,9 @@ int main(int argc, char **argv) {
   }
 
   char *configFile = getenv(CONFIG_JSON_FILE);
+  if (argc > 1) {
+    configFile = argv[1];
+  }
   if (!configFile) {
     configFile = DEFAULT_CONFIG_FILE;
   }
