@@ -170,7 +170,8 @@ int parseConfig(char *filename) {
   or += overrideEnv(&ep->host, CONFIG_HOST);
   or += overrideEnv(&ep->port, CONFIG_PORT);
   or += overrideEnv(&ep->channel, CONFIG_CHANNEL);
-    or += overrideEnv(&ep->ccdtUrl, CONFIG_CCDT_URL);
+  or += overrideEnv(&ep->ccdtUrl, CONFIG_CCDT_URL);
+  or += overrideEnv(&ep->ccdtUrl, "MQCCDTURL"); // An alternative env var to match other samples
 
   or += overrideEnv(&ep->qmgr, CONFIG_QMGR);
   or += overrideEnv(&ep->applName, CONFIG_APPL_NAME);
