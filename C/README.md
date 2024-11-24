@@ -46,10 +46,13 @@ parameter or by setting the JSON_CONFIG environment variable. If neither is set,
 directory is used.
 
 These samples do not use a real JSON parsing library, and are sensitive to the exact layout of the configuration file.
+In particular, each item is expected to be on a separate line of the file.
 The default format, from the file in the root of this repository, should be referred to.
 
 All configuration parameters can also be set through environment variables. See _config.h_ for the names of these
 environment variables.
+
+Setting the `DEBUG` environment variable to any value causes the active configuration to be printed.
 
 ## Put/Get
 The `sampleput` application places a short string message onto the queue.

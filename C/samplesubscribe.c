@@ -157,7 +157,7 @@ static int getMessages(MQHCONN hConn, MQHOBJ hObj) {
 
   mqgmo.Options |= MQGMO_ACCEPT_TRUNCATED_MSG; // Process the message even if it is too long for the buffer
 
-  mqgmo.WaitInterval = WAIT_INTERVAL * 1000;
+  mqgmo.WaitInterval = WAIT_INTERVAL * 1000; // Convert seconds to milliseconds
 
   // Not going to try to match on MsgId or CorrelId
   mqgmo.MatchOptions = MQMO_NONE;

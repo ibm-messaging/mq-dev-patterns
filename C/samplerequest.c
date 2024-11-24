@@ -238,7 +238,7 @@ static int getReplyMessage(MQHCONN hConn, MQHOBJ hObj) {
 
   mqgmo.Options |= MQGMO_ACCEPT_TRUNCATED_MSG; // Process the message even if it is too long for the buffer
 
-  mqgmo.WaitInterval = WAIT_INTERVAL * 1000;
+  mqgmo.WaitInterval = WAIT_INTERVAL * 1000; // Convert seconds to milliseconds
 
   // Wait for a message that matches the original request. Default behaviour for a responder is to copy
   // the original MsgId into the CorrelId, so we put that into the MQGET options

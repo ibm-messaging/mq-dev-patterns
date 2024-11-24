@@ -11,6 +11,8 @@ APPS = sampleput \
 	   samplepublish \
 	   samplesubscribe
 
+# CDEBUG=-g
+
 all: $(APPS)
 	@rm -rf *.dSYM
 
@@ -20,19 +22,19 @@ clean:
 	@rm -f *.exe *.obj
 
 sampleput: sampleput.c $(COMMONSRC) $(COMMONINC) Makefile
-	$(CC) -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
+	$(CC) $(CDEBUG) -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
 
 sampleget: sampleget.c $(COMMONSRC) $(COMMONINC) Makefile
-	$(CC) -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
+	$(CC) $(CDEBUG) -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
 
 samplerequest: samplerequest.c $(COMMONSRC) $(COMMONINC) Makefile
-	$(CC) -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
+	$(CC) $(CDEBUG) -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
 
 sampleresponse: sampleresponse.c $(COMMONSRC) $(COMMONINC) Makefile
-	$(CC) -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
+	$(CC) $(CDEBUG) -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
 
 samplepublish: samplepublish.c $(COMMONSRC) $(COMMONINC) Makefile
-	$(CC) -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
+	$(CC) $(CDEBUG) -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
 
 samplesubscribe: samplesubscribe.c $(COMMONSRC) $(COMMONINC) Makefile
-	$(CC) -g -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
+	$(CC) $(CDEBUG) -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r
