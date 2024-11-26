@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
     disconnectQMgr(&hConn);
   }
 
-  printf("Done. Exit code:%d\n", rc);
+  printf("\nDone. Exit code:%d\n", rc);
   exit(rc);
 }
 

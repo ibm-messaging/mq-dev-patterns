@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
     disconnectQMgr(&hConn);
   }
 
-  printf("Done. Exit code:%d\n", rc);
+  printf("\nDone. Exit code:%d\n", rc);
   exit(rc);
 }
 
@@ -134,6 +134,8 @@ static int putMessage(MQHCONN hConn, MQHOBJ hObj, char *msg) {
   if (reason != MQRC_NONE) {
     printError("MQPUT", compCode, reason);
     rc = -1;
+  } else {
+    printf("Sent Message: %s\n",msg);
   }
 
   return rc;

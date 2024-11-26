@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
     disconnectQMgr(&hConn);
   }
 
-  printf("Done. Exit code:%d\n", rc);
+  printf("\nDone. Exit code:%d\n", rc);
   exit(rc);
 }
 
@@ -145,6 +145,7 @@ static int getMessages(MQHCONN hConn, MQHOBJ hObj) {
   MQGMO mqgmo = {MQGMO_DEFAULT};
   char buffer[DEFAULT_BUFFER_LENGTH];
   MQLONG datalength;
+  int msgCount = 0;
 
   // Structure version must be high enough to recognise the MatchOptions field
   mqgmo.Version = MQGMO_VERSION_2;
@@ -168,11 +169,12 @@ static int getMessages(MQHCONN hConn, MQHOBJ hObj) {
     MQGET(hConn, hObj, &mqmd, &mqgmo, sizeof(buffer), buffer, &datalength, &compCode, &reason);
 
     if (reason == MQRC_NONE) {
+      msgCount++;
       if (!strncmp(mqmd.Format, MQFMT_STRING, MQ_FORMAT_LENGTH)) {
-        printf("Message: %*.*s\n", datalength, datalength, buffer);
+        printf("Rcvd Message: %*.*s\n", datalength, datalength, buffer);
       } else {
         char title[32];
-        sprintf(title, "Message Type:%*.*s", MQ_FORMAT_LENGTH, MQ_FORMAT_LENGTH, mqmd.Format);
+        sprintf(title, "Rcvd Message Type:%*.*s", MQ_FORMAT_LENGTH, MQ_FORMAT_LENGTH, mqmd.Format);
         dumpHex(title, buffer, datalength);
       }
     } else {
@@ -183,6 +185,7 @@ static int getMessages(MQHCONN hConn, MQHOBJ hObj) {
         ok = 0;
         break;
       case MQRC_TRUNCATED_MSG_ACCEPTED:
+        msgCount++;
         // Carry on if there are more messages
         break;
       default:
@@ -193,5 +196,6 @@ static int getMessages(MQHCONN hConn, MQHOBJ hObj) {
     }
   }
 
+  printf("\nMessages read: %d\n",msgCount);
   return rc;
 }

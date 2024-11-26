@@ -54,18 +54,29 @@ environment variables.
 
 Setting the `DEBUG` environment variable to any value causes the active configuration to be printed.
 
-## Put/Get
+## Running the programs
+Apart from the optional command line parameter naming the configuration file, there are no
+other parameters to any of the programs.
+
+You might need to run `setmqenv` to create environment variables pointing at your MQ installation
+libraries. And on MacOS, the `DYLD_LIBRARY_PATH` will usually need to be set to include the 
+`/opt/mqm/lib64` directory. 
+
+See [here](https://www.ibm.com/docs/en/ibm-mq/latest?topic=reference-setmqenv-set-mq-environment) for 
+more information about `setmqenv`. 
+
+### Put/Get
 The `sampleput` application places a short string message onto the queue.
 
 The `sampleget` application reads all messages from the queue and displays the contents.
 
-## Publish/Subscribe
+### Publish/Subscribe
 Run these samples as a pair.
 
 Start the `samplesubcribe` program in one window (or in the background) and immediately afterwards start the
 `samplepublish` program in another window.
 
-## Request/Response
+### Request/Response
 Run these samples as a pair.
 
 Start the `sampleresponse` program in one window (or in the background) and immediately afterwards start the
