@@ -127,6 +127,7 @@ static int processRequests(MQHCONN hConn, MQHOBJ hObj) {
   int rc = 0;
   int ok = 1;
   int i;
+  int msgCount = 0;
   MQMD inMqmd = {MQMD_DEFAULT};
   MQMD outMqmd = {MQMD_DEFAULT};
 
@@ -165,6 +166,7 @@ static int processRequests(MQHCONN hConn, MQHOBJ hObj) {
 
     if (reason == MQRC_NONE || reason == MQRC_TRUNCATED_MSG_ACCEPTED) {
 
+      msgCount++;
       // Print the request message
       if (!strncmp(inMqmd.Format, MQFMT_STRING, MQ_FORMAT_LENGTH)) {
         printf("Request Message: %*.*s\n", datalength, datalength, inBuffer);
@@ -238,6 +240,8 @@ static int processRequests(MQHCONN hConn, MQHOBJ hObj) {
       }
     }
   }
+
+  printf("Requests processed: %d\n",msgCount);
 
   return rc;
 }
