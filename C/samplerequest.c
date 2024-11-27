@@ -42,7 +42,7 @@ static char replyToQ[MQ_Q_NAME_LENGTH] = {' '};
 static char replyToQMgr[MQ_Q_MGR_NAME_LENGTH] = {' '};
 static MQBYTE24 msgId = {MQMI_NONE_ARRAY};
 
-#define WAIT_INTERVAL 2 // seconds to wait for a reply
+#define DEFAULT_WAIT_INTERVAL 2 // seconds to wait for a reply
 
 // The only (optional) parameter to this program is the name of the configuration file
 int main(int argc, char **argv) {
@@ -226,6 +226,8 @@ static int getReplyMessage(MQHCONN hConn, MQHOBJ hObj) {
   MQGMO mqgmo = {MQGMO_DEFAULT};
   char buffer[DEFAULT_BUFFER_LENGTH];
   MQLONG datalength;
+  MQLONG waitInterval = DEFAULT_WAIT_INTERVAL;
+
 
   // Structure version must be high enough to recognise the MatchOptions field
   mqgmo.Version = MQGMO_VERSION_2;
@@ -238,7 +240,11 @@ static int getReplyMessage(MQHCONN hConn, MQHOBJ hObj) {
 
   mqgmo.Options |= MQGMO_ACCEPT_TRUNCATED_MSG; // Process the message even if it is too long for the buffer
 
-  mqgmo.WaitInterval = WAIT_INTERVAL * 1000; // Convert seconds to milliseconds
+  if (mqEndpoints[0].waitInterval) {
+    waitInterval = atoi(mqEndpoints[0].waitInterval);
+  }
+
+  mqgmo.WaitInterval = waitInterval * 1000; // Convert seconds to milliseconds
 
   // Wait for a message that matches the original request. Default behaviour for a responder is to copy
   // the original MsgId into the CorrelId, so we put that into the MQGET options

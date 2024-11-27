@@ -158,6 +158,8 @@ int parseConfig(char *filename) {
           ep->cipherSuite = nv.value;
         else if (!strcmp(nv.name, CONFIG_KEY_REPOSITORY))
           ep->keyRepository = nv.value;
+         else if (!strcmp(nv.name, CONFIG_WAIT_INTERVAL))
+          ep->waitInterval = nv.value;
         break;
 
       case ENDPOINT_JWT:
@@ -202,6 +204,7 @@ int parseConfig(char *filename) {
   or += overrideEnv(&ep->cipher, CONFIG_CIPHER);
   or += overrideEnv(&ep->cipherSuite, CONFIG_CIPHER_SUITE);
   or += overrideEnv(&ep->keyRepository, CONFIG_KEY_REPOSITORY);
+  or += overrideEnv(&ep->waitInterval, CONFIG_WAIT_INTERVAL);
 
   // Has all the config for a qmgr come from environment variables?
   if (or > 0 && epIdx == 0) {

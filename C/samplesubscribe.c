@@ -31,7 +31,7 @@
 static int subscribeTopic(MQHCONN hConn, PMQHOBJ pTopicHObj, PMQHOBJ pQueueHObj);
 static int getMessages(MQHCONN hConn, MQHOBJ hObj);
 
-#define WAIT_INTERVAL 3 // Seconds to wait for more publications
+#define DEFAULT_WAIT_INTERVAL 10 // Seconds to wait for more publications
 
 // The only (optional) parameter to this program is the name of the configuration file
 int main(int argc, char **argv) {
@@ -104,14 +104,7 @@ static int subscribeTopic(MQHCONN hConn, PMQHOBJ pTopicHObj, PMQHOBJ pQueueHObj)
   // The objectString contains the full topic string that we
   // want to use. Alternatives allow a combination of administered object
   // names and the objectString value, but that's more advanced.
-  // Add a wildcard to the subscription by appending the '#'. And potentially
-  // a "/" separator, depending on the configured topic string
   strncpy(topic, mqEndpoints[0].topicName, sizeof(topic) - 1);
-  if (topic[strlen(topic) - 1] != '/') {
-    strncat(topic, "/", sizeof(topic) - 1);
-  }
-  strncat(topic, "#", sizeof(topic) - 1);
-
   printf("Subscribing to %s\n", topic);
 
   objectString.VSPtr = topic;
@@ -145,6 +138,8 @@ static int getMessages(MQHCONN hConn, MQHOBJ hObj) {
   MQGMO mqgmo = {MQGMO_DEFAULT};
   char buffer[DEFAULT_BUFFER_LENGTH];
   MQLONG datalength;
+  MQLONG waitInterval = DEFAULT_WAIT_INTERVAL;
+
   int msgCount = 0;
 
   // Structure version must be high enough to recognise the MatchOptions field
@@ -158,7 +153,11 @@ static int getMessages(MQHCONN hConn, MQHOBJ hObj) {
 
   mqgmo.Options |= MQGMO_ACCEPT_TRUNCATED_MSG; // Process the message even if it is too long for the buffer
 
-  mqgmo.WaitInterval = WAIT_INTERVAL * 1000; // Convert seconds to milliseconds
+  if (mqEndpoints[0].waitInterval) {
+    waitInterval = atoi(mqEndpoints[0].waitInterval);
+  }
+  printf("waitInterval: %d\n",waitInterval);
+  mqgmo.WaitInterval = waitInterval * 1000; // Convert seconds to milliseconds
 
   // Not going to try to match on MsgId or CorrelId
   mqgmo.MatchOptions = MQMO_NONE;
@@ -196,6 +195,6 @@ static int getMessages(MQHCONN hConn, MQHOBJ hObj) {
     }
   }
 
-  printf("\nMessages read: %d\n",msgCount);
+  printf("\nMessages read: %d\n", msgCount);
   return rc;
 }

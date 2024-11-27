@@ -39,6 +39,7 @@ typedef struct mqEndpoint {
   char *cipher;
   char *cipherSuite;
   char *keyRepository;
+  char *waitInterval;
 } mqEndpoint_t;
 
 typedef struct jwtEndpoint {
@@ -78,6 +79,8 @@ void freeConfig();
 #define CONFIG_CIPHER               "CIPHER"
 #define CONFIG_CIPHER_SUITE         "CIPHER_SUITE"
 #define CONFIG_KEY_REPOSITORY       "KEY_REPOSITORY"
+
+#define CONFIG_WAIT_INTERVAL        "WAIT_INTERVAL"
 
 #define CONFIG_JWT_TOKEN_ENDPOINT   "JWT_TOKEN_ENDPOINT"
 #define CONFIG_JWT_TOKEN_USERNAME   "JWT_TOKEN_USERNAME"

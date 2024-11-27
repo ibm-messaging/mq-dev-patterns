@@ -34,7 +34,7 @@
 static int openQueue(MQHCONN hConn, PMQHOBJ pHObj);
 static int processRequests(MQHCONN, MQHOBJ);
 
-#define WAIT_INTERVAL 10 // seconds to wait for a new request
+#define DEFAULT_WAIT_INTERVAL 10 // seconds to wait for a new request
 
 // The only (optional) parameter to this program is the name of the configuration file
 int main(int argc, char **argv) {
@@ -130,6 +130,7 @@ static int processRequests(MQHCONN hConn, MQHOBJ hObj) {
   int msgCount = 0;
   MQMD inMqmd = {MQMD_DEFAULT};
   MQMD outMqmd = {MQMD_DEFAULT};
+  MQLONG waitInterval = DEFAULT_WAIT_INTERVAL;
 
   MQGMO mqgmo = {MQGMO_DEFAULT};
   MQPMO mqpmo = {MQPMO_DEFAULT};
@@ -150,7 +151,11 @@ static int processRequests(MQHCONN hConn, MQHOBJ hObj) {
 
   mqgmo.Options |= MQGMO_ACCEPT_TRUNCATED_MSG; // Process the message even if it is too long for the buffer
 
-  mqgmo.WaitInterval = WAIT_INTERVAL * 1000; // Convert seconds to milliseconds
+  if (mqEndpoints[0].waitInterval) {
+    waitInterval = atoi(mqEndpoints[0].waitInterval);
+  }
+
+  mqgmo.WaitInterval = waitInterval * 1000; // Convert seconds to milliseconds
 
   // Not going to try to match on MsgId or CorrelId
   mqgmo.MatchOptions = MQMO_NONE;
