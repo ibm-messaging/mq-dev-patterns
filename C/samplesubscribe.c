@@ -104,6 +104,10 @@ static int subscribeTopic(MQHCONN hConn, PMQHOBJ pTopicHObj, PMQHOBJ pQueueHObj)
   // The objectString contains the full topic string that we
   // want to use. Alternatives allow a combination of administered object
   // names and the objectString value, but that's more advanced.
+  if (!mqEndpoints[0].topicName) {
+    printf("Error: No topic name supplied\n");
+    return -1;
+  }
   strncpy(topic, mqEndpoints[0].topicName, sizeof(topic) - 1);
   printf("Subscribing to %s\n", topic);
 
@@ -156,7 +160,7 @@ static int getMessages(MQHCONN hConn, MQHOBJ hObj) {
   if (mqEndpoints[0].waitInterval) {
     waitInterval = atoi(mqEndpoints[0].waitInterval);
   }
-  printf("waitInterval: %d\n",waitInterval);
+  printf("waitInterval: %d\n", waitInterval);
   mqgmo.WaitInterval = waitInterval * 1000; // Convert seconds to milliseconds
 
   // Not going to try to match on MsgId or CorrelId

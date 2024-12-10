@@ -324,6 +324,7 @@ static void dumpConfig(char *filename) {
     printf("  Cipher : %s\n", N(ep->cipher));
     printf("  CipherSuite : %s\n", N(ep->cipherSuite));
     printf("  KeyRepository : %s\n", N(ep->keyRepository));
+    printf("  WaitInterval : %s\n",N(ep->waitInterval));
   }
 
   printf("JWT Endpoint:\n");
@@ -352,6 +353,7 @@ void freeConfig() {
     cfFree(ep->cipher);
     cfFree(ep->cipherSuite);
     cfFree(ep->keyRepository);
+    cfFree(ep->waitInterval);
   }
 
   cfFree(pJwt->tokenEndpoint);
