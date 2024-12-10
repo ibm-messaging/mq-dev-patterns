@@ -100,6 +100,10 @@ static int openTopic(MQHCONN hConn, PMQHOBJ pHObj) {
   // The objectString contains the full topic string that we
   // want to use. Alternatives allow a combination of administered object
   // names and the objectString value, but that's more advanced.
+   if (!mqEndpoints[0].topicName) {
+    printf("Error: No topic name supplied\n");
+    return -1;
+  }
   topic = mqEndpoints[0].topicName;
   objectString.VSPtr = topic;
   objectString.VSLength = (MQLONG)strlen(topic);

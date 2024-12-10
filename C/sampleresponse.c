@@ -94,6 +94,10 @@ static int openQueue(MQHCONN hConn, PMQHOBJ pHObj) {
   MQOD mqod = {MQOD_DEFAULT};
   MQLONG options = MQOO_INPUT_EXCLUSIVE;
 
+ if (!mqEndpoints[0].queueName) {
+    printf("Error: No queue name supplied\n");
+    return -1;
+  }
   strncpy(mqod.ObjectName, mqEndpoints[0].queueName, MQ_Q_NAME_LENGTH);
   mqod.ObjectType = MQOT_Q;
 

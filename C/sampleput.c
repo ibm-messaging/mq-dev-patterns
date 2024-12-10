@@ -95,6 +95,11 @@ static int openQueue(MQHCONN hConn, PMQHOBJ pHObj) {
   MQOD mqod = {MQOD_DEFAULT};
   MQLONG options = MQOO_OUTPUT;
 
+  if (!mqEndpoints[0].queueName) {
+    printf("Error: No queue name supplied\n");
+    return -1;
+  }
+
   strncpy(mqod.ObjectName, mqEndpoints[0].queueName, MQ_Q_NAME_LENGTH);
   mqod.ObjectType = MQOT_Q;
 
@@ -127,7 +132,7 @@ static int putMessage(MQHCONN hConn, MQHOBJ hObj, char *msg) {
 
   // We are sending a character string. Set the format to indicate
   // that, so that the recipient can convert the codepage if necessary
-  memcpy(mqmd.Format,MQFMT_STRING,MQ_FORMAT_LENGTH);
+  memcpy(mqmd.Format, MQFMT_STRING, MQ_FORMAT_LENGTH);
 
   // Now put the message to the queue
   MQPUT(hConn, hObj, &mqmd, &mqpmo, strlen(msg), msg, &compCode, &reason);
@@ -135,7 +140,7 @@ static int putMessage(MQHCONN hConn, MQHOBJ hObj, char *msg) {
     printError("MQPUT", compCode, reason);
     rc = -1;
   } else {
-    printf("Sent Message: %s\n",msg);
+    printf("Sent Message: %s\n", msg);
   }
 
   return rc;
