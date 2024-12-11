@@ -120,6 +120,10 @@ static int openRequestQueue(MQHCONN hConn, PMQHOBJ pHObj) {
   MQOD mqod = {MQOD_DEFAULT};
   MQLONG options = MQOO_OUTPUT;
 
+  if (!mqEndpoints[0].queueName) {
+    printf("Error: No queue name supplied\n");
+    return -1;
+  }
   strncpy(mqod.ObjectName, mqEndpoints[0].queueName, MQ_Q_NAME_LENGTH);
 
   mqod.ObjectType = MQOT_Q;
@@ -150,6 +154,12 @@ static int openReplyQueue(MQHCONN hConn, PMQHOBJ pHObj) {
   MQLONG options = MQOO_INPUT_EXCLUSIVE;
 
   mqEndpoint_t ep = mqEndpoints[0];
+
+  if (!mqEndpoints[0].modelQueueName) {
+    printf("Error: No model queue name supplied\n");
+    return -1;
+  }
+
   strncpy(mqod.ObjectName, ep.modelQueueName, MQ_Q_NAME_LENGTH);
   if (ep.dynamicQueuePrefix) {
     // The dynamic queue has its name start with this prefix
@@ -227,7 +237,6 @@ static int getReplyMessage(MQHCONN hConn, MQHOBJ hObj) {
   char buffer[DEFAULT_BUFFER_LENGTH];
   MQLONG datalength;
   MQLONG waitInterval = DEFAULT_WAIT_INTERVAL;
-
 
   // Structure version must be high enough to recognise the MatchOptions field
   mqgmo.Version = MQGMO_VERSION_2;
