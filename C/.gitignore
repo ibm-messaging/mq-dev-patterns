@@ -1,0 +1,19 @@
+
+# Don't try to track the binary programs
+sampleput
+sampleget
+samplerequest
+sampleresponse
+samplepublish
+samplesubscribe
+
+# Windows builds
+*.exe
+*.obj
+
+# My test scripts
+doit
+.gdbrc
+
+# On MacOS these directories may be created with debug info
+*.dSYM
