@@ -103,7 +103,7 @@ We've also added additional environment variables to allow JWT-based authenicati
     "JWT_TOKEN_CLIENTID":"admin-cli"
 }
 ```
-The `"JWT_TOKEN_ENDPOINT"` points your sample to your keycloak token issuer, which should be running in a container. 
+The `"JWT_TOKEN_ENDPOINT"` points your sample to your keycloak server(token issuer), which should be running in a container. 
 The username and pwd come from your keycloak "app" user credentials, that you would have configured via the keycloak console.
 
 ### IBM Z Xplore
