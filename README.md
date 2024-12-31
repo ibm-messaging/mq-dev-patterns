@@ -93,6 +93,19 @@ We've tried to make this easier by providing one `env.json` file in the main `sa
 }
 ```
 
+We've also added additional environment variables to allow JWT-based authenication. Our samples, once JWT enabled, can visit this endpoint to request and retrieve a token.
+
+```JSON
+"JWT_ISSUER" : {
+    "JWT_TOKEN_ENDPOINT":"https://<KEYCLOAK_URL>/realms/master/protocol/openid-connect/token",
+    "JWT_TOKEN_USERNAME":"app",
+    "JWT_TOKEN_PWD":"passw0rd",
+    "JWT_TOKEN_CLIENTID":"admin-cli"
+}
+```
+The `"JWT_TOKEN_ENDPOINT"` points your sample to your keycloak token issuer, which should be running in a container. 
+The username and pwd come from your keycloak user credentials, that you would have configured via the keycloak console.
+
 ### IBM Z Xplore
 If you are running these samples on IBM Z Xplore then you can use the
 `env-zbindings.json` file. Simply rename the `env-zbindings.json` to 
