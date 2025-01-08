@@ -92,8 +92,9 @@ We've tried to make this easier by providing one `env.json` file in the main `sa
     }]
 }
 ```
+### JWT
 
-We've also added additional environment variables to allow JWT-based authenication. Our samples, once JWT enabled, can visit this endpoint to request and retrieve a token.
+Use the following environment variables for the JWT enabled samples. These applications use this endpoint to request and retrieve a token. [JWT README](jwt-jwks-docs/README.md)
 
 ```JSON
 "JWT_ISSUER" : {
@@ -103,8 +104,8 @@ We've also added additional environment variables to allow JWT-based authenicati
     "JWT_TOKEN_CLIENTID":"admin-cli"
 }
 ```
-The `"JWT_TOKEN_ENDPOINT"` points your sample to your keycloak server(token issuer), which should be running in a container. 
-The username and pwd come from your keycloak "app" user credentials, that you would have configured via the keycloak console.
+The `"JWT_TOKEN_ENDPOINT"` points your sample to a keycloak server(token issuer), which could be running in a container. 
+The `"JWT_TOKEN_USERNAME"` and `"JWT_TOKEN_PWD"` come from your keycloak "app" user credentials, that you would have configured via the keycloak console.
 
 ### IBM Z Xplore
 If you are running these samples on IBM Z Xplore then you can use the
