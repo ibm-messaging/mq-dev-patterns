@@ -107,6 +107,20 @@ main `samples` directory, that all the samples use for default configuration set
     }]
 }
 ```
+### JWT
+
+Use the following environment variables for the JWT enabled samples. These applications use this endpoint to request and retrieve a token. [JWT README](jwt-jwks-docs/README.md)
+
+```JSON
+"JWT_ISSUER" : {
+    "JWT_TOKEN_ENDPOINT":"https://<KEYCLOAK_URL>/realms/master/protocol/openid-connect/token",
+    "JWT_TOKEN_USERNAME":"app",
+    "JWT_TOKEN_PWD":"passw0rd",
+    "JWT_TOKEN_CLIENTID":"admin-cli"
+}
+```
+The `"JWT_TOKEN_ENDPOINT"` points your sample to a keycloak server(token issuer), which could be running in a container. 
+The `"JWT_TOKEN_USERNAME"` and `"JWT_TOKEN_PWD"` come from your keycloak "app" user credentials, that you would have configured via the keycloak console.
 
 ### IBM Z Xplore
 If you are running these samples on IBM Z Xplore then you can use the `env-zbindings.json` file. Simply rename the
