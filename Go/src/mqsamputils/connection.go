@@ -63,7 +63,6 @@ func ccdtCheck() (bool) {
 	return false;
 }
 
-
 // Establishes the connection to the MQ Server. Returns the
 // Queue Manager if successful
 func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
@@ -71,7 +70,29 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 
 	// Allocate the MQCNO structure needed for the CONNX call.
 	cno := ibmmq.NewMQCNO()
-    	env := getEndPoint(index)
+	env := getEndPoint(index)
+	
+	if JwtCheck() {
+		jwt := getJwtEndPoint(index)
+		//logger.Println(jwt)
+
+		//DEBUG: testing whether the obtainToken function works and can retrieve token from endpoint
+		/*token := ""
+		token, err := ObtainToken(jwt)  // Call the function
+		if err != nil {
+			logger.Println("Failed to obtain token:", err)
+			
+		}
+		
+		logger.Println("JWT Token obtained:", token)*/
+
+
+		qMgr, err:= ConnectViaJwt(env, jwt)
+		cno.Options = ibmmq.MQCNO_CLIENT_BINDING
+		return qMgr, err
+	}
+
+	//logger.Println(env)
 
 	if username := env.User; username != "" {
 		logger.Printf("User %s has been specified\n", username)
@@ -120,6 +141,9 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 	logger.Printf("Attempting connection to %s", env.QManager)
 	qMgr, err := ibmmq.Connx(env.QManager, cno)
 
+
+	
+
 	if err == nil {
 		logger.Println("Connection succeeded")
 	} else {
@@ -127,7 +151,8 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 	}
 
 	return qMgr, err
-}
+	}
+
 
 
 // Opens a Dynamic Queue as part of a response in a request / response pattern
@@ -195,5 +220,3 @@ func logError(err error) {
 	logger.Println(err)
 	logger.Printf("Error Code %v", err.(*ibmmq.MQReturn).MQCC)
 }
-
-
