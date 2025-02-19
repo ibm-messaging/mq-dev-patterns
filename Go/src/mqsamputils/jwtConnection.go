@@ -1,23 +1,23 @@
 package mqsamputils
 
-/*
-  Copyright (c) IBM Corporation 2023
+/**
+ * Copyright 2025 IBM Corp.
+ *
+ * Licensed under the Apache License, Version 2.0 (the 'License');
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+**/
 
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
+// This sample is based on ibm-messaging/mq-golang/samples/amqsjwt.go 
 
-  http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-
-   Contributors:
-     Mark Taylor - Initial Contribution
-*/
 
 import (
 	"crypto/tls"
@@ -30,6 +30,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
+	"crypto/x509" 
 )
 
 
@@ -38,7 +39,6 @@ type Config struct {
 	connectionName string
 	channel        string
 	JwtTokenEndpoint      string
-	//tokenPort      int
 	JwtTokenUsername  string
 	JwtTokenPwd  string
 	JwtTokenClientID  string
@@ -70,6 +70,14 @@ func JwtCheck() bool {
 		logger.Println("JWT credentials not found, will not be using JWT to authenticate")
 		return false;
 	}
+
+	jwt := getJwtEndPoint(FULL_STRING)
+	
+	if jwt.JwtTokenEndpoint == "" || jwt.JwtTokenUsername == "" || jwt.JwtTokenPwd == "" || jwt.JwtTokenClientID == "" {
+		logger.Println("One or more JWT credentials missing, will not be using JWT to authenticate")
+		return false;
+	}
+
 	
 	logger.Println("JWT credentials found, will be using JWT to authenticate")
 	return true;
@@ -83,6 +91,7 @@ func ConnectViaJwt(env Env, jwt Env) (ibmmq.MQQueueManager, error){
 
 	//DEBUG: to avoid declared and not used 
 	_ = rc
+
 	token := ""
 
 
@@ -91,17 +100,16 @@ func ConnectViaJwt(env Env, jwt Env) (ibmmq.MQQueueManager, error){
 	cd := ibmmq.NewMQCD()
 
 
-	//DEBUG: HARDCODED CONNECTION NAME
 	// Fill in required fields in the MQCD channel definition structure
 	cd.ChannelName = env.Channel
-	cd.ConnectionName = "localhost(1414)"
+	cd.ConnectionName = env.GetConnection(FULL_STRING)
 
 	// Reference the CD structure from the CNO and indicate that we definitely want to
 	// use the client connection method.
 	cno.ClientConn = cd
 	cno.Options = ibmmq.MQCNO_CLIENT_BINDING
 
-	token, err = ObtainToken(jwt)
+	token, err = ObtainToken(jwt, env)
 	if err == nil {
 		if token != "" {
 			csp := ibmmq.NewMQCSP()
@@ -126,16 +134,16 @@ func ConnectViaJwt(env Env, jwt Env) (ibmmq.MQQueueManager, error){
 		d, _ := time.ParseDuration("3s")
 		time.Sleep(d)
 		//qMgr.Disc() // Ignore errors from disconnect as we can't do much about it anyway
-		rc = 0
+		//rc = 0 //Ignore exit in this function
 	} else {
 		fmt.Printf("MQCONN to %s failed.\n", env.QManager)
 		fmt.Println(err)
-		rc = int(err.(*ibmmq.MQReturn).MQCC)
+		//rc = int(err.(*ibmmq.MQReturn).MQCC) //Ignore exit in this function 
 	}
 
 	fmt.Println("Done.")
 	return qMgr, err
-	//os.Exit(rc)
+	//os.Exit(rc) //Ignore exit in this function 
 }
 
 /*
@@ -143,8 +151,9 @@ func ConnectViaJwt(env Env, jwt Env) (ibmmq.MQQueueManager, error){
  * command that is used to retrieve a JSON response from the token
  * server. Parse the response to find the token to be added into the MQCSP.
  */
-func ObtainToken(jwt Env) (string, error) {
+func ObtainToken(jwt Env, env Env) (string, error) {
 	var resp *http.Response
+	var tr *http.Transport
 
 	/*
 	   This curl command is the basis of the call to get a token. It uses form data to
@@ -167,9 +176,32 @@ func ObtainToken(jwt Env) (string, error) {
 	   used for an MQ connection.
 	*/
 
-	// DEBUG: SkipVerify set to false for JWT authentication with JWKS
 
-	tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: false}}
+	// checking for JWT authentication with JWKS
+
+	if env.KeyRepository != "" {
+		caCertPath := fmt.Sprintf(env.KeyRepository)
+		caCert, err := ioutil.ReadFile(caCertPath)
+		if err != nil {
+			logger.Println("Failed to read CA certificate: %v", err)
+		}
+
+		// Create a certificate pool and add the CA cert
+		caCertPool := x509.NewCertPool()
+		if !caCertPool.AppendCertsFromPEM(caCert) {
+			logger.Println("Failed to append CA certificate")
+		}
+
+		// Configure TLS with the custom CA
+		tlsConfig := &tls.Config{
+			RootCAs: caCertPool,
+		}
+
+		tr = &http.Transport{TLSClientConfig: tlsConfig}
+	} else {
+		tr = &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: false}}
+	}
+	
 	client := &http.Client{Transport: tr}
 
 	// Build the URL. .
@@ -217,4 +249,3 @@ func ObtainToken(jwt Env) (string, error) {
 
 	return jwtResponseStruct.AccessToken, err
 }
-

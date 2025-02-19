@@ -74,7 +74,6 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 	
 	if JwtCheck() {
 		jwt := getJwtEndPoint(index)
-		//logger.Println(jwt)
 
 		//DEBUG: testing whether the obtainToken function works and can retrieve token from endpoint
 		/*token := ""
@@ -83,7 +82,6 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 			logger.Println("Failed to obtain token:", err)
 			
 		}
-		
 		logger.Println("JWT Token obtained:", token)*/
 
 
@@ -92,7 +90,7 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 		return qMgr, err
 	}
 
-	//logger.Println(env)
+
 
 	if username := env.User; username != "" {
 		logger.Printf("User %s has been specified\n", username)
@@ -127,7 +125,7 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 	// The location of the KeyRepository is not specified in the CCDT, so regardless
 	// of whether a CCDT is being used, need to specify the KeyRepository location
 	// if it has been provided in the environment json settings.
-	if env.KeyRepository != "" {
+	if env.KeyRepository != "" && JwtCheck() == False{
 
 		logger.Println("Key Repository has been specified")
 	  	sco := ibmmq.NewMQSCO()
