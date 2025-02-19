@@ -84,12 +84,10 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 		}
 		logger.Println("JWT Token obtained:", token)*/
 
-
 		qMgr, err:= ConnectViaJwt(env, jwt)
 		cno.Options = ibmmq.MQCNO_CLIENT_BINDING
 		return qMgr, err
 	}
-
 
 
 	if username := env.User; username != "" {
@@ -138,9 +136,6 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 	// And now we can try to connect. Wait a short time before disconnecting.
 	logger.Printf("Attempting connection to %s", env.QManager)
 	qMgr, err := ibmmq.Connx(env.QManager, cno)
-
-
-	
 
 	if err == nil {
 		logger.Println("Connection succeeded")

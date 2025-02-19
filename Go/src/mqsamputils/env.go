@@ -65,11 +65,6 @@ var JwtSettings Env
 var MQ_ENDPOINTS MQEndpoints
 var JWT_ISSUER JwtEndpoints
 
-
-
-//TODO: allow for JWT endpoints as a dict instead of list
-
-
 const FULL_STRING = -1
 
 func init() {
@@ -86,10 +81,6 @@ func init() {
 	json.Unmarshal(byteValue, &MQ_ENDPOINTS)
 
 	json.Unmarshal(byteValue, &JWT_ISSUER)
-
-	
-
-
 
 	logger.Printf("DEBUG: Loaded JWT_ISSUER: %+v", JWT_ISSUER)
 

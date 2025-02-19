@@ -77,7 +77,6 @@ func JwtCheck() (bool) {
 		logger.Println("One or more JWT credentials missing, will not be using JWT to authenticate")
 		return false;
 	}
-
 	
 	logger.Println("JWT credentials found, will be using JWT to authenticate")
 	return true;
