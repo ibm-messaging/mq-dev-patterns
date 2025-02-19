@@ -65,7 +65,7 @@ func getJwtEndPoint(index int) (Env) {
 	return JWT_ISSUER.Points[index]
 }
 
-func JwtCheck() bool {
+func JwtCheck() (bool) {
 	if len(JWT_ISSUER.Points) == 0 {
 		logger.Println("JWT credentials not found, will not be using JWT to authenticate")
 		return false;
@@ -87,13 +87,8 @@ func JwtCheck() bool {
 func ConnectViaJwt(env Env, jwt Env) (ibmmq.MQQueueManager, error){
 	var err error
 	var qMgr ibmmq.MQQueueManager
-	var rc int
-
-	//DEBUG: to avoid declared and not used 
-	_ = rc
-
-	token := ""
-
+	//var rc int // Ignore exit in this function
+	var token string
 
 	// Allocate the MQCNO and MQCD structures needed for the CONNX call.
 	cno := ibmmq.NewMQCNO()

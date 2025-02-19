@@ -125,7 +125,7 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 	// The location of the KeyRepository is not specified in the CCDT, so regardless
 	// of whether a CCDT is being used, need to specify the KeyRepository location
 	// if it has been provided in the environment json settings.
-	if env.KeyRepository != "" && JwtCheck() == False{
+	if env.KeyRepository != "" && JwtCheck() == false {
 
 		logger.Println("Key Repository has been specified")
 	  	sco := ibmmq.NewMQSCO()
