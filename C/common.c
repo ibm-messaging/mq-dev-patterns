@@ -58,6 +58,16 @@ int connectQMgr(PMQHCONN pHConn) {
     mqcno.Options |= MQCNO_CLIENT_BINDING;
     mqcno.CCDTUrlPtr = ep.ccdtUrl;
     mqcno.CCDTUrlLength = strlen(ep.ccdtUrl);
+
+    // Point at a certificate repository. This needs to contain. at minimum,
+    // the signing information for the queue manager's certificate.
+    // This may be needed even when using the CCDT as that file does not include
+    // information about the keystores, even though the CCDT could have all the
+    // other TLS information such as the Ciphers to be used.
+    if (ep.keyRepository) {
+      strncpy(mqsco.KeyRepository,ep.keyRepository,MQ_SSL_KEY_REPOSITORY_LENGTH);
+      mqcno.SSLConfigPtr = &mqsco;
+    }
   } else {
     if (ep.channel && ep.host) {
       mqcno.Options |= MQCNO_CLIENT_BINDING;
@@ -92,6 +102,8 @@ int connectQMgr(PMQHCONN pHConn) {
       // Point at a certificate repository. This needs to contain. at minimum,
       // the signing information for the queue manager's certificate.
       // There are more options that COULD be used here, but this is the simplest.
+      // For example, we could specify a user-provided password to the repository
+      // instead of relying on a stashed (.sth) file.
       if (ep.keyRepository) {
         strncpy(mqsco.KeyRepository,ep.keyRepository,MQ_SSL_KEY_REPOSITORY_LENGTH);
         mqcno.SSLConfigPtr = &mqsco;
