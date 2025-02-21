@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, 2022 IBM Corp.
+ * Copyright 2018, 2025 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -74,15 +74,6 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 	
 	if JwtCheck() {
 		jwt := getJwtEndPoint(index)
-
-		//DEBUG: testing whether the obtainToken function works and can retrieve token from endpoint
-		/*token := ""
-		token, err := ObtainToken(jwt)  // Call the function
-		if err != nil {
-			logger.Println("Failed to obtain token:", err)
-			
-		}
-		logger.Println("JWT Token obtained:", token)*/
 
 		qMgr, err:= ConnectViaJwt(env, jwt)
 		cno.Options = ibmmq.MQCNO_CLIENT_BINDING
