@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, 2022 IBM Corp.
+ * Copyright 2018, 2025 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,6 @@ func ccdtCheck() (bool) {
 	return false;
 }
 
-
 // Establishes the connection to the MQ Server. Returns the
 // Queue Manager if successful
 func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
@@ -71,7 +70,16 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 
 	// Allocate the MQCNO structure needed for the CONNX call.
 	cno := ibmmq.NewMQCNO()
-    	env := getEndPoint(index)
+	env := getEndPoint(index)
+	
+	if JwtCheck() {
+		jwt := getJwtEndPoint(index)
+
+		qMgr, err:= ConnectViaJwt(env, jwt)
+		cno.Options = ibmmq.MQCNO_CLIENT_BINDING
+		return qMgr, err
+	}
+
 
 	if username := env.User; username != "" {
 		logger.Printf("User %s has been specified\n", username)
@@ -106,7 +114,7 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 	// The location of the KeyRepository is not specified in the CCDT, so regardless
 	// of whether a CCDT is being used, need to specify the KeyRepository location
 	// if it has been provided in the environment json settings.
-	if env.KeyRepository != "" {
+	if env.KeyRepository != "" && JwtCheck() == false {
 
 		logger.Println("Key Repository has been specified")
 	  	sco := ibmmq.NewMQSCO()
@@ -127,7 +135,8 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 	}
 
 	return qMgr, err
-}
+	}
+
 
 
 // Opens a Dynamic Queue as part of a response in a request / response pattern
@@ -195,5 +204,3 @@ func logError(err error) {
 	logger.Println(err)
 	logger.Printf("Error Code %v", err.(*ibmmq.MQReturn).MQCC)
 }
-
-
