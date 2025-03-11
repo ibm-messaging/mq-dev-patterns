@@ -16,35 +16,26 @@ package mqsamputils
  * limitations under the License.
 **/
 
-// This sample is based on ibm-messaging/mq-golang/samples/amqsjwt.go 
-
+// This sample is based on ibm-messaging/mq-golang/samples/amqsjwt.go
 
 import (
 	"crypto/tls"
+	"crypto/x509"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
-	"time"
-	"encoding/json"
-	"io/ioutil"
-	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
-	"crypto/x509" 
 )
 
-
 type Config struct {
-	qMgrName       string
-	connectionName string
-	channel        string
-	JwtTokenEndpoint      string
-	JwtTokenUsername  string
-	JwtTokenPwd  string
-	JwtTokenClientID  string
-	tokenRealm     string
+	JwtTokenEndpoint string
+	JwtTokenUsername string
+	JwtTokenPwd      string
+	JwtTokenClientID string
+	JwtKeyRepository string
 }
-
 
 // We only care about one field in the JSON data returned from
 // the call to the JWT server
@@ -52,92 +43,33 @@ type JWTResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
-var cf Config
 var jwtResponseStruct JWTResponse
 
-
-func getJwtEndPoint(index int) (Env) {
+func getJwtEndPoint(index int) Env {
 
 	if index == FULL_STRING {
 		index = 0
 	}
-	
+
 	return JWT_ISSUER.Points[index]
 }
 
-func JwtCheck() (bool) {
+func JwtCheck() bool {
 	if len(JWT_ISSUER.Points) == 0 {
 		logger.Println("JWT credentials not found, will not be using JWT to authenticate")
-		return false;
+		return false
 	}
 
 	jwt := getJwtEndPoint(FULL_STRING)
-	
+
 	if jwt.JwtTokenEndpoint == "" || jwt.JwtTokenUsername == "" || jwt.JwtTokenPwd == "" || jwt.JwtTokenClientID == "" {
 		logger.Println("One or more JWT credentials missing, will not be using JWT to authenticate")
-		return false;
+		return false
 	}
-	
+
 	logger.Println("JWT credentials found, will be using JWT to authenticate")
-	return true;
+	return true
 
-}
-
-func ConnectViaJwt(env Env, jwt Env) (ibmmq.MQQueueManager, error){
-	var err error
-	var qMgr ibmmq.MQQueueManager
-	//var rc int // Ignore exit in this function
-	var token string
-
-	// Allocate the MQCNO and MQCD structures needed for the CONNX call.
-	cno := ibmmq.NewMQCNO()
-	cd := ibmmq.NewMQCD()
-
-
-	// Fill in required fields in the MQCD channel definition structure
-	cd.ChannelName = env.Channel
-	cd.ConnectionName = env.GetConnection(FULL_STRING)
-
-	// Reference the CD structure from the CNO and indicate that we definitely want to
-	// use the client connection method.
-	cno.ClientConn = cd
-	cno.Options = ibmmq.MQCNO_CLIENT_BINDING
-
-	token, err = ObtainToken(jwt, env)
-	if err == nil {
-		if token != "" {
-			csp := ibmmq.NewMQCSP()
-			csp.Token = token
-			fmt.Printf("Using token: %s\n", token)
-
-			// Make the CNO refer to the CSP structure so it gets used during the connection
-			cno.SecurityParms = csp
-		} else {
-			fmt.Printf("An empty token was returned")
-			os.Exit(1)
-		}
-	} else {
-		fmt.Printf("Could not get token: error %v\n", err)
-		os.Exit(1)
-	}
-
-	// And now we can try to connect. Wait a short time before disconnecting.
-	qMgr, err = ibmmq.Connx(env.QManager, cno)
-	if err == nil {
-		fmt.Printf("MQCONN to QM %s succeeded.\n", env.QManager)
-		d, _ := time.ParseDuration("3s")
-		time.Sleep(d)
-		//qMgr.Disc() // Ignore errors from disconnect as we can't do much about it anyway
-		//rc = 0 //Ignore exit in this function
-	} else {
-		fmt.Printf("MQCONN to %s failed.\n", env.QManager)
-		fmt.Println(err)
-		//rc = int(err.(*ibmmq.MQReturn).MQCC) //Ignore exit in this function 
-	}
-
-	fmt.Println("Done.")
-	return qMgr, err
-	//os.Exit(rc) //Ignore exit in this function 
 }
 
 /*
@@ -170,11 +102,9 @@ func ObtainToken(jwt Env, env Env) (string, error) {
 	   used for an MQ connection.
 	*/
 
-
 	// checking for JWT authentication with JWKS
-
-	if env.KeyRepository != "" {
-		caCertPath := fmt.Sprintf(env.KeyRepository)
+	if jwt.JwtKeyRepository != "" {
+		caCertPath := fmt.Sprintf(jwt.JwtKeyRepository)
 		caCert, err := ioutil.ReadFile(caCertPath)
 		if err != nil {
 			logger.Println("Failed to read CA certificate: %v", err)
@@ -195,7 +125,7 @@ func ObtainToken(jwt Env, env Env) (string, error) {
 	} else {
 		tr = &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: false}}
 	}
-	
+
 	client := &http.Client{Transport: tr}
 
 	// Build the URL. .

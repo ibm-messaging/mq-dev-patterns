@@ -19,48 +19,48 @@ package mqsamputils
 import (
 	"os"
 	"strings"
+
 	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
 )
 
 const (
-	Put      = "PUT"
-	Get      = "GET"
-	Pub      = "PUB"
-	Dynamic  = "Dynamic"
-	Response = "Response"
-	CCDT     = "MQCCDTURL"
+	Put        = "PUT"
+	Get        = "GET"
+	Pub        = "PUB"
+	Dynamic    = "Dynamic"
+	Response   = "Response"
+	CCDT       = "MQCCDTURL"
 	FILEPREFIX = "file://"
 )
 
 // Package logging already set in the env.go module, so no need to
 // add it here also.
 
-func getEndPoint(index int) (Env) {
+func getEndPoint(index int) Env {
 
 	if index == FULL_STRING {
 		index = 0
 	}
-	
+
 	return MQ_ENDPOINTS.Points[index]
 }
 
-
-func ccdtCheck() (bool) {
+func ccdtCheck() bool {
 
 	if fPath := os.Getenv(CCDT); "" != fPath {
-    	ccdtFile, err := os.Open(strings.TrimPrefix(fPath, FILEPREFIX))
+		ccdtFile, err := os.Open(strings.TrimPrefix(fPath, FILEPREFIX))
 		defer ccdtFile.Close()
 
 		if err == nil {
 			logger.Println("CCDT File found and will be used to configure connection")
-		  	return true;
+			return true
 		}
 
 		logger.Printf("CCDT File not found at %s", fPath)
 		logger.Println(err)
 	}
 
-	return false;
+	return false
 }
 
 // Establishes the connection to the MQ Server. Returns the
@@ -71,15 +71,34 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 	// Allocate the MQCNO structure needed for the CONNX call.
 	cno := ibmmq.NewMQCNO()
 	env := getEndPoint(index)
-	
+
 	if JwtCheck() {
+
+		var err error
+		var token string
+
 		jwt := getJwtEndPoint(index)
 
-		qMgr, err:= ConnectViaJwt(env, jwt)
-		cno.Options = ibmmq.MQCNO_CLIENT_BINDING
-		return qMgr, err
-	}
+		token, err = ObtainToken(jwt, env)
 
+		if err == nil {
+			if token != "" {
+				csp := ibmmq.NewMQCSP()
+				csp.Token = token
+				logger.Printf("Using token: %s\n", token)
+
+				// Make the CNO refer to the CSP structure so it gets used during the connection
+				cno.SecurityParms = csp
+			} else {
+				logger.Printf("An empty token was returned")
+				os.Exit(1)
+			}
+		} else {
+			logger.Printf("Could not get token: error %v\n", err)
+			os.Exit(1)
+		}
+
+	}
 
 	if username := env.User; username != "" {
 		logger.Printf("User %s has been specified\n", username)
@@ -91,8 +110,8 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 		cno.SecurityParms = csp
 	}
 
-	if ! ccdtCheck() {		
-		logger.Println("CCDT URL export is not set, will be using json envrionment client connections settings");
+	if !ccdtCheck() {
+		logger.Println("CCDT URL export is not set, will be using json environment client connections settings")
 
 		cd := ibmmq.NewMQCD()
 
@@ -107,17 +126,17 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 			cd.SSLClientAuth = ibmmq.MQSCA_OPTIONAL
 		}
 
-	  // Reference the CD structure from the CNO
+		// Reference the CD structure from the CNO
 		cno.ClientConn = cd
 	}
 
 	// The location of the KeyRepository is not specified in the CCDT, so regardless
 	// of whether a CCDT is being used, need to specify the KeyRepository location
 	// if it has been provided in the environment json settings.
-	if env.KeyRepository != "" && JwtCheck() == false {
+	if env.KeyRepository != "" {
 
 		logger.Println("Key Repository has been specified")
-	  	sco := ibmmq.NewMQSCO()
+		sco := ibmmq.NewMQSCO()
 		sco.KeyRepository = env.KeyRepository
 		cno.SSLConfig = sco
 	}
@@ -135,9 +154,7 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 	}
 
 	return qMgr, err
-	}
-
-
+}
 
 // Opens a Dynamic Queue as part of a response in a request / response pattern
 func OpenDynamicQueue(qMgrObject ibmmq.MQQueueManager, queueName string) (ibmmq.MQObject, error) {
@@ -155,13 +172,13 @@ func OpenGetQueue(qMgrObject ibmmq.MQQueueManager, msgStyle string, index int) (
 }
 
 // Internal function to allow it to be modified, without affecting the callers.
-func openQueue(qMgrObject ibmmq.MQQueueManager, replyToQ string, msgStyle string, index int)  (ibmmq.MQObject, error) {
+func openQueue(qMgrObject ibmmq.MQQueueManager, replyToQ string, msgStyle string, index int) (ibmmq.MQObject, error) {
 	// Create the Object Descriptor that allows us to give the queue name
 	mqod := ibmmq.NewMQOD()
 	// We have to say how we are going to use this queue. In this case, to PUT
 	// messages. That is done in the openOptions parameter
 
-  	env := getEndPoint(index)
+	env := getEndPoint(index)
 
 	openOptions := ibmmq.MQOO_OUTPUT
 
@@ -186,9 +203,8 @@ func openQueue(qMgrObject ibmmq.MQQueueManager, replyToQ string, msgStyle string
 		mqod.ObjectName = replyToQ
 	}
 
-	
 	logger.Printf("Attempting open queue/topic %s", env.QueueName)
-	
+
 	qObject, err := qMgrObject.Open(mqod, openOptions)
 
 	if err != nil {
