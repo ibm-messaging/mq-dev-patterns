@@ -19,6 +19,7 @@ package mqsamputils
 import (
 	"os"
 	"strings"
+	"fmt"
 
 	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
 )
@@ -91,11 +92,12 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 				cno.SecurityParms = csp
 			} else {
 				logger.Printf("An empty token was returned")
-				os.Exit(1)
-			}
-		} else {
-			logger.Printf("Could not get token: error %v\n", err)
-			os.Exit(1)
+				err = fmt.Errorf("empty token was returned")
+			} 
+		}
+		if err != nil {
+			// returning an empty queue manager object, and error from obtaining token
+			return ibmmq.MQQueueManager{},err
 		}
 
 	}
