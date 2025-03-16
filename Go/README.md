@@ -1,5 +1,5 @@
 # IBM MQ Go samples
-The Go samples are based on https://github.com/ibm-messaging/mq-golang/tree/master/samples and have been tested with Golang version 1.13.6.
+The Go samples are based on https://github.com/ibm-messaging/mq-golang/tree/master/samples and have been tested with Golang version 1.24.0.
 
 Install/unzip IBM MQ client
 
@@ -113,3 +113,20 @@ and run
 `./basicresponse`
 
 The response sample will get a message from the queue, process it and put the response on the reply to queue and keep looking for more messages to respond to till you ctrl+c interrupt it.
+
+### Running samples with JWT authentication
+
+To enable token-based authentication, ensure you have a configured token issuer and queue manager [JWT README](jwt-jwks-docs/README.md) and then edit the `JWT_ISSUER` block in the env.json file
+
+```JSON
+"JWT_ISSUER" : [{
+    "JWT_TOKEN_ENDPOINT":"https://<KEYCLOAK_URL>/realms/master/protocol/openid-connect/token",
+    "JWT_TOKEN_USERNAME":"app",
+    "JWT_TOKEN_PWD":"passw0rd",
+    "JWT_TOKEN_CLIENTID":"admin-cli",
+    "JWT_KEY_REPOSITORY": "path/to/tokenIssuerKeystore"
+  }]
+```
+For JWT authentication via JWKS, make sure `JWT_KEY_REPOSITORY` points to your token issuers public certicate and your queue manager is cofigured to retrieve the JWKS
+
+If you would like to proceed without JWKS, edit the endpoint to use the correct URL (beginning with http) and leave `JWT_KEY_REPOSITORY` blank
