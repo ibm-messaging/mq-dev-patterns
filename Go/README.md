@@ -127,6 +127,6 @@ To enable token-based authentication, ensure you have a configured token issuer 
     "JWT_KEY_REPOSITORY": "path/to/tokenIssuerKeystore"
   }]
 ```
-For JWT authentication via JWKS, make sure `JWT_KEY_REPOSITORY` points to your token issuers public certicate and your queue manager is cofigured to retrieve the JWKS
+For JWT authentication via JWKS, make sure `JWT_KEY_REPOSITORY` points to your token issuer's public certificate and your queue manager is configured to retrieve the JWKS
 
 If you would like to proceed without JWKS, edit the endpoint to use the correct URL (beginning with http) and leave `JWT_KEY_REPOSITORY` blank
