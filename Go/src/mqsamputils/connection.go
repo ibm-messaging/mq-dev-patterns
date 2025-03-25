@@ -17,9 +17,9 @@
 package mqsamputils
 
 import (
+	"fmt"
 	"os"
 	"strings"
-	"fmt"
 
 	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
 )
@@ -80,24 +80,21 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 
 		jwt := getJwtEndPoint(index)
 
-		token, err = ObtainToken(jwt, env)
-
-		if err == nil {
-			if token != "" {
-				csp := ibmmq.NewMQCSP()
-				csp.Token = token
-				logger.Printf("Using token: %s\n", token)
-
-				// Make the CNO refer to the CSP structure so it gets used during the connection
-				cno.SecurityParms = csp
-			} else {
-				logger.Printf("An empty token was returned")
-				err = fmt.Errorf("empty token was returned")
-			} 
+		if token, err = ObtainToken(jwt, env); err != nil {
+			return ibmmq.MQQueueManager{}, err
 		}
-		if err != nil {
-			// returning an empty queue manager object, and error from obtaining token
-			return ibmmq.MQQueueManager{},err
+
+		if token != "" {
+			csp := ibmmq.NewMQCSP()
+			csp.Token = token
+			logger.Printf("Using token: %s\n", token)
+
+			// Make the CNO refer to the CSP structure so it gets used during the connection
+			cno.SecurityParms = csp
+		} else {
+			logger.Printf("An empty token was returned")
+			err = fmt.Errorf("empty token was returned")
+			return ibmmq.MQQueueManager{}, err
 		}
 
 	}
