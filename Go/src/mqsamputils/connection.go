@@ -97,9 +97,7 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 			return ibmmq.MQQueueManager{}, err
 		}
 
-	}
-
-	if username := env.User; username != "" {
+	} else if username := env.User; username != "" {
 		logger.Printf("User %s has been specified\n", username)
 		csp := ibmmq.NewMQCSP()
 		csp.AuthenticationType = ibmmq.MQCSP_AUTH_USER_ID_AND_PWD
