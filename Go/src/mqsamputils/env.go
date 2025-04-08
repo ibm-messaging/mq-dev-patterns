@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, 2022 IBM Corp.
+ * Copyright 2018, 2025 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -33,21 +33,34 @@ type Env struct {
 	QueueName        string `json:"QUEUE_NAME"`
 	ModelQueueName   string `json:"MODEL_QUEUE_NAME"`
 	DynamicQueueName string `json:"DYNAMIC_QUEUE_PREFIX"`
-	BackoutQueue 	 string `json:"BACKOUT_QUEUE"`
+	BackoutQueue     string `json:"BACKOUT_QUEUE"`
 	Host             string `json:"HOST"`
 	Port             string `json:"PORT"`
 	Channel          string `json:"CHANNEL"`
 	Topic            string `json:"TOPIC_NAME"`
 	KeyRepository    string `json:"KEY_REPOSITORY"`
 	Cipher           string `json:"CIPHER"`
+
+	//JWT variables
+	JwtTokenEndpoint string `json:"JWT_TOKEN_ENDPOINT"`
+	JwtTokenUsername string `json:"JWT_TOKEN_USERNAME"`
+	JwtTokenPwd      string `json:"JWT_TOKEN_PWD"`
+	JwtTokenClientID string `json:"JWT_TOKEN_CLIENTID"`
+	JwtKeyRepository string `json:"JWT_KEY_REPOSITORY"`
 }
 
 type MQEndpoints struct {
 	Points []Env `json:"MQ_ENDPOINTS"`
 }
 
+type JwtEndpoints struct {
+	Points []Env `json:"JWT_ISSUER"`
+}
+
 var EnvSettings Env
+var JwtSettings Env
 var MQ_ENDPOINTS MQEndpoints
+var JWT_ISSUER JwtEndpoints
 
 const FULL_STRING = -1
 
@@ -64,16 +77,33 @@ func init() {
 	byteValue, _ := ioutil.ReadAll(jsonFile)
 	json.Unmarshal(byteValue, &MQ_ENDPOINTS)
 
-  // The .json should have supplied the MQ Endpoints as an array.
+	json.Unmarshal(byteValue, &JWT_ISSUER)
+
+	logger.Printf("DEBUG: Loaded JWT_ISSUER: %+v", JWT_ISSUER)
+
+	// The .json should have supplied the MQ Endpoints as an array.
 	// If there are no elements, then EnvSettings will be default
 	// initialised to be empty.
 	if len(MQ_ENDPOINTS.Points) > 0 {
+		logger.Println("DEBUG: found MQ endpoints in env.json")
 		EnvSettings = MQ_ENDPOINTS.Points[0]
+
+	}
+
+	if len(JWT_ISSUER.Points) > 0 {
+		logger.Println("DEBUG: found JWT credentials in env.json")
+		jwt := JWT_ISSUER.Points[0] // Extract JWT config
+
+		EnvSettings.JwtTokenEndpoint = jwt.JwtTokenEndpoint
+		EnvSettings.JwtTokenUsername = jwt.JwtTokenUsername
+		EnvSettings.JwtTokenPwd = jwt.JwtTokenPwd
+		EnvSettings.JwtTokenClientID = jwt.JwtTokenClientID
+		EnvSettings.JwtKeyRepository = jwt.JwtKeyRepository
 	}
 
 	environmentOverides()
 }
-
+ 
 func environmentOverides() {
 	logger.Println("Looking for Environment Overrides")
 	var s string
@@ -85,13 +115,20 @@ func environmentOverides() {
 		"QUEUE_NAME":           &EnvSettings.QueueName,
 		"MODEL_QUEUE_NAME":     &EnvSettings.ModelQueueName,
 		"DYNAMIC_QUEUE_PREFIX": &EnvSettings.DynamicQueueName,
-		"BACKOUT_QUEUE" :       &EnvSettings.BackoutQueue,
+		"BACKOUT_QUEUE":        &EnvSettings.BackoutQueue,
 		"HOST":                 &EnvSettings.Host,
 		"PORT":                 &EnvSettings.Port,
 		"CHANNEL":              &EnvSettings.Channel,
 		"TOPIC_NAME":           &EnvSettings.Topic,
 		"KEY_REPOSITORY":       &EnvSettings.KeyRepository,
 		"CIPHER":               &EnvSettings.Cipher,
+
+		//JWT variables
+		"JWT_TOKEN_ENDPOINT": &EnvSettings.JwtTokenEndpoint,
+		"JWT_TOKEN_USERNAME": &EnvSettings.JwtTokenUsername,
+		"JWT_TOKEN_PWD":      &EnvSettings.JwtTokenPwd,
+		"JWT_TOKEN_CLIENTID": &EnvSettings.JwtTokenClientID,
+		"JWT_KEY_REPOSITORY": &EnvSettings.JwtKeyRepository,
 	}
 
 	for f, v := range overrides {
@@ -104,23 +141,21 @@ func environmentOverides() {
 }
 
 func (Env) GetConnection(index int) string {
-	if (index == FULL_STRING) {
+	if index == FULL_STRING {
 		var connections []string
 		for _, p := range MQ_ENDPOINTS.Points {
-			connections = append(connections, p.Host + "(" + p.Port + ")")
+			connections = append(connections, p.Host+"("+p.Port+")")
 		}
-	  	return strings.Join(connections[:], ",")
+		return strings.Join(connections[:], ",")
 	} else {
 		p := MQ_ENDPOINTS.Points[index]
-		return p.Host + "(" + p.Port + ")" 
+		return p.Host + "(" + p.Port + ")"
 	}
 }
 
 func (Env) GetConnectionCount() int {
 	return len(MQ_ENDPOINTS.Points)
 }
-
-
 
 func (Env) LogSettings() {
 	logger.Println("Environment Settings are")
@@ -137,4 +172,13 @@ func (Env) LogSettings() {
 	logger.Printf("Topic is (%s)\n", EnvSettings.Topic)
 	logger.Printf("Key Respository is (%s)\n", EnvSettings.KeyRepository)
 	logger.Printf("Cipher (%s)\n", EnvSettings.Cipher)
+
+	if len(JWT_ISSUER.Points) > 0 {
+		logger.Printf("jwt token endpoint is (%s)\n", EnvSettings.JwtTokenEndpoint)
+		logger.Printf("jwt token username is (%s)\n", EnvSettings.JwtTokenUsername)
+		//logger.Printf("JWT_TOKEN_PWD (%s)\n", EnvSettings.JWT_TOKEN_PWD)
+		logger.Printf("jwt token ID is (%s)\n", EnvSettings.JwtTokenClientID)
+		logger.Printf("jwt key repository path is (%s)\n", EnvSettings.JwtKeyRepository)
+	}
+
 }

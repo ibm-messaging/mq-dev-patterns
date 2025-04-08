@@ -35,6 +35,7 @@ public class AMQPTestConfig {
     @ConfigProperty(name = "amqp-mqtest.replyqueuename")
     private Optional<String> replyqueuename;
 
+    @ConfigProperty(name = "amqp-mqtest.appargs")
     private List<String> appargs;
 
     public Optional<String> getQueueName() { return queuename; }
