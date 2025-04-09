@@ -79,19 +79,15 @@ func init() {
 
 	json.Unmarshal(byteValue, &JWT_ISSUER)
 
-	logger.Printf("DEBUG: Loaded JWT_ISSUER: %+v", JWT_ISSUER)
-
 	// The .json should have supplied the MQ Endpoints as an array.
 	// If there are no elements, then EnvSettings will be default
 	// initialised to be empty.
 	if len(MQ_ENDPOINTS.Points) > 0 {
-		logger.Println("DEBUG: found MQ endpoints in env.json")
 		EnvSettings = MQ_ENDPOINTS.Points[0]
 
 	}
 
 	if len(JWT_ISSUER.Points) > 0 {
-		logger.Println("DEBUG: found JWT credentials in env.json")
 		jwt := JWT_ISSUER.Points[0] // Extract JWT config
 
 		EnvSettings.JwtTokenEndpoint = jwt.JwtTokenEndpoint
@@ -103,7 +99,7 @@ func init() {
 
 	environmentOverides()
 }
- 
+
 func environmentOverides() {
 	logger.Println("Looking for Environment Overrides")
 	var s string

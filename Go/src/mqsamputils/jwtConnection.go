@@ -27,6 +27,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
 )
 
 type Config struct {
@@ -130,8 +132,6 @@ func ObtainToken(jwt Env, env Env) (string, error) {
 
 	// Build the URL. .
 	endpoint := fmt.Sprintf(jwt.JwtTokenEndpoint)
-	logger.Println("DEBUG: this is the JWT issuer endpoint")
-	logger.Println(endpoint)
 
 	// Fill in the pieces of data that the server expects
 	formData := url.Values{
@@ -172,4 +172,29 @@ func ObtainToken(jwt Env, env Env) (string, error) {
 	}
 
 	return jwtResponseStruct.AccessToken, err
+}
+
+func connectViaToken(env Env) (*ibmmq.MQCSP, error) {
+	var err error
+	var token string
+
+	jwt := getJwtEndPoint(0)
+	csp := ibmmq.NewMQCSP()
+
+	if token, err = ObtainToken(jwt, env); err != nil {
+		return csp, err
+	}
+
+	if token != "" {
+
+		csp.Token = token
+		logger.Printf("Using token: %s\n", token)
+		return csp, err
+
+	} else {
+		logger.Printf("An empty token was returned")
+		err = fmt.Errorf("empty token was returned")
+		return csp, err
+	}
+
 }

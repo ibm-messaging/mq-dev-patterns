@@ -17,7 +17,6 @@
 package mqsamputils
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
@@ -64,6 +63,34 @@ func ccdtCheck() bool {
 	return false
 }
 
+func connectViaUserID(env Env) *ibmmq.MQCSP {
+
+	csp := ibmmq.NewMQCSP()
+	csp.AuthenticationType = ibmmq.MQCSP_AUTH_USER_ID_AND_PWD
+	csp.UserId = env.User
+	csp.Password = env.Password
+
+	return csp
+}
+
+func getClientConn(env Env, index int) *ibmmq.MQCD {
+	cd := ibmmq.NewMQCD()
+
+	// Fill in required fields in the MQCD channel definition structure
+	cd.ChannelName = env.Channel
+	cd.ConnectionName = env.GetConnection(index)
+	logger.Printf("Connecting to %s ", cd.ConnectionName)
+
+	if env.KeyRepository != "" {
+		logger.Println("Running in TLS Mode")
+		cd.SSLCipherSpec = env.Cipher
+		cd.SSLClientAuth = ibmmq.MQSCA_OPTIONAL
+	}
+
+	return cd
+
+}
+
 // Establishes the connection to the MQ Server. Returns the
 // Queue Manager if successful
 func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
@@ -72,59 +99,24 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 	// Allocate the MQCNO structure needed for the CONNX call.
 	cno := ibmmq.NewMQCNO()
 	env := getEndPoint(index)
+	var err error
 
 	if JwtCheck() {
-
-		var err error
-		var token string
-
-		jwt := getJwtEndPoint(index)
-
-		if token, err = ObtainToken(jwt, env); err != nil {
-			return ibmmq.MQQueueManager{}, err
+		cno.SecurityParms, err = connectViaToken(env)
+		if err != nil {
+			logger.Println(err)
 		}
 
-		if token != "" {
-			csp := ibmmq.NewMQCSP()
-			csp.Token = token
-			logger.Printf("Using token: %s\n", token)
-
-			// Make the CNO refer to the CSP structure so it gets used during the connection
-			cno.SecurityParms = csp
-		} else {
-			logger.Printf("An empty token was returned")
-			err = fmt.Errorf("empty token was returned")
-			return ibmmq.MQQueueManager{}, err
-		}
-
-	} else if username := env.User; username != "" {
-		logger.Printf("User %s has been specified\n", username)
-		csp := ibmmq.NewMQCSP()
-		csp.AuthenticationType = ibmmq.MQCSP_AUTH_USER_ID_AND_PWD
-		csp.UserId = username
-		csp.Password = env.Password
-		// Make the CNO refer to the CSP structure so it gets used during the connection
-		cno.SecurityParms = csp
+	} else if env.User != "" {
+		logger.Printf("User %s has been specified, will be using Username and Password to authenticate", env.User)
+		// Make the CNO refer to the CSP structure returned, so it gets used during the connection
+		cno.SecurityParms = connectViaUserID(env)
 	}
 
 	if !ccdtCheck() {
 		logger.Println("CCDT URL export is not set, will be using json environment client connections settings")
-
-		cd := ibmmq.NewMQCD()
-
-		// Fill in required fields in the MQCD channel definition structure
-		cd.ChannelName = env.Channel
-		cd.ConnectionName = env.GetConnection(index)
-		logger.Printf("Connecting to %s ", cd.ConnectionName)
-
-		if env.KeyRepository != "" {
-			logger.Println("Running in TLS Mode")
-			cd.SSLCipherSpec = env.Cipher
-			cd.SSLClientAuth = ibmmq.MQSCA_OPTIONAL
-		}
-
-		// Reference the CD structure from the CNO
-		cno.ClientConn = cd
+		// Make the CNO refer to the CSP structure returned, so it gets used during the connection
+		cno.ClientConn = getClientConn(env, index)
 	}
 
 	// The location of the KeyRepository is not specified in the CCDT, so regardless
