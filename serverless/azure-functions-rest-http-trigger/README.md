@@ -1,7 +1,7 @@
 # IBM MQ Serverless Sample for Azure Functions
 These REST samples are written in Node.js and have been tested with a Azure Functions runtime of `Node.js v18 and v20`.
 
-The application consists of a two Azure functions exposed.
+The application consists of two Azure functions exposed.
 
 ## Testing locally 
 These samples can be tested offline locally using the [Azure Functions VSCode Extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions). 
