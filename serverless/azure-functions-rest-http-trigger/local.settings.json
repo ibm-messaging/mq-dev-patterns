@@ -1,16 +1,20 @@
 {
   "IsEncrypted": false,
   "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "node",
-    "FUNCTIONS_EXTENSION_VERSION": "~3",
-
-    "MQ_USER": "app", 
-    "MQ_PASSWORD": "passw0rd", 
-
-    "QUEUE": "DEV.QUEUE.1", 
-    "QM_NAME": "QUEUE_MANAGER_NAME_HERE",
-    "HOSTNAME": "LOADBALANCER_EXTERNAL_IP_HERE",
-    "QM_PORT": 9443,
-    "DEBUG": "mq*:*"
+    "QM_NAME:0": "QM1",
+    "MQ_HOST:0": "localhost",
+    "MQ_PORT:0" : 9443, 
+    "MQ_APPUSER:0": "app",
+    "MQ_PASSWORD:0": "passw0rd",
+    "QM_NAME:1": "secureapphelm",
+    "MQ_HOST:1": "< your azure load balancer>",
+    "MQ_PORT:1" : 9443, 
+    "MQ_APPUSER:1": "app",
+    "MQ_PASSWORD:1": "< your mq app password >",
+    "DEBUG": "mq*:*",
+    "ALLOW_SELF_SIGNED": true,
+    "MAX_MESSAGES": 4
   }
 }
