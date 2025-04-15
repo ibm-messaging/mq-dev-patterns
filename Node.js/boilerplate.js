@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, 2024 IBM Corp.
+ * Copyright 2018, 2025 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,12 @@
 const fs = require('fs');
 // Import the MQ package
 const mq = require('ibmmq');
+
+// Import libraries for JWT authentication
+const https = require('https');
+const axios = require('axios');
+const querystring = require('querystring');
+const fetch = require('node-fetch');
 
 // Load up missing envrionment variables from the env.json file
 var env = require('../env.json');
@@ -116,9 +122,9 @@ class MQBoilerPlate {
   }
 
   // Load the MQ Endpoint details either from the envrionment or from the
-  // env.json file. The envrionment takes precedence. The json file allows for
-  // mulitple endpoints ala a cluster, but for this sample only the first
-  // endpoint in the arryay is used.
+  // env.json file. The environment takes precedence. The json file allows for
+  // multiple endpoints ala a cluster, but for this sample only the first
+  // endpoint in the array is used.
   buildMQDetails() {
     let i = this.index;
     if (env.MQ_ENDPOINTS.length > i) {
@@ -133,6 +139,17 @@ class MQBoilerPlate {
         this.credentials[f] = process.env[pField] || env.MQ_ENDPOINTS[i][pField];
       });
     }
+    
+    // Load the JWT Endpoint details from the env.json file, if enabled
+    // The json file allows for multiple endpoints, for seperate token issuers
+    if (env.JWT_ISSUER) {
+      ['JWT_TOKEN_ENDPOINT', 'JWT_TOKEN_USERNAME', 'JWT_TOKEN_PWD', 'JWT_TOKEN_CLIENTID', 'JWT_KEY_REPOSITORY'].forEach((f) => {
+        this.MQDetails[f] = process.env[f] || env.JWT_ISSUER[i][f];
+      });
+    } else {
+      debug_info('jwt credentials not found');
+    }
+
     return Promise.resolve();
   }
 
@@ -413,7 +430,75 @@ class MQBoilerPlate {
     return `${env.MQ_ENDPOINTS[i].HOST}(${env.MQ_ENDPOINTS[i].PORT})`;
   }
 
-  buildMQCNO() {
+  jwtCheck(MQDetails) {
+
+    if (!env.JWT_ISSUER) {
+
+      debug_info('JWT credentials not found, will not be using JWT to authenticate');
+      return false;
+
+    } else if (MQDetails.JWT_TOKEN_ENDPOINT === null || MQDetails.JWT_TOKEN_USERNAME === null || 
+        MQDetails.JWT_TOKEN_PWD === null || MQDetails.JWT_TOKEN_CLIENTID === null) {
+
+      debug_info('One or more JWT credentials missing, will not be using JWT to authenticate');
+      return false;
+    } 
+
+    debug_info('JWT credentials found, will be using JWT to authenticate');
+    return true;
+  }
+
+  async obtainToken() {
+    // Asynchronous function to handle http & https requests
+    let me = this;
+    let accessToken;
+
+    debug_info('Obtaining token from:', me.MQDetails.JWT_TOKEN_ENDPOINT);
+    
+    let formData = querystring.stringify({
+      username: me.MQDetails.JWT_TOKEN_USERNAME,
+      password: me.MQDetails.JWT_TOKEN_PWD,
+      client_id: me.MQDetails.JWT_TOKEN_CLIENTID,
+      grant_type: "password",
+    });
+
+    // Regex to extract the hostname:port out of the endpoint
+    // This is used to ensure the correct URL is used for the request
+    // and the JWT obtained has a valid 'iss' claim
+    let match = me.MQDetails.JWT_TOKEN_ENDPOINT.match(/^https?:\/\/([^/]+)/i);
+    let hostPort = match ? match[1] : null;
+    
+    // Creating server request
+    let options = {
+      method: 'POST',
+      url: me.MQDetails.JWT_TOKEN_ENDPOINT,
+      data: formData,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Length": formData.length,
+        "Host": hostPort,
+      }
+    }
+
+    // Checking for JWT authentication with JWKS
+    // If key repository is enabled, the https server (token issuer) can be trusted
+    // with this public certificate
+    if (me.MQDetails.JWT_KEY_REPOSITORY) {
+      options.httpsAgent = new https.Agent({ ca: fs.readFileSync(me.MQDetails.JWT_KEY_REPOSITORY)});
+    }
+      
+    // Sending request to token server
+    // Wait until response received
+    let response = await axios(options);
+
+    // Extracting access token out of JSON response 
+    accessToken = response.data.access_token;
+    debug_info('Using token:', accessToken);
+
+    return accessToken;
+  }
+
+  async buildMQCNO() {
     debug_info('Establishing connection details');
     let mqcno = new mq.MQCNO();
     // use MQCNO_CLIENT_BINDING to connect as client
@@ -421,7 +506,23 @@ class MQBoilerPlate {
     mqcno.Options = MQC.MQCNO_CLIENT_BINDING;
 
     // For no authentication, disable this block
-    if (this.credentials.USER) {
+    // If JWT enabled, a JWT will be used to authenticate to MQ,
+    // otherwise will default to username and password authenftication
+    if (this.jwtCheck(this.MQDetails)) {  
+      
+      // Asynchronous handling, to ensure code blocks on the server request
+      // Waits for a response, if request fails, the error is caught
+      try {
+        let accessToken = await this.obtainToken();
+        let csp = new mq.MQCSP();
+        csp.Token = accessToken; 
+        mqcno.SecurityParms = csp;
+
+      } catch (error) {
+        debug_warn('Failed to obtain token:', error);
+
+      }
+    } else if (this.credentials.USER) {
       let csp = new mq.MQCSP();
       csp.UserId = this.credentials.USER;
       csp.Password = this.credentials.PASSWORD;
@@ -448,7 +549,7 @@ class MQBoilerPlate {
 
 
     if (!MQBoilerPlate.ccdtCheck()) {
-      debug_info('CCDT URL export is not set, will be using json envrionment client connections settings');
+      debug_info('CCDT URL export is not set, will be using json environment client connections settings');
       // And then fill in relevant fields for the MQCD
       let cd = new mq.MQCD();
       cd.ChannelName = this.MQDetails.CHANNEL;
