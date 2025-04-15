@@ -466,7 +466,7 @@ class MQBoilerPlate {
     // This is used to ensure the correct URL is used for the request
     // and the JWT obtained has a valid 'iss' claim
     let match = me.MQDetails.JWT_TOKEN_ENDPOINT.match(/^https?:\/\/([^/]+)/i);
-    let hostPort = match ? match[1] : null;
+    let hostAndPort = match ? match[1] : null;
     
     // Creating server request
     let options = {
@@ -476,7 +476,7 @@ class MQBoilerPlate {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
         "Content-Length": formData.length,
-        "Host": hostPort,
+        "Host": hostAndPort,
       }
     }
 
@@ -509,7 +509,7 @@ class MQBoilerPlate {
     // If JWT enabled, a JWT will be used to authenticate to MQ,
     // otherwise will default to username and password authenftication
     if (this.jwtCheck(this.MQDetails)) {  
-      
+
       // Asynchronous handling, to ensure code blocks on the server request
       // Waits for a response, if request fails, the error is caught
       try {
