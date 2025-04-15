@@ -80,7 +80,7 @@ To enable token-based authentication, ensure you have a configured token issuer 
 ```
 For JWT authentication via JWKS, make sure `JWT_KEY_REPOSITORY` points to your token issuer's public certificate and your queue manager is configured to retrieve the JWKS
 
-If you would like to proceed without JWKS validation, edit the endpoint to use the correct URL (beginning with http) and leave `JWT_KEY_REPOSITORY` blank
+If you would like to proceed with JWT authentication without JWKS validation, edit the endpoint to use the correct URL (beginning with http) and leave `JWT_KEY_REPOSITORY` blank
 
 ## Put / Get
 The put application places a json object onto the queue.
