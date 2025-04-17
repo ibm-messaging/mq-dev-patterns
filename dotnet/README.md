@@ -96,7 +96,7 @@ This command adds the certificate to the Shared Store, making it accessible at b
 
 ### For the Non Cloud Users
 
-If your Queue Manager is running in a container, follow [this tutorial](https://developer.ibm.com/tutorials/mq-secure-msgs-tls/) to learn how to generate and add the public and private parts of the certificates inside the container.
+If your Queue Manager is running in a container, follow [Secure communication between IBM MQ endpoints with TLS](https://developer.ibm.com/tutorials/mq-secure-msgs-tls/) tutorial to learn how to generate and add the public and private parts of the certificates inside the container.
 Note: There's no need to create a keystore on the client machine. Simply import the public certificate of the Queue Manager to the system's trusted store using the commands provided above. 
 
 If your Queue Manger is in a local machine follow [Configuring mutual TLS authentication for a messaging application](https://developer.ibm.com/tutorials/configuring-mutual-tls-authentication-java-messaging-app/) this tutorial.
