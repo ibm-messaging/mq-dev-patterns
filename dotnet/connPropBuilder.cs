@@ -70,7 +70,7 @@ namespace ibmmq_samples
 
         static private void SetRemConnectionProperties(IConnectionFactory cf, Env.ConnVariables conn)
         {
-            cf.SetIntProperty(XMSC.WMQ_CONNECTION_MODE, conn.is_managed ? XMSC.WMQ_CM_CLIENT : XMSC.WMQ_CM_CLIENT_UNMANAGED);
+            cf.SetIntProperty(XMSC.WMQ_CONNECTION_MODE, XMSC.WMQ_CM_CLIENT);
             cf.SetStringProperty(XMSC.WMQ_QUEUE_MANAGER, conn.qmgr);
             cf.SetStringProperty(XMSC.USERID, conn.app_user);
             cf.SetStringProperty(XMSC.PASSWORD, conn.app_password);
