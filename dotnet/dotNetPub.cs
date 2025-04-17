@@ -94,7 +94,7 @@ namespace ibmmq_samples
             textMessage = sessionWMQ.CreateTextMessage();
             textMessage.Text = xmsJson.ToJsonString();
             producer.Send(textMessage);
-            Console.WriteLine("Message published");
+            Console.WriteLine("Message published" + textMessage);
 
             // Cleanup
             producer.Close();

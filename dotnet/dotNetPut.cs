@@ -93,7 +93,7 @@ namespace ibmmq_samples
             textMessage = sessionWMQ.CreateTextMessage();
             textMessage.Text = xmsJson.ToJsonString();
             producer.Send(textMessage);
-            Console.WriteLine("Message sent");
+            Console.WriteLine("Message sent" + textMessage);
 
             // Cleanup
             producer.Close();
