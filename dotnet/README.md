@@ -81,10 +81,6 @@ The response sample will get a message from the queue, process it and put the re
 
 ## Run the samples with TLS
 
-If you are using a .NET managed client, then the underlying .NET framework will carry out the TLS handshake with the MQ Server. Any exceptions generated in the .NET layer during the TLS handshake will surface as server or queue not found - [2059](https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_9.4.0/com.ibm.mq.tro.doc/q041290_.htm).
-
-To overcome this you need to import the client .p12 (or client side .kdb) certificate into Windows. 
-
 ### For the Cloud Users:
 
 If your queue manager is on cloud you will need the `public certificate` of the queue manager. For IBM MQ on IBM Cloud, you can obtain this certificate by navigating to the `Key store` tab in your MQ service instance, then downloading the `public certificate` of the Queue Manager.
@@ -110,6 +106,8 @@ Note: There's no need to create a keystore on the client machine. Simply import 
 
 If your Queue Manger is in a local machine follow [Configuring mutual TLS authentication for a messaging application](https://developer.ibm.com/tutorials/configuring-mutual-tls-authentication-java-messaging-app/) this tutorial.
 
+If you are using a .NET managed client, then the underlying .NET framework will carry out the TLS handshake with the MQ Server. Any exceptions generated in the .NET layer during the TLS handshake will surface as server or queue not found - [2059](https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_9.4.0/com.ibm.mq.tro.doc/q041290_.htm).
+ 
 Import the certificate at either the user or the system level. Then in your app, set the key repository to either *USER or *SYSTEM depending on how you imported it.
 
 Set KEY_REPOSITORY in your JSON file to
