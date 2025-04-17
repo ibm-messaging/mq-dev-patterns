@@ -38,32 +38,37 @@ app.http('MQCreateMessageTrigger', {
         // Parse the request to pull out and verify the required parameters.
         let parser = new RequestParser(context);
         let ok = parser.parseCreateRequest(request) || false;
+
+        context.log("Checking parse status");
+
         if (!ok) {
             responseBody = "Need QMGR and QUEUE as inputs";
-        }
-        
-        context.log("Checking parse status");
-        
-        if (!ok) {
             context.log("Request processing failed");
             responseStatus = 400;
         }
 
-        // Build the parameters for the Queue Manager REST call 
-        // using a mix of configuration and request.
-        let restparams = mqparam.build(context, parser);
-        if (null == restparams)
-        {
-            context.log("Failed to build REST parameters for MQ REST call");
-            return {status: 400}; 
+        let restparams = null;
+        if (ok) {
+            // Build the parameters for the Queue Manager REST call 
+            // using a mix of configuration and request.
+            restparams = mqparam.build(context, parser);
+            if (null == restparams)
+            {
+                context.log("Failed to build REST parameters for MQ REST call"); 
+                responseBody = "Unable to make call to queue manager";
+                responseStatus = 400;
+                ok = false;
+            }
         }
 
-        context.log('Ready to post messages onto queue');
+        if (ok) {
+            context.log('Ready to post messages onto queue');
 
-        // This method returns an array of promises, but we are not
-        // (a)waiting on them as want to return a response to the
-        // http trigger that initiated this function.
-        mqrest.postMessages(context, restparams, parser);
+            // This method returns an array of promises, but we are not
+            // (a)waiting on them as want to return a response to the
+            // http trigger that initiated this function.
+            mqrest.postMessages(context, restparams, parser);
+        }
 
         return {status: responseStatus, body: responseBody};
     }
