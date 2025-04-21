@@ -1,5 +1,5 @@
 # IBM MQ XMS samples
-The XMS samples are based on the existing samples shipped with the IBM MQ Server and Client packages. These samples have been tested with .NET 8.0 and .NET 9.0 using Visual Studio Code v1.99.2 on macOS Sequoia 15.4.1. They have also been tested with Visual Studio 2022 for Windows, version 17.13.6.
+The XMS samples are based on the existing samples shipped with the IBM MQ Server and Client packages. These samples have been tested with .NET 8.0 and .NET 9.0 using Visual Studio Code v 1.99.2 on macOS Sequoia 15.4.1. They have also been tested with Visual Studio 2022 for Windows, v 17.13.6.
 
 We have included the '.sln', '.csproj', 'packages.config' files in the repository. These were created using Visual Studio 2022, and they are fully compatible with Visual Studio Code as well. We've also added the copy of the 'env.json' file from the top level directory to the '/dotnet' project directory, the files will be copied to '/bin/Debug/net8.0' or '/bin/Debug/net9.0'and adjust the parameters to use your own queue manager.
 
