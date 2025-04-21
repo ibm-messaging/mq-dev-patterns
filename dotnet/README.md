@@ -1,10 +1,6 @@
 # IBM MQ XMS samples
-The XMS samples are based on the the existing samples shipped with IBM MQ Server and Client packages. The samples here have been tested with .NET 8.0 and .NET 9.0 and Visual Studio Code v  Also it has been tested with Visual Studio for windows 2022 v 17.13.6
+The XMS samples are based on the existing samples shipped with the IBM MQ Server and Client packages. These samples have been tested with .NET 8.0 and .NET 9.0 using Visual Studio Code v1.99.2 on macOS Sequoia 15.4.1. They have also been tested with Visual Studio 2022 for Windows, version 17.13.6.
 
-## Download
-
-[Windows MQ client v 9.1.2.0 download](https://www-945.ibm.com/support/fixcentral/swg/selectFixes?parent=ibm~WebSphere&product=ibm/WebSphere/WebSphere+MQ&release=9.1.2&platform=Windows+64-bit,+x86&function=fixId&fixids=9.1.2.0-IBM-MQC-Win64+&useReleaseAsTarget=true&includeSupersedes=0)
- 
 We have included the '.sln', '.csproj', 'packages.config' files in the repository. These were created using Visual Studio 2022, and they are fully compatible with Visual Studio Code as well. We've also added the copy of the 'env.json' file from the top level directory to the '/dotnet' project directory, the files will be copied to '/bin/Debug/net8.0' or '/bin/Debug/net9.0'and adjust the parameters to use your own queue manager.
 
 ## References from Visual Studio
@@ -106,7 +102,7 @@ Note: There's no need to create a keystore on the client machine. Simply import 
 
 If your Queue Manger is in a local machine follow [Configuring mutual TLS authentication for a messaging application](https://developer.ibm.com/tutorials/configuring-mutual-tls-authentication-java-messaging-app/) this tutorial.
 
-If you are using a .NET managed client, then the underlying .NET framework will carry out the TLS handshake with the MQ Server. Any exceptions generated in the .NET layer during the TLS handshake will surface as server or queue not found - [2059](https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_9.4.0/com.ibm.mq.tro.doc/q041290_.htm).
+This sample is using a .NET managed client, then the underlying .NET runtime will carry out the TLS handshake with the MQ Server. Any exceptions generated in the .NET layer during the TLS handshake will surface as server or queue not found - [2059](https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_9.4.0/com.ibm.mq.tro.doc/q041290_.htm).
  
 Import the certificate at either the user or the system level. Then in your app, set the key repository to either *USER or *SYSTEM depending on how you imported it.
 
