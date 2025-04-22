@@ -1,5 +1,5 @@
 ﻿/*
-* (c) Copyright IBM Corporation 2018
+* (c) Copyright IBM Corporation 2018, 2025
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -93,7 +93,7 @@ namespace ibmmq_samples
             textMessage = sessionWMQ.CreateTextMessage();
             textMessage.Text = xmsJson.ToJsonString();
             producer.Send(textMessage);
-            Console.WriteLine("Message sent");
+            Console.WriteLine("Message sent" + textMessage);
 
             // Cleanup
             producer.Close();
