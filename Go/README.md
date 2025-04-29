@@ -15,12 +15,12 @@ Add
 
 ## Windows
 
-[Windows client v 9.1.5.0 download](https://www-945.ibm.com/support/fixcentral/swg/selectFixes?parent=ibm~WebSphere&product=ibm/WebSphere/WebSphere+MQ&release=9.1.5&platform=Windows+64-bit,+x86&function=fixId&fixids=9.1.5.0-IBM-MQC-Win64+&useReleaseAsTarget=true&includeSupersedes=0)
+[Windows client v 9.4.2.0 download](https://www.ibm.com/support/fixcentral/swg/downloadFixes?parent=ibm%7EWebSphere&product=ibm/WebSphere/WebSphere+MQ&release=9.4.2.0&platform=Windows+64-bit,+x86&function=fixId&fixids=9.4.2.0-IBM-MQC-Win64&useReleaseAsTarget=true&includeRequisites=1&includeSupersedes=0&downloadMethod=ddp)
 
 
 ## Linux
 
-[Linux Ubuntu client v 9.1.5.0 download](https://www-945.ibm.com/support/fixcentral/swg/selectFixes?parent=ibm~WebSphere&product=ibm/WebSphere/WebSphere+MQ&release=9.1.5&platform=Linux+64-bit,x86_64&function=fixId&fixids=9.1.5.0-IBM-MQC-UbuntuLinuxX64+&useReleaseAsTarget=true&includeSupersedes=0)
+[Linux Ubuntu client v 9.4.2.0 download](https://www.ibm.com/support/fixcentral/swg/downloadFixes?parent=ibm%7EWebSphere&product=ibm/WebSphere/WebSphere+MQ&release=9.4.2.0&platform=Linux+64-bit,x86_64&function=fixId&fixids=9.4.2.0-IBM-MQC-UbuntuLinuxX64&useReleaseAsTarget=true&includeRequisites=1&includeSupersedes=0&downloadMethod=ddp)
 
 ## Use of $GOPATH
 
@@ -37,7 +37,7 @@ The install script for the mq-golang library will look for what it needs in the 
 but it will look for this in the /opt/mqm/lib64 folder.
 We need to create a symbolic link:
 
-`sudo ln -s  <unzip location>/IBM-MQ-Toolkit-Mac-x64-9.1.5.0 /opt/mqm`
+`sudo ln -s  <unzip location>/IBM-MQ-Toolkit-Mac-x64-9.4.2.0 /opt/mqm`
 
 For other platforms, the MQ client libraries are assumed to
 have been installed in the default location.
