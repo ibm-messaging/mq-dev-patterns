@@ -6,16 +6,16 @@ The Go samples are based on go-amqp (a Go AMQP 1.0 client implementation) as pro
 2. amqpConsumer.go
 
 ### amqpProducer.go
-This Go application is used to put 10 messages from the client to the destination in the broker (IBM MQ). Messages can be put either onto a Queue or a Topic. 
+This Go application is used to put 10 messages from the client to the destination in the broker (IBM MQ). Messages can be put either onto a Queue or a Topic.
 Following are the parameters that can be passed to the application:
 ```
 -t : Topic name
 -q : Queue name
 ```
-Any one parameter must be used. That is, either a Queue or a Topic.
+One parameter only must be used. That is, either a Queue or a Topic.
 
 ### amqpConsumer.go
-This Go application is used to get messages from the destination in the broker (IBM MQ) back to the client. Messages can be received either from a Queue or a Topic. 
+This Go application is used to get messages from the destination in the broker (IBM MQ) back to the client. Messages can be received either from a Queue or a Topic.
 Following are the parameters that can be passed to the application:
 ```
 -t : Topic name
