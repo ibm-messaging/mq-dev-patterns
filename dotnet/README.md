@@ -1,11 +1,7 @@
 # IBM MQ XMS samples
-The XMS samples are based on the the existing samples shipped with IBM MQ Server and Client packages. The samples here have been tested with .NET 6.0 and Visual Studio Community 2022 v 17.3.6. Also it has been tested with Visual Studio for Mac 2022 v 17.3.7
+The XMS samples are based on the existing samples shipped with the IBM MQ Server and Client packages. These samples have been tested with .NET 8.0 and .NET 9.0 using Visual Studio Code v 1.99.2 on macOS Sequoia 15.4.1. They have also been tested with Visual Studio 2022 for Windows, v 17.13.6.
 
-## Download
-
-[Windows MQ client v 9.1.2.0 download](https://www-945.ibm.com/support/fixcentral/swg/selectFixes?parent=ibm~WebSphere&product=ibm/WebSphere/WebSphere+MQ&release=9.1.2&platform=Windows+64-bit,+x86&function=fixId&fixids=9.1.2.0-IBM-MQC-Win64+&useReleaseAsTarget=true&includeSupersedes=0)
-
-We have included '.sln', '.csproj', 'packages.config'. These were created with the Visual Studio Community 2019. We've also added the copy of the 'env.json' file from the top level directory to the '/dotnet' project directory, the files will be copied to '/bin/Debug/net6.0' and adjust the parameters to use your own queue manager.
+We have included the '.sln', '.csproj', 'packages.config' files in the repository. These were created using Visual Studio 2022, and they are fully compatible with Visual Studio Code as well. We've also added the copy of the 'env.json' file from the top level directory to the '/dotnet' project directory, the files will be copied to '/bin/Debug/net8.0' or '/bin/Debug/net9.0'and adjust the parameters to use your own queue manager.
 
 ## References from Visual Studio
 
@@ -13,7 +9,9 @@ We have included '.sln', '.csproj', 'packages.config'. These were created with t
 
 [IBM Message Service Client for .NET Standard (XMS .NET)](https://www.nuget.org/packages/IBMXMSDotnetClient/)
 
-Reference it through Solution Explorer NuGet Package installer
+Reference it through Solution Explorer NuGet Package installer.
+
+Note: If you're using Visual Studio Code, you can install the required packages through the terminal. Open the provided links and use the command listed under the .NET CLI tab. 
 
 ## Rocket
 
@@ -21,17 +19,21 @@ We drive the running of all the samples through this one module that has the one
 
 For example:
 
-`ibmmq_samples.exe put`
+`./ibmmq_samples.exe put`
+
+**Running on Mac?** : If you're running the application on Mac, make sure to remove the `.exe` extension from the command when executing the application. 
+
+If you're using Visual Studio Code every time you build the application, make sure to run it using the `dotnet run` command. This ensures that the latest changes are compiled and reflected in the running application.
 
 ## Put / Get
 
 Run
 
-`ibmmq_samples.exe put`
+`./ibmmq_samples.exe put`
 
 In a separate terminal
 
-`ibmmq_samples.exe get`
+`./ibmmq_samples.exe get`
 
 
 ## Publish / Subscribe
@@ -42,13 +44,13 @@ You have to run the subscriber sample first so it creates a subscription and wai
 
 Run
 
-`ibmmq_samples.exe sub`
+`./ibmmq_samples.exe sub`
 
 In the second terminal;
 
 Run the publisher sample
 
-`ibmmq_samples.exe pub`
+`./ibmmq_samples.exe pub`
 
 
 ## Request / Response
@@ -59,7 +61,7 @@ Run the request sample
 
 Run
 
-`ibmmq_samples.exe request`
+`./ibmmq_samples.exe request`
 
 The request sample will put a message and wait for a response until it either gets a response or you ctrl+c interrupt it.
 
@@ -69,30 +71,49 @@ Run the response sample
 
 Run
 
-`ibmmq_samples.exe response`
+`./ibmmq_samples.exe response`
 
 The response sample will get a message from the queue, process it and put the response on the reply to queue and keep looking for more messages to respond to till you ctrl+c interrupt it.
 
-
-
-
 ## Run the samples with TLS
 
-If you are using a .NET managed client, then the underlying .NET framework will carry out the TLS handshake with the MQ Server. Any exceptions generated in the .NET layer during the TLS handshake will surface as server or queue not found - [2059](https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_9.1.0/com.ibm.mq.tro.doc/q041290_.htm).
+### For the Cloud Users:
 
-To overcome this you need to import the client .p12 (or client side .kdb) certificate into Windows. Import it at either the user or the system level. Then in your app, set the key repository to either *USER or *SYSTEM depending on how you imported it.
+If your queue manager is on cloud you will need the `public certificate` of the queue manager. For IBM MQ on IBM Cloud, you can obtain this certificate by navigating to the `Key store` tab in your MQ service instance, then downloading the `public certificate` of the Queue Manager.
 
-For 'unmanaged' mode set KEY_REPOSITORY in your JSON file to the location of your key database / truststore
+Add the certificate to your system's trusted store
+- For Mac
+```
+sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain <path-to-certificate-file>
+```
+This command adds the certificate at the system level.
 
-`"KEY_REPOSITORY": "./keys/clientkey",`
+- For Windows 
+```
+certutil –addstore -enterprise –f "Root" <pathtocertificatefile>
+```
+This command adds the certificate to the Shared Store, making it accessible at both the user and system levels.
 
-For 'managed' mode set KEY_REPOSITORY in your JSON file to
+### For Queue Manager in a container
+
+If your Queue Manager is running in a container, follow [Secure communication between IBM MQ endpoints with TLS](https://developer.ibm.com/tutorials/mq-secure-msgs-tls/) tutorial to learn how to generate and add the public and private parts of the certificates inside the container.
+
+Note: There's no need to create a keystore on the client machine. Simply import the public certificate of the Queue Manager to the system's trusted store using the commands provided above. 
+
+If your Queue Manger is in a local machine follow [Configuring mutual TLS authentication for a messaging application](https://developer.ibm.com/tutorials/configuring-mutual-tls-authentication-java-messaging-app/) this tutorial.
+
+This sample is using a .NET managed client, then the underlying .NET runtime will carry out the TLS handshake with the MQ Server. Any exceptions generated in the .NET layer during the TLS handshake will surface as server or queue not found - [2059](https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_9.4.0/com.ibm.mq.tro.doc/q041290_.htm).
+ 
+Import the certificate at either the user or the system level. Then in your app, set the key repository to either *USER or *SYSTEM depending on how you imported it.
+
+Set KEY_REPOSITORY in your JSON file to
 
 `"KEY_REPOSITORY": "*USER",`
 
 or
 
 `"KEY_REPOSITORY": "*SYSTEM",`
+
 
 To find out how to import certificates on Windows, see [How to: View certificates with the MMC snap-in](https://docs.microsoft.com/en-us/dotnet/framework/wcf/feature-details/how-to-view-certificates-with-the-mmc-snap-in)
 and

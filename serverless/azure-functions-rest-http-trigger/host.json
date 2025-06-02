@@ -1,18 +1,18 @@
 {
   "version": "2.0",
   "logging": {
-    "logLevel": {
-      "Function.MyFunction": "Information",
-      "default": "Trace"
+    "level": {
+      "default": "Debug"
     },
     "applicationInsights": {
       "samplingSettings": {
-        "isEnabled": true
+        "isEnabled": true,
+        "excludedTypes": "Request"
       }
     }
   },
   "extensionBundle": {
     "id": "Microsoft.Azure.Functions.ExtensionBundle",
-    "version": "[2.*, 3.0.0)"
+    "version": "[4.*, 5.0.0)"
   }
 }

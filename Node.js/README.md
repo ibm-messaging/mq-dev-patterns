@@ -1,6 +1,6 @@
 # IBM MQ Node.js samples
 The Node.js samples are based on https://github.com/ibm-messaging/mq-mqi-nodejs/tree/master/samples
-and have been tested with Node.js v20.11.1
+and have been tested with Node.js v22.14.0
 
 
 Install/unzip IBM MQ client
@@ -64,6 +64,23 @@ prerequsites by running :
 
 ***boilerplate.js*** - Common class, manages the connection to queue manager, contains generic consumer and producer code.
 
+
+### Running refactored samples with JWT authentication
+
+To enable token-based authentication, ensure you have a configured token issuer and queue manager [JWT README](jwt-jwks-docs/README.md) and then edit the `JWT_ISSUER` block in the env.json file
+
+```JSON
+"JWT_ISSUER" : [{
+    "JWT_TOKEN_ENDPOINT":"https://<KEYCLOAK_URL>/realms/master/protocol/openid-connect/token",
+    "JWT_TOKEN_USERNAME":"app",
+    "JWT_TOKEN_PWD":"passw0rd",
+    "JWT_TOKEN_CLIENTID":"admin-cli",
+    "JWT_KEY_REPOSITORY": "path/to/tokenIssuerKeystore"
+  }]
+```
+For JWT authentication via JWKS, make sure `JWT_KEY_REPOSITORY` points to your token issuer's public certificate and your queue manager is configured to retrieve the JWKS
+
+If you would like to proceed with JWT authentication without JWKS validation, edit the endpoint to use the correct URL (beginning with http) and leave `JWT_KEY_REPOSITORY` blank
 
 ## Put / Get
 The put application places a json object onto the queue.
