@@ -33,38 +33,31 @@ const app = express();
 
 app.get('/put', (req, res) => {
     debug_info('Put requested');
-    debug_info('Determining number of puts required');
-
-    let {data, err} = parseRequest(req);
-
-    if (null !== err) {
-        res.status(400).send(err);
-        return;
-    }
-
-    debug_info(`Will be sending ${data.num} messages`);
-    qmi.put(data.num);
-
-    res.send(JSON.stringify(`Request to sending ${data.num} messages accepted`)); 
+    processRequest(req, res, qmi.put); 
 });
 
 app.get('/get', (req, res) => {
-    debug_info('Get requested');
-    debug_info('Determining number of gets required');
+    debug_info('Get requested')
+    processRequest(req, res, qmi.get);
+});
+
+function processRequest(req, res, qmiFunc) {
+    debug_info('Determining number of messages to process');
 
     let {data, err} = parseRequest(req);
+
+    if (null === err) {
+        debug_info(`Will be processing ${data.num} messages`);
+        err = qmiFunc(data.num);
+    }
 
     if (null !== err) {
         res.status(400).send(err);
         return;
     }
 
-    debug_info(`Will be getting ${data.num} messages`);
-    qmi.get(data.num);
-
-    res.send(JSON.stringify(`Request to get ${data.num} messages accepted`));
-});
-
+    res.send(JSON.stringify(`Request to process ${data.num} messages accepted`));
+}
 
 function parseRequest(req) {
     let data = {};
