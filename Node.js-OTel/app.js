@@ -23,8 +23,10 @@ debug_info('Application is starting');
 const express = require('express');
 
 const {appLimits} = require('./settings/limits.js');
-const {qm} = require('./qm.js');
+const {qmi} = require('./queue-manager/qm-requests.js');
 
+
+const NO_QMGR_OR_QUEUE = "QMGR / QUEUE is missing from data input";
 
 const HTTP_PORT = parseInt(process.env.PORT || '8080');
 const app = express();
@@ -33,23 +35,61 @@ app.get('/put', (req, res) => {
     debug_info('Put requested');
     debug_info('Determining number of puts required');
 
-    let numPuts = determineNumInRequest(req);
-    debug_info(`Will be sending ${numPuts} messages`);
+    let {data, err} = parseRequest(req);
 
-    res.send(JSON.stringify(`Sending ${numPuts} messages`));
-    
+    if (null !== err) {
+        res.status(400).send(err);
+        return;
+    }
+
+    debug_info(`Will be sending ${data.num} messages`);
+    qmi.put(data.num);
+
+    res.send(JSON.stringify(`Request to sending ${data.num} messages accepted`)); 
 });
 
 app.get('/get', (req, res) => {
     debug_info('Get requested');
     debug_info('Determining number of gets required');
 
-    let numGets = determineNumInRequest(req);
-    debug_info(`Will be getting ${numGets} messages`);
+    let {data, err} = parseRequest(req);
 
-    res.send(JSON.stringify(`Sending ${numGets} messages`));
-    
+    if (null !== err) {
+        res.status(400).send(err);
+        return;
+    }
+
+    debug_info(`Will be getting ${data.num} messages`);
+    qmi.get(data.num);
+
+    res.send(JSON.stringify(`Request to get ${data.num} messages accepted`));
 });
+
+
+function parseRequest(req) {
+    let data = {};
+    let err = null;
+
+    data.num = determineNumInRequest(req);
+
+    data.qmgr = req.query.QMGR ? req.query.QMGR : null;
+    data.queue = req.query.QUEUE ? req.query.QUEUE : null;
+
+    let ok = true;
+    for (let value of [data.qmgr, data.queue]) {
+        if (typeof value === 'undefined' || null === value) {
+            debug_warn(NO_QMGR_OR_QUEUE);
+            ok = false;
+        }
+    }
+
+    if (!ok) {
+        err = NO_QMGR_OR_QUEUE;
+    }
+
+    return {data, err};
+}
+
 
 function determineNumInRequest(req) {
     let number = req.query.num ? parseInt(req.query.num.toString()) : NaN;

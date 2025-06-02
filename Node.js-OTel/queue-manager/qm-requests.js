@@ -15,18 +15,26 @@
  **/
 
 // Set up debug logging options
-const debug_info = require('debug')('mqsample:otel:qm:info');
-const debug_warn = require('debug')('mqsample:otel:qm:warn');
+const debug_info = require('debug')('mqsample:otel:qmi:info');
+const debug_warn = require('debug')('mqsample:otel:qmi:warn');
+
+const mqConnection = require('./connection.js');
 
 const MAX_LIMIT = 10;
 
-class QueueManager {
+class QueueManagerInterface {
     constructor() {
+    }
+
+    put(num) {
+
+    }
+
+    get(num) {
+
     }
 }   
 
-const qm = new QueueManager();
+const qmi = new QueueManagerInterface();
 
-module.exports = {
-    qm
-};
+module.exports = { qmi };
