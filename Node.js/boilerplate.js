@@ -25,7 +25,6 @@ const mq = require('ibmmq');
 const https = require('https');
 const axios = require('axios');
 const querystring = require('querystring');
-const fetch = require('node-fetch');
 
 // Load up missing envrionment variables from the env.json file
 var env = require('../env.json');

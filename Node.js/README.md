@@ -1,6 +1,6 @@
 # IBM MQ Node.js samples
 The Node.js samples are based on https://github.com/ibm-messaging/mq-mqi-nodejs/tree/master/samples
-and have been tested with Node.js v22.14.0
+and have been built and tested with Node.js v18.20.8 and v22.14.0
 
 
 Install/unzip IBM MQ client
