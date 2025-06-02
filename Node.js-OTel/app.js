@@ -23,6 +23,8 @@ debug_info('Application is starting');
 const express = require('express');
 
 const {appLimits} = require('./settings/limits.js');
+const {qm} = require('./qm.js');
+
 
 const HTTP_PORT = parseInt(process.env.PORT || '8080');
 const app = express();
