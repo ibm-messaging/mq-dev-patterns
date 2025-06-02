@@ -5,12 +5,13 @@
   "description": "Otel enabled Node.js MQI patterns",
   "license": "Apache-2.0",
   "scripts": {
-    "start": "DEBUG=mq:otel:* node app.js"
+    "start": "DEBUG=mqsample:otel:* node app.js"
   },
   "engines": {
     "node": ">18.20.0"
   },
   "dependencies": {
-    "debug": "^4.4.1"
+    "debug": "^4.4.1",
+    "express": "^5.1.0"
   }
 }
