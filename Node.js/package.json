@@ -4,11 +4,11 @@
   "description": "",
   "author": "",
   "dependencies": {
-    "ibmmq": "2.0.3",
-    "axios": "^1.8.4"
+    "ibmmq": "2.1.4",
+    "axios": "^1.9.0"
   },
   "engines": {
-    "node": ">16.0.0"
+    "node": ">18.20.0"
   },
   "scripts": {
     "test": "mocha"
