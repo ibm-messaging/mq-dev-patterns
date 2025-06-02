@@ -1,0 +1,16 @@
+{
+  "name": "mqitest-otel",
+  "version": "0.0.1",
+  "author": "IBM MQ DevExperience",
+  "description": "Otel enabled Node.js MQI patterns",
+  "license": "Apache-2.0",
+  "scripts": {
+    "start": "DEBUG=mq:otel:* node app.js"
+  },
+  "engines": {
+    "node": ">18.20.0"
+  },
+  "dependencies": {
+    "debug": "^4.4.1"
+  }
+}
