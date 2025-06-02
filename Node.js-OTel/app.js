@@ -38,24 +38,30 @@ app.get('/put', (req, res) => {
     
 });
 
+app.get('/get', (req, res) => {
+    debug_info('Get requested');
+    debug_info('Determining number of gets required');
+
+    let numGets = determineNumInRequest(req);
+    debug_info(`Will be getting ${numGets} messages`);
+
+    res.send(JSON.stringify(`Sending ${numGets} messages`));
+    
+});
+
 function determineNumInRequest(req) {
     let number = req.query.num ? parseInt(req.query.num.toString()) : NaN;
     if (isNaN(number)) {
         number = appLimits.randomNum();
     } else {
-        debug_info("TEST 01");
         number = appLimits.applyLimit(number);
-        debug_info("TEST 02");
     }
     return number;
 }
 
 app.listen(HTTP_PORT, () => {
-    debug_info(`Listening on http://localhost:${HTTP_PORT}`);
-})
-
-
-debug_info('Application is listening');
+    debug_info(`Listening on port ${HTTP_PORT}`);
+});
 
 
 debug_info('Application is ending');
