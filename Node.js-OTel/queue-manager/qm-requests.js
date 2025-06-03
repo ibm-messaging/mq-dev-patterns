@@ -26,12 +26,18 @@ class QueueManagerInterface {
     constructor() {
     }
 
-    put(num) {
-
+    put(data) {
+        let err = null;
+        debug_info(`Put requested for ${data.num} messages on Queue ${data.queue} on Queue manager ${data.qmgr}`);
+        
+        return err;
     }
 
-    get(num) {
-
+    get(data) {
+        let err = null;
+        debug_info(`Put requested for ${data.num} messages on Queue ${data.queue} on Queue manager ${data.qmgr}`); 
+        
+        return err;
     }
 }   
 

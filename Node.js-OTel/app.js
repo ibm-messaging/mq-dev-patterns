@@ -48,7 +48,7 @@ function processRequest(req, res, qmiFunc) {
 
     if (null === err) {
         debug_info(`Will be processing ${data.num} messages`);
-        err = qmiFunc(data.num);
+        err = qmiFunc(data);
     }
 
     if (null !== err) {
