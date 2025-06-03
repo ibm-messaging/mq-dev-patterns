@@ -24,6 +24,7 @@ const express = require('express');
 
 const {appLimits} = require('./settings/limits.js');
 const {qmi} = require('./queue-manager/qm-requests.js');
+const {ActionData} = require('./data/action.js');
 
 
 const NO_QMGR_OR_QUEUE = "QMGR / QUEUE is missing from data input";
@@ -62,6 +63,8 @@ function processRequest(req, res, qmiFunc) {
 function parseRequest(req) {
     let data = {};
     let err = null;
+
+    data = new ActionData();
 
     data.num = determineNumInRequest(req);
 
