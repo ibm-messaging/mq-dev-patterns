@@ -102,4 +102,4 @@ app.listen(HTTP_PORT, () => {
 });
 
 
-debug_info('Application is ending');
+debug_info('Application has started');

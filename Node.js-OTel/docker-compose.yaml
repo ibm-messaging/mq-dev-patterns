@@ -22,3 +22,8 @@ services:
       - .:/usr/src/app:rw
     ports:
       - 8080:8080
+    environment:
+      - QM_PORT_0=1414
+      - QM_PORT_1=1415
+      - QM_HOST_0=localhost
+      - QM_PORT_1=localhost

@@ -19,6 +19,7 @@ const debug_info = require('debug')('mqsample:otel:qmi:info');
 const debug_warn = require('debug')('mqsample:otel:qmi:warn');
 
 const mqConnection = require('./connection.js');
+const envSettings = require('../settings/environment.js');
 
 const MAX_LIMIT = 10;
 
