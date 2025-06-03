@@ -23,7 +23,11 @@ services:
     ports:
       - 8080:8080
     environment:
-      - QM_PORT_0=1414
-      - QM_PORT_1=1415
       - QM_HOST_0=localhost
-      - QM_PORT_1=localhost
+      - QM_PORT_0=1414
+      - APP_USER_0=app
+      - APP_PASSWORD_0=password
+      - QM_PORT_1=1415
+      - QM_HOST_1=localhost
+      - APP_USER_1=app
+      - APP_PASSWORD_1=password

@@ -57,7 +57,7 @@ function processRequest(req, res, qmiFunc) {
         return;
     }
 
-    res.send(JSON.stringify(`Request to process ${data.num} messages accepted`));
+    res.send(JSON.stringify(`Request to process ${data.num} messages on ${data.qmgr} accepted`));
 }
 
 function parseRequest(req) {

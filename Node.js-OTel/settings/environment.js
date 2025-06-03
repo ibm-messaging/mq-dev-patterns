@@ -33,12 +33,12 @@ class QMEntry {
 }
 
 class AppEnvironment {
-    #MQDetails = {};
+    #MQDetails = new Map();
     constructor() {
         this.buildDetails();
     }
 
-    buildDetails() {
+    buildDetails () {
         debug_info('Loading queue manager environment data');
 
         if (env.MQ_ENDPOINTS && env.MQ_ENDPOINTS instanceof Array) {
@@ -46,39 +46,25 @@ class AppEnvironment {
             for (let i = 0; i < env.MQ_ENDPOINTS.length; i++) {
                 let qme = new QMEntry();
                 ['QMGR', 'QM_HOST', 'QM_PORT',
-                    'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach((f) => {
+                    'CHANNEL', 'APP_USER', 'APP_PASSWORD',
+                    'KEY_REPOSITORY', 'CIPHER'].forEach((f) => {
                         qme[f] = process.env[f + '_' + i] || env.MQ_ENDPOINTS[i][f];
                     });
-                debug_info(`Entry ${i}:`);
-                debug_info(qme);
+                debug_info(`Entry ${i}: QMGR: ${qme.QMGR}, on: ${qme.QM_HOST}:${qme.QM_PORT}`);
+                this.#MQDetails.set(qme.QMGR, qme);
             }
             debug_info("env.json file processed");
+            // debug_info(this.#MQDetails);
         } else {
             debug_warn("No queue manager endpoints found in env.json file");
         }
-
-        //let i = this.index;
-
-        // if (env.MQ_ENDPOINTS.length > i) {
-        //   ['QMGR', 'QUEUE_NAME', 'TOPIC_NAME',
-        //     'MODEL_QUEUE_NAME', 'DYNAMIC_QUEUE_PREFIX', 'BACKOUT_QUEUE',
-        //     'HOST', 'PORT',
-        //     'CHANNEL', 'KEY_REPOSITORY', 'CIPHER'].forEach((f) => {
-        //       this.MQDetails[f] = process.env[f] || env.MQ_ENDPOINTS[i][f];
-        //     });
-        //   ['USER', 'PASSWORD'].forEach((f) => {
-        //     let pField = 'APP_' + f;
-        //     this.credentials[f] = process.env[pField] || env.MQ_ENDPOINTS[i][pField];
-        //   });
-        // }
     }
+
+    dataForQmgr(qmgr) {
+        return this.#MQDetails.get(qmgr) || null;
+    }
+
 }   
 
-
 const envSettings = new AppEnvironment();
-
 module.exports = { envSettings };
-
-
-
-

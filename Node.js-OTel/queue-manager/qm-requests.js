@@ -18,8 +18,9 @@
 const debug_info = require('debug')('mqsample:otel:qmi:info');
 const debug_warn = require('debug')('mqsample:otel:qmi:warn');
 
-const mqConnection = require('./connection.js');
-const envSettings = require('../settings/environment.js');
+const {mqConnection} = require('./connection.js');
+const {envSettings} = require('../settings/environment.js');
+
 
 const MAX_LIMIT = 10;
 
@@ -30,14 +31,33 @@ class QueueManagerInterface {
     put(data) {
         let err = null;
         debug_info(`Put requested for ${data.num} messages on Queue ${data.queue} on Queue manager ${data.qmgr}`);
-        
+        let qmgrData = envSettings.dataForQmgr(data.qmgr);
+
+        if (null === qmgrData) {
+            err = `Entry for ${data.qmgr} not found`;
+        }
+
+        if (!err) {
+
+        }
+
         return err;
     }
 
     get(data) {
         let err = null;
-        debug_info(`Put requested for ${data.num} messages on Queue ${data.queue} on Queue manager ${data.qmgr}`); 
+        debug_info(`Get requested for ${data.num} messages on Queue ${data.queue} on Queue manager ${data.qmgr}`); 
+        let qmgrData = envSettings.dataForQmgr(data.qmgr);
         
+        if (null === qmgrData) {
+            err = `Entry for ${data.qmgr} not found`;
+        }
+
+        if (!err) {
+            
+        }
+
+
         return err;
     }
 }   
