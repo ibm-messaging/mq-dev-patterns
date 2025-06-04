@@ -20,26 +20,39 @@ const mq = require('ibmmq');
 const debug_info = require('debug')('mqsample:otel:connection:info');
 const debug_warn = require('debug')('mqsample:otel:connection:warn');
 
-const MAX_LIMIT = 10;
+const { constants } = require('../settings/constants');
+
+const DEFAULT_APP_NAME = "MQI Otel Node test application";
 const MQC = mq.MQC;
 
 class MQConnection {
     #qmgrData = null;
+    #applName = "";
     constructor(qmgrData) {
-        debug_info(`Creating connection for ${qmgrData.QMGR}`);
+        debug_info(`Creating connection for ${qmgrData[constants.QMGR]}`);
 
         this.#qmgrData = qmgrData;
+        this.#applName = qmgrData.applName || DEFAULT_APP_NAME;
         this.buildMQCNO();
     }
 
     buildMQCNO() {
-        debug_info(`Creating CNO for ${this.#qmgrData.QMGR} request`);
+        debug_info(`Creating CNO for ${this.#qmgrData[constants.QMGR]} request`);
 
         let mqcno = new mq.MQCNO();
         mqcno.Options = MQC.MQCNO_CLIENT_BINDING;
     
         // Set Application name
-        mqcno.ApplName = this.applName;
+        mqcno.ApplName = this.#applName;
+
+        debug_info(this.#qmgrData);
+
+        // if (this.#qmgrData.USER) {
+        //     let csp = new mq.MQCSP();
+        //     csp.UserId = this.credentials.USER;
+        //     csp.Password = this.credentials.PASSWORD;
+        //     mqcno.SecurityParms = csp;
+        //   }
 
     }
 }   

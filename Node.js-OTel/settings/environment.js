@@ -18,12 +18,14 @@
 const debug_info = require('debug')('mqsample:otel:environment:info');
 const debug_warn = require('debug')('mqsample:otel:environment:warn');
 
+const { constants } = require('./constants');
+
 // Load up environment variables from the env.json file
 var env = require('../env.json');
 
 class QMEntry {
     constructor() {
-        this.QMGR = "";
+        this[constants.QMGR] = "";
         this.APP_USER = "";
         this.APP_PASSWORD = "";
         this.QM_HOST = "";
@@ -45,16 +47,15 @@ class AppEnvironment {
             // Need the index, which forces the array iteration method
             for (let i = 0; i < env.MQ_ENDPOINTS.length; i++) {
                 let qme = new QMEntry();
-                ['QMGR', 'QM_HOST', 'QM_PORT',
-                    'CHANNEL', 'APP_USER', 'APP_PASSWORD',
-                    'KEY_REPOSITORY', 'CIPHER'].forEach((f) => {
-                        qme[f] = process.env[f + '_' + i] || env.MQ_ENDPOINTS[i][f];
+                constants.qm_data_keys().forEach((f) => {
+                        //debug_info(`Setting ${f}`);
+                        qme[f] = process.env[f + '_' + i] || env.MQ_ENDPOINTS[i][f] || null;
                     });
-                debug_info(`Entry ${i}: QMGR: ${qme.QMGR}, on: ${qme.QM_HOST}:${qme.QM_PORT}`);
-                this.#MQDetails.set(qme.QMGR, qme);
+                debug_info(`Entry ${i}: QMGR: ${qme[constants.QMGR]}, on: ${qme[constants.QM_HOST]}:${qme[constants.QM_PORT]}`);
+                this.#MQDetails.set(qme[constants.QMGR], qme);
             }
             debug_info("env.json file processed");
-            // debug_info(this.#MQDetails);
+            //debug_info(this.#MQDetails);
         } else {
             debug_warn("No queue manager endpoints found in env.json file");
         }
