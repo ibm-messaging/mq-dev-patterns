@@ -13,6 +13,8 @@ public certificate of the signing certificate authority. If not, and you have TL
 your queue manager, then you will need to add the public certificate of either your queue manager or the signing authority's to the key store. 
 
 ## Building the containers
+I built and tested the containers on a Apple ARM64 machine and so created a custom MQ container following this [blog](https://community.ibm.com/community/user/blogs/richard-coppen/2023/06/30/ibm-mq-9330-container-image-now-available-for-appl)
+
 ```
     podman compose -f docker-compose.yaml build
 ```

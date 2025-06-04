@@ -14,21 +14,50 @@
 # * limitations under the License.
 
 services:
+  mq:
+    # image: "icr.io/ibm-messaging/mq:latest"
+    image: "ibm-mqadvanced-server-dev:9.4.2.0-arm64"
+    ports:
+      - 9443:9443
+      - 1414:1414
+    environment:
+      - LICENSE=accept
+      - MQ_QMGR_NAME=QM2
+    networks:
+      - qm1network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1Gb
+    secrets:
+      - mqAdminPassword
+      - mqAppPassword
+    
   mqapp:
     platform: linux/amd64
     build: 
       context: .
       dockerfile: Dockerfile.mqapp
-    volumes:
-      - .:/usr/src/app:rw
+    networks:
+      - qm1network
     ports:
       - 8080:8080
     environment:
-      - QM_HOST_0=localhost
+      - QMGR_0=QM2
+      - QM_HOST_0=mq
       - QM_PORT_0=1414
       - APP_USER_0=app
-      - APP_PASSWORD_0=password
-      - QM_PORT_1=1415
-      - QM_HOST_1=localhost
-      - APP_USER_1=app
-      - APP_PASSWORD_1=password
+      - APP_PASSWORD_0=passw0rd
+    depends_on:
+      - mq
+
+networks:
+  qm1network:
+    labels:
+      - com.ibm.mq=qm1
+secrets:
+  mqAdminPassword:
+    file: "admin-password.txt"
+  mqAppPassword:
+    file: "app-password.txt"

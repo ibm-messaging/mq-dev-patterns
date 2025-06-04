@@ -49,7 +49,7 @@ class MQConnection {
             if (err) {
               reject(err);
             } else {
-              debug_info("MQCONN to %s successful ", me.MQDetails.QMGR);
+              debug_info("MQCONN to %s successful ", me.#qmgrData[constants.QMGR]);
               me.#hConn = hConn;
               resolve();
             }
@@ -66,7 +66,7 @@ class MQConnection {
         // Set Application name
         mqcno.ApplName = this.#applName;
 
-        // debug_info(this.#qmgrData);
+        debug_info(this.#qmgrData);
 
         if (this.#qmgrData[constants.APP_USER]) {
             let csp = new mq.MQCSP();
