@@ -57,6 +57,12 @@ class MQConnection {
         });
     }
 
+    open(queue) {
+        let me = this;
+        debug_info(`Opening queue ${queue}`);
+        return Promise.resolve();
+    }
+
     #buildMQCNO() {
         debug_info(`Creating CNO for ${this.#qmgrData[constants.QMGR]} request`);
 
