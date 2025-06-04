@@ -18,7 +18,7 @@
 const debug_info = require('debug')('mqsample:otel:qmi:info');
 const debug_warn = require('debug')('mqsample:otel:qmi:warn');
 
-const {mqConnection} = require('./connection.js');
+const {MQConnection} = require('./connection.js');
 const {envSettings} = require('../settings/environment.js');
 
 
@@ -37,8 +37,9 @@ class QueueManagerInterface {
             err = `Entry for ${data.qmgr} not found`;
         }
 
+        let conn = null; 
         if (!err) {
-
+            conn = new MQConnection(qmgrData);
         }
 
         return err;
@@ -48,13 +49,14 @@ class QueueManagerInterface {
         let err = null;
         debug_info(`Get requested for ${data.num} messages on Queue ${data.queue} on Queue manager ${data.qmgr}`); 
         let qmgrData = envSettings.dataForQmgr(data.qmgr);
-        
+
         if (null === qmgrData) {
             err = `Entry for ${data.qmgr} not found`;
         }
 
+        let conn = null; 
         if (!err) {
-            
+            conn = new MQConnection(qmgrData);
         }
 
 

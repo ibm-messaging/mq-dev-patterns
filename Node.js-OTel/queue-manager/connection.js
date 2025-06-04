@@ -14,17 +14,36 @@
  * limitations under the License.
  **/
 
+const mq = require('ibmmq');
+
 // Set up debug logging options
 const debug_info = require('debug')('mqsample:otel:connection:info');
 const debug_warn = require('debug')('mqsample:otel:connection:warn');
 
 const MAX_LIMIT = 10;
+const MQC = mq.MQC;
 
 class MQConnection {
-    constructor() {
+    #qmgrData = null;
+    constructor(qmgrData) {
+        debug_info(`Creating connection for ${qmgrData.QMGR}`);
+
+        this.#qmgrData = qmgrData;
+        this.buildMQCNO();
+    }
+
+    buildMQCNO() {
+        debug_info(`Creating CNO for ${this.#qmgrData.QMGR} request`);
+
+        let mqcno = new mq.MQCNO();
+        mqcno.Options = MQC.MQCNO_CLIENT_BINDING;
+    
+        // Set Application name
+        mqcno.ApplName = this.applName;
+
     }
 }   
 
-const mqConnection = new MQConnection();
+// const mqConnection = new MQConnection();
 
-module.exports = { mqConnection };
+module.exports = { MQConnection };

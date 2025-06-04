@@ -11,10 +11,74 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-FROM node:20.19.2-slim
-WORKDIR /usr/src/app
-COPY package.json ./
-RUN npm install
+# FROM --platform=linux/amd64 node:20.19.2
+
+# WORKDIR /usr/src/app
+# COPY package.json ./
+# RUN npm install
+
+# EXPOSE 8080
+# CMD ["npm","run","start"]
+
+FROM --platform=linux/amd64 node:20 as builder
+
+ENV APP_DIR /usr/local/app
+WORKDIR ${APP_DIR}
+
+# Copy project files into the container
+COPY ./ ./
+
+RUN rm -fr node_modules \
+    && npm install --omit=dev \   
+    && chmod a+rx ${APP_DIR}/*
+
+#Cleaning
+ENV APP_DIR /usr/local/app/node_modules/ibmmq/lib
+WORKDIR ${APP_DIR}
+RUN rm mqidefs_aix.js \
+    && rm mqidefs_darwin.js \
+    && rm mqidefs_linuxPowerLE.js \
+    && rm mqidefs_linuxS390.js \
+    && rm mqidefs_windows.js \
+    && rm mqidefs_linuxARM.js 
+    
+ENV APP_DIR /usr/local/app/node_modules/ibmmq/redist
+WORKDIR ${APP_DIR}
+RUN rm -r msg \
+    && rm -r bin \
+    && rm -r lap   
+    
+ENV APP_DIR /usr/local/app/node_modules/ibmmq/redist/lib64
+WORKDIR ${APP_DIR}
+RUN rm libcurl.so \
+    && rm libmqz_r.so \
+    && rm libmqzsd_r.so \
+    && rm libmqcxa64_r.so \ 
+    && rm libmqcxa_r.so \
+    && rm libmqdc_r.so \
+    && rm libmqecs_r.so \
+    && rm libmqic_r.so \
+    && rm libmqiz_r.so \
+    && rm libmqjx_r.so \
+    && rm libmqmcs_r.so \
+    && rm libmqmzse.so \
+    && rm libmqxzu_r.so
+
+###########################################################
+# This starts the RUNTIME phase
+###########################################################
+# Now that there is a container with the compiled program we can build a smaller
+# runtime image. Start from one of the smaller base container images. This container
+# is an official Node image with the runtime already embedded
+FROM --platform=linux/amd64 node:20-slim as backendImage
+
+ENV APP_DIR /usr/local/app/
+WORKDIR ${APP_DIR}
+
+# Copy over the tree containing the program and all its dependencies
+COPY --from=builder ${APP_DIR}/ ${APP_DIR}
 
 EXPOSE 8080
+
+# CMD ["sleep", "infinity"]
 CMD ["npm","run","start"]

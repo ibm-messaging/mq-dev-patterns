@@ -1,7 +1,7 @@
 # IBM MQ Otel samples for Node.js applications
 
 ## Samples
-These are cut-down versions of the Node.js patterns in this repo, reworked to allow http requests to initiate put and get requests. Be aware that his code throws randomly exceptions, designed to showcase the OTel trace and metric capabilities of the IBM MQ Client stack.
+These samples are based on the Node.js (Node.js, serverless and showcase) patterns in this repo, reworked and cutdown, to allow http requests to initiate put and get requests. Be aware that his code throws randomly exceptions, designed to showcase the OTel trace and metric capabilities of the IBM MQ Client stack.
 
 ## Requirements
 - Podman or Docker
