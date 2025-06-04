@@ -28,6 +28,9 @@ const MQC = mq.MQC;
 class MQConnection {
     #qmgrData = null;
     #applName = "";
+
+    #mqcno = null;
+
     constructor(qmgrData) {
         debug_info(`Creating connection for ${qmgrData[constants.QMGR]}`);
 
@@ -45,16 +48,64 @@ class MQConnection {
         // Set Application name
         mqcno.ApplName = this.#applName;
 
-        debug_info(this.#qmgrData);
+        // debug_info(this.#qmgrData);
 
-        // if (this.#qmgrData.USER) {
-        //     let csp = new mq.MQCSP();
-        //     csp.UserId = this.credentials.USER;
-        //     csp.Password = this.credentials.PASSWORD;
-        //     mqcno.SecurityParms = csp;
-        //   }
+        if (this.#qmgrData[constants.APP_USER]) {
+            let csp = new mq.MQCSP();
+            csp.UserId = this.#qmgrData[constants.APP_USER];
+            csp.Password = this.#qmgrData[constants.APP_PASSWORD];
+            mqcno.SecurityParms = csp;
+        }
 
+        let sco = this.#determineSCO(mqcno);
+
+        // Make the MQCNO refer to the MQCD
+        mqcno.ClientConn = this.#buildClientConnection(mqcno);
+        this.#mqcno = mqcno;
+
+        debug_info("MQ connection object created");
     }
+
+    #determineSCO(mqcno) {
+        let sco = null;
+        if (this.#qmgrData[constants.KEY_REPOSITORY]) {
+          debug_info('Key Repository has been specified');
+          // *** For TLS ***
+          sco = new mq.MQSCO();
+          sco.KeyRepository = this.#qmgrData[constants.KEY_REPOSITORY];
+          // And make the CNO refer to the SSL Connection Options
+          mqcno.SSLConfig = sco;
+        }
+        return sco;
+    }
+
+    #getConnection() {
+        return `${this.#qmgrData[constants.QM_HOST]}(${this.#qmgrData[constants.QM_PORT]})`;
+    }
+
+    #buildClientConnection(mqcno) {
+        // No CCDT being used here
+        // Fill in relevant fields for the MQCD
+        let cd = new mq.MQCD();
+        cd.ChannelName = this.#qmgrData[constants.CHANNEL];
+        cd.ConnectionName = this.#getConnection();
+
+        debug_info('Connections string is ', cd.ConnectionName);
+    
+        if (this.#qmgrData[constants.KEY_REPOSITORY]) {
+            debug_info('Will be running in TLS Mode');
+    
+            // *** For TLS ***
+            cd.SSLCipherSpec = this.#qmgrData[constants.CIPHER];
+            cd.SSLClientAuth = MQC.MQSCA_OPTIONAL;
+    
+            // And make the CNO refer to the SSL Connection Options
+            mqcno.SSLConfig = sco;
+        }
+
+        return cd;
+    }
+    
 }   
 
 // const mqConnection = new MQConnection();
