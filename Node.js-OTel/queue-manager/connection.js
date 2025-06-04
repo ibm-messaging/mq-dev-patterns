@@ -22,7 +22,7 @@ const debug_warn = require('debug')('mqsample:otel:connection:warn');
 
 const { constants } = require('../settings/constants');
 
-const DEFAULT_APP_NAME = "MQI Otel Node test application";
+const DEFAULT_APP_NAME = "MQI-Otel-Node-app";
 const MQC = mq.MQC;
 
 class MQConnection {
@@ -30,16 +30,34 @@ class MQConnection {
     #applName = "";
 
     #mqcno = null;
+    #hConn = null;
 
     constructor(qmgrData) {
         debug_info(`Creating connection for ${qmgrData[constants.QMGR]}`);
 
         this.#qmgrData = qmgrData;
         this.#applName = qmgrData.applName || DEFAULT_APP_NAME;
-        this.buildMQCNO();
+        this.#buildMQCNO();
     }
 
-    buildMQCNO() {
+    connect() {
+        let me = this;
+        return new Promise(function resolver(resolve, reject) {
+          debug_info('Attempting Connection to Queue Manager');
+          mq.Connx(me.#qmgrData[constants.QMGR], me.#mqcno, function (err, hConn) {
+            debug_info('Inside Connection Callback function');
+            if (err) {
+              reject(err);
+            } else {
+              debug_info("MQCONN to %s successful ", me.MQDetails.QMGR);
+              me.#hConn = hConn;
+              resolve();
+            }
+          });
+        });
+    }
+
+    #buildMQCNO() {
         debug_info(`Creating CNO for ${this.#qmgrData[constants.QMGR]} request`);
 
         let mqcno = new mq.MQCNO();

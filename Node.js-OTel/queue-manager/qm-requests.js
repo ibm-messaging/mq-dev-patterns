@@ -40,6 +40,18 @@ class QueueManagerInterface {
         let conn = null; 
         if (!err) {
             conn = new MQConnection(qmgrData);
+            conn.connect()
+            .then(()=> {
+                debug_info("Connection established");
+            })
+            .catch((err) => {
+                // Don't propogate the error, as it will be logged, but
+                // original request will already have been acknowledged as
+                // accepted.
+                debug_warn("Unable to create connection");
+                // debug_warn(err);
+                QueueManagerInterface.#reportError(err);
+              });            
         }
 
         return err;
@@ -62,6 +74,11 @@ class QueueManagerInterface {
 
         return err;
     }
+
+    static #reportError(err) {
+        let errMsg =  err.message || err;
+        debug_warn("MQ call failed with error : " + errMsg);
+      }
 }   
 
 const qmi = new QueueManagerInterface();
