@@ -66,7 +66,7 @@ class MQConnection {
         // Set Application name
         mqcno.ApplName = this.#applName;
 
-        debug_info(this.#qmgrData);
+        //debug_info(this.#qmgrData);
 
         if (this.#qmgrData[constants.APP_USER]) {
             let csp = new mq.MQCSP();

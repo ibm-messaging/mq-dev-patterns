@@ -23,8 +23,9 @@ debug_info('Application is starting');
 const express = require('express');
 
 const {appLimits} = require('./settings/limits.js');
-const {qmi} = require('./queue-manager/qm-requests.js');
+const {QueueManagerInterface} = require('./queue-manager/qm-requests.js');
 const {ActionData} = require('./data/action.js');
+const {constants} = require('./settings/constants.js');
 
 
 const NO_QMGR_OR_QUEUE = "QMGR / QUEUE is missing from data input";
@@ -32,24 +33,35 @@ const NO_QMGR_OR_QUEUE = "QMGR / QUEUE is missing from data input";
 const HTTP_PORT = parseInt(process.env.PORT || '8080');
 const app = express();
 
+let qmi = new QueueManagerInterface();
+
 app.get('/put', (req, res) => {
     debug_info('Put requested');
-    processRequest(req, res, qmi.put); 
+    processRequest(req, res, constants.PUT); 
 });
 
 app.get('/get', (req, res) => {
     debug_info('Get requested')
-    processRequest(req, res, qmi.get);
+    processRequest(req, res, constants.GET);
 });
 
-function processRequest(req, res, qmiFunc) {
+function processRequest(req, res, type) {
     debug_info('Determining number of messages to process');
 
     let {data, err} = parseRequest(req);
 
     if (null === err) {
         debug_info(`Will be processing ${data.num} messages`);
-        err = qmiFunc(data);
+        switch (type) {
+            case constants.PUT:
+                err = qmi.put(data);
+                break;
+            case constants.GET:
+                err = qmi.put(data);
+                break;
+            default:
+                err = "Command not recognised";
+        }
     }
 
     if (null !== err) {

@@ -28,6 +28,9 @@ class AppConstants {
         this.APP_PASSWORD = "APP_PASSWORD";
         this.KEY_REPOSITORY = "KEY_REPOSITORY";
         this.CIPHER = "CIPHER";
+
+        this.PUT = "put";
+        this.GET = "get";
     }
 
     qm_data_keys() {

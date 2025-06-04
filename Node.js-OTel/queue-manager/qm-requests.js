@@ -20,6 +20,7 @@ const debug_warn = require('debug')('mqsample:otel:qmi:warn');
 
 const {MQConnection} = require('./connection.js');
 const {envSettings} = require('../settings/environment.js');
+const { constants } = require('../settings/constants.js');
 
 
 const MAX_LIMIT = 10;
@@ -29,8 +30,24 @@ class QueueManagerInterface {
     }
 
     put(data) {
-        let err = null;
         debug_info(`Put requested for ${data.num} messages on Queue ${data.queue} on Queue manager ${data.qmgr}`);
+
+        let err = this.#initConnection(constants.PUT, data);
+
+        return err;
+    }
+
+    get(data) {
+        debug_info(`Get requested for ${data.num} messages on Queue ${data.queue} on Queue manager ${data.qmgr}`); 
+
+        let err = this.#initConnection(constants.GET, data);
+
+        return err;
+    }
+
+    #initConnection(type, data) {
+        let err = null;
+
         let qmgrData = envSettings.dataForQmgr(data.qmgr);
 
         if (null === qmgrData) {
@@ -57,30 +74,12 @@ class QueueManagerInterface {
         return err;
     }
 
-    get(data) {
-        let err = null;
-        debug_info(`Get requested for ${data.num} messages on Queue ${data.queue} on Queue manager ${data.qmgr}`); 
-        let qmgrData = envSettings.dataForQmgr(data.qmgr);
-
-        if (null === qmgrData) {
-            err = `Entry for ${data.qmgr} not found`;
-        }
-
-        let conn = null; 
-        if (!err) {
-            conn = new MQConnection(qmgrData);
-        }
-
-
-        return err;
-    }
-
     static #reportError(err) {
         let errMsg =  err.message || err;
         debug_warn("MQ call failed with error : " + errMsg);
-      }
+    }
 }   
 
-const qmi = new QueueManagerInterface();
+//const qmi = new QueueManagerInterface();
 
-module.exports = { qmi };
+module.exports = { QueueManagerInterface };
