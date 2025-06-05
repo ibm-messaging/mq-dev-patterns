@@ -32,7 +32,7 @@ class QueueManagerInterface {
     put(data) {
         debug_info(`Put requested for ${data.num} messages on Queue ${data.queue} on Queue manager ${data.qmgr}`);
 
-        let err = this.#initConnection(constants.PUT, data);
+        let err = this.#performAction(constants.PUT, data);
 
         return err;
     }
@@ -40,12 +40,12 @@ class QueueManagerInterface {
     get(data) {
         debug_info(`Get requested for ${data.num} messages on Queue ${data.queue} on Queue manager ${data.qmgr}`); 
 
-        let err = this.#initConnection(constants.GET, data);
+        let err = this.#performAction(constants.GET, data);
 
         return err;
     }
 
-    #initConnection(type, data) {
+    #performAction(type, data) {
         let err = null;
 
         let qmgrData = envSettings.dataForQmgr(data.qmgr);
