@@ -33,6 +33,8 @@ class AppConstants {
         this.GET = "get";
 
         this.GREETING = "Otel Message ";
+        this.DEFAULT_ENV_FILE = "../env.json";
+        this.ENV_FILE_KEY = "EnvFile";
     }
 
     qm_data_keys() {

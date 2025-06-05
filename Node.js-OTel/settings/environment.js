@@ -20,8 +20,12 @@ const debug_warn = require('debug')('mqsample:otel:environment:warn');
 
 const { constants } = require('./constants');
 
+const env_file = process.env[constants.ENV_FILE_KEY] || constants.DEFAULT_ENV_FILE;
+
+debug_info(`environment being loaded from ${env_file}`);
+
 // Load up environment variables from the env.json file
-var env = require('../env.json');
+var env = require(env_file);
 
 class QMEntry {
     constructor() {
