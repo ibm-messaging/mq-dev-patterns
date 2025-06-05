@@ -72,7 +72,7 @@ class MQConnection {
               case constants.PUT:
                 openOptions = MQC.MQOO_OUTPUT;
                 break;
-              case constants.PUT:
+              case constants.GET:
                 openOptions = MQC.MQOO_INPUT_AS_Q_DEF;
                 break;
             }
@@ -88,6 +88,35 @@ class MQConnection {
                 }
               });
         });
+    }
+
+    put(quantity, message) {
+        var promises = [];
+
+        for (let i = 0; i < quantity; i++) {
+          let iteration = i + 1;
+          let msgObject = {
+            'Message' : message,
+            'Count' : '' + iteration + ' of ' + quantity,
+            'Sent': '' + new Date()
+          }
+          let msg = JSON.stringify(msgObject);
+    
+          var mqmd = new mq.MQMD(); // Defaults are fine.
+          var pmo = new mq.MQPMO();
+    
+          // Describe how the Put should behave
+          pmo.Options = MQC.MQPMO_NO_SYNCPOINT |
+            MQC.MQPMO_NEW_MSG_ID |
+            MQC.MQPMO_NEW_CORREL_ID;
+    
+          promises.push( mq.PutPromise(this.#hQueue, mqmd, pmo, msg) );
+        }
+        return Promise.all(promises);
+    }
+
+    get(quantity) {
+        return Promise.resolve();
     }
 
     #buildMQCNO() {

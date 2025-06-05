@@ -64,6 +64,20 @@ class QueueManagerInterface {
             })
             .then(()=> {
                 debug_info("Queue opened");
+                switch (type) {
+                    case constants.PUT:
+                        return conn.put(data.num, constants.GREETING);
+                        break;
+                    case constants.GET:
+                        return conn.get(data.num);
+                        break;
+                    default:
+                        return Promise.reject(`${type} request not understoood`);
+                        break
+                }
+            })
+            .then(()=> {
+                debug_info(`${type} action completed`);
             })
             .catch((err) => {
                 // Don't propogate the error, as it will be logged, but

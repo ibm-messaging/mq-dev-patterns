@@ -31,6 +31,8 @@ class AppConstants {
 
         this.PUT = "put";
         this.GET = "get";
+
+        this.GREETING = "Otel Message ";
     }
 
     qm_data_keys() {
