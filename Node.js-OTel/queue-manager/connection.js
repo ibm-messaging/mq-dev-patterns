@@ -31,6 +31,7 @@ class MQConnection {
 
     #mqcno = null;
     #hConn = null;
+    #hQueue = null;
 
     constructor(qmgrData) {
         debug_info(`Creating connection for ${qmgrData[constants.QMGR]}`);
@@ -57,10 +58,36 @@ class MQConnection {
         });
     }
 
-    open(queue) {
+    open(type, queue) {
         let me = this;
-        debug_info(`Opening queue ${queue}`);
-        return Promise.resolve();
+        return new Promise(function resolver(resolve, reject) {
+            debug_info(`Opening Connection to ${queue} in mode ${type}`);
+            let od = new mq.MQOD();
+    
+            od.ObjectName = queue;
+            od.ObjectType = MQC.MQOT_Q;
+
+            let openOptions = null;
+            switch (type) {
+              case constants.PUT:
+                openOptions = MQC.MQOO_OUTPUT;
+                break;
+              case constants.PUT:
+                openOptions = MQC.MQOO_INPUT_AS_Q_DEF;
+                break;
+            }
+
+            mq.Open(me.#hConn, od, openOptions, function (err, hObj) {
+                debug_info('Inside MQ Open Callback function');
+                if (err) {
+                  reject(err);
+                } else {
+                  debug_info("MQOPEN of %s successful", od.ObjectName);
+                  me.#hQueue = hObj;
+                  resolve();
+                }
+              });
+        });
     }
 
     #buildMQCNO() {

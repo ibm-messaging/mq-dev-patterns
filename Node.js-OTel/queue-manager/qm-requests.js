@@ -59,7 +59,7 @@ class QueueManagerInterface {
             conn = new MQConnection(qmgrData);
             conn.connect()
             .then(()=> {
-                return conn.open(data.queue);
+                return conn.open(type, data.queue);
                 debug_info("Connection established");
             })
             .then(()=> {
