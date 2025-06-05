@@ -1,5 +1,5 @@
 /**
- * Copyright 2024 IBM Corp.
+ * Copyright 2025 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,13 @@ typedef struct jwtEndpoint {
   char *tokenUserName;
   char *tokenPwd;
   char *tokenClientId;
+  char *tokenKeyRepository;
 } jwtEndpoint_t;
+
+typedef struct {
+  char *string;
+  size_t size;
+} jwtResponse;
 
 #define MAX_MQ_ENDPOINTS 10 // Put a limit on the number of entries in the config file for simplicity
 extern mqEndpoint_t mqEndpoints[];
@@ -86,6 +92,7 @@ void freeConfig();
 #define CONFIG_JWT_TOKEN_USERNAME   "JWT_TOKEN_USERNAME"
 #define CONFIG_JWT_TOKEN_PWD        "JWT_TOKEN_PWD"
 #define CONFIG_JWT_TOKEN_CLIENTID   "JWT_TOKEN_CLIENTID"
+#define CONFIG_JWT_KEY_REPOSITORY   "JWT_KEY_REPOSITORY"
 
 // Environment variable only
 #define CONFIG_DEBUG "DEBUG"

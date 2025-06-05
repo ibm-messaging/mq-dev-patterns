@@ -62,13 +62,19 @@ You might need to run `setmqenv` to create environment variables pointing at you
 libraries. And on MacOS, the `DYLD_LIBRARY_PATH` will usually need to be set to include the 
 `/opt/mqm/lib64` directory. 
 
+`export DYLD_LIBRARY_PATH=/opt/mqm/lib64`
+
 See [here](https://www.ibm.com/docs/en/ibm-mq/latest?topic=reference-setmqenv-set-mq-environment) for 
 more information about `setmqenv`. 
 
 ### Put/Get
 The `sampleput` application places a short string message onto the queue.
 
+`./sampleput`
+
 The `sampleget` application reads all messages from the queue and displays the contents.
+
+`./sampleget`
 
 ### Publish/Subscribe
 Run these samples as a pair.
@@ -76,9 +82,63 @@ Run these samples as a pair.
 Start the `samplesubcribe` program in one window (or in the background) and immediately afterwards start the
 `samplepublish` program in another window.
 
+`./samplesubscribe`
+
+`./samplepublish`
+
 ### Request/Response
 Run these samples as a pair.
 
 Start the `sampleresponse` program in one window (or in the background) and immediately afterwards start the
 `samplerequest` program in another window.
 
+`./sampleresponse`
+
+`./samplerequest`
+
+### Running samples with JWT authentication
+
+To enable token-based authentication, ensure you have a configured token issuer and queue manager [JWT README](jwt-jwks-docs/README.md) and then edit the `JWT_ISSUER` block in the env.json file
+
+```JSON
+"JWT_ISSUER" : [{
+    "JWT_TOKEN_ENDPOINT":"https://<KEYCLOAK_URL>/realms/master/protocol/openid-connect/token",
+    "JWT_TOKEN_USERNAME":"app",
+    "JWT_TOKEN_PWD":"passw0rd",
+    "JWT_TOKEN_CLIENTID":"admin-cli",
+    "JWT_KEY_REPOSITORY": "path/to/tokenIssuerKeystore"
+  }]
+```
+For JWT authentication via JWKS, make sure `JWT_KEY_REPOSITORY` points to your token issuer's public certificate and your queue manager is configured to retrieve the JWKS
+
+If you would like to proceed with JWT authentication without JWKS validation, edit the endpoint to use the correct URL (beginning with http) and leave `JWT_KEY_REPOSITORY` blank.
+
+
+Before you compile and run the samples ensure you have installed the required curl and json-c libraries. This can be done through homebrew:
+
+`brew install curl`
+`brew install json-c`
+
+or you can visit the following websites:
+[curl](https://curl.se/docs/install.html)
+[json-c](https://github.com/json-c/json-c)
+
+And on MacOS, the `DYLD_LIBRARY_PATH` will need to be set to include the curl library directory.
+
+`export DYLD_LIBRARY_PATH=/opt/homebrew/opt/curl/lib:/opt/mqm/lib64`
+*note: This uses the homebrew install path, if you installed curl via another method, edit the path as required.
+
+To compile a sample with JWT enablement:
+
+If you are on a Mac and have installed the curl and json-c libraries through homebrew, you can compile by simply running:
+`make JWT=1`
+
+Our makefile defaults the library directories to the homebrew MacOS path, but if you are on a different machine or have gone through an alternative installation method - you will need to point the makefile to the correct directories:
+
+`make JWT=1 \
+  CURL_INCLUDE=/custom/path/to/curl/include \
+  CURL_LIB=/custom/path/to/curl/lib \
+  JSONC_INCLUDE=/custom/path/to/json-c/include \
+  JSONC_LIB=/custom/path/to/json-c/lib `
+
+Then you can run the saamples as normal.
