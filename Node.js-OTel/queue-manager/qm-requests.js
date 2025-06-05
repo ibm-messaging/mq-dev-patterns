@@ -54,8 +54,10 @@ class QueueManagerInterface {
             err = `Entry for ${data.qmgr} not found`;
         }
 
-        let conn = null; 
         if (!err) {
+            let conn = null; 
+            let teardownAttempted = false;
+
             conn = new MQConnection(qmgrData);
             conn.connect()
             .then(()=> {
@@ -77,24 +79,26 @@ class QueueManagerInterface {
                 }
             })
             .then(()=> {
-                debug_info(`${type} action completed`);
+                teardownAttempted = true;
+                debug_info(`${type} action completed, tearing down connection`);
+                return conn.teardown();
             })
             .catch((err) => {
                 // Don't propogate the error, as it will be logged, but
                 // original request will already have been acknowledged as
                 // accepted.
-                debug_warn("Unable to create connection");
+                debug_warn("Failure in processing request");
+                if (!teardownAttempted) {
+                    conn.teardown()
+                        .then(()=> {})
+                        .catch((err)=> {debug_warn("Error in teardown")});
+                }
                 // debug_warn(err);
-                QueueManagerInterface.#reportError(err);
+                conn.reportError(err);
               });            
         }
 
         return err;
-    }
-
-    static #reportError(err) {
-        let errMsg =  err.message || err;
-        debug_warn("MQ call failed with error : " + errMsg);
     }
 }   
 

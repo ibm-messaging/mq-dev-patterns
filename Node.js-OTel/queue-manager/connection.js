@@ -110,6 +110,7 @@ class MQConnection {
             MQC.MQPMO_NEW_MSG_ID |
             MQC.MQPMO_NEW_CORREL_ID;
     
+          debug_info('Putting message onto queue');            
           promises.push( mq.PutPromise(this.#hQueue, mqmd, pmo, msg) );
         }
         return Promise.all(promises);
@@ -117,6 +118,31 @@ class MQConnection {
 
     get(quantity) {
         return Promise.resolve();
+    }
+
+    teardown() {
+        debug_info('Tearing down the connection'); 
+        let me = this;
+        return new Promise(function resolver(resolve, reject) {
+          me.#closeMQConnection()
+            .then(() => {
+              me.#hQueue = null;
+              return me.#disconnectFromMQ();
+            })
+            .then(() => {
+              me.#hConn = null;
+              resolve();
+            })
+            .catch((err) => {
+              debug_warn(err);
+              reject(err);
+            });
+        });      
+    }
+
+    reportError(err) {
+        let errMsg =  err.message || err;
+        debug_warn("MQ call failed with error : " + errMsg);
     }
 
     #buildMQCNO() {
@@ -184,6 +210,48 @@ class MQConnection {
         }
 
         return cd;
+    }
+
+    #closeMQConnection() {
+        debug_info('Closing connection');
+        let me = this;
+        return new Promise(function resolver(resolve, reject) {
+            if (!me.#hQueue) {
+              debug_warn('Closing queue connection attempt, when queue handle not known');
+              resolve();
+            } else {
+              mq.Close(me.#hQueue, 0, function (err) {
+                if (err) {
+                  me.reportError(err);
+                  reject(err);
+                } else {
+                  debug_info("MQCLOSE successful");
+                  resolve();
+                }
+              });
+            }
+          });
+    }
+
+    #disconnectFromMQ() {
+        debug_info('Disconnecting');
+        let me = this;
+        return new Promise(function resolver(resolve, reject) {
+            if (!me.#hConn) {
+              debug_warn('disconnect attempt, when connection not known');
+              resolve();
+            } else {
+              mq.Disc(me.#hConn, function (err) {
+                if (err) {
+                  debug_warn('Error Detected in Disconnect operation', err);
+                  reject(err);
+                } else {
+                  debug_info("MQDISC successful");
+                  resolve();
+                }
+              });
+            }
+          });
     }
     
 }   
