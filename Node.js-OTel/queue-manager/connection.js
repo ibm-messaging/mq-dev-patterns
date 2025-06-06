@@ -24,7 +24,8 @@ const decoder = new StringDecoder('utf8');
 const debug_info = require('debug')('mqsample:otel:connection:info');
 const debug_warn = require('debug')('mqsample:otel:connection:warn');
 
-const { constants } = require('../settings/constants');
+const {constants} = require('../settings/constants');
+const {appLimits} = require('../settings/limits.js');
 
 const DEFAULT_APP_NAME = "MQI-Otel-Node-app";
 const MQC = mq.MQC;
@@ -104,6 +105,12 @@ class MQConnection {
             'Count' : '' + iteration + ' of ' + quantity,
             'Sent': '' + new Date()
           }
+
+          if (appLimits.shoulItFail()) {
+            debug_info('**** Message being marked as promlematic');
+            msgObject['Damaged'] = '**** Rouge Message ****';
+          }
+
           let msg = JSON.stringify(msgObject);
     
           var mqmd = new mq.MQMD(); // Defaults are fine.

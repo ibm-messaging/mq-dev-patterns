@@ -35,6 +35,10 @@ class AppConstants {
         this.GREETING = "Otel Message ";
         this.DEFAULT_ENV_FILE = "../env.json";
         this.ENV_FILE_KEY = "EnvFile";
+
+        this.MAX_LIMIT = 10;
+        this.DEFAULT_SENSITIVIY = 5;
+        this.SENSITIVIY_KEY = "ErrorSensitivity";
     }
 
     qm_data_keys() {

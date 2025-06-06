@@ -18,7 +18,12 @@
 const debug_info = require('debug')('mqsample:otel:limits:info');
 const debug_warn = require('debug')('mqsample:otel:limits:warn');
 
-const MAX_LIMIT = 10;
+const {constants} = require('./constants');
+const MAX_LIMIT = constants.MAX_LIMIT;
+
+const SENSITIVIY = process.env[constants.SENSITIVIY_KEY] || constants.DEFAULT_SENSITIVIY;
+
+debug_info(`Failing sensitivity set to 1 in ${SENSITIVIY}`);
 
 class AppLimits {
     constructor() {
@@ -34,6 +39,14 @@ class AppLimits {
             return this.randomNum();
         }
         return number;
+    }
+
+    shoulItFail() {
+        let v =  Math.floor(Math.random() * SENSITIVIY) + 1;
+        if (1 == v) {
+            return true;
+        }
+        return false;
     }
 }   
 
