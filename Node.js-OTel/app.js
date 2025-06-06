@@ -95,7 +95,7 @@ function parseRequest(req) {
 
     if (!ok) {
         err = NO_QMGR_OR_QUEUE;
-    } else if (! envSettings.qmgrIsKnown()) {
+    } else if (! envSettings.qmgrIsKnown(data.qmgr)) {
         err = UNKNOWN_QMGR;
     }
 
