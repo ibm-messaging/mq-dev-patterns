@@ -273,11 +273,17 @@ class MQConnection {
 
             let mqmd = new mq.MQMD();
             let gmo = new mq.MQGMO();
+
+            // Adding in Otel instrumentation adds in 
+            // extra RFH2 headers.
+            gmo.OtelOpts.RemoveRFH2 = true;
       
             gmo.Options = MQC.MQGMO_NO_SYNCPOINT |
               MQC.MQGMO_NO_WAIT |
               MQC.MQGMO_CONVERT |
               MQC.MQGMO_FAIL_IF_QUIESCING;
+              
+              //RemoveRFH2;
 
             mq.GetSync(me.#hQueue, mqmd, gmo, buf, (err, len) => {
                 if (err) {
