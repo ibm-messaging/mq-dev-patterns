@@ -28,7 +28,7 @@ const debug_warn = require('debug')('mqsample:otel:metrics::warn');
 
 const {envSettings} = require('../settings/environment');
 
-const USE_PROMETHEUS = envSettings.usePrometheus();
+const USE_PROMETHEUS = envSettings.usePrometheus;
 
 let exporter = null;
 

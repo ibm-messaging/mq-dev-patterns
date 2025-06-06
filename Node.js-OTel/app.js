@@ -26,9 +26,11 @@ const {appLimits} = require('./settings/limits.js');
 const {QueueManagerInterface} = require('./queue-manager/qm-requests.js');
 const {ActionData} = require('./data/action.js');
 const {constants} = require('./settings/constants.js');
+const {envSettings} = require('./settings/environment.js');
 
 
 const NO_QMGR_OR_QUEUE = "QMGR / QUEUE is missing from data input";
+const UNKNOWN_QMGR = "Queue Manager not known";
 
 const HTTP_PORT = parseInt(process.env.PORT || '8080');
 const app = express();
@@ -93,6 +95,8 @@ function parseRequest(req) {
 
     if (!ok) {
         err = NO_QMGR_OR_QUEUE;
+    } else if (! envSettings.qmgrIsKnown()) {
+        err = UNKNOWN_QMGR;
     }
 
     return {data, err};

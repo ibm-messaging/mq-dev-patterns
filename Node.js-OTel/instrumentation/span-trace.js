@@ -22,7 +22,7 @@ const {envSettings} = require('../settings/environment');
 const debug_info = require('debug')('mqsample:otel:metrics:info');
 const debug_warn = require('debug')('mqsample:otel:metrics::warn');
 
-const USE_JAEGER = envSettings.useJaeger();
+const USE_JAEGER = envSettings.useJaeger;
 
 debug_info(`Will ${USE_JAEGER ? '' : 'not'} be exporting to Jaeger`);
 

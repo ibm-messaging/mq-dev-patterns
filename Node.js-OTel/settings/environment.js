@@ -79,11 +79,15 @@ class AppEnvironment {
         return this.#MQDetails.get(qmgr) || null;
     }
 
-    useJaeger() {
+    qmgrIsKnown(qmgr) {
+        return (null != this.dataForQmgr(qmgr));
+    }
+
+    get useJaeger() {
         return this.#StrumDetails[constants.USE_JAEGER_KEY];
     }
 
-    usePrometheus() {
+    get usePrometheus() {
         return this.#StrumDetails[constants.USE_PROMETHEUS_KEY];      
     }
 

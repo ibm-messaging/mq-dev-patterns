@@ -26,3 +26,12 @@ I built and tested the containers on a Apple ARM64 machine and so created a cust
 
 ## Jaeger
 The Jaeger UI can be accessed on `http://localhost:16686/`
+
+## Application endpoints
+The application exposes two `GET` http urls. 
+
+-  **/put** which accepts `QMGR`, `QUEUE` and `num` as parameters. 
+-  **/get** which accepts `QMGR`, `QUEUE` and `num` as parameters. 
+
+For both a check is made to ensure that the `QMGR` specified is known. If not then a 400 error is returned. A check is made on `num`, and if not a number, or negative or two high, a randomly generated value is used as a replacement. A 200 is returned, and asynchronously the code will then put /  get `num` messages to / from the appropriate `QUEUE` on the specified `QMGR`. If an error is detected, then that is only recorded in the logs, and Otel instrumentation.
+
