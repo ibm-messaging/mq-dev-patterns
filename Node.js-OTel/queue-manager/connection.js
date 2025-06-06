@@ -133,7 +133,7 @@ class MQConnection {
             let obtainedMessages = [];
             me.#getSomeMessages(obtainedMessages, limit)
             .then((allFoundMessages) => {
-              debug_info("replying with obtained from get action");
+              debug_info("replying with messages obtained from get action");
               resolve(allFoundMessages);
             })
             .catch((err) => {

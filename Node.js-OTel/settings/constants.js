@@ -42,6 +42,9 @@ class AppConstants {
 
         this.DEFAULT_APP_NAME = "MQI-Otel-Node-app";
         this.DEFAULT_APP_VERSION = "0.0.1";
+
+        this.USE_JAEGER_KEY = 'USE_JAEGER';
+        this.USE_PROMETHEUS_KEY = 'USE_PROMETHEUS';
     }
 
     qm_data_keys() {

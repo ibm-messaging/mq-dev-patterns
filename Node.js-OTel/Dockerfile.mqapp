@@ -81,4 +81,12 @@ COPY --from=builder ${APP_DIR}/ ${APP_DIR}
 EXPOSE 8080
 
 # CMD ["sleep", "infinity"]
-CMD ["npm","run","start"]
+# Normal application run
+# CMD ["npm","run","start"]
+
+# With tracing and metrics to the console
+# CMD ["npm","run","trace"]
+
+# With tracing to Jaeger and metrics to Prometheus
+CMD ["npm","run","export-trace"]
+

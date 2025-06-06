@@ -40,11 +40,13 @@ class QMEntry {
 
 class AppEnvironment {
     #MQDetails = new Map();
+    #StrumDetails = {};
     constructor() {
-        this.buildDetails();
+        this.#buildQMDetails();
+        this.#buildStrumDetails();
     }
 
-    buildDetails () {
+    #buildQMDetails () {
         debug_info('Loading queue manager environment data');
 
         if (env.MQ_ENDPOINTS && env.MQ_ENDPOINTS instanceof Array) {
@@ -65,8 +67,24 @@ class AppEnvironment {
         }
     }
 
+    #buildStrumDetails () {
+        debug_info('Loading instrumentation settings');
+        [ constants.USE_JAEGER_KEY, 
+            constants.USE_PROMETHEUS_KEY].forEach((f) => {
+            this.#StrumDetails[f] = process.env[f] || false;
+        });
+    }
+
     dataForQmgr(qmgr) {
         return this.#MQDetails.get(qmgr) || null;
+    }
+
+    useJaeger() {
+        return this.#StrumDetails[constants.USE_JAEGER_KEY];
+    }
+
+    usePrometheus() {
+        return this.#StrumDetails[constants.USE_PROMETHEUS_KEY];      
     }
 
 }   
