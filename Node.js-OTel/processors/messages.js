@@ -24,7 +24,7 @@ class MessageProcessor {
 
     process(messages) {
         debug_info("Processing messages");
-        debug_info(messages);
+        // debug_info(messages);
 
         // Check that there are messages and presented 
         // as an array
@@ -35,7 +35,9 @@ class MessageProcessor {
         } else if (0 === messages.length) {
             debug_info("Returned message array is empty");
         } else {
-
+            for (let msg of messages) {
+                debug_info(msg);
+            }
         }
 
     }
