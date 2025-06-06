@@ -57,7 +57,7 @@ function processRequest(req, res, type) {
                 err = qmi.put(data);
                 break;
             case constants.GET:
-                err = qmi.put(data);
+                err = qmi.get(data);
                 break;
             default:
                 err = "Command not recognised";

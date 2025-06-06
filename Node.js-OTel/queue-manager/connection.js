@@ -16,6 +16,10 @@
 
 const mq = require('ibmmq');
 
+// Decoder needed to process GET messages
+const StringDecoder = require('string_decoder').StringDecoder;
+const decoder = new StringDecoder('utf8');
+
 // Set up debug logging options
 const debug_info = require('debug')('mqsample:otel:connection:info');
 const debug_warn = require('debug')('mqsample:otel:connection:warn');
@@ -116,8 +120,19 @@ class MQConnection {
         return Promise.all(promises);
     }
 
-    get(quantity) {
-        return Promise.resolve();
+    get(limit) {
+        let me = this;
+        return new Promise((resolve, reject) => {
+            let obtainedMessages = [];
+            me.#getSomeMessages(obtainedMessages, limit)
+            .then((allFoundMessages) => {
+              debug_info("replying with obtained from get action");
+              resolve(allFoundMessages);
+            })
+            .catch((err) => {
+              reject(err);
+            })
+          });
     }
 
     teardown() {
@@ -210,6 +225,86 @@ class MQConnection {
         }
 
         return cd;
+    }
+
+    #getSomeMessages(obtainedMessages, limit) {
+        return new Promise((resolve, reject) => {
+            debug_info("In recursive loop looking for messages");
+            this.#getSingleMessage()
+            .then((messageData) => {
+                if (messageData) {
+                    debug_info('Message is not empty')
+                    obtainedMessages.push(messageData);
+                    debug_info('Interim Number of messages obtained : ', obtainedMessages.length);
+                    if (obtainedMessages.length < limit) {
+                        this.#getSomeMessages(obtainedMessages, limit)
+                        .then((result) => {
+                          resolve(result);
+                        })
+                        .catch((err) => {
+                          reject(err);
+                        })
+                      }
+                }
+                if (!messageData || obtainedMessages.length >= limit) {
+                    debug_info('Resolving as enough messages found');
+                    debug_info('Final Number of messages obtained : ', obtainedMessages.length);
+                    resolve(obtainedMessages);
+                }
+            }).catch((err) => {
+                debug_info("Error detected in recursive get ", err);
+                reject(err);
+            })
+        });
+    }
+
+    #getSingleMessage() {
+        debug_info("Attempting to get a single message");
+        let me = this;
+        return new Promise((resolve, reject) => {
+            let buf = Buffer.alloc(1024);
+
+            let mqmd = new mq.MQMD();
+            let gmo = new mq.MQGMO();
+      
+            gmo.Options = MQC.MQGMO_NO_SYNCPOINT |
+              MQC.MQGMO_NO_WAIT |
+              MQC.MQGMO_CONVERT |
+              MQC.MQGMO_FAIL_IF_QUIESCING;
+
+            mq.GetSync(me.#hQueue, mqmd, gmo, buf, (err, len) => {
+                if (err) {
+                    if (err.mqrc == MQC.MQRC_NO_MSG_AVAILABLE) {
+                        debug_info("no more messages");
+                    } else {
+                        debug_warn('Error retrieving message', err);
+                    }
+                    debug_info('Resolving null from getSingleMessage');
+                    resolve(null);
+                } else if (mqmd.Format == "MQSTR") {
+                    // The Message from a Synchronouse GET is
+                    // a data buffer, which needs to be encoded
+                    // into a string, before the underlying
+                    // JSON object is extracted.
+                    debug_info("String data detected");
+        
+                    let buffString = decoder.write(buf.slice(0,len))
+        
+                    let msgObject = null;
+                    try {
+                        msgObject = JSON.parse(buffString);
+                        resolve(msgObject);
+                    } catch (err) {
+                        debug_info("Error parsing json ", err);
+                        debug_info("message <%s>", buffString);
+                        resolve({'string_data' : buffString});
+                    }
+                } else {
+                  debug_info("binary message: " + buf);
+                  resolve({'binary_data' : buf});
+                }
+              });
+        });
     }
 
     #closeMQConnection() {

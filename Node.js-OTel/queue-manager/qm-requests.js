@@ -31,17 +31,13 @@ class QueueManagerInterface {
 
     put(data) {
         debug_info(`Put requested for ${data.num} messages on Queue ${data.queue} on Queue manager ${data.qmgr}`);
-
         let err = this.#performAction(constants.PUT, data);
-
         return err;
     }
 
     get(data) {
         debug_info(`Get requested for ${data.num} messages on Queue ${data.queue} on Queue manager ${data.qmgr}`); 
-
         let err = this.#performAction(constants.GET, data);
-
         return err;
     }
 
