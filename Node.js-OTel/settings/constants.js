@@ -39,6 +39,9 @@ class AppConstants {
         this.MAX_LIMIT = 10;
         this.DEFAULT_SENSITIVIY = 5;
         this.SENSITIVIY_KEY = "ErrorSensitivity";
+
+        this.DEFAULT_APP_NAME = "MQI-Otel-Node-app";
+        this.DEFAULT_APP_VERSION = "0.0.1";
     }
 
     qm_data_keys() {

@@ -27,7 +27,7 @@ const debug_warn = require('debug')('mqsample:otel:connection:warn');
 const {constants} = require('../settings/constants');
 const {appLimits} = require('../settings/limits.js');
 
-const DEFAULT_APP_NAME = "MQI-Otel-Node-app";
+const DEFAULT_APP_NAME = constants.DEFAULT_APP_NAME;
 const MQC = mq.MQC;
 
 class MQConnection {
