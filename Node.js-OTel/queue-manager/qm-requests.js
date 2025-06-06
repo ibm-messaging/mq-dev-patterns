@@ -74,6 +74,13 @@ class QueueManagerInterface {
                         break
                 }
             })
+            .then((messages)=> {
+                if (type == constants.GET) {
+                    debug_info(`Processing messages returned`);
+                    debug_info(messages);
+                }
+                return Promise.resolve
+            })
             .then(()=> {
                 teardownAttempted = true;
                 debug_info(`${type} action completed, tearing down connection`);
