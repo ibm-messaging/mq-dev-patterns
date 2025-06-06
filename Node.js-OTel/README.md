@@ -23,3 +23,6 @@ I built and tested the containers on a Apple ARM64 machine and so created a cust
 ```
     podman compose -f docker-compose.yaml up
 ```
+
+## Jaeger
+The Jaeger UI can be accessed on `http://localhost:16686/`

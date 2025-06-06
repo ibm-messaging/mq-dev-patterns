@@ -33,7 +33,17 @@ services:
     secrets:
       - mqAdminPassword
       - mqAppPassword
-    
+
+  jaeger:
+    image: jaegertracing/all-in-one
+    container_name: jaeger
+    ports:
+        - 4317:4317
+        - 4318:4318
+        - 16686:16686
+    environment:
+        COLLECTOR_OTLP_ENABLED: true
+
   mqapp:
     platform: linux/amd64
     build: 
@@ -51,6 +61,7 @@ services:
       - APP_PASSWORD_0=passw0rd
     depends_on:
       - mq
+      - jaeger
 
 networks:
   qm1network:
