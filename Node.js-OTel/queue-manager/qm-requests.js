@@ -20,8 +20,8 @@ const debug_warn = require('debug')('mqsample:otel:qmi:warn');
 
 const {MQConnection} = require('./connection.js');
 const {envSettings} = require('../settings/environment.js');
-const { constants } = require('../settings/constants.js');
-
+const {constants} = require('../settings/constants.js');
+const {msgProcessor} = require('../processors/messages.js');
 
 const MAX_LIMIT = 10;
 
@@ -77,7 +77,7 @@ class QueueManagerInterface {
             .then((messages)=> {
                 if (type == constants.GET) {
                     debug_info(`Processing messages returned`);
-                    debug_info(messages);
+                    msgProcessor.process(messages)
                 }
                 return Promise.resolve
             })
