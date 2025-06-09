@@ -41,7 +41,7 @@ class AppLimits {
         return number;
     }
 
-    shoulItFail() {
+    shouldItFail() {
         let v =  Math.floor(Math.random() * SENSITIVIY) + 1;
         if (1 == v) {
             return true;

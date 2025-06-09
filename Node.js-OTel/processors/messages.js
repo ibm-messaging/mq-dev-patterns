@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+const opentelemetry = require('@opentelemetry/api');
+
+const { constants } = require('../settings/constants');
+const { otelObjects } = require('../otels/get-otel');
+
 // Set up debug logging options
 const debug_info = require('debug')('mqsample:otel:messages:info');
 const debug_warn = require('debug')('mqsample:otel:messages:warn');
@@ -36,11 +41,31 @@ class MessageProcessor {
             debug_info("Returned message array is empty");
         } else {
             for (let msg of messages) {
-                debug_info(msg);
+                this.#handleMessage(msg);
             }
         }
-
     }
+
+    #handleMessage(msg) {
+        debug_info(msg);
+        if (msg[constants.DAMAGED_KEY]) {
+            debug_warn("Found damaged message");
+            const tracer = otelObjects.getTracer(constants.DEFAULT_APP_NAME, constants.DEFAULT_APP_VERSION);
+            
+            if (tracer) {
+                const span = tracer.startSpan(constants.DAMAGED_MSG_SPAN);
+                span.addEvent('Damaged message found', {
+                    'TraceParent' : msg[constants.TRACE_PARENT_KEY] || ''
+                });
+                span.setStatus({
+                    code: opentelemetry.SpanStatusCode.ERROR,
+                    message: 'Error condition detected'
+                });
+                span.end();
+            }
+        }
+    }
+    
 }   
 
 const msgProcessor = new MessageProcessor();

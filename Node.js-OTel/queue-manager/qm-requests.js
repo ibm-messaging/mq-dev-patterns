@@ -72,7 +72,6 @@ class QueueManagerInterface {
         return err;
     }
 
-
     #performAction(type, data, qmgrData) {
         let conn = null; 
         let teardownAttempted = false;

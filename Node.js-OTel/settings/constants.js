@@ -40,6 +40,8 @@ class AppConstants {
         this.DEFAULT_SENSITIVIY = 5;
         this.SENSITIVIY_KEY = "ErrorSensitivity";
 
+        this.DAMAGED_KEY = 'Damaged';
+
         this.DEFAULT_APP_NAME = "MQI-Otel-Node-app";
         this.DEFAULT_APP_VERSION = "0.0.1";
 
@@ -48,6 +50,8 @@ class AppConstants {
 
         this.GET_ACTIVE_SPAN = 'MQI-Sample-Span';
         this.ATTR_PUT_FUNCTION = 'qm-requests-put';
+
+        this.DAMAGED_MSG_SPAN = 'Damaged-Message-Span';
 
         this.TRACE_PARENT_KEY = `traceparent`;
     }

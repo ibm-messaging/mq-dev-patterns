@@ -106,9 +106,9 @@ class MQConnection {
         'Sent': '' + new Date()
       }
 
-      if (appLimits.shoulItFail()) {
+      if (appLimits.shouldItFail()) {
         debug_info('**** Message being marked as promlematic');
-        msgObject['Damaged'] = '**** Rouge Message ****';
+        msgObject[constants.DAMAGED_KEY] = '**** Rouge Message ****';
       }
 
       let msg = JSON.stringify(msgObject);
