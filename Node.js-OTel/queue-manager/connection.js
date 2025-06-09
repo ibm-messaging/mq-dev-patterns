@@ -237,7 +237,7 @@ class MQConnection {
     #getSomeMessages(obtainedMessages, limit) {
         return new Promise((resolve, reject) => {
             debug_info("In recursive loop looking for messages");
-            this.#getSingleMessage()
+            this.#getSingleMessageProcess()
             .then((messageData) => {
                 if (messageData) {
                     debug_info('Message is not empty')
@@ -265,11 +265,43 @@ class MQConnection {
         });
     }
 
-    #getSingleMessage() {
+    #CreateMessageHeader() {
+      let me = this;
+      return new Promise((resolve, reject) => {
+        const cmho = new mq.MQCMHO();
+
+        mq.CrtMh(me.#hConn, cmho,function (err, mh) {
+          if (err) {
+            debug_warn('Error creating message header', err);
+            reject(err);
+          } else {
+            resolve(mh);
+          }
+        });
+      });
+    }
+
+    #getSingleMessageProcess() {
+        debug_info("Initiating process to get a single message");
+        let me = this;
+        return new Promise((resolve, reject) => {
+            me.#CreateMessageHeader()
+            .then((mh) => {
+                return me.#getSingleMessage(mh);
+            })
+            .then((msg) => {
+                resolve(msg);
+            });
+        });
+
+    }
+
+    #getSingleMessage(mh) {
         debug_info("Attempting to get a single message");
         let me = this;
         return new Promise((resolve, reject) => {
             let buf = Buffer.alloc(1024);
+            let propBuf = Buffer.alloc(1024);
 
             let mqmd = new mq.MQMD();
             let gmo = new mq.MQGMO();
@@ -277,13 +309,18 @@ class MQConnection {
             // Adding in Otel instrumentation adds in 
             // extra RFH2 headers.
             gmo.OtelOpts.RemoveRFH2 = true;
-      
+
+          // Say that we want the properties to be returned via a
+          // handle (as opposed to being in the message body with an RFH2
+          // structure, or being ignored).
             gmo.Options = MQC.MQGMO_NO_SYNCPOINT |
-              MQC.MQGMO_NO_WAIT |
-              MQC.MQGMO_CONVERT |
-              MQC.MQGMO_FAIL_IF_QUIESCING;
-              
-              //RemoveRFH2;
+                MQC.MQGMO_NO_WAIT |
+                MQC.MQGMO_CONVERT |
+                MQC.MQGMO_PROPERTIES_IN_HANDLE |
+                MQC.MQGMO_FAIL_IF_QUIESCING;
+
+                  // And set the handle that we want to use.
+            gmo.MsgHandle = mh;
 
             mq.GetSync(me.#hQueue, mqmd, gmo, buf, (err, len) => {
                 if (err) {
@@ -294,29 +331,60 @@ class MQConnection {
                     }
                     debug_info('Resolving null from getSingleMessage');
                     resolve(null);
-                } else if (mqmd.Format == "MQSTR") {
-                    // The Message from a Synchronouse GET is
-                    // a data buffer, which needs to be encoded
-                    // into a string, before the underlying
-                    // JSON object is extracted.
-                    debug_info("String data detected");
-        
-                    let buffString = decoder.write(buf.slice(0,len))
-        
-                    let msgObject = null;
-                    try {
-                        msgObject = JSON.parse(buffString);
-                        resolve(msgObject);
-                    } catch (err) {
-                        debug_info("Error parsing json ", err);
-                        debug_info("message <%s>", buffString);
-                        resolve({'string_data' : buffString});
-                    }
                 } else {
-                  debug_info("binary message: " + buf);
-                  resolve({'binary_data' : buf});
-                }
-              });
+                    const impo = new mq.MQIMPO();
+                    const pd  = new mq.MQPD();
+        
+                    impo.Options =  MQC.MQIMPO_CONVERT_VALUE | MQC.MQIMPO_INQ_FIRST;
+
+                    // Use "%" as a wildcard to get all properties
+                    mq.InqMp(me.#hConn,mh,impo,pd, "traceparent", propBuf, (err,name,value,len,type) => {
+                        if (err) {
+                            if (err.mqrc == MQC.MQRC_PROPERTY_NOT_AVAILABLE) {
+                                debug_info("No more properties");
+                            } else {
+                              debug_info(formatErr(err));
+                            }
+
+                        } else {
+                          debug_info("Property name  : %s",name);
+                            if (type != MQC.MQTYPE_BYTE_STRING) {
+                              debug_info("         value : " + value);
+                            } else {
+                                let ba = "[";
+                                for (let i=0;i<len;i++) {
+                                  ba += " " + value[i];
+                                }
+                                ba += " ]";
+                                debug_info("         value : " + ba);
+                            }
+                      }         
+                  });
+
+                  if (mqmd.Format == "MQSTR") {
+                      // The Message from a Synchronouse GET is
+                      // a data buffer, which needs to be encoded
+                      // into a string, before the underlying
+                      // JSON object is extracted.
+                      debug_info("String data detected");
+          
+                      let buffString = decoder.write(buf.slice(0,len))
+          
+                      let msgObject = null;
+                      try {
+                          msgObject = JSON.parse(buffString);
+                          resolve(msgObject);
+                      } catch (err) {
+                          debug_info("Error parsing json ", err);
+                          debug_info("message <%s>", buffString);
+                          resolve({'string_data' : buffString});
+                      }
+                  } else {
+                      debug_info("binary message: " + buf);
+                      resolve({'binary_data' : buf});
+                  }
+                } 
+            });
         });
     }
 
