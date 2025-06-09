@@ -3,6 +3,9 @@
 ## Samples
 These samples are based on the Node.js (Node.js, serverless and showcase) patterns in this repo, reworked and cutdown, to allow http requests to initiate put and get requests. Be aware that his code throws randomly exceptions, designed to showcase the OTel trace and metric capabilities of the IBM MQ Client stack.
 
+The samples shows how to add instrumentation to applications mixing synchronous HTTP requests that need to respond quickly
+with longer running asynchronous logic.
+
 ## Requirements
 - Podman or Docker
 - Podman compose or Docker compose  

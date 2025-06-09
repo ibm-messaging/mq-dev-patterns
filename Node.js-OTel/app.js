@@ -28,7 +28,6 @@ const {ActionData} = require('./data/action.js');
 const {constants} = require('./settings/constants.js');
 const {envSettings} = require('./settings/environment.js');
 
-
 const NO_QMGR_OR_QUEUE = "QMGR / QUEUE is missing from data input";
 const UNKNOWN_QMGR = "Queue Manager not known";
 

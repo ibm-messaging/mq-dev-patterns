@@ -45,6 +45,9 @@ class AppConstants {
 
         this.USE_JAEGER_KEY = 'USE_JAEGER';
         this.USE_PROMETHEUS_KEY = 'USE_PROMETHEUS';
+
+        this.GET_ACTIVE_SPAN = 'MQI-Sample-Span';
+        this.ATTR_PUT_FUNCTION = 'qm-requests-put';
     }
 
     qm_data_keys() {
