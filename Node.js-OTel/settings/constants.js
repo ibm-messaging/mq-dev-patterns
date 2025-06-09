@@ -48,6 +48,8 @@ class AppConstants {
 
         this.GET_ACTIVE_SPAN = 'MQI-Sample-Span';
         this.ATTR_PUT_FUNCTION = 'qm-requests-put';
+
+        this.TRACE_PARENT_KEY = `traceparent`;
     }
 
     qm_data_keys() {

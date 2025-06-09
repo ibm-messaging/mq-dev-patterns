@@ -281,17 +281,38 @@ class MQConnection {
       });
     }
 
+    #DeleteMessageHeader(mh) {
+        let me = this;
+        return new Promise((resolve, reject) => {
+            let dmho = new mq.MQDMHO();
+            mq.DltMh(me.#hConn, mh, dmho, function(err) {
+                if (err) {
+                    debug_warn('Error deleting message header',  err);
+                } 
+                // Potential memory leak, but functionally carry on.
+                resolve();
+            });
+        });
+    }
+
     #getSingleMessageProcess() {
         debug_info("Initiating process to get a single message");
         let me = this;
+        let message = null;
+        let msgHeader = null;
         return new Promise((resolve, reject) => {
             me.#CreateMessageHeader()
             .then((mh) => {
-                return me.#getSingleMessage(mh);
+                msgHeader = mh;
+                return me.#getSingleMessage(msgHeader);
             })
             .then((msg) => {
-                resolve(msg);
-            });
+                message = msg;
+                return me.#DeleteMessageHeader(msgHeader)
+            })
+            .then(() => {
+                resolve(message);
+            })
         });
 
     }
@@ -301,7 +322,6 @@ class MQConnection {
         let me = this;
         return new Promise((resolve, reject) => {
             let buf = Buffer.alloc(1024);
-            let propBuf = Buffer.alloc(1024);
 
             let mqmd = new mq.MQMD();
             let gmo = new mq.MQGMO();
@@ -332,59 +352,60 @@ class MQConnection {
                     debug_info('Resolving null from getSingleMessage');
                     resolve(null);
                 } else {
-                    const impo = new mq.MQIMPO();
-                    const pd  = new mq.MQPD();
-        
-                    impo.Options =  MQC.MQIMPO_CONVERT_VALUE | MQC.MQIMPO_INQ_FIRST;
-
-                    // Use "%" as a wildcard to get all properties
-                    mq.InqMp(me.#hConn,mh,impo,pd, "traceparent", propBuf, (err,name,value,len,type) => {
-                        if (err) {
-                            if (err.mqrc == MQC.MQRC_PROPERTY_NOT_AVAILABLE) {
-                                debug_info("No more properties");
-                            } else {
-                              debug_info(formatErr(err));
+                    me.#getTraceParent(mh)
+                    .then((tp) => {
+                        debug_info('Trace properties found in message header ', tp);
+                        if (mqmd.Format == "MQSTR") {
+                            // The Message from a Synchronouse GET is
+                            // a data buffer, which needs to be encoded
+                            // into a string, before the underlying
+                            // JSON object is extracted.
+                            debug_info("String data detected");
+                
+                            let buffString = decoder.write(buf.slice(0,len))
+                
+                            let msgObject = null;
+                            try {
+                                msgObject = JSON.parse(buffString);
+                                resolve({...msgObject, ...tp});
+                            } catch (err) {
+                                debug_info("Error parsing json ", err);
+                                debug_info("message <%s>", buffString);
+                                resolve({'string_data' : buffString, ...tp});
                             }
-
                         } else {
-                          debug_info("Property name  : %s",name);
-                            if (type != MQC.MQTYPE_BYTE_STRING) {
-                              debug_info("         value : " + value);
-                            } else {
-                                let ba = "[";
-                                for (let i=0;i<len;i++) {
-                                  ba += " " + value[i];
-                                }
-                                ba += " ]";
-                                debug_info("         value : " + ba);
-                            }
-                      }         
-                  });
-
-                  if (mqmd.Format == "MQSTR") {
-                      // The Message from a Synchronouse GET is
-                      // a data buffer, which needs to be encoded
-                      // into a string, before the underlying
-                      // JSON object is extracted.
-                      debug_info("String data detected");
-          
-                      let buffString = decoder.write(buf.slice(0,len))
-          
-                      let msgObject = null;
-                      try {
-                          msgObject = JSON.parse(buffString);
-                          resolve(msgObject);
-                      } catch (err) {
-                          debug_info("Error parsing json ", err);
-                          debug_info("message <%s>", buffString);
-                          resolve({'string_data' : buffString});
-                      }
-                  } else {
-                      debug_info("binary message: " + buf);
-                      resolve({'binary_data' : buf});
-                  }
+                            debug_info("binary message: " + buf);
+                            resolve({'binary_data' : buf, ...tp});
+                        }
+                    });
                 } 
             });
+        });
+    }
+
+    #getTraceParent(mh) {
+        return new Promise((resolve, reject) => {
+            const impo = new mq.MQIMPO();
+            const pd  = new mq.MQPD();
+            let propBuf = Buffer.alloc(1024);
+    
+            impo.Options =  MQC.MQIMPO_CONVERT_VALUE | MQC.MQIMPO_INQ_FIRST;
+    
+            // Use "%" as a wildcard to get all properties
+            mq.InqMp(this.#hConn, mh, impo, pd, constants.TRACE_PARENT_KEY, propBuf, (err,name,value,len,type) => {
+                let tp = {};
+                if (err) {
+                    if (err.mqrc == MQC.MQRC_PROPERTY_NOT_AVAILABLE) {
+                        debug_info("Trace parent property not found");
+                    } else {
+                        debug_info(formatErr(err));
+                    }
+                } else {
+                    debug_info("Found property name  : %s", name);
+                    tp[constants.TRACE_PARENT_KEY] = value;
+                }    
+                resolve(tp);     
+            });            
         });
     }
 
