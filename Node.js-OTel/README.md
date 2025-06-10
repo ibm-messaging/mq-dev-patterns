@@ -38,3 +38,6 @@ The application exposes two `GET` http urls.
 
 For both a check is made to ensure that the `QMGR` specified is known. If not then a 400 error is returned. A check is made on `num`, and if not a number, or negative or two high, a randomly generated value is used as a replacement. A 200 is returned, and asynchronously the code will then put /  get `num` messages to / from the appropriate `QUEUE` on the specified `QMGR`. If an error is detected, then that is only recorded in the logs, and Otel instrumentation.
 
+## Tracing the path of messages
+The put mechanism marks approximately 1 in tolerance (by default 5) messages. The get signals an otel error for each marked message it sees. The get retrieves (if available) and logs with a new child span the put application's traceid, span and state as abstracted from the message it self.
+

@@ -27,6 +27,11 @@ class OtelObjects {
         debug_info("Obtaining tracer");
         return opentelemetry.trace.getTracer(name,version);
     }
+
+    getMeter(name, version) {
+        debug_info('Obtaining meter');
+        return opentelemetry.metrics.getMeter(name,version);
+    }
 }  
 
 

@@ -27,7 +27,16 @@ const TRACE_INDEX = 2;
 const SPAN_INDEX = 3;
 
 class MessageProcessor {
+    #ErrorMsgCounter = null;
     constructor() {
+        this.#initCounter();
+    }
+
+    #initCounter() {
+        const meter = otelObjects.getMeter(constants.DEFAULT_APP_NAME, constants.DEFAULT_APP_VERSION);
+        if (meter) {
+            this.#ErrorMsgCounter = meter.createCounter(constants.DAMAGED_MSG_COUNTER_ID);
+        }
     }
 
     process(messages) {
@@ -53,21 +62,34 @@ class MessageProcessor {
         debug_info(msg);
         if (msg[constants.DAMAGED_KEY]) {
             debug_warn("Found damaged message");
-            const tracer = otelObjects.getTracer(constants.DEFAULT_APP_NAME, constants.DEFAULT_APP_VERSION);
+            this.#recordTrace(msg);
+            this.#recordMeter();
+        }
+    }
 
-            if (tracer) {
-                const span = tracer.startSpan(constants.DAMAGED_MSG_SPAN);
-                let {traceid, spanid} = this.#extraceTraceSpanID(msg[constants.TRACE_PARENT_KEY]);
-                span.addEvent('Damaged message found', {
-                    'TraceParent' : msg[constants.TRACE_PARENT_KEY] || '',
-                    'ParentTrace' : traceid,
-                    'ParentSpan' : spanid
-                });
-                span.setStatus({
-                    code: opentelemetry.SpanStatusCode.ERROR,
-                    message: 'Error condition detected'
-                });
-                span.end();
+    #recordTrace(msg) {
+        const tracer = otelObjects.getTracer(constants.DEFAULT_APP_NAME, constants.DEFAULT_APP_VERSION);
+        if (tracer) {
+            const span = tracer.startSpan(constants.DAMAGED_MSG_SPAN);
+            let {traceid, spanid} = this.#extraceTraceSpanID(msg[constants.TRACE_PARENT_KEY]);
+            span.addEvent('Damaged message found', {
+                'TraceParent' : msg[constants.TRACE_PARENT_KEY] || '',
+                'ParentTrace' : traceid,
+                'ParentSpan' : spanid
+            });
+            span.setStatus({
+                code: opentelemetry.SpanStatusCode.ERROR,
+                message: 'Error condition detected'
+            });
+            span.end();
+        }
+    }
+
+    #recordMeter() {
+        if (this.#ErrorMsgCounter) {
+            const meter = otelObjects.getMeter(constants.DEFAULT_APP_NAME, constants.DEFAULT_APP_VERSION);
+            if (meter) {
+                this.#ErrorMsgCounter.add(1);
             }
         }
     }

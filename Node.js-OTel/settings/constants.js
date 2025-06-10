@@ -52,6 +52,7 @@ class AppConstants {
         this.ATTR_PUT_FUNCTION = 'qm-requests-put';
 
         this.DAMAGED_MSG_SPAN = 'Damaged-Message-Span';
+        this.DAMAGED_MSG_COUNTER_ID = 'MQI-sample-app-damaged-message-count'
 
         this.TRACE_PARENT_KEY = `traceparent`;
     }
