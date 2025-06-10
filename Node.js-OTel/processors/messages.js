@@ -28,19 +28,22 @@ const SPAN_INDEX = 3;
 
 class MessageProcessor {
     #ErrorMsgCounter = null;
+    #ErrorGetCounter = null;
     constructor() {
-        this.#initCounter();
+        this.#initCounters();
     }
 
-    #initCounter() {
+    #initCounters() {
         const meter = otelObjects.getMeter(constants.DEFAULT_APP_NAME, constants.DEFAULT_APP_VERSION);
         if (meter) {
             this.#ErrorMsgCounter = meter.createCounter(constants.DAMAGED_MSG_COUNTER_ID);
+            this.#ErrorGetCounter = meter.createCounter(constants.DAMAGED_GET_CYCLE_COUNTER_ID);
         }
     }
 
     process(messages) {
         debug_info("Processing messages");
+        let damagedFound = false;
         // debug_info(messages);
 
         // Check that there are messages and presented 
@@ -53,7 +56,12 @@ class MessageProcessor {
             debug_info("Returned message array is empty");
         } else {
             for (let msg of messages) {
-                this.#handleMessage(msg);
+                if (this.#handleMessage(msg)) {
+                    damagedFound = true;
+                }
+            }
+            if (damagedFound) {
+                this.#recordGetMeter();
             }
         }
     }
@@ -63,8 +71,10 @@ class MessageProcessor {
         if (msg[constants.DAMAGED_KEY]) {
             debug_warn("Found damaged message");
             this.#recordTrace(msg);
-            this.#recordMeter();
+            this.#recordMsgMeter();
+            return true;
         }
+        return false;
     }
 
     #recordTrace(msg) {
@@ -85,12 +95,15 @@ class MessageProcessor {
         }
     }
 
-    #recordMeter() {
+    #recordMsgMeter() {
         if (this.#ErrorMsgCounter) {
-            const meter = otelObjects.getMeter(constants.DEFAULT_APP_NAME, constants.DEFAULT_APP_VERSION);
-            if (meter) {
-                this.#ErrorMsgCounter.add(1);
-            }
+            this.#ErrorMsgCounter.add(1);
+        }
+    }
+
+    #recordGetMeter() {
+        if (this.#ErrorGetCounter) {
+            this.#ErrorGetCounter.add(1);
         }
     }
 
@@ -118,7 +131,7 @@ class MessageProcessor {
             }
         }
 
-        return { 'traceid' : parentTrace, 'spanid': parentTrace };
+        return { 'traceid' : parentTrace, 'spanid': parentSpan };
     }
 
 }   

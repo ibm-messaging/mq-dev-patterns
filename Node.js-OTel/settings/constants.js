@@ -53,6 +53,7 @@ class AppConstants {
 
         this.DAMAGED_MSG_SPAN = 'Damaged-Message-Span';
         this.DAMAGED_MSG_COUNTER_ID = 'MQI-sample-app-damaged-message-count'
+        this.DAMAGED_GET_CYCLE_COUNTER_ID = 'MQI-sample-app-damaged-get-request-count'
 
         this.TRACE_PARENT_KEY = `traceparent`;
     }
