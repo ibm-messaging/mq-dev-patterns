@@ -25,6 +25,7 @@ const debug_warn = require('debug')('mqsample:otel:messages:warn');
 
 const TRACE_INDEX = 2;
 const SPAN_INDEX = 3;
+const FLAGS_INDEX = 4;
 
 class MessageProcessor {
     #ErrorMsgCounter = null;
@@ -81,7 +82,18 @@ class MessageProcessor {
         const tracer = otelObjects.getTracer(constants.DEFAULT_APP_NAME, constants.DEFAULT_APP_VERSION);
         if (tracer) {
             const span = tracer.startSpan(constants.DAMAGED_MSG_SPAN);
-            let {traceid, spanid} = this.#extraceTraceSpanID(msg[constants.TRACE_PARENT_KEY]);
+
+            let {traceid, spanid, flags} = this.#extraceTraceSpanID(msg[constants.TRACE_PARENT_KEY]);
+             
+            if (traceid && spanid) {
+                let context = {};
+                context.traceId = traceid;
+                context.spanId = spanid;
+                context.traceFlags = flags;
+                const msgContext = { context: context };
+                span.addLink(msgContext);
+            }
+
             span.addEvent('Damaged message found', {
                 'TraceParent' : msg[constants.TRACE_PARENT_KEY] || '',
                 'ParentTrace' : traceid,
@@ -120,6 +132,7 @@ class MessageProcessor {
 
         let parentTrace = null;
         let parentSpan = null; 
+        let flags = null;
 
         if (matches) {
             const l = matches.length;
@@ -129,9 +142,12 @@ class MessageProcessor {
             if (l > SPAN_INDEX) {
                 parentSpan = matches[SPAN_INDEX];
             }
+            if (l > FLAGS_INDEX) {
+                flags = matches[FLAGS_INDEX] == "01" ? 1 : 0;
+            }
         }
 
-        return { 'traceid' : parentTrace, 'spanid': parentSpan };
+        return { 'traceid' : parentTrace, 'spanid': parentSpan, 'flags': flags };
     }
 
 }   
