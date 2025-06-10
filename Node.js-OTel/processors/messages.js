@@ -23,6 +23,9 @@ const { otelObjects } = require('../otels/get-otel');
 const debug_info = require('debug')('mqsample:otel:messages:info');
 const debug_warn = require('debug')('mqsample:otel:messages:warn');
 
+const TRACE_INDEX = 2;
+const SPAN_INDEX = 3;
+
 class MessageProcessor {
     constructor() {
     }
@@ -51,11 +54,14 @@ class MessageProcessor {
         if (msg[constants.DAMAGED_KEY]) {
             debug_warn("Found damaged message");
             const tracer = otelObjects.getTracer(constants.DEFAULT_APP_NAME, constants.DEFAULT_APP_VERSION);
-            
+
             if (tracer) {
                 const span = tracer.startSpan(constants.DAMAGED_MSG_SPAN);
+                let {traceid, spanid} = this.#extraceTraceSpanID(msg[constants.TRACE_PARENT_KEY]);
                 span.addEvent('Damaged message found', {
-                    'TraceParent' : msg[constants.TRACE_PARENT_KEY] || ''
+                    'TraceParent' : msg[constants.TRACE_PARENT_KEY] || '',
+                    'ParentTrace' : traceid,
+                    'ParentSpan' : spanid
                 });
                 span.setStatus({
                     code: opentelemetry.SpanStatusCode.ERROR,
@@ -65,7 +71,34 @@ class MessageProcessor {
             }
         }
     }
-    
+
+
+    // The Trace parent found in the message properties 
+    // will look something like
+    //  00-72bcd75bc6d4bcff6424dda0a551b60f-e28db55e5c248ad8-01
+    // where
+    //  Trace :  72bcd75bc6d4bcff6424dda0a551b60f
+    //  Span : e28db55e5c248ad8
+    #extraceTraceSpanID(traceparent) {
+        const re = /(\w+)-(\w+)-(\w+)-(\w+)/i;
+        let matches = traceparent.match(re);
+
+        let parentTrace = null;
+        let parentSpan = null; 
+
+        if (matches) {
+            const l = matches.length;
+            if (l > TRACE_INDEX) {
+                parentTrace = matches[TRACE_INDEX];
+            }
+            if (l > SPAN_INDEX) {
+                parentSpan = matches[SPAN_INDEX];
+            }
+        }
+
+        return { 'traceid' : parentTrace, 'spanid': parentTrace };
+    }
+
 }   
 
 const msgProcessor = new MessageProcessor();

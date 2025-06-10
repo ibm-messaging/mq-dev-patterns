@@ -34,7 +34,8 @@ const tracer = otelObjects.getTracer(constants.DEFAULT_APP_NAME, constants.DEFAU
 
 const OTEL_ATTR_TYPE = "SampleApp-MQI-Action-Type";
 const OTEL_ATTR_QMGR = "SampleApp-MQI-QMGR";
-const OTEL_ATTR_QUEUE = "SampleApp-MQI-QUEUE"
+const OTEL_ATTR_QUEUE = "SampleApp-MQI-QUEUE";
+const OTEL_ATTR_QUANTITY = "SampleApp-MQI-Message-Quantity";
 
 class QueueManagerInterface {
     constructor() {
@@ -81,7 +82,8 @@ class QueueManagerInterface {
             { attributes: {   
                 OTEL_ATTR_TYPE: constants.PUT,
                 OTEL_ATTR_QMGR: data.qmgr,
-                OTEL_ATTR_QUEUE: data.queue
+                OTEL_ATTR_QUEUE: data.queue,
+                OTEL_ATTR_QUANTITY: data.num
                 }
             },
             (span) => {

@@ -46,6 +46,18 @@ services:
     environment:
         COLLECTOR_OTLP_ENABLED: true
 
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+    ports:
+      - 9090:9090   
+    networks:
+      - qm1network   
+
   mqapp:
     platform: linux/amd64
     build: 
@@ -64,6 +76,7 @@ services:
     depends_on:
       - mq
       - jaeger
+      - prometheus
 
 networks:
   qm1network:
