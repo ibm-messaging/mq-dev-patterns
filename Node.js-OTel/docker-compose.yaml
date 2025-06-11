@@ -77,6 +77,13 @@ services:
       - mq
       - jaeger
       - prometheus
+    # Uncomment these 'entrypoint' and 'command' lines 
+    # to run the application without OTel 
+    # entrypoint: ["/bin/bash", "-c"]
+    # command:
+    # - |
+    #   npm run start
+
 
 networks:
   qm1network:
