@@ -80,7 +80,7 @@ class QueueManagerInterface {
         return tracer.startActiveSpan(        
             constants.GET_ACTIVE_SPAN, 
             { attributes: {   
-                OTEL_ATTR_TYPE: constants.PUT,
+                OTEL_ATTR_TYPE: type,
                 OTEL_ATTR_QMGR: data.qmgr,
                 OTEL_ATTR_QUEUE: data.queue,
                 OTEL_ATTR_QUANTITY: data.num
