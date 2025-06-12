@@ -107,7 +107,7 @@ class MQConnection {
       }
 
       if (appLimits.shouldItFail()) {
-        debug_info('**** Message being marked as promlematic');
+        debug_info('**** Message being marked as promblematic');
         msgObject[constants.DAMAGED_KEY] = '**** Rogue Message ****';
       }
 
