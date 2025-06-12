@@ -11,15 +11,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-# FROM --platform=linux/amd64 node:20.19.2
-
-# WORKDIR /usr/src/app
-# COPY package.json ./
-# RUN npm install
-
-# EXPOSE 8080
-# CMD ["npm","run","start"]
-
 FROM --platform=linux/amd64 node:20 as builder
 
 ENV APP_DIR /usr/local/app
@@ -80,7 +71,9 @@ COPY --from=builder ${APP_DIR}/ ${APP_DIR}
 
 EXPOSE 8080
 
+# For container debugging run
 # CMD ["sleep", "infinity"]
+
 # Normal application run
 # CMD ["npm","run","start"]
 
