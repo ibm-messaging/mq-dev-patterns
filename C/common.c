@@ -126,7 +126,6 @@ int connectQMgr(PMQHCONN pHConn) {
 
   }
 
-
   #ifdef JWT_ENABLED
 
   if (jwtCheck(jwtEp)) {
@@ -333,7 +332,9 @@ char* obtainToken(jwtEndpoint_t jwtEp) {
   if (jwtEp.tokenKeyRepository) {
     curl_easy_setopt(curl, CURLOPT_CAINFO, jwtEp.tokenKeyRepository);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+
+    // uncomment the following command to debug https request
+    //curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
   }
 
   result = curl_easy_perform(curl);
@@ -343,12 +344,10 @@ char* obtainToken(jwtEndpoint_t jwtEp) {
     fprintf(stderr, "Error: %s\n", curl_easy_strerror(result));
       curl_easy_cleanup(curl);
       free(response.string);
-      curl_global_cleanup();
       return NULL;
   }
 
   curl_easy_cleanup(curl);
-  curl_global_cleanup();
 
 
   parsed_json = json_tokener_parse(response.string);

@@ -52,7 +52,7 @@ static void dumpConfig(char *);
 jwtEndpoint_t jwt;
 mqEndpoint_t mqEndpoints[MAX_MQ_ENDPOINTS];
 int epIdx = 0;
-int debug = 1;
+int debug = 0;
 
 // Internal to this file
 static jwtEndpoint_t *pJwt = &jwt;

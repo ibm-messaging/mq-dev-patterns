@@ -5,6 +5,7 @@ These samples use the C MQI to demonstrate basic messaging operations.
 * Install the IBM MQ client for your system, or unpack the Redistributable Client package if available.
   * The SDK component is needed in order to compile these programs.
 * You also need a C compiler
+* And the 'make' build automation tool
 
 ## Introduction to the C samples
 
@@ -59,10 +60,16 @@ Apart from the optional command line parameter naming the configuration file, th
 other parameters to any of the programs.
 
 You might need to run `setmqenv` to create environment variables pointing at your MQ installation
-libraries. And on MacOS, the `DYLD_LIBRARY_PATH` will usually need to be set to include the 
+libraries. 
+
+And on MacOS, the `DYLD_LIBRARY_PATH` will usually need to be set to include the 
 `/opt/mqm/lib64` directory. 
 
 `export DYLD_LIBRARY_PATH=/opt/mqm/lib64`
+
+If you are on Linux, you might need set the `LD_LIBRARY_PATH` to include the `/opt/mqm/lib64` directory. 
+
+`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/mqm/lib64`
 
 See [here](https://www.ibm.com/docs/en/ibm-mq/latest?topic=reference-setmqenv-set-mq-environment) for 
 more information about `setmqenv`. 
@@ -109,9 +116,9 @@ To enable token-based authentication, ensure you have a configured token issuer 
     "JWT_KEY_REPOSITORY": "path/to/tokenIssuerKeystore"
   }]
 ```
-For JWT authentication via JWKS, make sure `JWT_KEY_REPOSITORY` points to your token issuer's public certificate and your queue manager is configured to retrieve the JWKS
+For JWT authentication via JWKS, make sure `JWT_KEY_REPOSITORY` points to your token issuer's public certificate and your queue manager is configured to retrieve the JWKS.
 
-If you would like to proceed with JWT authentication without JWKS validation, edit the endpoint to use the correct URL (beginning with http) and leave `JWT_KEY_REPOSITORY` blank.
+If you would like to proceed with JWT authentication without JWKS validation, edit the endpoint to use the correct URL and leave `JWT_KEY_REPOSITORY` blank.
 
 
 Before you compile and run the samples ensure you have installed the required curl and json-c libraries. This can be done through homebrew:
@@ -126,19 +133,28 @@ or you can visit the following websites:
 And on MacOS, the `DYLD_LIBRARY_PATH` will need to be set to include the curl library directory.
 
 `export DYLD_LIBRARY_PATH=/opt/homebrew/opt/curl/lib:/opt/mqm/lib64`
-*note: This uses the homebrew install path, if you installed curl via another method, edit the path as required.
+
+And on Linux, the `LD_LIBRARY_PATH` will also need to be set accordingly.
+
+`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/linuxbrew/.linuxbrew/Cellar/curl/lib:/opt/mqm/lib64`
+
+*note: These commands use the homebrew install path, if you installed curl/json-c via another method, edit the path as required.
 
 To compile a sample with JWT enablement:
 
-If you are on a Mac and have installed the curl and json-c libraries through homebrew, you can compile by simply running:
+If you have samples that you have already compiled, make sure to get rid of these executable files by running:
+
+`make clean`
+
+If you are on a Mac and have installed the curl and json-c libraries through homebrew, you can compile your applications by simply running:
 `make JWT=1`
 
-Our makefile defaults the library directories to the homebrew MacOS path, but if you are on a different machine or have gone through an alternative installation method - you will need to point the makefile to the correct directories:
+Our makefile defaults the library directories to the homebrew MacOS path, so if you are on a different machine or have gone through an alternative installation method - you will need to point the makefile to the correct directories:
 
 `make JWT=1 \
   CURL_INCLUDE=/custom/path/to/curl/include \
   CURL_LIB=/custom/path/to/curl/lib \
   JSONC_INCLUDE=/custom/path/to/json-c/include \
-  JSONC_LIB=/custom/path/to/json-c/lib `
+  JSONC_LIB=/custom/path/to/json-c/lib`
 
-Then you can run the saamples as normal.
+Then you can run the samples as normal.
