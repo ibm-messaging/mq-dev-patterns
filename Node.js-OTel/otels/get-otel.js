@@ -34,8 +34,6 @@ class OtelObjects {
     }
 }  
 
-
-
 const otelObjects = new OtelObjects();
 
 module.exports = {otelObjects};

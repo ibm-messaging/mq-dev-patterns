@@ -161,8 +161,4 @@ class QueueManagerInterface {
 
 }   
 
-
-
-//const qmi = new QueueManagerInterface();
-
 module.exports = { QueueManagerInterface };
