@@ -304,7 +304,7 @@ char* obtainToken(jwtEndpoint_t jwtEp) {
   CURLcode result;
   char post_data[512];
   struct json_object *parsed_json = NULL;
-  struct json_object *newToken = NULL;
+  struct json_object *accessToken = NULL;
   char *token = NULL;
 
   snprintf(post_data, sizeof(post_data),
@@ -357,14 +357,14 @@ char* obtainToken(jwtEndpoint_t jwtEp) {
       return NULL;
   }
 
-  if (!json_object_object_get_ex(parsed_json, "access_token", &newToken)) {
+  if (!json_object_object_get_ex(parsed_json, "access_token", &accessToken)) {
       fprintf(stderr, "JSON does not contain 'access_token'\n");
       json_object_put(parsed_json);
       free(response.string);
       return NULL;
   }
 
-  const char *temp = json_object_get_string(newToken);
+  const char *temp = json_object_get_string(accessToken);
   token = strdup((char *)temp);
 
   json_object_put(parsed_json);
