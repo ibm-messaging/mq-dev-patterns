@@ -1,0 +1,90 @@
+#  Copyright 2025 IBM Corp.
+#  Licensed under the Apache License, Version 2.0 (the 'License');
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+ 
+#  http://www.apache.org/licenses/LICENSE-2.0
+ 
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+FROM --platform=linux/amd64 registry.access.redhat.com/ubi9/nodejs-20 as builder
+
+# Need to become root for npm install to work
+USER 0
+
+ENV BUILD_APP_DIR /opt/app-root/src/nodejs/app
+WORKDIR ${BUILD_APP_DIR}
+
+# Copy project files into the container
+COPY ./ ./
+
+# Copy is crude, so may have native build legacy, which should
+# be removed before a container based npm install
+RUN rm -fr node_modules \
+    && npm install --omit=dev \   
+    && chmod a+rx ${BUILD_APP_DIR}/*
+
+#Cleaning
+WORKDIR ${BUILD_APP_DIR}/node_modules/ibmmq/lib
+RUN rm mqidefs_aix.js \
+    && rm mqidefs_darwin.js \
+    && rm mqidefs_linuxPowerLE.js \
+    && rm mqidefs_linuxS390.js \
+    && rm mqidefs_windows.js \
+    && rm mqidefs_linuxARM.js 
+
+WORKDIR ${BUILD_APP_DIR}/node_modules/ibmmq/redist
+RUN rm -r msg \
+    && rm -r bin \
+    && rm -r lap   
+    
+WORKDIR ${BUILD_APP_DIR}/node_modules/ibmmq/redist/lib64
+RUN rm libcurl.so \
+    && rm libmqz_r.so \
+    && rm libmqzsd_r.so \
+    && rm libmqcxa64_r.so \ 
+    && rm libmqcxa_r.so \
+    && rm libmqdc_r.so \
+    && rm libmqecs_r.so \
+    && rm libmqic_r.so \
+    && rm libmqiz_r.so \
+    && rm libmqjx_r.so \
+    && rm libmqmcs_r.so \
+    && rm libmqmzse.so \
+    && rm libmqxzu_r.so
+
+###########################################################
+# This starts the RUNTIME phase
+###########################################################
+# Now that there is a container with the compiled program we can build a smaller
+# runtime image. Start from one of the smaller base container images. This container
+# is a Node image with the runtime already embedded
+FROM --platform=linux/amd64 registry.access.redhat.com/ubi9/nodejs-20-minimal as appImage
+
+# Need to repeat BUILD Directory location as environment option will
+# have been lost
+ENV BUILD_APP_DIR /opt/app-root/src/nodejs/app
+ENV RUN_APP_DIR /opt/app-root/src/nodejs/app
+WORKDIR ${RUN_APP_DIR}
+
+# # Copy over the tree containing the program and all its dependencies
+COPY --from=builder ${BUILD_APP_DIR}/ ${RUN_APP_DIR}/
+
+EXPOSE 8080
+
+# For container debugging run
+# CMD ["sleep", "infinity"]
+
+# Normal application run
+# CMD ["npm","run","start"]
+
+# With tracing and metrics to the console
+# CMD ["npm","run","trace"]
+
+# With tracing to Jaeger and metrics to Prometheus
+CMD ["npm","run","export-trace"]
+
