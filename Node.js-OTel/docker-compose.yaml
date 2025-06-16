@@ -35,7 +35,7 @@ services:
       - mqAppPassword
 
   jaeger:
-    image: jaegertracing/all-in-one
+    image: quay.io/jaegertracing/all-in-one
     container_name: jaeger
     ports:
         - 4317:4317
@@ -47,7 +47,7 @@ services:
         COLLECTOR_OTLP_ENABLED: true
 
   prometheus:
-    image: prom/prometheus
+    image: quay.io/prometheus/prometheus
     container_name: prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
