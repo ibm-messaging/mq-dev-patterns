@@ -11,36 +11,38 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-FROM --platform=linux/amd64 node:20 as builder
+FROM --platform=linux/amd64 registry.access.redhat.com/ubi9/nodejs-20 as builder
 
-ENV APP_DIR /usr/local/app
-WORKDIR ${APP_DIR}
+# Need to become root for npm install to work
+USER 0
+
+ENV BUILD_APP_DIR /opt/app-root/src/nodejs/app
+WORKDIR ${BUILD_APP_DIR}
 
 # Copy project files into the container
 COPY ./ ./
 
+# Copy is crude, so may have native build legacy, which should
+# be removed before a container based npm install
 RUN rm -fr node_modules \
     && npm install --omit=dev \   
-    && chmod a+rx ${APP_DIR}/*
+    && chmod a+rx ${BUILD_APP_DIR}/*
 
 #Cleaning
-ENV APP_DIR /usr/local/app/node_modules/ibmmq/lib
-WORKDIR ${APP_DIR}
+WORKDIR ${BUILD_APP_DIR}/node_modules/ibmmq/lib
 RUN rm mqidefs_aix.js \
     && rm mqidefs_darwin.js \
     && rm mqidefs_linuxPowerLE.js \
     && rm mqidefs_linuxS390.js \
     && rm mqidefs_windows.js \
     && rm mqidefs_linuxARM.js 
-    
-ENV APP_DIR /usr/local/app/node_modules/ibmmq/redist
-WORKDIR ${APP_DIR}
+
+WORKDIR ${BUILD_APP_DIR}/node_modules/ibmmq/redist
 RUN rm -r msg \
     && rm -r bin \
     && rm -r lap   
     
-ENV APP_DIR /usr/local/app/node_modules/ibmmq/redist/lib64
-WORKDIR ${APP_DIR}
+WORKDIR ${BUILD_APP_DIR}/node_modules/ibmmq/redist/lib64
 RUN rm libcurl.so \
     && rm libmqz_r.so \
     && rm libmqzsd_r.so \
@@ -60,14 +62,17 @@ RUN rm libcurl.so \
 ###########################################################
 # Now that there is a container with the compiled program we can build a smaller
 # runtime image. Start from one of the smaller base container images. This container
-# is an official Node image with the runtime already embedded
-FROM --platform=linux/amd64 node:20-slim as backendImage
+# is a Node image with the runtime already embedded
+FROM --platform=linux/amd64 registry.access.redhat.com/ubi9/nodejs-20-minimal as appImage
 
-ENV APP_DIR /usr/local/app/
-WORKDIR ${APP_DIR}
+# Need to repeat BUILD Directory location as environment option will
+# have been lost
+ENV BUILD_APP_DIR /opt/app-root/src/nodejs/app
+ENV RUN_APP_DIR /opt/app-root/src/nodejs/app
+WORKDIR ${RUN_APP_DIR}
 
-# Copy over the tree containing the program and all its dependencies
-COPY --from=builder ${APP_DIR}/ ${APP_DIR}
+# # Copy over the tree containing the program and all its dependencies
+COPY --from=builder ${BUILD_APP_DIR}/ ${RUN_APP_DIR}/
 
 EXPOSE 8080
 
