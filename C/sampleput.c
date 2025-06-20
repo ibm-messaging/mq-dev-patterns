@@ -60,7 +60,6 @@ int main(int argc, char **argv) {
   if (rc == 0) {
     rc = openQueue(hConn, &hObj);
   }
-
   if (rc == 0) {
     char msgData[DEFAULT_BUFFER_LENGTH];
     time(&now);
