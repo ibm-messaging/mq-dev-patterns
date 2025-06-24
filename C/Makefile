@@ -13,22 +13,62 @@ APPS = sampleput \
 
 CDEBUG=-g
 
-
+UNAME_S := $(shell uname -s)
 
 ifndef CURL_INCLUDE
-  CURL_INCLUDE := /opt/homebrew/opt/curl/include
+
+  ifeq ($(UNAME_S),Linux)
+    CURL_INCLUDE := /usr/include/curl
+
+  else ifeq ($(UNAME_S),AIX)
+    CURL_INCLUDE := /opt/freeware/include/curl
+
+  else
+    CURL_INCLUDE := /opt/homebrew/opt/curl/include
+  endif
+
 endif
 
 ifndef JSONC_INCLUDE
-  JSONC_INCLUDE := /opt/homebrew/opt/json-c/include
+
+  ifeq ($(UNAME_S),Linux)
+    JSONC_INCLUDE := /usr/include/json-c
+
+  else ifeq ($(UNAME_S),AIX)
+    JSONC_INCLUDE := /opt/freeware/include/json-c
+
+  else
+    JSONC_INCLUDE := /opt/homebrew/opt/json-c/include
+  endif
+
 endif
 
 ifndef CURL_LIB
-  CURL_LIB := /opt/homebrew/opt/curl/lib
+
+  ifeq ($(UNAME_S),Linux)
+    CURL_LIB := /usr/lib64
+
+  else ifeq ($(UNAME_S),AIX)
+    CURL_LIB := /opt/freeware/lib
+
+  else
+    CURL_LIB := /opt/homebrew/opt/curl/lib
+  endif
+
 endif
 
 ifndef JSONC_LIB
-  JSONC_LIB := /opt/homebrew/opt/json-c/lib
+
+  ifeq ($(UNAME_S),Linux)
+    JSONC_LIB := /usr/lib64
+
+  else ifeq ($(UNAME_S),AIX)
+    JSONC_LIB := /opt/freeware/lib
+
+  else
+    JSONC_LIB := /opt/homebrew/opt/json-c/lib
+  endif
+  
 endif
 
 ifeq ($(JWT),1)
@@ -45,18 +85,19 @@ clean:
 	@rm -f *.exe *.obj
 
 sampleput: sampleput.c $(COMMONSRC) $(COMMONINC) Makefile
-	$(CC) $(CDEBUG) -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r $(JWT_CFLAGS) $(JWT_LDFLAGS)
+	$(CC) $(CDEBUG) -o $@ $@.c $(COMMONSRC) $(JWT_CFLAGS) $(JWT_LDFLAGS) -I$(MQINC) -L$(MQLIB) -lmqm_r
+
 sampleget: sampleget.c $(COMMONSRC) $(COMMONINC) Makefile
-	$(CC) $(CDEBUG) -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r $(JWT_CFLAGS) $(JWT_LDFLAGS)
+	$(CC) $(CDEBUG) -o $@ $@.c $(COMMONSRC) $(JWT_CFLAGS) $(JWT_LDFLAGS) -I$(MQINC) -L$(MQLIB) -lmqm_r 
 
 samplerequest: samplerequest.c $(COMMONSRC) $(COMMONINC) Makefile
-	$(CC) $(CDEBUG) -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r $(JWT_CFLAGS) $(JWT_LDFLAGS)
+	$(CC) $(CDEBUG) -o $@ $@.c $(COMMONSRC) $(JWT_CFLAGS) $(JWT_LDFLAGS) -I$(MQINC) -L$(MQLIB) -lmqm_r 
 
 sampleresponse: sampleresponse.c $(COMMONSRC) $(COMMONINC) Makefile
-	$(CC) $(CDEBUG) -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r $(JWT_CFLAGS) $(JWT_LDFLAGS)
+	$(CC) $(CDEBUG) -o $@ $@.c $(COMMONSRC) $(JWT_CFLAGS) $(JWT_LDFLAGS) -I$(MQINC) -L$(MQLIB) -lmqm_r 
 
 samplepublish: samplepublish.c $(COMMONSRC) $(COMMONINC) Makefile
-	$(CC) $(CDEBUG) -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r $(JWT_CFLAGS) $(JWT_LDFLAGS)
+	$(CC) $(CDEBUG) -o $@ $@.c $(COMMONSRC) $(JWT_CFLAGS) $(JWT_LDFLAGS) -I$(MQINC) -L$(MQLIB) -lmqm_r 
 
 samplesubscribe: samplesubscribe.c $(COMMONSRC) $(COMMONINC) Makefile
-	$(CC) $(CDEBUG) -o $@ $@.c $(COMMONSRC) -I$(MQINC) -L$(MQLIB) -lmqm_r $(JWT_CFLAGS) $(JWT_LDFLAGS)
+	$(CC) $(CDEBUG) -o $@ $@.c $(COMMONSRC) $(JWT_CFLAGS) $(JWT_LDFLAGS) -I$(MQINC) -L$(MQLIB) -lmqm_r 

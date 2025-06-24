@@ -105,6 +105,8 @@ Start the `sampleresponse` program in one window (or in the background) and imme
 
 ### Running samples with JWT authentication
 
+* Note: JWT authentication has been enabled for MacOS, Linux and AIX platforms.
+
 To enable token-based authentication, ensure you have a configured token issuer and queue manager [JWT README](jwt-jwks-docs/README.md) and then edit the `JWT_ISSUER` block in the env.json file
 
 ```JSON
@@ -116,45 +118,42 @@ To enable token-based authentication, ensure you have a configured token issuer 
     "JWT_KEY_REPOSITORY": "path/to/tokenIssuerKeystore"
   }]
 ```
-For JWT authentication via JWKS, make sure `JWT_KEY_REPOSITORY` points to your token issuer's public certificate and your queue manager is configured to retrieve the JWKS.
+For JWT authentication via JWKS, make sure `JWT_KEY_REPOSITORY` points to your token issuer's public certificate(keycloakPublic.pem) and your queue manager is configured to retrieve the JWKS.
 
 If you would like to proceed with JWT authentication without JWKS validation, edit the endpoint to use the correct URL and leave `JWT_KEY_REPOSITORY` blank.
 
+#### Dependencies for JWT authentication
+* libcurl
+* json-c
+* gmake (for AIX only)
 
-Before you compile and run the samples ensure you have installed the required curl and json-c libraries. This can be done through homebrew:
-
-`brew install curl`
-`brew install json-c`
-
-or you can visit the following websites:
 [curl](https://curl.se/docs/install.html)
 [json-c](https://github.com/json-c/json-c)
 
-And on MacOS, the `DYLD_LIBRARY_PATH` will need to be set to include the curl library directory.
+On MacOS, the `DYLD_LIBRARY_PATH` will need to be set to include the curl library directory.
 
 `export DYLD_LIBRARY_PATH=/opt/homebrew/opt/curl/lib:/opt/mqm/lib64`
 
-And on Linux, the `LD_LIBRARY_PATH` will also need to be set accordingly.
-
-`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/linuxbrew/.linuxbrew/Cellar/curl/lib:/opt/mqm/lib64`
-
-*note: These commands use the homebrew install path, if you installed curl/json-c via another method, edit the path as required.
+* Note: This command uses the default homebrew install path, if you installed curl/json-c via another method, edit the path as required.
 
 To compile a sample with JWT enablement:
+
+* Note: If you are on an AIX machine - replace make with `gmake`
 
 If you have samples that you have already compiled, make sure to get rid of these executable files by running:
 
 `make clean`
 
-If you are on a Mac and have installed the curl and json-c libraries through homebrew, you can compile your applications by simply running:
+The Makefile provides default curl and json-c libraries installation paths for Mac (Homebrew), Linux (standard system paths), and AIX (AIX Toolbox) systems. If your environment matches one of these, you can simply run:
+
 `make JWT=1`
 
-Our makefile defaults the library directories to the homebrew MacOS path, so if you are on a different machine or have gone through an alternative installation method - you will need to point the makefile to the correct directories:
+If your libraries are installed in different locations, override the defaults by specifying the include and library paths explicitly:
 
 `make JWT=1 \
-  CURL_INCLUDE=/custom/path/to/curl/include \
-  CURL_LIB=/custom/path/to/curl/lib \
-  JSONC_INCLUDE=/custom/path/to/json-c/include \
-  JSONC_LIB=/custom/path/to/json-c/lib`
+  CURL_INCLUDE=/path/to/curl/include \
+  CURL_LIB=/path/to/curl/lib \
+  JSONC_INCLUDE=/path/to/json-c/include \
+  JSONC_LIB=/path/to/json-c/lib`
 
 Then you can run the samples as normal.

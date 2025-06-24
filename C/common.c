@@ -145,8 +145,7 @@ int connectQMgr(PMQHCONN pHConn) {
     mqcsp.TokenLength = (MQLONG) strlen(token);
     mqcno.SecurityParmsPtr = &mqcsp;
 
-  }
-  else
+  } else
   #endif
 
   if (ep.appUser) {
@@ -261,13 +260,13 @@ void dumpHex(const char *title, void *buf, int length) {
 
 #ifdef JWT_ENABLED
 // check for any missing JWT credentials
-int jwtCheck(jwtEndpoint_t jwtEp){
+int jwtCheck(jwtEndpoint_t jwtEp) {
 
   if (!jwtEp.tokenEndpoint || !jwtEp.tokenUserName || !jwtEp.tokenPwd || !jwtEp.tokenClientId) {
     printf("One or more JWT credentials missing, will not be using JWT to authenticate\n");
     return 0;
 
-  }else{
+  } else {
     printf("JWT credentials found, will be using JWT to authenticate\n");
   }
   return 1;
@@ -282,7 +281,7 @@ size_t write_chunk(void *data, size_t size, size_t nmemb, void *userdata){
 
   char *ptr = realloc(response->string, response->size + totalSize + 1);
 
-  if (ptr == NULL){
+  if (ptr == NULL) {
     return CURL_WRITEFUNC_ERROR;
   }
 
@@ -310,7 +309,7 @@ char* obtainToken(jwtEndpoint_t jwtEp) {
     jwtEp.tokenUserName, jwtEp.tokenPwd, jwtEp.tokenClientId);
 
   curl = curl_easy_init();
-  if (curl == NULL){
+  if (curl == NULL) {
     fprintf(stderr, "request failed\n");
     return NULL;
   }
@@ -336,7 +335,7 @@ char* obtainToken(jwtEndpoint_t jwtEp) {
 
   result = curl_easy_perform(curl);
 
-  if (result != CURLE_OK){
+  if (result != CURLE_OK) {
     fprintf(stderr, "Error: %s\n", curl_easy_strerror(result));
     curl_easy_cleanup(curl);
     free(response.string);
