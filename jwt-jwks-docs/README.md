@@ -8,7 +8,7 @@
 
 ``` mkdir keycloakKeystore ```
 
-``` openssl req -newkey rsa:2048 -nodes -keyout keycloakKeystore/keycloakPrivate.pem -x509 -days 365 -out keycloakKeystore/keycloakPublic.pem -subj "/C=GB/ST=MYSTATE/L=MYCITY/O=MYORG, Inc./OU=IT/CN=<hostname>" ```
+``` openssl req -newkey rsa:2048 -nodes -keyout keycloakKeystore/keycloakPrivate.pem -x509 -days 365 -out keycloakKeystore/keycloakPublic.pem -subj "/C=GB/ST=MYSTATE/L=MYCITY/O=MYORG, Inc./OU=IT/CN=<hostname>" -addext "subjectAltName=DNS:<hostname>,IP:127.0.0.1" ```
 
 ``` openssl pkcs12 -inkey keycloakKeystore/keycloakPrivate.pem -in keycloakKeystore/keycloakPublic.pem -export -out keycloakKeystore/keycloak.p12 ```
 
