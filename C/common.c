@@ -1,5 +1,5 @@
 /**
- * Copyright 2024 IBM Corp.
+ * Copyright 2024,2025 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
+
+#ifdef JWT_ENABLED
+#include <curl/curl.h>
+#include <json-c/json.h>
+#endif
 
 #include <cmqc.h>
 #include <cmqstrc.h>
@@ -46,6 +52,7 @@ int connectQMgr(PMQHCONN pHConn) {
   int s = sizeof(ConnectionName);
 
   mqEndpoint_t ep = mqEndpoints[0];
+  jwtEndpoint_t jwtEp = jwt;
 
   // Set structure version high enough to include all the fields we might want to use
   mqcno.Version = MQCNO_VERSION_8;
@@ -119,9 +126,28 @@ int connectQMgr(PMQHCONN pHConn) {
 
   }
 
-  // Authentication can apply for both local and client connections
-  // Using JWT tokens would require code to actually get the token from
-  // a server first, so that's not going in here for now.
+  #ifdef JWT_ENABLED
+
+  if (jwtCheck(jwtEp)) {
+
+    char *token = obtainToken(jwtEp);
+
+    if (!token) {
+      fprintf(stderr, "Failed to obtain token — exiting.\n");
+      return rc;  
+    }
+    
+    printf("Using token:\n%s\n", token);
+
+    mqcsp.Version = MQCSP_VERSION_3;
+    mqcsp.TokenPtr = token;
+    mqcsp.AuthenticationType = MQCSP_AUTH_ID_TOKEN;
+    mqcsp.TokenLength = (MQLONG) strlen(token);
+    mqcno.SecurityParmsPtr = &mqcsp;
+
+  } else
+  #endif
+
   if (ep.appUser) {
     mqcsp.CSPUserIdPtr = ep.appUser;
     mqcsp.CSPUserIdLength = strlen(ep.appUser);
@@ -231,3 +257,115 @@ void dumpHex(const char *title, void *buf, int length) {
 
   return;
 }
+
+#ifdef JWT_ENABLED
+// check for any missing JWT credentials
+int jwtCheck(jwtEndpoint_t jwtEp) {
+
+  if (!jwtEp.tokenEndpoint || !jwtEp.tokenUserName || !jwtEp.tokenPwd || !jwtEp.tokenClientId) {
+    printf("One or more JWT credentials missing, will not be using JWT to authenticate\n");
+    return 0;
+
+  } else {
+    printf("JWT credentials found, will be using JWT to authenticate\n");
+  }
+  return 1;
+}
+
+// callback function to write response from curl request into memory
+size_t write_chunk(void *data, size_t size, size_t nmemb, void *userdata){
+
+  size_t totalSize = size * nmemb;
+
+  jwtResponse *response = (jwtResponse *) userdata;
+
+  char *ptr = realloc(response->string, response->size + totalSize + 1);
+
+  if (ptr == NULL) {
+    return CURL_WRITEFUNC_ERROR;
+  }
+
+  response->string = ptr;
+  memcpy(&(response->string[response->size]), data, totalSize);
+  response->size += totalSize;
+  response->string[response->size] = 0;
+
+  return totalSize;
+}
+
+// use the libCurl library to obtain token
+// use the json-c library to parse the response and extract access token
+char* obtainToken(jwtEndpoint_t jwtEp) {
+
+  CURL *curl;
+  CURLcode result;
+  char post_data[512];
+  struct json_object *parsed_json = NULL;
+  struct json_object *accessToken = NULL;
+  char *token = NULL;
+
+  snprintf(post_data, sizeof(post_data),
+    "username=%s&password=%s&client_id=%s&grant_type=password",
+    jwtEp.tokenUserName, jwtEp.tokenPwd, jwtEp.tokenClientId);
+
+  curl = curl_easy_init();
+  if (curl == NULL) {
+    fprintf(stderr, "request failed\n");
+    return NULL;
+  }
+
+  jwtResponse response;
+  response.string = malloc(1);
+  response.size = 0;
+
+  curl_easy_setopt(curl, CURLOPT_URL, jwtEp.tokenEndpoint);
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post_data);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_chunk);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &response);
+
+  // if the token issuer is a https server, access the server's public certificate
+  // JWT_KEY_REPOSITORY must point to the server's public certificate
+  if (jwtEp.tokenKeyRepository) {
+    curl_easy_setopt(curl, CURLOPT_CAINFO, jwtEp.tokenKeyRepository);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
+
+    // uncomment the following command to debug https request
+    //curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+  }
+
+  result = curl_easy_perform(curl);
+
+  if (result != CURLE_OK) {
+    fprintf(stderr, "Error: %s\n", curl_easy_strerror(result));
+    curl_easy_cleanup(curl);
+    free(response.string);
+    return NULL;
+  }
+
+  curl_easy_cleanup(curl);
+
+
+  parsed_json = json_tokener_parse(response.string);
+  if (!parsed_json) {
+    fprintf(stderr, "Failed to parse JSON response\n");
+    free(response.string);
+    return NULL;
+  }
+
+  if (!json_object_object_get_ex(parsed_json, "access_token", &accessToken)) {
+    fprintf(stderr, "JSON does not contain 'access_token'\n");
+    json_object_put(parsed_json);
+    free(response.string);
+    return NULL;
+  }
+
+  const char *temp = json_object_get_string(accessToken);
+  token = strdup((char *)temp);
+
+  json_object_put(parsed_json);
+
+  free(response.string);
+
+  return token;
+}
+#endif

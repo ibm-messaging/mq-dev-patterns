@@ -1,5 +1,5 @@
 /**
- * Copyright 2024 IBM Corp.
+ * Copyright 2024,2025 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@
 
 #include <cmqc.h>
 
+#include "config.h"
+
 int  connectQMgr(PMQHCONN);
 void disconnectQMgr(PMQHCONN);
 
@@ -27,6 +29,10 @@ void closeObject(MQHCONN hConn, PMQHOBJ pHObj);
 
 void printError(char *verb, MQLONG compCode, MQLONG reason);
 void dumpHex(const char *title, void *buf, int length);
+
+int jwtCheck(jwtEndpoint_t endpoint);
+size_t write_chunk(void *data, size_t size, size_t nmemb, void *userdata);
+char* obtainToken(jwtEndpoint_t endpoint);
 
 #define DEFAULT_BUFFER_LENGTH 256
 

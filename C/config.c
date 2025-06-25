@@ -1,5 +1,5 @@
 /**
- * Copyright 2024 IBM Corp.
+ * Copyright 2024,2025 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -158,7 +158,7 @@ int parseConfig(char *filename) {
           ep->cipherSuite = nv.value;
         else if (!strcmp(nv.name, CONFIG_KEY_REPOSITORY))
           ep->keyRepository = nv.value;
-         else if (!strcmp(nv.name, CONFIG_WAIT_INTERVAL))
+        else if (!strcmp(nv.name, CONFIG_WAIT_INTERVAL))
           ep->waitInterval = nv.value;
         break;
 
@@ -171,6 +171,8 @@ int parseConfig(char *filename) {
           pJwt->tokenPwd = nv.value;
         else if (!strcmp(nv.name, CONFIG_JWT_TOKEN_CLIENTID))
           pJwt->tokenClientId = nv.value;
+        else if (!strcmp(nv.name, CONFIG_JWT_KEY_REPOSITORY))
+          pJwt->tokenKeyRepository = nv.value;
         break;
 
       default: // Ignore the line
@@ -216,6 +218,7 @@ int parseConfig(char *filename) {
   (void)overrideEnv(&pJwt->tokenUserName, CONFIG_JWT_TOKEN_USERNAME);
   (void)overrideEnv(&pJwt->tokenPwd, CONFIG_JWT_TOKEN_PWD);
   (void)overrideEnv(&pJwt->tokenClientId, CONFIG_JWT_TOKEN_CLIENTID);
+  (void)overrideEnv(&pJwt->tokenKeyRepository, CONFIG_JWT_KEY_REPOSITORY);
 
   // Call this if we want to check the config has been correctly parsed
   if (debug) {
@@ -332,6 +335,7 @@ static void dumpConfig(char *filename) {
   printf("  TokenUserName :%s\n", N(pJwt->tokenUserName));
   printf("  TokenPwd      :%s\n", N(pJwt->tokenPwd));
   printf("  TokenClientId :%s\n", N(pJwt->tokenClientId));
+  printf("  TokenKeyRepository :%s\n", N(pJwt->tokenKeyRepository));
 }
 
 // Do the cleanup of the strdup'ed elements from the config.
@@ -360,6 +364,7 @@ void freeConfig() {
   cfFree(pJwt->tokenUserName);
   cfFree(pJwt->tokenPwd);
   cfFree(pJwt->tokenClientId);
+  cfFree(pJwt->tokenKeyRepository);
 }
 
 // Wrapper around free() to avoid trying to free NULL pointers
