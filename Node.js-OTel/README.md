@@ -12,7 +12,7 @@ There are four components that make up this sample.
 We have found that this sample runs best with `podman` and `podman compose`
 
 ## *mq*
-The docker-compose uses either `icr.io/ibm-messaging/mq:latest` as the base image or a custom built image when running on MacOS ARM64 eg. `ibm-mqadvanced-server-dev:9.4.2.0-arm64`.
+The docker-compose file uses either `icr.io/ibm-messaging/mq:latest` as the base image or a custom built image when running on MacOS ARM64 eg. `ibm-mqadvanced-server-dev:9.4.2.0-arm64`.
 
 You can create an Apple ARM64 compatible container by following this [blog](https://community.ibm.com/community/user/blogs/richard-coppen/2023/06/30/ibm-mq-9330-container-image-now-available-for-appl)
 
