@@ -26,7 +26,7 @@ The application listens to:
 Both are expecting the following query parameters
 -   *QMGR*  Queue Manager
 -   *QUEUE* Queue
--   *num* Quantity of messages to put / get, which if not specified is set to a random number. If the number in the query is > 9 then it is set to a random number < 10
+-   *num* Number of messages to put / get, which if not specified is set to a random number. If the number in the query is > 9 then it is set to a random number < 10
 
 The endpoints can be invoked with curl eg. 
 
