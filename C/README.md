@@ -125,7 +125,7 @@ If you would like to proceed with JWT authentication without JWKS validation, ed
 #### Dependencies for JWT authentication
 * libcurl
 * json-c
-* gmake (for AIX only)
+* GNU make (for AIX only)
 
 [curl](https://curl.se/docs/install.html)
 [json-c](https://github.com/json-c/json-c)
