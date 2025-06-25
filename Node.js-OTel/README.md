@@ -31,7 +31,7 @@ Both are expecting the following query parameters
 The endpoints can be invoked with curl eg. 
 
 ```
-curl "http://localhost:8080/get?QMGR=QM2&QUEUE=DEV.QUEUE.1
+curl http://localhost:8080/get?QMGR=QM2&QUEUE=DEV.QUEUE.1
 ```
 
 ### Queue Manager check
