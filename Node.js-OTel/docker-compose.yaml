@@ -1,0 +1,96 @@
+#
+# * Copyright 2024 IBM Corp.
+# *
+# * Licensed under the Apache License, Version 2.0 (the 'License');
+# * you may not use this file except in compliance with the License.
+# * You may obtain a copy of the License at
+# *
+# * http://www.apache.org/licenses/LICENSE-2.0
+# *
+# * Unless required by applicable law or agreed to in writing, software
+# * distributed under the License is distributed on an "AS IS" BASIS,
+# * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# * See the License for the specific language governing permissions and
+# * limitations under the License.
+
+services:
+  mq:
+    # image: "icr.io/ibm-messaging/mq:latest"
+    image: "ibm-mqadvanced-server-dev:9.4.2.0-arm64"
+    ports:
+      - 9443:9443
+      - 1414:1414
+    environment:
+      - LICENSE=accept
+      - MQ_QMGR_NAME=QM2
+    networks:
+      - qm1network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1Gb
+    secrets:
+      - mqAdminPassword
+      - mqAppPassword
+
+  jaeger:
+    image: quay.io/jaegertracing/all-in-one
+    container_name: jaeger
+    ports:
+        - 4317:4317
+        - 4318:4318
+        - 16686:16686
+    networks:
+      - qm1network
+    environment:
+        COLLECTOR_OTLP_ENABLED: true
+
+  prometheus:
+    image: quay.io/prometheus/prometheus
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+    ports:
+      - 9090:9090   
+    networks:
+      - qm1network   
+
+  mqapp:
+    platform: linux/amd64
+    build: 
+      context: .
+      dockerfile: Dockerfile.mqapp
+    networks:
+      - qm1network
+    ports:
+      - 8080:8080
+    environment:
+      - QMGR_0=QM2
+      - QM_HOST_0=mq
+      - QM_PORT_0=1414
+      - APP_USER_0=app
+      - APP_PASSWORD_0=passw0rd
+    depends_on:
+      - mq
+      - jaeger
+      - prometheus
+    # Uncomment these 'entrypoint' and 'command' lines 
+    # to run the application without OTel 
+    # entrypoint: ["/bin/bash", "-c"]
+    # command:
+    # - |
+    #   npm run start
+
+
+networks:
+  qm1network:
+    labels:
+      - com.ibm.mq=qm1
+secrets:
+  mqAdminPassword:
+    file: "admin-password.txt"
+  mqAppPassword:
+    file: "app-password.txt"
