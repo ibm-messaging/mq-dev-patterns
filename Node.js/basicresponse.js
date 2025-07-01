@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, 2022 IBM Corp.
+ * Copyright 2018, 2022, 2025 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -33,14 +33,19 @@ var mq = require('ibmmq');
 var StringDecoder = require('string_decoder').StringDecoder;
 var decoder = new StringDecoder('utf8');
 
-// Load up missing envrionment variables from the env.json file
-var env = require('../env.json');
-
 var MQC = mq.MQC; // Want to refer to this export directly for simplicity
 
 // Set up debug logging options
 var debug_info = require('debug')('amqsrep:info');
 var debug_warn = require('debug')('amqsrep:warn');
+
+// Load up missing envrionment variables from the env.json file
+const ENV_FILE_KEY = "EnvFile"
+const DEFAULT_ENV_FILE = "../env.json";
+const env_file = process.env[ENV_FILE_KEY] || DEFAULT_ENV_FILE;
+debug_info(`environment being loaded from ${env_file}`);
+
+var env = require(env_file);
 
 // Set up Constants
 const CCDT = "MQCCDTURL";
