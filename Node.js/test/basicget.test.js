@@ -1,7 +1,29 @@
+/**
+ * Copyright 2025 IBM Corp.
+ *
+ * Licensed under the Apache License, Version 2.0 (the 'License');
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **/
+
 const { buildMQDetails, ccdtCheck, initialise, connx, open, close, disconnect, getMessage } = require('../basicget');
 const mq = require('ibmmq');
 const exec = require('child_process').exec;
-const envConfig = require('../../env.json');
+
+// Load up missing envrionment variables from the env.json file
+const ENV_FILE_KEY = "EnvFile"
+const DEFAULT_ENV_FILE = "../env.json";
+const env_file = process.env[ENV_FILE_KEY] || DEFAULT_ENV_FILE;
+const envConfig = require(env_file);
+
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised'); // Assertion library of Chai which handles testing of Promise related functions
 const { assert, expect } = require('chai');
@@ -75,9 +97,11 @@ describe('initialise function', () => {
             expect(cno.ClientConn).to.exist;
             expect(cno.ClientConn.ChannelName).to.equal(envConfig.MQ_ENDPOINTS[i].CHANNEL);
             expect(cno.ClientConn.ConnectionName).to.equal(`${envConfig.MQ_ENDPOINTS[i].HOST}(${envConfig.MQ_ENDPOINTS[i].PORT})`);
-            expect(cno.ClientConn.SSLCipherSpec).to.equal(envConfig.MQ_ENDPOINTS[i].CIPHER_SUITE);
-            expect(cno.SSLConfig).to.exist;
-            expect(cno.SSLConfig.KeyRepository).to.equal(envConfig.MQ_ENDPOINTS[i].KEY_REPOSITORY);
+            if (MQDetails.KEY_REPOSITORY) {
+                expect(cno.ClientConn.SSLCipherSpec).to.equal(envConfig.MQ_ENDPOINTS[i].CIPHER_SUITE);
+                expect(cno.SSLConfig).to.exist;
+                expect(cno.SSLConfig.KeyRepository).to.equal(envConfig.MQ_ENDPOINTS[i].KEY_REPOSITORY);
+            }
         }
     });
 });
@@ -203,7 +227,7 @@ describe('getMessage function', async () => {
 
             // We run the basicput sample to put a message into the queue, following which we run the getMessage
             // function to retrieve the message we just put.
-            exec('node basicput.js',async function(err, stdout, stderr){
+            exec('node basicput.js', async function (err, stdout, stderr) {
                 rcvMsg = await getMessage(hObj);
                 expect(rcvMsg).to.eventually.equal(true); // This is the method to test a function that returns a promise.
             })

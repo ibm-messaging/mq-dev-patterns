@@ -64,6 +64,13 @@ prerequsites by running :
 
 ***boilerplate.js*** - Common class, manages the connection to queue manager, contains generic consumer and producer code.
 
+The location and name of the env.json file defaults
+to `../env.json`. This can be overriden by setting the environment option `EnvFile`. Before running the samples, export the path to the JSON file as shown below:
+
+````
+export EnvFile="../../envfile.json"
+````
+
 
 ### Running refactored samples with JWT authentication
 
