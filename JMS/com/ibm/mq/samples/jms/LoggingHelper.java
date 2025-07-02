@@ -25,22 +25,19 @@ public class LoggingHelper {
     public static void init(Logger logger) {
         if (isLoggingInitialized)
             return;
-
-        logger.setUseParentHandlers(false); // avoid duplicate logs
+        // avoid duplicate logs
+        logger.setUseParentHandlers(false); 
 
         for (Handler handler : logger.getHandlers()) {
             if (handler instanceof ConsoleHandler) {
                 logger.removeHandler(handler);
             }
         }
-
         ConsoleHandler consoleHandler = new ConsoleHandler();
         consoleHandler.setLevel(LOGLEVEL);
         logger.addHandler(consoleHandler);
-
         logger.setLevel(LOGLEVEL);
         logger.finest("Logging initialized");
-
         isLoggingInitialized = true;
     }
 }
