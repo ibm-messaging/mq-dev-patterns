@@ -23,6 +23,7 @@ import org.junit.jupiter.api.AfterAll;
 
 public class SampleEnvSetterTest {
 
+    private static String originalEnvFile;
     private static SampleEnvSetter envSetter;
     
     @BeforeAll
