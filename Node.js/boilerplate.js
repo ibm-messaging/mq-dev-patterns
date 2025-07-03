@@ -239,7 +239,7 @@ class MQBoilerPlate {
           debug_info('Publish unsuccessful because there are no subscribers', err.mqrcstr);
         } else if (err) {
           MQBoilerPlate.reportError(err);
-          reject();
+          reject(err);
         } else {
           debug_info("MQPUT successful ", me.modeType);
           let msgId = MQBoilerPlate.toHexString(mqmd.MsgId);
