@@ -26,12 +26,17 @@ const https = require('https');
 const axios = require('axios');
 const querystring = require('querystring');
 
-// Load up missing envrionment variables from the env.json file
-var env = require('../env.json');
-
 // Set up debug logging options
 var debug_info = require('debug')('boiler:info');
 var debug_warn = require('debug')('boiler:warn');
+
+// Load up missing envrionment variables from the env.json file
+const ENV_FILE_KEY = "EnvFile"
+const DEFAULT_ENV_FILE = "../env.json";
+const env_file = process.env[ENV_FILE_KEY] || DEFAULT_ENV_FILE;
+debug_info(`environment being loaded from ${env_file}`);
+
+var env = require(env_file);
 
 var MQC = mq.MQC;
 var count = 0;

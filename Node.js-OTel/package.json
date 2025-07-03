@@ -1,0 +1,22 @@
+{
+  "name": "mqitest-otel",
+  "version": "0.0.1",
+  "author": "IBM MQ DevExperience",
+  "description": "Otel enabled Node.js MQI patterns",
+  "license": "Apache-2.0",
+  "scripts": {
+    "start": "DEBUG=mqsample:otel:* node app.js",
+    "trace": "DEBUG=mqsample:otel:* node --require ./instrumentation/control.js app.js",
+    "export-trace": "USE_JAEGER=true USE_PROMETHEUS=true DEBUG=mqsample:otel:* node --require ./instrumentation/control.js app.js"
+  },
+  "engines": {
+    "node": ">18.20.0"
+  },
+  "dependencies": {
+    "@opentelemetry/auto-instrumentations-node": "^0.60.0",
+    "@opentelemetry/sdk-node": "^0.202.0",
+    "debug": "^4.4.1",
+    "express": "^5.1.0",
+    "ibmmq": "^2.1.4"
+  }
+}
