@@ -1,7 +1,7 @@
 name: Run JMS Tests
 
 on:
-  pull-request:
+  pull_request:
     branches:
       - master
     paths:
