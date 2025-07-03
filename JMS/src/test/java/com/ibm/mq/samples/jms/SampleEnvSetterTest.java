@@ -19,6 +19,7 @@ package com.ibm.mq.samples.jms;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
 
 public class SampleEnvSetterTest {
 
@@ -28,6 +29,16 @@ public class SampleEnvSetterTest {
     public static void setUp(){
         System.setProperty(SampleEnvSetter.ENV_FILE , SampleEnvSetter.DEFAULT_ENV_FILE);
         envSetter = new SampleEnvSetter();
+    }
+
+    @AfterAll
+    public static void tearDown() {
+        // Restore the original value so other tests are unaffected
+        if (originalEnvFile != null) {
+            System.setProperty(SampleEnvSetter.ENV_FILE, originalEnvFile);
+        } else {
+            System.clearProperty(SampleEnvSetter.ENV_FILE);
+        }
     }
 
 
@@ -51,6 +62,7 @@ public class SampleEnvSetterTest {
         // Test for non-existing key but existing Environment variable
         String value = envSetter.getEnvValue("APP_USER", 1);
         assertEquals("testUser", value);
+        System.clearProperty("APP_USER");
     }
 
     @Test
@@ -84,6 +96,7 @@ public class SampleEnvSetterTest {
         //Test for Non existing but existing env key
         Boolean value = envSetter.getEnvBooleanValue("BINDINGS", 0);
         assertTrue(value);
+        System.clearProperty("BINDINGS");
     }
 
     @Test 
@@ -102,6 +115,7 @@ public class SampleEnvSetterTest {
         value = envSetter.getCheckForCCDT();
         //Test for getCheckForCCDT with MQCCDTURL set to incorrect ccdt file location
         assertNull(value);
+        System.clearProperty("MQCCDTURL");
     }
 
     @Test 
