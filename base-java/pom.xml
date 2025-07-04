@@ -1,0 +1,55 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.ibm.mq.samples</groupId>
+  <artifactId>mq-java-base-consumer</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+
+  <dependencies>
+    <!-- MQ Classes for Java (Base Java MQ API) -->
+    <dependency>
+      <groupId>com.ibm.mq</groupId>
+      <artifactId>com.ibm.mq.allclient</artifactId>
+      <version>9.4.3.0</version>
+    </dependency>
+
+    <!-- JSON library -->
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20240303</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+  <plugins>
+    <plugin>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <version>3.8.1</version>
+      <configuration>
+        <release>1.8</release>
+      </configuration>
+    </plugin>
+  </plugins>
+</build>
+
+</project>
+
+
+
+
+
+
+
+
+
+
