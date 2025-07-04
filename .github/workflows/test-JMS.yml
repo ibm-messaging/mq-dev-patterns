@@ -79,3 +79,4 @@ jobs:
         working-directory: JMS
         run: |
           mvn -Dmaven.test.skip=false test -DEnvFile="$(pwd)/env.json"
+      

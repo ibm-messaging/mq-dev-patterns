@@ -1,4 +1,4 @@
-name: Run Node.js Tests
+name: Run Node Tests 
 
 on:
   pull_request:
