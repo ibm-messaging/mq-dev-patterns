@@ -114,7 +114,25 @@ In the **second terminal (request)**:
 ```bash
 mvn exec:java -Dexec.mainClass="com.ibm.mq.samples.java.BasicRequest" -Dexec.args="env.json"
 ```
+### Terminal 1: Run the Request Sample
 
+1. **Compile** the `BasicRequest.java` file using the required JAR dependencies.
+2. **Run** the `BasicRequest` class.
+3. The requester sends a message and waits for a response.
+4. If `REPLY_QUEUE_NAME` is set, that queue is used for replies; otherwise, a temporary queue is created.
+5. Optionally, set the `REQUEST_MESSAGE_EXPIRY` environment variable to define how long the request is valid.
+
+---
+
+### Terminal 2: Run the Response Sample
+
+1. **Compile** the `BasicResponse.java` file with the same JAR dependencies.
+2. **Run** the `BasicResponse` class.
+3. The responder listens on a queue, processes incoming messages, and sends replies to the specified reply-to queue.
+4. It continues running until manually stopped or it times out.
+5. You can set the `RESPONDER_INACTIVITY_TIMEOUT` environment variable to control how long it waits for new messages before exiting.
+
+---
 ## Notes
 
 - The environment can be configured using either `env.json` or a CCDT file via the `MQCCDTURL` environment variable.
