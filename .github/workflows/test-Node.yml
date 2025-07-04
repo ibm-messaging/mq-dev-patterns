@@ -72,7 +72,7 @@ jobs:
             }]
           }
           EOF
-          echo "PWD: $(pwd)"
+          echo "env.json path: $(pwd)/env.json"
           cat env.json
 
       - name: Install dependencies

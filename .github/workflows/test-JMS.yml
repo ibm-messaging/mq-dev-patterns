@@ -78,4 +78,4 @@ jobs:
       - name: Run the JMS tests
         working-directory: JMS
         run: |
-          mvn -Dmaven.test.skip=false -DEnvFile="/home/runner/work/mq-dev-patterns/mq-dev-patterns/JMS/env.json" test
+          mvn -Dmaven.test.skip=false test -DEnvFile="$(pwd)/env.json"
