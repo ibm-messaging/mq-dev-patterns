@@ -6,10 +6,10 @@ MQLIB=/opt/mqm/lib64
 
 APPS = sampleput \
        sampleget \
-	   samplerequest \
-	   sampleresponse \
-	   samplepublish \
-	   samplesubscribe
+       samplerequest \
+       sampleresponse \
+       samplepublish \
+       samplesubscribe
 
 CDEBUG=-g
 
@@ -18,13 +18,14 @@ UNAME_S := $(shell uname -s)
 ifndef CURL_INCLUDE
 
   ifeq ($(UNAME_S),Linux)
-    CURL_INCLUDE := /usr/include/curl
+    CURL_INCLUDE := -I/usr/include/curl
 
   else ifeq ($(UNAME_S),AIX)
-    CURL_INCLUDE := /opt/freeware/include/curl
+    # The curl subdirectory is already part of the C code
+    CURL_INCLUDE := -I/opt/freeware/include
 
   else
-    CURL_INCLUDE := /opt/homebrew/opt/curl/include
+    CURL_INCLUDE := -I/opt/homebrew/opt/curl/include
   endif
 
 endif
@@ -32,13 +33,14 @@ endif
 ifndef JSONC_INCLUDE
 
   ifeq ($(UNAME_S),Linux)
-    JSONC_INCLUDE := /usr/include/json-c
+    JSONC_INCLUDE := -I/usr/include/json-c
 
   else ifeq ($(UNAME_S),AIX)
-    JSONC_INCLUDE := /opt/freeware/include/json-c
+    # The json-c subdirectory is already part of the C code
+    JSONC_INCLUDE := -I/opt/freeware/include
 
   else
-    JSONC_INCLUDE := /opt/homebrew/opt/json-c/include
+    JSONC_INCLUDE := -I/opt/homebrew/opt/json-c/include
   endif
 
 endif
@@ -72,7 +74,7 @@ ifndef JSONC_LIB
 endif
 
 ifeq ($(JWT),1)
-  JWT_CFLAGS += -DJWT_ENABLED -I$(CURL_INCLUDE) -I$(JSONC_INCLUDE)
+  JWT_CFLAGS += -DJWT_ENABLED $(CURL_INCLUDE) $(JSONC_INCLUDE)
   JWT_LDFLAGS += -L$(CURL_LIB) -lcurl -L$(JSONC_LIB) -ljson-c
 endif
 
