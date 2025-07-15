@@ -133,7 +133,7 @@ int connectQMgr(PMQHCONN pHConn) {
     char *token = obtainToken(jwtEp);
 
     if (!token) {
-      fprintf(stderr, "Failed to obtain token — exiting.\n");
+      fprintf(stderr, "Failed to obtain token - exiting.\n");
       return rc;  
     }
     

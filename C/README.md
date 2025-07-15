@@ -138,7 +138,8 @@ On MacOS, the `DYLD_LIBRARY_PATH` will need to be set to include the curl librar
 
 To compile a sample with JWT enablement:
 
-* Note: If you are on an AIX machine - replace make with `gmake`
+* Note: If you are on an AIX machine, use the GNU `make` instead of the standard `make` program. Otherwise directives such as `ifeq` are
+not recognised. This version of `make` will often be installed in `/opt/freeware/bin`.
 
 If you have samples that you have already compiled, make sure to get rid of these executable files by running:
 
