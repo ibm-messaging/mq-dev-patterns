@@ -26,9 +26,17 @@ logger = logging.getLogger(__name__)
 
 WAIT_INTERVAL = 5 # Seconds
 
-def connect():
+def connect(index):
     """ Establish connection to MQ Queue Manager """
     logger.info('Establishing Connection with MQ Server')
+
+    # Set credentials if they have been provided
+    csp = mq.CSP()
+    csp.CSPUserId = EnvStore.getenv_value(EnvStore.APP_USER, index)
+    csp.CSPPassword = EnvStore.getenv_value(EnvStore.APP_PASSWORD, index)
+    if csp.CSPUserId is None:
+        csp = None
+
     try:
         cd = None
         if not EnvStore.ccdt_check():
@@ -55,8 +63,7 @@ def connect():
 
         qmgr = mq.QueueManager(None)
         qmgr.connect_with_options(MQDetails[EnvStore.QMGR],
-                                  user=credentials[EnvStore.USER],
-                                  password=credentials[EnvStore.PASSWORD],
+                                  csp=csp,
                                   cd=cd, sco=sco)
         return qmgr
     except mq.MQMIError as e:
@@ -141,11 +148,6 @@ def build_mq_details(index):
                 EnvStore.PORT, EnvStore.KEY_REPOSITORY, EnvStore.CIPHER]:
         MQDetails[key] = EnvStore.getenv_value(key, index)
 
-def set_credentials(index):
-    """Set the user's credentials"""
-    credentials[EnvStore.USER] = EnvStore.getenv_value(EnvStore.APP_USER, index)
-    credentials[EnvStore.PASSWORD] = EnvStore.getenv_value(EnvStore.APP_PASSWORD, index)
-
 # Application logic starts here
 logger.info('Application "BasicGet" is starting')
 
@@ -153,7 +155,6 @@ envStore = EnvStore()
 envStore.set_env()
 
 MQDetails = {}
-credentials = {}
 
 qmgr = None
 queue = None
@@ -167,9 +168,8 @@ for index, conn_info in envStore.get_next_connection_string():
     logger.info('Using Connection String %s', conn_info)
 
     build_mq_details(index)
-    set_credentials(index)
 
-    qmgr = connect()
+    qmgr = connect(index)
     if qmgr is not None:
         queue = get_queue()
         if queue is not None:
@@ -180,6 +180,5 @@ for index, conn_info in envStore.get_next_connection_string():
         break
 
 MQDetails.clear()
-credentials.clear()
 
 logger.info('Application is ending')

@@ -52,7 +52,13 @@ class EnvStore():
         super().__init__()
         if EnvStore.env is None:
             module_dir = os.path.dirname(__file__)
-            file_path = os.environ['CONFIG_JSON_FILE']
+            file_path = None
+            try:
+                file_path = os.environ['JSON_CONFIG']
+            except KeyError:
+                # If the environment variable was not set, that's OK. We'll
+                # use the default.
+                pass
             if file_path is None:
                 file_path = os.path.join(module_dir, '../../', 'env.json')
             logger.info("Looking for config file: %s", file_path)

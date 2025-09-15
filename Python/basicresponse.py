@@ -59,10 +59,16 @@ def connect():
             logger.info('Setting Key repository')
             sco.KeyRepository = MQDetails[EnvStore.KEY_REPOSITORY]
 
+        # Set credentials
+        csp = mq.CSP()
+        csp.CSPUserId = EnvStore.getenv_value(EnvStore.APP_USER)
+        csp.CSPPassword = EnvStore.getenv_value(EnvStore.APP_PASSWORD)
+        if csp.CSPUserId is None:
+            csp = None
+
         qmgr = mq.QueueManager(None)
         qmgr.connect_with_options(MQDetails[EnvStore.QMGR],
-                                  user=credentials[EnvStore.USER],
-                                  password=credentials[EnvStore.PASSWORD],
+                                  csp=csp,
                                   cd=cd, sco=sco)
         return qmgr
     except mq.MQMIError as e:
@@ -281,14 +287,7 @@ envStore = EnvStore()
 envStore.set_env()
 
 MQDetails = {}
-credentials = {
-    EnvStore.USER: EnvStore.getenv_value(EnvStore.APP_USER),
-    EnvStore.PASSWORD: EnvStore.getenv_value(EnvStore.APP_PASSWORD)
-}
-
 build_mq_details()
-
-logger.info('Credentials are set')
 
 conn_info = EnvStore.get_connection(EnvStore.HOST, EnvStore.PORT)
 
