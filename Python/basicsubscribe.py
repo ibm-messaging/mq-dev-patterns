@@ -24,7 +24,7 @@ from utils.env import EnvStore
 WAIT_INTERVAL = 5  # seconds
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('Sub')
 
 def connect():
     """Establish connection to the queue manager"""
@@ -77,7 +77,10 @@ def get_subscription():
     logger.info('Creating subscription')
     try:
         sub_desc = mq.SD()
-        sub_desc.Options = mq.CMQC.MQSO_CREATE + mq.CMQC.MQSO_MANAGED
+        sub_desc.Options = mq.CMQC.MQSO_CREATE | \
+            mq.CMQC.MQSO_MANAGED | \
+            mq.CMQC.MQSO_NON_DURABLE | \
+            mq.CMQC.MQSO_FAIL_IF_QUIESCING
         sub_desc.set_vs('ObjectString', MQDetails[EnvStore.TOPIC_NAME])
 
         sub = mq.Subscription(qmgr)
@@ -91,9 +94,9 @@ def get_messages():
     """Get publications from the subscription queue"""
     logger.info('Attempting gets from subscription queue')
 
-    get_options = mq.CMQC.MQGMO_NO_SYNCPOINT + \
-        mq.CMQC.MQGMO_FAIL_IF_QUIESCING + \
-        mq.CMQC.MQGMO_WAIT + \
+    get_options = mq.CMQC.MQGMO_NO_SYNCPOINT | \
+        mq.CMQC.MQGMO_FAIL_IF_QUIESCING | \
+        mq.CMQC.MQGMO_WAIT | \
         mq.CMQC.MQGMO_NO_PROPERTIES
 
     gmo = mq.GMO(Options=get_options)

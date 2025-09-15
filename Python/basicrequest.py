@@ -26,7 +26,7 @@ import ibmmq as mq
 from utils.env import EnvStore
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('Req')
 
 WAIT_INTERVAL = 5  # seconds
 

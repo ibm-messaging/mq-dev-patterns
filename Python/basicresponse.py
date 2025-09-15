@@ -27,7 +27,7 @@ import ibmmq as mq
 from utils.env import EnvStore
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('Rsp')
 
 WAIT_INTERVAL = 5  # seconds
 
@@ -168,6 +168,8 @@ def rollback(qmgr, md, msg, backout_counter):
     backout_queue = MQDetails[EnvStore.BACKOUT_QUEUE]
 
     ok = False
+    pmo = mq.PMO()
+    pmo.Options = mq.CMQC.MQPMO_SYNCPOINT
 
     # if the backout counter is greater than 5,
     # handle possible poisoned message scenario by redirecting the
@@ -177,7 +179,7 @@ def rollback(qmgr, md, msg, backout_counter):
 
         try:
             msg = backout_queue.stringForVersion(json.dumps(msg))
-            qmgr.put1(backout_queue, msg, md)
+            qmgr.put1(backout_queue, msg, md, pmo)
             qmgr.commit()
             ok = True
             logger.info('Message sent to the backout queue: %s', str(backout_queue))
@@ -201,6 +203,10 @@ def respond_to_request(in_md, msg_object):
     """
     out_md = mq.MD()
     pmo = mq.PMO()
+
+    # Make the response part of the same transaction as the request
+    pmo.Options |= mq.CMQC.MQPMO_SYNCPOINT
+
     od = mq.OD()
 
     # This value is a bit-field so we can use bitwise operations to test it.
@@ -248,7 +254,7 @@ def respond_to_request(in_md, msg_object):
     od.ObjectQMgrName = in_md.ReplyToQMgr
 
     try:
-        qmgr.put1(od, str(json.dumps(msg_reply)), out_md)
+        qmgr.put1(od, str(json.dumps(msg_reply)), out_md, pmo)
         return True
     except mq.MQMIError as e:
         # Returning False will cause the calling function to backout the operation
