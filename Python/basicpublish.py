@@ -40,10 +40,10 @@ def connect():
             cd.ChannelType = mq.CMQXC.MQCHT_CLNTCONN
             cd.TransportType = mq.CMQXC.MQXPT_TCP
 
-            logger.info('Checking Cipher details')
+            logger.info('Checking cipher details')
             # If a cipher is set then set the TLS settings
             if MQDetails[EnvStore.CIPHER]:
-                logger.info('Making use of Cipher details')
+                logger.info('Making use of cipher details')
                 cd.SSLCipherSpec = MQDetails[EnvStore.CIPHER]
 
         # Key repository is not specified in CCDT so look in environment settings
@@ -61,7 +61,7 @@ def connect():
         return qmgr
 
     except mq.MQMIError as e:
-        logger.error("Error connecting")
+        logger.error('Error connecting')
         logger.error(e)
         return None
 
@@ -73,7 +73,7 @@ def get_topic():
         t.open(open_opts=mq.CMQC.MQOO_OUTPUT)
         return t
     except mq.MQMIError as e:
-        logger.error("Error opening topic")
+        logger.error('Error opening topic')
         logger.error(e)
         return None
 
@@ -85,9 +85,9 @@ def publish_message():
         md.Format = mq.CMQC.MQFMT_STRING
         msg = str(json.dumps(msg_object))
         topic.pub(msg, md)
-        logger.info("Publish message successful: %s", msg)
+        logger.info('Publish message successful: %s', msg)
     except mq.MQMIError as e:
-        logger.error("Error in publish to topic")
+        logger.error('Error in publish to topic')
         logger.error(e)
 
 def build_mq_details():
@@ -97,7 +97,7 @@ def build_mq_details():
         MQDetails[key] = EnvStore.getenv_value(key)
 
 # Application Logic starts here
-logger.info("Application 'BasicPublish' is starting")
+logger.info('Application "BasicPublish" is starting')
 
 envStore = EnvStore()
 envStore.set_env()
@@ -115,7 +115,7 @@ logger.info('Credentials are set')
 conn_info = EnvStore.get_connection(EnvStore.HOST, EnvStore.PORT)
 
 msg_object = {
-    'Greeting': "Hello from Python! " + str(datetime.datetime.now())
+    'Greeting': 'Hello from Python! ' + str(datetime.datetime.now())
 }
 
 qmgr = None
@@ -131,4 +131,4 @@ if topic is not None:
 if qmgr is not None:
     qmgr.disconnect()
 
-logger.info("Application is ending")
+logger.info('Application is ending')

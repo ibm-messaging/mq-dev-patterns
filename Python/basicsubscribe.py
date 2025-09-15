@@ -60,7 +60,7 @@ def connect():
                                   cd=cd, sco=sco)
         return qmgr
     except mq.MQMIError as e:
-        logger.error("Error connecting")
+        logger.error('Error connecting')
         logger.error(e)
         return None
 
@@ -69,23 +69,23 @@ def get_subscription():
     Using a MANAGED subscription means that the queue manager will create and
     return the queue to which publications are delivered.
     """
-    logger.info('Creating Subscription')
+    logger.info('Creating subscription')
     try:
         sub_desc = mq.SD()
         sub_desc.Options = mq.CMQC.MQSO_CREATE + mq.CMQC.MQSO_MANAGED
-        sub_desc.set_vs("ObjectString", MQDetails[EnvStore.TOPIC_NAME])
+        sub_desc.set_vs('ObjectString', MQDetails[EnvStore.TOPIC_NAME])
 
         sub = mq.Subscription(qmgr)
         sub.sub(sub_desc=sub_desc)
         return sub
     except mq.MQMIError as e:
-        logger.error("Error opening queue")
+        logger.error('Error opening queue')
         logger.error(e)
         return None
 
 def get_messages():
     """Get publications from the subscription queue"""
-    logger.info('Attempting gets from Subscription')
+    logger.info('Attempting gets from subscription queue')
 
     get_options = mq.CMQC.MQGMO_NO_SYNCPOINT + \
         mq.CMQC.MQGMO_FAIL_IF_QUIESCING + \
@@ -139,7 +139,7 @@ def build_mq_details():
 
 
 # Application Logic starts here
-logger.info("Application 'BasicSubscribe' is starting")
+logger.info('Application "BasicSubscribe" is starting')
 
 envStore = EnvStore()
 envStore.set_env()
@@ -168,4 +168,4 @@ if subscription is not None:
 if qmgr is not None:
     qmgr.disconnect()
 
-logger.info("Application is ending")
+logger.info('Application is ending')

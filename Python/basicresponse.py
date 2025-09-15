@@ -66,7 +66,7 @@ def connect():
                                   cd=cd, sco=sco)
         return qmgr
     except mq.MQMIError as e:
-        logger.error("Error connecting")
+        logger.error('Error connecting')
         logger.error(e)
         return None
 
@@ -84,7 +84,7 @@ def get_queue(queue_name):
         return q
 
     except mq.MQMIError as e:
-        logger.error("Error opening queue")
+        logger.error('Error opening queue')
         logger.error(e)
         return None
 
@@ -186,7 +186,7 @@ def rollback(qmgr, md, msg, backout_counter):
             qmgr.backout()
             ok = True
         except mq.MQMIError as e:
-            logger.error("Error on rollback: %s", e)
+            logger.error('Error on rollback: %s', e)
             ok = False
 
     return ok
@@ -233,7 +233,7 @@ def respond_to_request(in_md, msg_object):
     out_md.Format = in_md.Format
 
     msg_reply = {
-        'Greeting': "Reply from Python! " + str(datetime.datetime.now()),
+        'Greeting': 'Reply from Python! ' + str(datetime.datetime.now()),
         'value': random.randint(1, 101)
     }
 
@@ -275,7 +275,7 @@ def build_mq_details():
 
 
 # Application Logic starts here
-logger.info("Application 'BasicResponse' is starting")
+logger.info('Application "BasicResponse" is starting')
 
 envStore = EnvStore()
 envStore.set_env()
@@ -307,4 +307,4 @@ if queue is not None:
 if qmgr is not None:
     qmgr.disconnect()
 
-logger.info("Application is ending")
+logger.info('Application is ending')

@@ -64,12 +64,12 @@ def connect():
         return qmgr
 
     except mq.MQMIError as e:
-        logger.error("Error connecting")
+        logger.error('Error connecting')
         logger.error(e)
         return None
 
 def get_queue():
-    """Establish access to Queue"""
+    """Establish access to queue"""
     logger.info('Opening queue')
     try:
         # Different ways to open a queue.
@@ -82,22 +82,22 @@ def get_queue():
         return q
 
     except mq.MQMIError as e:
-        logger.error("Error opening queue")
+        logger.error('Error opening queue')
         logger.error(e)
         return None
 
 def put_message():
-    """Put message onto Queue"""
-    logger.info('Attempting put to Queue')
+    """Put message onto queue"""
+    logger.info('Attempting put to queue')
     try:
         md = mq.MD()
         md.Format = mq.CMQC.MQFMT_STRING
         msg = str(json.dumps(msg_object))
         queue.put(msg,md)
 
-        logger.info("Put message successful: %s",msg)
+        logger.info('Put message successful: %s',msg)
     except mq.MQMIError as e:
-        logger.error("Error in put to queue")
+        logger.error('Error in put to queue')
         logger.error(e)
 
 def build_mq_details():
@@ -107,7 +107,7 @@ def build_mq_details():
         MQDetails[key] = EnvStore.getenv_value(key)
 
 # Application Logic starts here
-logger.info("Application 'BasicPut' is starting")
+logger.info('Application "BasicPut" is starting')
 
 envStore = EnvStore()
 envStore.set_env()
@@ -124,7 +124,7 @@ conn_info = EnvStore.get_connection(EnvStore.HOST, EnvStore.PORT)
 logger.info('Connection is %s', conn_info)
 
 msg_object = {
-    'Greeting': "Hello from Python! " + str(datetime.datetime.now())
+    'Greeting': 'Hello from Python! ' + str(datetime.datetime.now())
 }
 
 qmgr = None
@@ -140,4 +140,4 @@ if queue is not None:
 if qmgr is not None:
     qmgr.disconnect()
 
-logger.info("Application is ending")
+logger.info('Application is ending')

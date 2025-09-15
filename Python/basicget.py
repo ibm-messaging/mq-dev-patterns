@@ -60,7 +60,7 @@ def connect():
                                   cd=cd, sco=sco)
         return qmgr
     except mq.MQMIError as e:
-        logger.error("Error connecting")
+        logger.error('Error connecting')
         logger.error(e)
         return None
 
@@ -78,7 +78,7 @@ def get_queue():
 
         return q
     except mq.MQMIError as e:
-        logger.error("Error opening queue")
+        logger.error('Error opening queue')
         logger.error(e)
         return None
 
@@ -147,7 +147,7 @@ def set_credentials(index):
     credentials[EnvStore.PASSWORD] = EnvStore.getenv_value(EnvStore.APP_PASSWORD, index)
 
 # Application logic starts here
-logger.info("Application 'BasicGet' is starting")
+logger.info('Application "BasicGet" is starting')
 
 envStore = EnvStore()
 envStore.set_env()
@@ -182,4 +182,4 @@ for index, conn_info in envStore.get_next_connection_string():
 MQDetails.clear()
 credentials.clear()
 
-logger.info("Application is ending")
+logger.info('Application is ending')

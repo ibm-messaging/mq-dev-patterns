@@ -65,7 +65,7 @@ def connect():
                                   cd=cd, sco=sco)
         return qmgr
     except mq.MQMIError as e:
-        logger.error("Error connecting")
+        logger.error('Error connecting')
         logger.error(e)
         return None
 
@@ -83,7 +83,7 @@ def get_queue():
         return q
 
     except mq.MQMIError as e:
-        logger.error("Error opening queue")
+        logger.error('Error opening queue')
         logger.error(e)
         return None
 
@@ -106,7 +106,7 @@ def get_dynamic_queue():
         return dynamic_queue_object, dynamic_queue_name
 
     except mq.MQMIError as e:
-        logger.error("Error opening queue")
+        logger.error('Error opening queue')
         logger.error(e)
         return None
 
@@ -131,11 +131,11 @@ def put_message():
         msg = str(json.dumps(msg_object))
         queue.put(msg, md)
 
-        logger.info("Put message successful: %s",msg)
+        logger.info('Put message successful: %s',msg)
         return md.MsgId
 
     except mq.MQMIError as e:
-        logger.error("Error in put to queue")
+        logger.error('Error in put to queue')
         logger.error(e)
 
     return None
@@ -201,7 +201,7 @@ def build_mq_details():
 
 
 # Application Logic starts here
-logger.info("Application 'BasicRequest' is starting")
+logger.info('Application "BasicRequest" is starting')
 
 envStore = EnvStore()
 envStore.set_env()
@@ -218,7 +218,7 @@ build_mq_details()
 conn_info = EnvStore.get_connection(EnvStore.HOST, EnvStore.PORT)
 
 msg_object = {
-    'Greeting': "Hello from Python! " + str(datetime.datetime.now()),
+    'Greeting': 'Hello from Python! ' + str(datetime.datetime.now()),
     'value': random.randint(1, 101)
 }
 
@@ -251,4 +251,4 @@ if queue is not None:
 if qmgr is not None:
     qmgr.disconnect()
 
-logger.info("Application is ending")
+logger.info('Application is ending')
