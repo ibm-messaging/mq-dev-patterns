@@ -28,7 +28,7 @@ from utils.env import EnvStore
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-WAIT_INTERVAL = 5 # seconds
+WAIT_INTERVAL = 5  # seconds
 
 def connect():
     """ Establish connection to MQ Queue Manager """
@@ -36,7 +36,7 @@ def connect():
     logger.info('Establishing Connection with MQ Server')
     try:
         cd = None
-        if not EnvStore.ccdt_check():
+        if not EnvStore.is_ccdt_available():
             logger.info('CCDT URL export is not set, will be using json environment client connections settings')
 
             cd = mq.CD(Version=mq.CMQXC.MQCD_VERSION_11)
@@ -70,8 +70,7 @@ def connect():
                                   cd=cd, sco=sco)
         return qmgr
     except mq.MQMIError as e:
-        logger.error('Error connecting')
-        logger.error(e)
+        logger.error('Error connecting: %s', e)
         return None
 
 def get_queue():
@@ -88,8 +87,7 @@ def get_queue():
         return q
 
     except mq.MQMIError as e:
-        logger.error('Error opening queue')
-        logger.error(e)
+        logger.error('Error opening queue: %s', e)
         return None
 
 def get_dynamic_queue():
@@ -111,8 +109,7 @@ def get_dynamic_queue():
         return dynamic_queue_object, dynamic_queue_name
 
     except mq.MQMIError as e:
-        logger.error('Error opening queue')
-        logger.error(e)
+        logger.error('Error opening queue: %s', e)
         return None
 
 def put_message():
@@ -122,7 +119,6 @@ def put_message():
     try:
         # Prepare a Message Descriptor for the request message.
         # Set the ReplyToQ as the dynamic queue we just created
-        logger.info('Dynamic Queue Name is: %s',dynamic['name'])
         md = mq.MD()
         md.ReplyToQ = dynamic['name']
         md.MsgType = mq.CMQC.MQMT_REQUEST
@@ -136,12 +132,11 @@ def put_message():
         msg = str(json.dumps(msg_object))
         queue.put(msg, md)
 
-        logger.info('Put message successful: %s',msg)
+        logger.info('Put message successful: %s', msg)
         return md.MsgId
 
     except mq.MQMIError as e:
-        logger.error('Error in put to queue')
-        logger.error(e)
+        logger.error('Error in put to queue: %s', e)
 
     return None
 
@@ -159,9 +154,9 @@ def await_response(msgid):
 
     # Get Message Options
     gmo = mq.GMO()
-    gmo.Options = mq.CMQC.MQGMO_WAIT | \
-                       mq.CMQC.MQGMO_FAIL_IF_QUIESCING | \
-                       mq.CMQC.MQGMO_NO_PROPERTIES
+    gmo.Options = (mq.CMQC.MQGMO_WAIT |
+                   mq.CMQC.MQGMO_FAIL_IF_QUIESCING |
+                   mq.CMQC.MQGMO_NO_PROPERTIES)
     gmo.WaitInterval = WAIT_INTERVAL * 1000  # Convert to milliseconds
     gmo.MatchOptions = mq.CMQC.MQMO_MATCH_CORREL_ID
     gmo.Version = mq.CMQC.MQGMO_VERSION_2

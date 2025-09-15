@@ -21,7 +21,7 @@ import ibmmq as mq
 
 from utils.env import EnvStore
 
-WAIT_INTERVAL = 5 # seconds
+WAIT_INTERVAL = 5  # seconds
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ def connect():
     logger.info('Establishing Connection with MQ Server')
     try:
         cd = None
-        if not EnvStore.ccdt_check():
+        if not EnvStore.is_ccdt_available():
             logger.info('CCDT URL export is not set, will be using json environment client connections settings')
 
             cd = mq.CD(Version=mq.CMQXC.MQCD_VERSION_11)
@@ -66,8 +66,7 @@ def connect():
                                   cd=cd, sco=sco)
         return qmgr
     except mq.MQMIError as e:
-        logger.error('Error connecting')
-        logger.error(e)
+        logger.error('Error connecting: %s', e)
         return None
 
 def get_subscription():
@@ -85,8 +84,7 @@ def get_subscription():
         sub.sub(sub_desc=sub_desc)
         return sub
     except mq.MQMIError as e:
-        logger.error('Error opening queue')
-        logger.error(e)
+        logger.error('Error opening queue: %s', e)
         return None
 
 def get_messages():
@@ -99,7 +97,7 @@ def get_messages():
         mq.CMQC.MQGMO_NO_PROPERTIES
 
     gmo = mq.GMO(Options=get_options)
-    gmo.WaitInterval = WAIT_INTERVAL * 1000 # convert to milliseconds
+    gmo.WaitInterval = WAIT_INTERVAL * 1000  # convert to milliseconds
 
     # Message Descriptor
     md = mq.MD()

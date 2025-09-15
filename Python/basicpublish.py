@@ -31,7 +31,7 @@ def connect():
     logger.info('Establishing Connection with MQ Server')
     try:
         cd = None
-        if not EnvStore.ccdt_check():
+        if not EnvStore.is_ccdt_available():
             logger.info('CCDT URL export is not set, will be using json environment client connections settings')
 
             cd = mq.CD(Version=mq.CMQXC.MQCD_VERSION_11)
@@ -63,13 +63,12 @@ def connect():
             csp = None
 
         qmgr.connect_with_options(MQDetails[EnvStore.QMGR],
-                                  csp = csp,
+                                  csp=csp,
                                   cd=cd, sco=sco)
         return qmgr
 
     except mq.MQMIError as e:
-        logger.error('Error connecting')
-        logger.error(e)
+        logger.error('Error connecting: %s', e)
         return None
 
 def get_topic():
@@ -80,8 +79,7 @@ def get_topic():
         t.open(open_opts=mq.CMQC.MQOO_OUTPUT)
         return t
     except mq.MQMIError as e:
-        logger.error('Error opening topic')
-        logger.error(e)
+        logger.error('Error opening topic: %s', e)
         return None
 
 def publish_message():
@@ -94,8 +92,7 @@ def publish_message():
         topic.pub(msg, md)
         logger.info('Publish message successful: %s', msg)
     except mq.MQMIError as e:
-        logger.error('Error in publish to topic')
-        logger.error(e)
+        logger.error('Error in publish to topic: %s', e)
 
 def build_mq_details():
     """Create the connection details for the queue manager"""

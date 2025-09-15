@@ -37,7 +37,7 @@ def connect():
     logger.info('Establishing Connection with MQ Server')
     try:
         cd = None
-        if not EnvStore.ccdt_check():
+        if not EnvStore.is_ccdt_available():
             logger.info('CCDT URL export is not set, will be using json environment client connections settings')
 
             cd = mq.CD(Version=mq.CMQXC.MQCD_VERSION_11)
@@ -72,8 +72,7 @@ def connect():
                                   cd=cd, sco=sco)
         return qmgr
     except mq.MQMIError as e:
-        logger.error('Error connecting')
-        logger.error(e)
+        logger.error('Error connecting: %s', e)
         return None
 
 def get_queue(queue_name):
@@ -90,8 +89,7 @@ def get_queue(queue_name):
         return q
 
     except mq.MQMIError as e:
-        logger.error('Error opening queue')
-        logger.error(e)
+        logger.error('Error opening queue: %s', e)
         return None
 
 def get_messages(qmgr):
@@ -156,7 +154,7 @@ def get_messages(qmgr):
             # Committing the GET and PUT as part of the same transaction
             qmgr.commit()
         else:
-            keep_running=rollback(qmgr, md, msg_object, backout_counter)
+            keep_running = rollback(qmgr, md, msg_object, backout_counter)
 
 def rollback(qmgr, md, msg, backout_counter):
     """Deal with a problem processing the message.
@@ -179,7 +177,7 @@ def rollback(qmgr, md, msg, backout_counter):
 
         try:
             msg = backout_queue.stringForVersion(json.dumps(msg))
-            qmgr.put1(backout_queue, msg,md)
+            qmgr.put1(backout_queue, msg, md)
             qmgr.commit()
             ok = True
             logger.info('Message sent to the backout queue: %s', str(backout_queue))
@@ -206,13 +204,13 @@ def respond_to_request(in_md, msg_object):
     od = mq.OD()
 
     # This value is a bit-field so we can use bitwise operations to test it.
-    ro = in_md.Report & (mq.CMQC.MQRO_COPY_MSG_ID_TO_CORREL_ID
-                       | mq.CMQC.MQRO_PASS_MSG_ID
-                       | mq.CMQC.MQRO_PASS_CORREL_ID
-                       | mq.CMQC.MQRO_NEW_MSG_ID)
+    ro = in_md.Report & (mq.CMQC.MQRO_COPY_MSG_ID_TO_CORREL_ID |
+                         mq.CMQC.MQRO_PASS_MSG_ID |
+                         mq.CMQC.MQRO_PASS_CORREL_ID |
+                         mq.CMQC.MQRO_NEW_MSG_ID)
 
     # The default behaviour is to copy the inbound MsgId into the outbound CorrelId and create a new MsgId
-    if (ro & mq.CMQC.MQRO_COPY_MSG_ID_TO_CORREL_ID != 0) or (ro &mq.CMQC.MQRO_NEW_MSG_ID != 0) or ro == 0:
+    if (ro & mq.CMQC.MQRO_COPY_MSG_ID_TO_CORREL_ID != 0) or (ro & mq.CMQC.MQRO_NEW_MSG_ID != 0) or ro == 0:
         out_md.CorrelId = in_md.MsgId
         pmo.Options |= mq.CMQC.MQPMO_NEW_MSG_ID
 
@@ -254,7 +252,7 @@ def respond_to_request(in_md, msg_object):
         return True
     except mq.MQMIError as e:
         # Returning False will cause the calling function to backout the operation
-        logger.error(e)
+        logger.error('Error putting message to reply queue: %s', e)
         return False
 
 def perform_calc(n):
@@ -264,7 +262,7 @@ def perform_calc(n):
     i = 2
     j = 1
 
-    while i <= sq_root <=n:
+    while i <= sq_root <= n:
         if 0 == n % i:
             a.append(i)
             n /= i

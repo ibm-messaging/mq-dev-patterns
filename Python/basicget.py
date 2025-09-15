@@ -24,7 +24,7 @@ from utils.env import EnvStore
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-WAIT_INTERVAL = 5 # Seconds
+WAIT_INTERVAL = 5  # Seconds
 
 def connect(index):
     """ Establish connection to MQ Queue Manager """
@@ -39,7 +39,7 @@ def connect(index):
 
     try:
         cd = None
-        if not EnvStore.ccdt_check():
+        if not EnvStore.is_ccdt_available():
             logger.info('CCDT URL export is not set, will be using json environment client connections settings')
 
             cd = mq.CD(Version=mq.CMQXC.MQCD_VERSION_11)
@@ -67,8 +67,7 @@ def connect(index):
                                   cd=cd, sco=sco)
         return qmgr
     except mq.MQMIError as e:
-        logger.error('Error connecting')
-        logger.error(e)
+        logger.error('Error connecting: %s', e)
         return None
 
 def get_queue():
@@ -85,8 +84,7 @@ def get_queue():
 
         return q
     except mq.MQMIError as e:
-        logger.error('Error opening queue')
-        logger.error(e)
+        logger.error('Error opening queue: %s', e)
         return None
 
 def get_messages():
@@ -101,9 +99,9 @@ def get_messages():
     # off the message during the get. This can also be done by calling
     # get_no_jms() on the queue instead of get().
     gmo = mq.GMO()
-    gmo.Options = mq.CMQC.MQGMO_WAIT | \
-                       mq.CMQC.MQGMO_FAIL_IF_QUIESCING | \
-                       mq.CMQC.MQGMO_NO_PROPERTIES
+    gmo.Options = (mq.CMQC.MQGMO_WAIT |
+                   mq.CMQC.MQGMO_FAIL_IF_QUIESCING |
+                   mq.CMQC.MQGMO_NO_PROPERTIES)
 
     gmo.WaitInterval = WAIT_INTERVAL * 1000  # Convert to milliseconds
 
@@ -160,7 +158,7 @@ qmgr = None
 queue = None
 
 numEndPoints = envStore.get_endpoint_count()
-logger.info('There are %d connections',numEndPoints)
+logger.info('There are %d connections', numEndPoints)
 
 # Loop through the connection options. If one succeeds, do the
 # work and then quit.

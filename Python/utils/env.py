@@ -18,13 +18,15 @@ import os
 import json
 
 import logging
+from typing import Any, Generator, Union
+
 logger = logging.getLogger(__name__)
 
 # The env variable has an unknown structure here because it's created from JSON. So we disable some linter checks
 # pylint: disable=unsubscriptable-object,unsupported-membership-test
 class EnvStore():
     """
-      Load configuration from local store
+    Load configuration from local store
     """
     env = None
 
@@ -52,32 +54,31 @@ class EnvStore():
         super().__init__()
         if EnvStore.env is None:
             module_dir = os.path.dirname(__file__)
-            file_path = None
+            file_path = os.path.join(module_dir, '../../', 'env.json')
+            # See if there's an override environment variable for the config file
             try:
                 file_path = os.environ['JSON_CONFIG']
             except KeyError:
-                # If the environment variable was not set, that's OK. We'll
-                # use the default.
+                # If the env variable was not set, that's OK. Use the default.
                 pass
-            if file_path is None:
-                file_path = os.path.join(module_dir, '../../', 'env.json')
+
             logger.info("Looking for config file: %s", file_path)
             try:
                 with open(file_path, encoding='utf-8') as f:
                     EnvStore.env = json.loads(f.read())
             except Exception:
-                logger.info('Error reading/parsing file: %s',file_path)
+                logger.info('Error reading/parsing file: %s', file_path)
                 raise
 
-    def is_endpoint_list(self):
+    def is_endpoint_list(self) -> bool:
         """Do we have a list of endpoints?"""
-        if (EnvStore.env
-              and EnvStore.MQ_ENDPOINTS in EnvStore.env
-              and isinstance(EnvStore.env[EnvStore.MQ_ENDPOINTS], list)):
+        if EnvStore.env is not None \
+                and EnvStore.MQ_ENDPOINTS in EnvStore.env \
+                and isinstance(EnvStore.env[EnvStore.MQ_ENDPOINTS], list):
             return True
         return False
 
-    def set_env(self):
+    def set_env(self) -> None:
         """Set the configuration attributes"""
         if self.is_endpoint_list():
             logger.info('Have file, so ready to set environment variables for configuration')
@@ -92,7 +93,7 @@ class EnvStore():
         else:
             logger.info('No environment variables to set')
 
-    def build_connection_string(self, points):
+    def build_connection_string(self, points: list) -> str:
         """Return the CONNAME string built from the configuration values"""
         logger.info('Building a connection string')
         conn_string = []
@@ -105,27 +106,27 @@ class EnvStore():
         logger.info('Connection string is %s', s)
         return s
 
-    def get_endpoint_count(self):
+    def get_endpoint_count(self) -> int:
         """How many endpoints are configured"""
         if self.is_endpoint_list():
             return len(EnvStore.env[EnvStore.MQ_ENDPOINTS])
         return 1
 
-    def get_next_connection_string(self):
+    def get_next_connection_string(self) -> Generator[Any, int, str]:
         """Return the next in the list"""
         for i, p in enumerate(EnvStore.env[EnvStore.MQ_ENDPOINTS]):
             info = "%s(%s)" % (p[EnvStore.HOST], p[EnvStore.PORT])
             yield i, str(info)
 
-    # function to retrieve variable from Envrionment
+    # function to retrieve variable from Environment
     @staticmethod
-    def getenv_value(key, index = 0):
+    def getenv_value(key: str, index: int = 0) -> Union[str, None]:
         """Return the value of an attribute either from the config file or from the environment variable"""
         v = os.getenv(key) if index == 0 else EnvStore.env[EnvStore.MQ_ENDPOINTS][index].get(key)
         return str(v) if v else None
 
     @staticmethod
-    def get_connection(host, port):
+    def get_connection(host: str, port: str) -> str:
         """Return the ConnName directly"""
         info = os.getenv(EnvStore.CONNECTION_STRING)
         if not info:
@@ -133,7 +134,7 @@ class EnvStore():
         return str(info)
 
     @staticmethod
-    def ccdt_check():
+    def is_ccdt_available() -> bool:
         """Is there a CCDT configured"""
         file_path = EnvStore.getenv_value(EnvStore.CCDT)
         if file_path:
