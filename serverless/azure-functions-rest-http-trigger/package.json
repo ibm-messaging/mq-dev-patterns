@@ -7,9 +7,9 @@
     "test": "echo \"No tests yet...\""
   },
   "dependencies": {
-    "@azure/functions": "^4.0.0",
-    "axios": "^1.8.4",
-    "debug": "^4.4.0"
+    "@azure/functions": "4.0.0",
+    "axios": "^1.12.2",
+    "debug": "4.4.1"
   },
   "main": "src/{index.js,functions/*.js}"
 }
