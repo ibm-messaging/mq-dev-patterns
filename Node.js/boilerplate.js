@@ -43,6 +43,7 @@ var count = 0;
 var LIMIT = 5;
 var waitInterval = 10; // max seconds to wait for a new message
 var canExit = false;
+var last_mqrc = 0;
 var activeCB = null;
 var bpInstance = null;
 
@@ -239,7 +240,7 @@ class MQBoilerPlate {
           debug_info('Publish unsuccessful because there are no subscribers', err.mqrcstr);
         } else if (err) {
           MQBoilerPlate.reportError(err);
-          reject();
+          reject(err);
         } else {
           debug_info("MQPUT successful ", me.modeType);
           let msgId = MQBoilerPlate.toHexString(mqmd.MsgId);
@@ -840,7 +841,8 @@ class MQBoilerPlate {
     if (err) {
       if (err.mqrc == MQC.MQRC_NO_MSG_AVAILABLE) {
         debug_info("No more messages available.");
-      } else {
+      } else if (last_mqrc !== err.mqrc) {
+        last_mqrc = err.mqrc;
         MQBoilerPlate.reportError(err);
       }
       canExit = true;
