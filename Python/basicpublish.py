@@ -28,7 +28,7 @@ logger = logging.getLogger('Pub')
 
 def connect():
     """ Establish connection to MQ Queue Manager """
-    logger.info('Establishing Connection with MQ Server')
+    logger.info('Establishing connection with MQ Server')
     try:
         cd = None
         if not EnvStore.is_ccdt_available():
@@ -89,7 +89,10 @@ def publish_message():
         md = mq.MD()
         md.Format = mq.CMQC.MQFMT_STRING
         msg = str(json.dumps(msg_object))
-        topic.pub(msg, md)
+
+        pmo = mq.PMO()
+        pmo.Options = mq.CMQC.MQPMO_NO_SYNCPOINT
+        topic.pub(msg, md, pmo)
         logger.info('Publish message successful: %s', msg)
     except mq.MQMIError as e:
         logger.error('Error in publish to topic: %s', e)

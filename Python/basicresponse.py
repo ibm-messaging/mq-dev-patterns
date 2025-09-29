@@ -34,7 +34,7 @@ WAIT_INTERVAL = 5  # seconds
 def connect():
     """ Establish connection to MQ Queue Manager """
 
-    logger.info('Establishing Connection with MQ Server')
+    logger.info('Establishing connection with MQ Server')
     try:
         cd = None
         if not EnvStore.is_ccdt_available():

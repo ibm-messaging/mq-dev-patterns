@@ -28,7 +28,7 @@ WAIT_INTERVAL = 5  # Seconds
 
 def connect(index):
     """ Establish connection to MQ Queue Manager """
-    logger.info('Establishing Connection with MQ Server')
+    logger.info('Establishing connection with MQ Server')
 
     # Set credentials if they have been provided
     csp = mq.CSP()
@@ -101,6 +101,7 @@ def get_messages():
     gmo = mq.GMO()
     gmo.Options = (mq.CMQC.MQGMO_WAIT |
                    mq.CMQC.MQGMO_FAIL_IF_QUIESCING |
+                   mq.CMQC.MQGMO_NO_SYNCPOINT |
                    mq.CMQC.MQGMO_NO_PROPERTIES)
 
     gmo.WaitInterval = WAIT_INTERVAL * 1000  # Convert to milliseconds
@@ -163,7 +164,7 @@ logger.info('There are %d connections', numEndPoints)
 # Loop through the connection options. If one succeeds, do the
 # work and then quit.
 for index, conn_info in envStore.get_next_connection_string():
-    logger.info('Using Connection String %s', conn_info)
+    logger.info('Trying connection: %s', conn_info)
 
     build_mq_details(index)
 

@@ -28,7 +28,7 @@ logger = logging.getLogger('Sub')
 
 def connect():
     """Establish connection to the queue manager"""
-    logger.info('Establishing Connection with MQ Server')
+    logger.info('Establishing connection with MQ Server')
     try:
         cd = None
         if not EnvStore.is_ccdt_available():

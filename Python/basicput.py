@@ -28,7 +28,7 @@ logger = logging.getLogger('Put')
 
 def connect():
     """ Establish connection to MQ Queue Manager """
-    logger.info('Establishing Connection with MQ Server')
+    logger.info('Establishing connection with MQ Server')
     try:
         cd = None
         if not EnvStore.is_ccdt_available():
@@ -94,7 +94,10 @@ def put_message():
         md = mq.MD()
         md.Format = mq.CMQC.MQFMT_STRING
         msg = str(json.dumps(msg_object))
-        queue.put(msg, md)
+
+        pmo = mq.PMO()
+        pmo.Options = mq.CMQC.MQPMO_NO_SYNCPOINT
+        queue.put(msg, md, pmo)
 
         logger.info('Put message successful: %s', msg)
     except mq.MQMIError as e:

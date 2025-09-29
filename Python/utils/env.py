@@ -79,7 +79,9 @@ class EnvStore():
         return False
 
     def set_env(self) -> None:
-        """Set the configuration attributes"""
+        """Set the attributes from the configuration file as environment variables.
+        Most values come from only the first block of details in the JSON file.
+        """
         if self.is_endpoint_list():
             logger.info('Have file, so ready to set environment variables for configuration')
 
@@ -87,7 +89,7 @@ class EnvStore():
                 os.environ[e] = EnvStore.env[EnvStore.MQ_ENDPOINTS][0][e]
                 if EnvStore.PASSWORD not in e:
                     logger.debug('Checking %s value is %s ', e, EnvStore.env[EnvStore.MQ_ENDPOINTS][0][e])
-            # Check if there are multiple endpoints defined
+            # Check if there are multiple endpoints defined. If so, build a string containing all of them.
             if len(EnvStore.env[EnvStore.MQ_ENDPOINTS]) > 0:
                 os.environ[EnvStore.CONNECTION_STRING] = self.build_connection_string(EnvStore.env[EnvStore.MQ_ENDPOINTS])
         else:
@@ -121,7 +123,9 @@ class EnvStore():
     # function to retrieve variable from Environment
     @staticmethod
     def getenv_value(key: str, index: int = 0) -> Union[str, None]:
-        """Return the value of an attribute either from the config file or from the environment variable"""
+        """Return the value of an attribute either from the environment variable or configuration file.
+        If no index is given, the returned value comes from the first connection's entry in the JSON file.
+        """
         v = os.getenv(key) if index == 0 else EnvStore.env[EnvStore.MQ_ENDPOINTS][index].get(key)
         return str(v) if v else None
 

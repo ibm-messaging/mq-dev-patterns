@@ -19,7 +19,10 @@ terraform.tfstate
 # Associated with the Python code
 venv*
 Python/tmp/
-t
 
+# Standard Eclipse control files
+.project
+.settings 
+.classpath
 
 

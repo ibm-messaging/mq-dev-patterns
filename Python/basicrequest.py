@@ -33,7 +33,7 @@ WAIT_INTERVAL = 5  # seconds
 def connect():
     """ Establish connection to MQ Queue Manager """
 
-    logger.info('Establishing Connection with MQ Server')
+    logger.info('Establishing connection with MQ Server')
     try:
         cd = None
         if not EnvStore.is_ccdt_available():
@@ -103,6 +103,7 @@ def get_dynamic_queue():
         open_options = mq.CMQC.MQOO_INPUT_EXCLUSIVE
         dynamic_queue_object = mq.Queue(qmgr, od, open_options)
 
+        # An alternative could be to use dynamic_queue_object.get_name()
         dynamic_queue_name = od.ObjectName.strip()
         logger.info('Created dynamic queue called %s', dynamic_queue_name)
 
@@ -128,9 +129,12 @@ def put_message():
         report_options = mq.CMQC.MQRO_COPY_MSG_ID_TO_CORREL_ID
         md.ReportOptions = report_options
 
+        pmo = mq.PMO()
+        pmo.Options = mq.CMQC.MQPMO_NO_SYNCPOINT
+
         # Send the message
         msg = str(json.dumps(msg_object))
-        queue.put(msg, md)
+        queue.put(msg, md, pmo)
 
         logger.info('Put message successful: %s', msg)
         return md.MsgId
@@ -156,6 +160,7 @@ def await_response(msgid):
     gmo = mq.GMO()
     gmo.Options = (mq.CMQC.MQGMO_WAIT |
                    mq.CMQC.MQGMO_FAIL_IF_QUIESCING |
+                   mq.CMQC.MQGMO_NO_SYNCPOINT |
                    mq.CMQC.MQGMO_NO_PROPERTIES)
     gmo.WaitInterval = WAIT_INTERVAL * 1000  # Convert to milliseconds
     gmo.MatchOptions = mq.CMQC.MQMO_MATCH_CORREL_ID
@@ -219,6 +224,7 @@ msg_object = {
 
 qmgr = None
 queue = None
+tdq = None
 dynamic = {
     'queue': None,
     'name': None
@@ -231,11 +237,14 @@ if qmgr is not None:
     queue = get_queue()
 
 if queue is not None:
-    dynamic['queue'], dynamic['name'] = get_dynamic_queue()
+    reply_queue = get_dynamic_queue()
+    if reply_queue is not None:
+        dynamic['queue'] = reply_queue[0]
+        dynamic['name'] = reply_queue[1]
 
-if dynamic['queue'] is not None:
+if reply_queue is not None:
     msgid = put_message()
-    if msgid:
+    if msgid is not None:
         await_response(msgid)
 
     dynamic['queue'].close()
