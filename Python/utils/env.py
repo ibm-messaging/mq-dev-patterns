@@ -1,5 +1,6 @@
+"""Setup the environment for connections to IBM MQ"""
 # -*- coding: utf-8 -*-
-# Copyright 2019 IBM
+# Copyright 2019, 2025 IBM
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,15 +16,17 @@
 
 import os
 import json
-import sys
 
 import logging
+from typing import Any, Generator, Union
+
 logger = logging.getLogger(__name__)
 
-
-class EnvStore(object):
+# The env variable has an unknown structure here because it's created from JSON. So we disable some linter checks
+# pylint: disable=unsubscriptable-object,unsupported-membership-test
+class EnvStore():
     """
-      Load Envrionment Exports from local store
+    Load configuration from local store
     """
     env = None
 
@@ -48,106 +51,99 @@ class EnvStore(object):
     FILEPREFIX = "file://"
 
     def __init__(self):
-        super(EnvStore, self).__init__()
+        super().__init__()
         if EnvStore.env is None:
             module_dir = os.path.dirname(__file__)
             file_path = os.path.join(module_dir, '../../', 'env.json')
-            logger.info(
-                "Looking for file %s for envrionment variables" % file_path)
+            # See if there's an override environment variable for the config file
             try:
-                with open(file_path) as f:
-                    EnvStore.env = json.loads(f.read())
-            # Python 2
-            except IOError as e:
-                logger.info(
-                    'I/O error reading file ({0}): {1}' % (e.errno, e.strerror))
-            except ValueError:
-                logger.info('Parsing error')
-            except:
-                logger.info('Unexpected error:')
-            # Python 3
-            # except FileNotFoundError:
-            # logger.info("Envrionment File was not found")
+                file_path = os.environ['JSON_CONFIG']
+            except KeyError:
+                # If the env variable was not set, that's OK. Use the default.
+                pass
 
-    def checkEndPointIsList(self):
-        if (EnvStore.env
-             and EnvStore.MQ_ENDPOINTS in EnvStore.env
-             and isinstance( EnvStore.env[EnvStore.MQ_ENDPOINTS], list)):
-               return True
+            logger.info("Looking for config file: %s", file_path)
+            try:
+                with open(file_path, encoding='utf-8') as f:
+                    EnvStore.env = json.loads(f.read())
+            except Exception:
+                logger.info('Error reading/parsing file: %s', file_path)
+                raise
+
+    def is_endpoint_list(self) -> bool:
+        """Do we have a list of endpoints?"""
+        if EnvStore.env is not None \
+                and EnvStore.MQ_ENDPOINTS in EnvStore.env \
+                and isinstance(EnvStore.env[EnvStore.MQ_ENDPOINTS], list):
+            return True
         return False
 
-    def setEnv(self):
-        if self.checkEndPointIsList():
-            logger.info('Have File so ready to set envrionment variables')
+    def set_env(self) -> None:
+        """Set the attributes from the configuration file as environment variables.
+        Most values come from only the first block of details in the JSON file.
+        """
+        if self.is_endpoint_list():
+            logger.info('Have file, so ready to set environment variables for configuration')
 
             for e in EnvStore.env[EnvStore.MQ_ENDPOINTS][0]:
                 os.environ[e] = EnvStore.env[EnvStore.MQ_ENDPOINTS][0][e]
                 if EnvStore.PASSWORD not in e:
-                    logger.info('Checking %s value is %s ' % (e, EnvStore.env[EnvStore.MQ_ENDPOINTS][0][e]))
-            # Check if there are multiple endpoints defined
+                    logger.debug('Checking %s value is %s ', e, EnvStore.env[EnvStore.MQ_ENDPOINTS][0][e])
+            # Check if there are multiple endpoints defined. If so, build a string containing all of them.
             if len(EnvStore.env[EnvStore.MQ_ENDPOINTS]) > 0:
-               os.environ[EnvStore.CONNECTION_STRING] = self.buildConnectionString(EnvStore.env[EnvStore.MQ_ENDPOINTS])
+                os.environ[EnvStore.CONNECTION_STRING] = self.build_connection_string(EnvStore.env[EnvStore.MQ_ENDPOINTS])
         else:
-            logger.info('No envrionment variables to set')
+            logger.info('No environment variables to set')
 
-    def buildConnectionString(self, points):
+    def build_connection_string(self, points: list) -> str:
+        """Return the CONNAME string built from the configuration values"""
         logger.info('Building a connection string')
-        l = []
+        conn_string = []
         for point in points:
             if EnvStore.HOST in point and EnvStore.PORT in point:
                 p = '%s(%s)' % (point[EnvStore.HOST], point[EnvStore.PORT])
-                logger.info('endpoint is %s' % p)
-                l.append(p)
-        s = ','.join(l)
-        logger.info('Connection string is %s' % s)
+                logger.info('endpoint is %s', p)
+                conn_string.append(p)
+        s = ','.join(conn_string)
+        logger.info('Connection string is %s', s)
         return s
 
-    def getEndpointCount(self):
-        if self.checkEndPointIsList():
+    def get_endpoint_count(self) -> int:
+        """How many endpoints are configured"""
+        if self.is_endpoint_list():
             return len(EnvStore.env[EnvStore.MQ_ENDPOINTS])
         return 1
 
-    def getNextConnectionString(self):
+    def get_next_connection_string(self) -> Generator[Any, int, str]:
+        """Return the next in the list"""
         for i, p in enumerate(EnvStore.env[EnvStore.MQ_ENDPOINTS]):
-            info =  "%s(%s)" % (p[EnvStore.HOST], p[EnvStore.PORT])
-            if sys.version_info[0] < 3:
-                yield i, str(info)
-            else:
-                yield i, bytes(info, 'utf-8')
+            info = "%s(%s)" % (p[EnvStore.HOST], p[EnvStore.PORT])
+            yield i, str(info)
 
-
-    # function to retrieve variable from Envrionment
+    # function to retrieve variable from Environment
     @staticmethod
-    def getEnvValue(key, index = 0):
+    def getenv_value(key: str, index: int = 0) -> Union[str, None]:
+        """Return the value of an attribute either from the environment variable or configuration file.
+        If no index is given, the returned value comes from the first connection's entry in the JSON file.
+        """
         v = os.getenv(key) if index == 0 else EnvStore.env[EnvStore.MQ_ENDPOINTS][index].get(key)
-        if sys.version_info[0] < 3:
-            return str(v) if v else None
-        else:
-            return bytes(v, 'utf-8') if v else None
+        return str(v) if v else None
 
     @staticmethod
-    def getConnection(host, port):
+    def get_connection(host: str, port: str) -> str:
+        """Return the ConnName directly"""
         info = os.getenv(EnvStore.CONNECTION_STRING)
         if not info:
-            info =  "%s(%s)" % (os.getenv(host), os.getenv(port))
-        if sys.version_info[0] < 3:
-            return str(info)
-        else:
-            return bytes(info, 'utf-8')
+            info = "%s(%s)" % (os.getenv(host), os.getenv(port))
+        return str(info)
 
     @staticmethod
-    def stringForVersion(data):
-        if sys.version_info[0] < 3:
-            return str(data)
-        else:
-            return bytes(data, 'utf-8')
-
-    @staticmethod
-    def ccdtCheck():
-        fPath = EnvStore.getEnvValue(EnvStore.CCDT)
-        if fPath:
-            ccdtFile = fPath if not fPath.startswith(EnvStore.FILEPREFIX) else fPath[len(EnvStore.FILEPREFIX):]
-            if os.path.isfile(ccdtFile):
-                logger.info('CCDT file found at %s ' % ccdtFile)
+    def is_ccdt_available() -> bool:
+        """Is there a CCDT configured"""
+        file_path = EnvStore.getenv_value(EnvStore.CCDT)
+        if file_path:
+            ccdt_file = file_path if not file_path.startswith(EnvStore.FILEPREFIX) else file_path[len(EnvStore.FILEPREFIX):]
+            if os.path.isfile(ccdt_file):
+                logger.info('CCDT file found at %s ', ccdt_file)
                 return True
         return False

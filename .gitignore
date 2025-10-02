@@ -16,4 +16,13 @@ amqp-vertx/target/*
 terraform.tfstate.*
 terraform.tfstate
 
+# Associated with the Python code
+venv*
+Python/tmp/
+
+# Standard Eclipse control files
+.project
+.settings 
+.classpath
+
 
