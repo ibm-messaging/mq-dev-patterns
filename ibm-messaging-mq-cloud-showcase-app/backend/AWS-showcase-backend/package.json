@@ -18,7 +18,7 @@
     "ibmmq": "^2.0.1",
     "morgan": "~1.10.0",
     "async-mutex": "0.4.0",
-    "uuid": "9.0.0"
+    "uuid": "14.0.0"
   },
   "scripts": {
     "start": "node server.js",
