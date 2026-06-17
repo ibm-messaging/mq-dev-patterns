@@ -13,8 +13,8 @@
     "node": ">18.20.0"
   },
   "dependencies": {
-    "@opentelemetry/auto-instrumentations-node": "^0.76.0",
-    "@opentelemetry/sdk-node": "^0.218.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.77.0",
+    "@opentelemetry/sdk-node": "^0.219.0",
     "debug": "^4.4.1",
     "express": "^5.2.0",
     "ibmmq": "^2.1.4"
