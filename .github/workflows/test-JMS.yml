@@ -1,0 +1,97 @@
+#
+# Copyright 2025 IBM Corp.
+#
+# Licensed under the Apache License, Version 2.0 (the 'License');
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: Run JMS Tests
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'JMS/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman
+
+      - name: Pull IBM MQ image
+        run: podman pull icr.io/ibm-messaging/mq:latest
+
+      - name: Run IBM MQ container (QM1)
+        run: |
+          podman run \
+            --env LICENSE=accept \
+            --env MQ_QMGR_NAME=QM1 \
+            --env MQ_APP_USER=app \
+            --env MQ_APP_PASSWORD=passw0rd \
+            --env MQ_ADMIN_USER=admin \
+            --env MQ_ADMIN_PASSWORD=passw0rd \
+            --volume qm1data:/mnt/mqm \
+            --publish 1414:1414 \
+            --publish 9443:9443 \
+            --detach \
+            --name QM1 \
+            icr.io/ibm-messaging/mq:latest
+
+      - name: Wait for QMGR to be running
+        run: |
+          for i in {1..12}; do
+            STATUS=$(podman exec QM1 bash -c "dspmq -nm QM1" | grep -o 'STATUS([^)]*)' | cut -d'(' -f2 | cut -d')' -f1)
+            echo "QMGR state: $STATUS"
+            if [ "$STATUS" = "RUNNING" ]; then
+              echo "QM1 is running"
+              break
+            fi
+            echo "Waiting for QMGR to start..."
+            sleep 5
+          done
+
+      - name: Create env.json
+        working-directory: JMS
+        run: |
+          cat << EOF > env.json
+          {
+            "MQ_ENDPOINTS": [{
+              "HOST": "127.0.0.1",
+              "PORT": "1414",
+              "CHANNEL": "DEV.APP.SVRCONN",
+              "QMGR": "QM1",
+              "APP_USER": "app",
+              "APP_PASSWORD": "passw0rd",
+              "QUEUE_NAME": "DEV.QUEUE.1",
+              "BACKOUT_QUEUE": "DEV.QUEUE.2",
+              "MODEL_QUEUE_NAME": "DEV.APP.MODEL.QUEUE",
+              "DYNAMIC_QUEUE_PREFIX": "APP.REPLIES.*",
+              "TOPIC_NAME": "dev/"
+            }]
+          }
+          EOF
+          echo "env.json path: $(pwd)"
+          cat env.json
+
+      - name: Run the JMS tests
+        working-directory: JMS
+        run: |
+          mvn -Dmaven.test.skip=false test -DEnvFile="$(pwd)/env.json"
+      

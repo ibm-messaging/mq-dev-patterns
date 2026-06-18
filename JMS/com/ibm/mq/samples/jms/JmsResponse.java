@@ -1,5 +1,5 @@
 /*
-* (c) Copyright IBM Corporation 2019, 2024
+* (c) Copyright IBM Corporation 2019, 2025
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -62,6 +62,7 @@ import com.ibm.mq.MQException;
 
 import com.ibm.mq.samples.jms.SampleEnvSetter;
 import com.ibm.mq.samples.jms.JwtHelper;
+import com.ibm.mq.samples.jms.LoggingHelper;
 
 public class JmsResponse {
     private static final String DEFAULT_APP_NAME = "Dev Experience JmsResponse";
@@ -87,7 +88,7 @@ public class JmsResponse {
     private static Long HOUR = 60 * 60 * SECOND; 
 
     public static void main(String[] args) {
-        initialiseLogging();
+        LoggingHelper.init(logger);
         SampleEnvSetter env = new SampleEnvSetter();
         jh = new JwtHelper(env);
         if (jh.isJwtEnabled()) {
@@ -407,21 +408,6 @@ public class JmsResponse {
     private static void recordFailure(Exception ex) {
         JmsExceptionHelper.recordFailure(logger,ex);
         return;
-    }
-
-    private static void initialiseLogging() {
-        Logger defaultLogger = Logger.getLogger("");
-        Handler[] handlers = defaultLogger.getHandlers();
-        if (handlers != null && handlers.length > 0) {
-            defaultLogger.removeHandler(handlers[0]);
-        }
-
-        Handler consoleHandler = new ConsoleHandler();
-        consoleHandler.setLevel(LOGLEVEL);
-        logger.addHandler(consoleHandler);
-
-        logger.setLevel(LOGLEVEL);
-        logger.finest("Logging initialised");
     }
 
     private static void setUserCredentials(JmsConnectionFactory cf) {

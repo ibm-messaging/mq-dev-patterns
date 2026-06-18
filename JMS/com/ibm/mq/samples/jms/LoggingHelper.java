@@ -1,5 +1,5 @@
 /*
-* (c) Copyright IBM Corporation 2019
+* (c) Copyright IBM Corporation 2019, 2025
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -19,20 +19,25 @@ package com.ibm.mq.samples.jms;
 import java.util.logging.*;
 
 public class LoggingHelper {
+    private static boolean isLoggingInitialized = false;
     private static final Level LOGLEVEL = Level.ALL;
 
     public static void init(Logger logger) {
-        Logger defaultLogger = Logger.getLogger("");
-        Handler[] handlers = defaultLogger.getHandlers();
-        if (handlers != null && handlers.length > 0) {
-            defaultLogger.removeHandler(handlers[0]);
-        }
+        if (isLoggingInitialized)
+            return;
+        // avoid duplicate logs
+        logger.setUseParentHandlers(false); 
 
-        Handler consoleHandler = new ConsoleHandler();
+        for (Handler handler : logger.getHandlers()) {
+            if (handler instanceof ConsoleHandler) {
+                logger.removeHandler(handler);
+            }
+        }
+        ConsoleHandler consoleHandler = new ConsoleHandler();
         consoleHandler.setLevel(LOGLEVEL);
         logger.addHandler(consoleHandler);
-
         logger.setLevel(LOGLEVEL);
-        logger.finest("Logging initialised");
+        logger.finest("Logging initialized");
+        isLoggingInitialized = true;
     }
 }
