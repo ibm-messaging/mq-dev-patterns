@@ -14,11 +14,11 @@
 # * limitations under the License.
 
 - url: http://ibm.biz/learn-mq
-  title: Learn IBM MQ 
+  title: Learn IBM MQ
   type: guide
   icon: catalog
 - url: https://developer.ibm.com/components/ibm-mq/learningpaths/
-  title: IBM MQ Learning Paths 
+  title: IBM MQ Learning Paths
   type: guide
   icon: catalog
 - url: http://ibm.biz/mq-playlist
@@ -48,31 +48,31 @@
 - url: https://mvnrepository.com/artifact/com.ibm.mq/com.ibm.mq.allclient
   title: JMS API for IBM MQ
   type: API
-  icon: api 
+  icon: api
 - url: https://mvnrepository.com/artifact/com.ibm.mq/com.ibm.mq.jakarta.client
   title: Jakarta API for IBM MQ
   type: API
-  icon: api  
+  icon: api
 - url: https://github.com/ibm-messaging/mq-jms-spring
   title: Spring boot starter for IBM MQ
   type: API
-  icon: api    
+  icon: api
 - url: https://mvnrepository.com/artifact/com.ibm.mq/mq-jms-spring-boot-starter
   title: Maven repositiry for spring boot starter for IBM MQ
   type: API
-  icon: api     
-- url: https://pypi.org/project/pymqi/
+  icon: api
+- url: https://pypi.org/project/ibmmq/
   title: Python API for IBM MQ
   type: API
-  icon: api 
+  icon: api
 - url: https://www.nuget.org/packages/IBMXMSDotnetClient/
   title: XMS dotnet API for IBM MQ
   type: API
-  icon: api      
+  icon: api
 - url: https://github.com/ibm-messaging/mq-asyncapi-java-template/blob/main/tutorials/IBMMQ.md
   title: AsyncAPI API for IBM MQ
   type: API
-  icon: api    
+  icon: api
 - url: https://stackoverflow.com/questions/tagged/ibm-mq
   title: ibm-mq on Stack Overflow
   type: Q&A
