@@ -29,7 +29,7 @@ metadata:
   name: "ibm-mq-dev-resources"
   title: "IBM MQ resources for developers"
   description: Developer resources for IBM MQ
-  links: 
+  links:
     $yaml : ./components/resource-links.yaml
   tags:
     - java
@@ -39,12 +39,12 @@ metadata:
     - cloud
     - containers
   annotations:
-    backstage.io/techdocs-ref: dir:.  
+    backstage.io/techdocs-ref: dir:.
 spec:
   type: service
   owner: ibm-mq-devex
   lifecycle: production
-  providesApis: 
+  providesApis:
     - ibm-mq-node-api
     - ibm-mq-go-api
     - ibm-mq-jms-api
@@ -61,79 +61,79 @@ kind: API
 metadata:
   name: ibm-mq-node-api
   description: IBM MQ API for Node
-  links: 
+  links:
     - url: https://github.com/ibm-messaging/mq-mqi-nodejs
       title: Node API
-      type: API  
+      type: API
 spec:
   type: library
   owner: ibm-mq-devex
   lifecycle: production
-  definition: 
-    $text : ./nodeapi/sample.yaml  
+  definition:
+    $text : ./nodeapi/sample.yaml
 ---
 apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:
   name: ibm-mq-jms-api
   description: IBM MQ API for Java JMS
-  links: 
+  links:
     - url: https://www.ibm.com/docs/en/ibm-mq/latest?topic=messaging-mq-classes-jakarta-overview
       title: Java API
-      type: API  
+      type: API
 spec:
   type: library
   owner: ibm-mq-devex
   lifecycle: production
-  definition: 
-    $text : ./jmsapi/sample.yaml 
+  definition:
+    $text : ./jmsapi/sample.yaml
 ---
 apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:
   name: ibm-mq-spring-api
   description: Spring boot starter for MQ
-  links: 
+  links:
     - url: https://github.com/ibm-messaging/mq-jms-spring
       title: Spring Boot API for MQ
-      type: API  
+      type: API
 spec:
   type: library
   owner: ibm-mq-devex
   lifecycle: production
-  definition: 
-    $text : ./springapi/sample.yaml           
+  definition:
+    $text : ./springapi/sample.yaml
 ---
 apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:
   name: ibm-mq-python-api
   description: IBM MQ API for Python
-  links: 
-    - url: https://pypi.org/project/pymqi/
+  links:
+    - url: https://pypi.org/project/ibmmq/
       title: Python API
-      type: API  
+      type: API
 spec:
   type: library
   owner: ibm-mq-devex
   lifecycle: production
-  definition: 
-    $text : ./pythonapi/sample.yaml  
+  definition:
+    $text : ./pythonapi/sample.yaml
 ---
 apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:
   name: ibm-mq-go-api
   description: IBM MQ API for Go
-  links: 
+  links:
     - url: https://github.com/ibm-messaging/mq-golang
       title: Go API
-      type: API 
+      type: API
 spec:
   type: library
   owner: ibm-mq-devex
   lifecycle: production
-  definition: 
+  definition:
     $text : ./goapi/sample.yaml
 ---
 apiVersion: backstage.io/v1alpha1
@@ -141,15 +141,15 @@ kind: API
 metadata:
   name: ibm-mq-dotnet-api
   description: XMS dotnet API for IBM MQ
-  links: 
+  links:
     - url: https://github.com/ibm-messaging/dotnet
       title: XMS API
-      type: API 
+      type: API
 spec:
   type: library
   owner: ibm-mq-devex
   lifecycle: production
-  definition: 
+  definition:
     $text : ./dotnetapi/sample.yaml
 ---
 apiVersion: backstage.io/v1alpha1
@@ -166,15 +166,15 @@ kind: API
 metadata:
   name: ibm-mq-async-api
   description: AsyncAPI bindings for IBM MQ
-  links: 
+  links:
     - url: https://github.com/asyncapi/bindings/tree/master/ibmmq
       title: Async Bindings
-      type: API   
+      type: API
 spec:
   type: asyncapi
   owner: ibm-mq-devex
   lifecycle: production
-  definition: 
+  definition:
     $text : ./asyncapi/sample.yaml
 ---
 apiVersion: scaffolder.backstage.io/v1beta3
@@ -183,12 +183,12 @@ metadata:
   name: mq-nodejs-template
   title: MQ Node.js Template
   description: A template for the scaffolder that creates a MQ Node.js repository
-  annotations: 
-    backstage.io/techdocs-ref: dir:.  
+  annotations:
+    backstage.io/techdocs-ref: dir:.
   tags:
     - node
     - javascript
-    - mq 
+    - mq
 spec:
   owner: ibm-mq-devex
   type: service
@@ -212,13 +212,13 @@ metadata:
   name: mq-jms-template
   title: MQ JMS Template
   description: A template for the scaffolder that creates a MQ JMS repository
-  annotations: 
-    backstage.io/techdocs-ref: dir:.  
+  annotations:
+    backstage.io/techdocs-ref: dir:.
   tags:
     - jms
     - java
     - jakarta
-    - mq 
+    - mq
 spec:
   owner: ibm-mq-devex
   type: service
@@ -242,14 +242,14 @@ metadata:
   name: mq-spring-template
   title: MQ Spring Template
   description: A template for the scaffolder that creates a MQ Spring Boot repository
-  annotations: 
-    backstage.io/techdocs-ref: dir:.  
+  annotations:
+    backstage.io/techdocs-ref: dir:.
   tags:
     - jms
     - java
     - jakarta
     - spring
-    - mq 
+    - mq
 spec:
   owner: ibm-mq-devex
   type: service
@@ -273,11 +273,11 @@ metadata:
   name: mq-python-template
   title: MQ Python Template
   description: A template for the scaffolder that creates a MQ Python repository
-  annotations: 
-    backstage.io/techdocs-ref: dir:.  
+  annotations:
+    backstage.io/techdocs-ref: dir:.
   tags:
     - python
-    - mq 
+    - mq
 spec:
   owner: ibm-mq-devex
   type: service
@@ -301,13 +301,13 @@ metadata:
   name: mq-dotnet-template
   title: MQ XMS dotnet Template
   description: A template for the scaffolder that creates a MQ XMS dotnet repository
-  annotations: 
-    backstage.io/techdocs-ref: dir:.  
+  annotations:
+    backstage.io/techdocs-ref: dir:.
   tags:
     - xms
     - dotnet
     - c#
-    - mq 
+    - mq
 spec:
   owner: ibm-mq-devex
   type: service
@@ -331,11 +331,11 @@ metadata:
   name: mq-go-template
   title: MQ Go Template
   description: A template for the scaffolder that creates a MQ Go repository
-  annotations: 
-    backstage.io/techdocs-ref: dir:. 
+  annotations:
+    backstage.io/techdocs-ref: dir:.
   tags:
     - go
-    - mq    
+    - mq
 spec:
   owner: ibm-mq-devex
   type: service
