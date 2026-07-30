@@ -17,72 +17,66 @@
 package main
 
 import (
-	"bytes"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"log"
-	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
 	"mqdevpatterns/src/mqsamputils"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
 	//"errors"
 )
 
-var logger = log.New(os.Stdout, "MQ Response: ", log.LstdFlags)
+var logger = log.New(os.Stdout, "MQ Rsp: ", log.LstdFlags)
 
-type message struct {
-	Greeting  string `json:"greeting"`
-	Message   string `json:"message"`
-	Value     int    `json:"value"`
-	MSGCorrID string `json:"correlationID"`
+type inMessage struct {
+	Greeting string `json:"greeting"`
+	Value    int    `json:"value"`
 }
 
-// Main Entry to response application
-// Creates Connection to Queue
+type outMessage struct {
+	Greeting     string `json:"greeting"`
+	SquaredValue int    `json:"squaredValue"`
+}
+
+// Main entry to response application
+// Creates connection to Queue Manager
 func main() {
 
-	logger.Println("Application is Starting")
-
-	logSettings()
+	logger.Println("Application is starting")
 
 	mqsamputils.EnvSettings.LogSettings()
 
 	qMgr, err := mqsamputils.CreateConnection(mqsamputils.FULL_STRING)
-	
+
 	if err != nil {
-		logger.Fatalln("Unable to Establish Connection to server")
+		logger.Fatalln("Unable to establish connection to server")
 		os.Exit(1)
 	}
 	defer qMgr.Disc()
 
-	qObject, err := mqsamputils.OpenQueue(qMgr, mqsamputils.Get)
+	qObject, err := mqsamputils.OpenObject(qMgr, mqsamputils.Get)
 	if err != nil {
-		logger.Fatalln("Unable to Open Queue")
+		logger.Fatalln("Unable to open queue")
 		os.Exit(1)
 	}
 	defer qObject.Close(0)
 
-	
-
 	getMessages(qMgr, qObject)
 
-  logger.Println("Application is Ending")
-}
-
-// Output authentication values to verify that they have
-// been read from the envrionment settings
-func logSettings() {
-	logger.Printf("Username is (%s)\n", mqsamputils.EnvSettings.User)
-	//logger.Printf("Password is (%s)\n", mqsamputils.EnvSettings.Password)
+	logger.Println("Application is ending")
 }
 
 func logError(err error) {
 	logger.Println(err)
+	os.Exit(1)
 }
 
 func getMessages(qMgr ibmmq.MQQueueManager, qObject ibmmq.MQObject) {
-	logger.Println("Getting Message from queue")
+	logger.Println("Getting message from queue")
 	var err error
 
 	ok := true
@@ -95,99 +89,94 @@ func getMessages(qMgr ibmmq.MQQueueManager, qObject ibmmq.MQObject) {
 		getmqmd := ibmmq.NewMQMD()
 		gmo := ibmmq.NewMQGMO()
 
-		// The default options are OK, but it's always
-		// a good idea to be explicit about transactional boundaries as
-		// not all platforms behave the same way.
-		// Get Request with syncpoint
+		// Get Request with syncpoint so the reply is sent in the same transaction
 		gmo.Options = ibmmq.MQGMO_SYNCPOINT | ibmmq.MQGMO_WAIT | ibmmq.MQGMO_FAIL_IF_QUIESCING
 
 		// Set options to wait for a maximum of 3 seconds for any new message to arrive
 		gmo.WaitInterval = 3 * 1000 // The WaitInterval is in milliseconds
 		// Create a buffer for the message data. This one is large enough
-		// for the messages put by the amqsput sample.
-		buffer := make([]byte, 1024)						
+		// for the messages put by the samples in this directory.
+		buffer := make([]byte, 1024)
 		// Now try to get the message
 		datalen, err = qObject.Get(getmqmd, gmo, buffer)
 
-		if err !=nil {
-			mqret := err.(*ibmmq.MQReturn)		
+		if err != nil {
+			mqret := err.(*ibmmq.MQReturn)
 
 			if mqret.MQRC == ibmmq.MQRC_NO_MSG_AVAILABLE {
 				ok = true
+				running = false
 			} else {
 				ok = false
-			}	
+			}
 
 		} else {
 			// Assume the message is a printable string
 			logger.Printf("Got message of length %d: ", datalen)
-			logger.Println(string(buffer[:datalen]))
-			qObject, err := mqsamputils.OpenDynamicQueue(qMgr, getmqmd.ReplyToQ)	
+			logger.Println("  " + string(buffer[:datalen]))
+			qObject, err := mqsamputils.OpenReplyQueue(qMgr, getmqmd.ReplyToQ)
 
 			if err != nil {
-				logger.Println("Unable to Open Queue")				
-				ok=false				
+				logger.Println("Unable to open reply queue")
+				ok = false
 			} else {
 				err = replyToMsg(qObject, string(buffer[:datalen]), getmqmd)
-				if err != nil {							
-					ok=false				
-				} 
-			}		
+				if err != nil {
+					ok = false
+				}
+			}
 
 		}
 
 		if ok {
-			qMgr.Cmit()
-			logger.Println("Response message commited!")			
-		} else {			
-			running = PoisoningMessageHandler(qMgr, buffer, datalen, getmqmd)									
+			if running {
+				qMgr.Cmit()
+				logger.Println("Response message committed")
+			}
+		} else {
+			running = PoisoningMessageHandler(qMgr, buffer, datalen, getmqmd)
 		}
 
 	}
 }
 
-
-func PoisoningMessageHandler(qMgr ibmmq.MQQueueManager, buffer []byte, datalen int, getmqmd *ibmmq.MQMD) (ok bool) {	
+func PoisoningMessageHandler(qMgr ibmmq.MQQueueManager, buffer []byte, datalen int, getmqmd *ibmmq.MQMD) (ok bool) {
 	// Get the backout queue name from the env
-	BACKOUT_QUEUE := mqsamputils.EnvSettings.BackoutQueue	
+	BACKOUT_QUEUE := mqsamputils.EnvSettings.BackoutQueue
 	counter := getmqmd.BackoutCount
 	ok = true
 
 	//if counter greater then 5, redirect the message to the backout queue
-	if counter >=5 {
+	if counter >= 5 {
 		qObject, err := mqsamputils.OpenDynamicQueue(qMgr, BACKOUT_QUEUE)
 
-		if err!=nil {
+		if err != nil {
 			logger.Println("Error on opening the backout queue")
 			ok = false
 		} else {
-			replyToMsg(qObject, string(buffer[:datalen]), getmqmd)			
+			replyToMsg(qObject, string(buffer[:datalen]), getmqmd)
 			qMgr.Cmit()
-			logger.Println("Message delivered to the backout queue " , BACKOUT_QUEUE , " correctly.")			
+			logger.Printf("Message delivered to the backout queue %s correctly", BACKOUT_QUEUE)
 		}
 
 	} else {
-		logger.Println("CURRENT BACKOUT COUNTER %s", string(counter))
+		logger.Printf("Current Backout Count: %d", counter)
 		qMgr.Back()
 	}
 
-	return 
+	return
 }
 
 func replyToMsg(qObject ibmmq.MQObject, msg string, getmqmd *ibmmq.MQMD) error {
 	logger.Println("About to reply to request ", msg)
-	var messageObject message
+	var inMessageObject inMessage
 
-	logger.Println("Pruned message ", msg)
+	json.Unmarshal([]byte(msg), &inMessageObject)
+	logger.Printf("Found message %+v", inMessageObject)
 
-	json.Unmarshal([]byte(msg), &messageObject)
-	logger.Println("Found message", messageObject.Greeting)
-	logger.Println("Found message", messageObject.Message)
-	logger.Println("Found message", messageObject.Value)
-
-	msgData := &message{
-		Greeting: "Reply from Go is " + time.Now().Format(time.RFC3339),
-		Value:    messageObject.Value * messageObject.Value}
+	msgData := &outMessage{
+		Greeting:     "Reply from Go is " + time.Now().Format(time.RFC3339),
+		SquaredValue: inMessageObject.Value * inMessageObject.Value}
 	data, err := json.Marshal(msgData)
 	if err != nil {
 		logger.Println("Unexpected error marshalling data to send")
@@ -198,18 +187,8 @@ func replyToMsg(qObject ibmmq.MQObject, msg string, getmqmd *ibmmq.MQMD) error {
 	putmqmd := ibmmq.NewMQMD()
 	pmo := ibmmq.NewMQPMO()
 
-	emptyByteArray := make([]byte, 24)
-
-	if bytes.Equal(getmqmd.CorrelId, emptyByteArray) || bytes.Contains(getmqmd.CorrelId, emptyByteArray) {
-		logger.Println("CorrelId is empty")
-		putmqmd.CorrelId = getmqmd.MsgId
-	} else {
-		logger.Println("Correl ID found on request")
-
-		putmqmd.CorrelId = getmqmd.CorrelId
-	}
-
-	putmqmd.MsgId = getmqmd.MsgId
+	logger.Println("Copying inbound MsgId to outbound CorrelId")
+	putmqmd.CorrelId = getmqmd.MsgId
 
 	// Tell MQ what the message body format is.
 	// In this case, a text string
@@ -217,9 +196,7 @@ func replyToMsg(qObject ibmmq.MQObject, msg string, getmqmd *ibmmq.MQMD) error {
 
 	logger.Println("Looking for match on Correl ID CorrelID:" + hex.EncodeToString(putmqmd.CorrelId))
 
-	logger.Println("Looking for match on Correl ID CorrelID:" + string(putmqmd.CorrelId))
-
-  // Put response with Syncpoint
+	// Put response with Syncpoint
 	pmo.Options = ibmmq.MQPMO_SYNCPOINT
 
 	// Now put the message to the queue
@@ -232,5 +209,7 @@ func replyToMsg(qObject ibmmq.MQObject, msg string, getmqmd *ibmmq.MQMD) error {
 		logger.Println("Put message to", strings.TrimSpace(qObject.Name))
 		logger.Println("MsgId:" + hex.EncodeToString(putmqmd.MsgId))
 	}
-	return nil
+
+	err = fmt.Errorf("Dummy error")
+	return err
 }

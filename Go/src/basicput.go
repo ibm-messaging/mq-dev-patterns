@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, 2020 IBM Corp.
+ * Copyright 2019, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,15 @@
 package main
 
 import (
-	"encoding/hex"
 	"encoding/json"
 	"log"
 	"math/rand"
-	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
 	"mqdevpatterns/src/mqsamputils"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
 )
 
 var logger = log.New(os.Stdout, "MQ Put: ", log.LstdFlags)
@@ -36,46 +36,37 @@ type message struct {
 }
 
 // Main Entry to Put application
-// Creates Connection to Queue
+// Creates connection to Queue Manager
 func main() {
 
-	logger.Println("Application is Starting")
+	logger.Println("Application is starting")
 
-	logSettings()
 	mqsamputils.EnvSettings.LogSettings()
 
 	qMgr, err := mqsamputils.CreateConnection(mqsamputils.FULL_STRING)
 	if err != nil {
-		logger.Fatalln("Unable to Establish Connection to server")
-		os.Exit(1)
+		logger.Fatalln("Unable to Establish connection to server")
 	}
 	defer qMgr.Disc()
 
-	qObject, err := mqsamputils.OpenQueue(qMgr, mqsamputils.Put)
+	qObject, err := mqsamputils.OpenObject(qMgr, mqsamputils.Put)
 	if err != nil {
-		logger.Fatalln("Unable to Open Queue")
-		os.Exit(1)
+		logger.Fatalln("Unable to open queue")
 	}
 	defer qObject.Close(0)
 
 	putMessage(qObject)
 
-	logger.Println("Application is Ending")
-}
-
-// Output authentication values to verify that they have
-// been read from the envrionment settings
-func logSettings() {
-	logger.Printf("Username is (%s)\n", mqsamputils.EnvSettings.User)
-	//logger.Printf("Password is (%s)\n", mqsamputils.EnvSettings.Password)
+	logger.Println("Application is ending")
 }
 
 func logError(err error) {
 	logger.Println(err)
+	os.Exit(1)
 }
 
 func putMessage(qObject ibmmq.MQObject) {
-	logger.Println("Writing Message to Queue")
+	logger.Println("Writing message to queue")
 
 	// The PUT requires control structures, the Message Descriptor (MQMD)
 	// and Put Options (MQPMO). Create those with default values.
@@ -97,7 +88,7 @@ func putMessage(qObject ibmmq.MQObject) {
 
 	data, err := json.Marshal(msgData)
 	if err != nil {
-		logger.Println("Unexpected error marhalling data to send")
+		logger.Println("Unexpected error marshalling data to send")
 		logError(err)
 		return
 	}
@@ -112,7 +103,5 @@ func putMessage(qObject ibmmq.MQObject) {
 		logError(err)
 	} else {
 		logger.Println("Put message to", strings.TrimSpace(qObject.Name))
-		// Print the MsgId so it can be used as a parameter to amqsget
-		logger.Println("MsgId:" + hex.EncodeToString(putmqmd.MsgId))
 	}
 }

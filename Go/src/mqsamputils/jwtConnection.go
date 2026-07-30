@@ -1,7 +1,7 @@
 package mqsamputils
 
 /**
- * Copyright 2025 IBM Corp.
+ * Copyright 2025, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,10 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
@@ -58,7 +59,7 @@ func getJwtEndPoint(index int) Env {
 
 func JwtCheck() bool {
 	if len(JWT_ISSUER.Points) == 0 {
-		logger.Println("JWT credentials not found, will not be using JWT to authenticate")
+		logger.Println("JWT credentials not found. Will not be using JWT to authenticate")
 		return false
 	}
 
@@ -69,7 +70,7 @@ func JwtCheck() bool {
 		return false
 	}
 
-	logger.Println("JWT credentials found, will be using JWT to authenticate")
+	logger.Println("JWT credentials found. Will be using JWT to authenticate")
 	return true
 
 }
@@ -104,12 +105,14 @@ func ObtainToken(jwt Env, env Env) (string, error) {
 	   used for an MQ connection.
 	*/
 
-	// checking for JWT authentication with JWKS
+	// checking for JWT authentication with JWKS. If you have configured a keystore, then we try to
+	// use it. But we allow the connection to continue to be attempted even if there's a problem with
+	// the store.
 	if jwt.JwtKeyRepository != "" {
 		caCertPath := fmt.Sprintf(jwt.JwtKeyRepository)
-		caCert, err := ioutil.ReadFile(caCertPath)
+		caCert, err := os.ReadFile(caCertPath)
 		if err != nil {
-			logger.Println("Failed to read CA certificate: %v", err)
+			logger.Printf("Failed to read CA certificate: %v", err)
 		}
 
 		// Create a certificate pool and add the CA cert
@@ -163,7 +166,7 @@ func ObtainToken(jwt Env, env Env) (string, error) {
 
 	// If it all worked, we can parse the response. We don't need all of the returned
 	// fields, only the token.
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	} else {
@@ -186,15 +189,12 @@ func connectViaToken(env Env) (*ibmmq.MQCSP, error) {
 	}
 
 	if token != "" {
-
 		csp.Token = token
 		logger.Printf("Using token: %s\n", token)
 		return csp, err
-
 	} else {
 		logger.Printf("An empty token was returned")
-		err = fmt.Errorf("empty token was returned")
+		err = fmt.Errorf("An empty token was returned")
 		return csp, err
 	}
-
 }
