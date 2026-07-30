@@ -49,13 +49,26 @@ func main() {
 	}
 	defer qMgr.Disc()
 
-	qObject, err := mqsamputils.OpenObject(qMgr, mqsamputils.Put)
+	// Open the output queue
+mqod := ibmmq.NewMQOD()
+	mqod.ObjectType = ibmmq.MQOT_Q
+	mqod.ObjectName = mqsamputils.EnvSettings.QueueName
+
+	qObject, err := qMgr.Open(mqod, ibmmq.MQOO_OUTPUT)
 	if err != nil {
 		logger.Fatalln("Unable to open output queue")
 	}
 	defer qObject.Close(0)
 
-	qObjDynamic, err := mqsamputils.OpenObject(qMgr, mqsamputils.Dynamic)
+	// Open the model reply queue, getting a dynamic queue reference
+mqod = ibmmq.NewMQOD()
+	mqod.ObjectType = ibmmq.MQOT_Q
+	mqod.ObjectName = mqsamputils.EnvSettings.ModelQueueName
+		mqod.DynamicQName =mqsamputils.EnvSettings.DynamicQueueName
+		logger.Printf("Attempting to open reply queue %s", mqsamputils.EnvSettings.ModelQueueName)
+
+
+	qObjDynamic, err := qMgr.Open(mqod, ibmmq.MQOO_INPUT_EXCLUSIVE)
 	if err != nil {
 		logger.Fatalln("Unable to create dynamic reply queue")
 	}

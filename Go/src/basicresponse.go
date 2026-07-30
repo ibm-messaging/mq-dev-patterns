@@ -19,7 +19,6 @@ package main
 import (
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"log"
 	"mqdevpatterns/src/mqsamputils"
 	"os"
@@ -27,7 +26,6 @@ import (
 	"time"
 
 	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
-	//"errors"
 )
 
 var logger = log.New(os.Stdout, "MQ Rsp: ", log.LstdFlags)
@@ -58,10 +56,9 @@ func main() {
 	}
 	defer qMgr.Disc()
 
-	qObject, err := mqsamputils.OpenObject(qMgr, mqsamputils.Get)
+	qObject, err := openQueue(qMgr, "")
 	if err != nil {
 		logger.Fatalln("Unable to open queue")
-		os.Exit(1)
 	}
 	defer qObject.Close(0)
 
@@ -73,6 +70,32 @@ func main() {
 func logError(err error) {
 	logger.Println(err)
 	os.Exit(1)
+}
+
+func openQueue(qMgr ibmmq.MQQueueManager, queueName string) (ibmmq.MQObject, error) {
+
+	// Create the Object Descriptor that allows us to give the queue name
+	mqod := ibmmq.NewMQOD()
+	mqod.ObjectType = ibmmq.MQOT_Q
+	mqod.ObjectName = mqsamputils.EnvSettings.QueueName
+
+	// Assume the queue is for input unless a specific name is given. In
+	// which case it's the designated reply queue
+	openOptions := ibmmq.MQOO_INPUT_EXCLUSIVE
+	if queueName != "" {
+		mqod.ObjectName = queueName
+		openOptions = ibmmq.MQOO_OUTPUT
+	}
+	logger.Printf("Attempting to open queue %s", mqod.ObjectName)
+	qObject, err := qMgr.Open(mqod, openOptions)
+
+	if err != nil {
+		logError(err)
+	} else {
+		logger.Printf("Opened object %s", qObject.Name)
+	}
+
+	return qObject, err
 }
 
 func getMessages(qMgr ibmmq.MQQueueManager, qObject ibmmq.MQObject) {
@@ -114,7 +137,7 @@ func getMessages(qMgr ibmmq.MQQueueManager, qObject ibmmq.MQObject) {
 			// Assume the message is a printable string
 			logger.Printf("Got message of length %d: ", datalen)
 			logger.Println("  " + string(buffer[:datalen]))
-			qObject, err := mqsamputils.OpenReplyQueue(qMgr, getmqmd.ReplyToQ)
+			qObject, err := openQueue(qMgr, getmqmd.ReplyToQ)
 
 			if err != nil {
 				logger.Println("Unable to open reply queue")
@@ -148,7 +171,7 @@ func PoisoningMessageHandler(qMgr ibmmq.MQQueueManager, buffer []byte, datalen i
 
 	//if counter greater then 5, redirect the message to the backout queue
 	if counter >= 5 {
-		qObject, err := mqsamputils.OpenDynamicQueue(qMgr, BACKOUT_QUEUE)
+		qObject, err := openQueue(qMgr, BACKOUT_QUEUE)
 
 		if err != nil {
 			logger.Println("Error on opening the backout queue")
@@ -157,6 +180,7 @@ func PoisoningMessageHandler(qMgr ibmmq.MQQueueManager, buffer []byte, datalen i
 			replyToMsg(qObject, string(buffer[:datalen]), getmqmd)
 			qMgr.Cmit()
 			logger.Printf("Message delivered to the backout queue %s correctly", BACKOUT_QUEUE)
+			qObject.Close(0)
 		}
 
 	} else {
@@ -210,6 +234,7 @@ func replyToMsg(qObject ibmmq.MQObject, msg string, getmqmd *ibmmq.MQMD) error {
 		logger.Println("MsgId:" + hex.EncodeToString(putmqmd.MsgId))
 	}
 
-	err = fmt.Errorf("Dummy error")
+	// Uncomment the next line to force an error to test the backout queue processing
+	// err = fmt.Errorf("Dummy error")
 	return err
 }

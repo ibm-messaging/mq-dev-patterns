@@ -46,7 +46,7 @@ func main() {
 	}
 	defer qMgr.Disc()
 
-	qObject, err := mqsamputils.OpenGetQueue(qMgr, mqsamputils.Get, mqsamputils.FULL_STRING)
+	qObject, err := openQueue(qMgr)
 	if err != nil {
 		logger.Fatalln("Unable to open queue")
 	}
@@ -55,6 +55,26 @@ func main() {
 	getMessage(qObject)
 
 	logger.Println("Application is ending")
+}
+
+func openQueue(qMgr ibmmq.MQQueueManager) (ibmmq.MQObject, error) {
+	// Create the Object Descriptor that allows us to give the queue name
+	mqod := ibmmq.NewMQOD()
+	mqod.ObjectType = ibmmq.MQOT_Q
+	mqod.ObjectName = mqsamputils.EnvSettings.QueueName
+
+	openOptions := ibmmq.MQOO_INPUT_EXCLUSIVE
+
+	logger.Printf("Attempting to open queue %s", mqod.ObjectName)
+	qObject, err := qMgr.Open(mqod, openOptions)
+
+	if err != nil {
+		logError(err)
+	} else {
+		logger.Printf("Opened object %s", qObject.Name)
+	}
+
+	return qObject, err
 }
 
 func logError(err error) {

@@ -43,7 +43,6 @@ func main() {
 	qMgr, err := mqsamputils.CreateConnection(mqsamputils.FULL_STRING)
 	if err != nil {
 		logger.Fatalln("Unable to establish connection to server")
-		os.Exit(1)
 	}
 
 	defer qMgr.Disc()
@@ -51,7 +50,6 @@ func main() {
 	qObject, subscriptionObject, err := subscribeToTopic(qMgr)
 	if err != nil {
 		logger.Fatalln("Unable to subscribe to topic")
-		os.Exit(1)
 	}
 	defer subscriptionObject.Close(0)
 	defer qObject.Close(0)

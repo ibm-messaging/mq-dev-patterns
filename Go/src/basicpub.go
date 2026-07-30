@@ -50,9 +50,8 @@ func main() {
 	}
 	defer qMgr.Disc()
 
-	topicObject, err := mqsamputils.OpenObject(qMgr, mqsamputils.Pub)
+	topicObject, err := openTopic(qMgr)
 	if err != nil {
-		logger.Fatalln("Unable to publish to topic")
 		os.Exit(1)
 	}
 	defer topicObject.Close(0)
@@ -65,6 +64,28 @@ func main() {
 func logError(err error) {
 	logger.Println(err)
 	os.Exit(1)
+}
+
+func openTopic(qMgr ibmmq.MQQueueManager) (ibmmq.MQObject, error) {
+
+	// Create the Object Descriptor that allows us to give the queue name
+	mqod := ibmmq.NewMQOD()
+	mqod.ObjectType = ibmmq.MQOT_TOPIC
+	// Topics can be given in ObjectName or ObjectString or both, Easiest is ObjectString.
+	mqod.ObjectString = mqsamputils.EnvSettings.Topic
+
+	openOptions := ibmmq.MQOO_OUTPUT
+
+	logger.Printf("Attempting to open topic %s", mqod.ObjectString)
+	tpObject, err := qMgr.Open(mqod, openOptions)
+
+	if err != nil {
+		logError(err)
+	} else {
+		logger.Printf("Opened object %s", tpObject.Name)
+	}
+
+	return tpObject, err
 }
 
 func putMessage(topicObject ibmmq.MQObject) {
