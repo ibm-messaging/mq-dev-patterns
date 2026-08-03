@@ -81,7 +81,7 @@ func openQueue(qMgr ibmmq.MQQueueManager, queueName string) (ibmmq.MQObject, err
 
 	// Assume the queue is for input unless a specific name is given. In
 	// which case it's the designated reply queue
-	openOptions := ibmmq.MQOO_INPUT_EXCLUSIVE
+	openOptions := ibmmq.MQOO_INPUT_SHARED
 	if queueName != "" {
 		mqod.ObjectName = queueName
 		openOptions = ibmmq.MQOO_OUTPUT
@@ -148,7 +148,6 @@ func getMessages(qMgr ibmmq.MQQueueManager, qObject ibmmq.MQObject) {
 					ok = false
 				}
 			}
-
 		}
 
 		if ok {
@@ -218,8 +217,6 @@ func replyToMsg(qObject ibmmq.MQObject, msg string, getmqmd *ibmmq.MQMD) error {
 	// In this case, a text string
 	putmqmd.Format = ibmmq.MQFMT_STRING
 
-	logger.Println("Looking for match on Correl ID CorrelID:" + hex.EncodeToString(putmqmd.CorrelId))
-
 	// Put response with Syncpoint
 	pmo.Options = ibmmq.MQPMO_SYNCPOINT
 
@@ -231,7 +228,7 @@ func replyToMsg(qObject ibmmq.MQObject, msg string, getmqmd *ibmmq.MQMD) error {
 		return err
 	} else {
 		logger.Println("Put message to", strings.TrimSpace(qObject.Name))
-		logger.Println("MsgId:" + hex.EncodeToString(putmqmd.MsgId))
+		logger.Println("  MsgId:" + hex.EncodeToString(putmqmd.MsgId))
 	}
 
 	// Uncomment the next line to force an error to test the backout queue processing

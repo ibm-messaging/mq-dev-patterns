@@ -1,0 +1,1 @@
+find . -name b*.go | xargs grep -h "logger\.P" | sed "s/^\s*//g"  | sort -u

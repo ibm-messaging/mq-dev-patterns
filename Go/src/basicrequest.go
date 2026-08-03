@@ -50,7 +50,7 @@ func main() {
 	defer qMgr.Disc()
 
 	// Open the output queue
-mqod := ibmmq.NewMQOD()
+	mqod := ibmmq.NewMQOD()
 	mqod.ObjectType = ibmmq.MQOT_Q
 	mqod.ObjectName = mqsamputils.EnvSettings.QueueName
 
@@ -61,12 +61,11 @@ mqod := ibmmq.NewMQOD()
 	defer qObject.Close(0)
 
 	// Open the model reply queue, getting a dynamic queue reference
-mqod = ibmmq.NewMQOD()
+	mqod = ibmmq.NewMQOD()
 	mqod.ObjectType = ibmmq.MQOT_Q
 	mqod.ObjectName = mqsamputils.EnvSettings.ModelQueueName
-		mqod.DynamicQName =mqsamputils.EnvSettings.DynamicQueueName
-		logger.Printf("Attempting to open reply queue %s", mqsamputils.EnvSettings.ModelQueueName)
-
+	mqod.DynamicQName = mqsamputils.EnvSettings.DynamicQueueName
+	logger.Printf("Attempting to open reply queue %s", mqsamputils.EnvSettings.ModelQueueName)
 
 	qObjDynamic, err := qMgr.Open(mqod, ibmmq.MQOO_INPUT_EXCLUSIVE)
 	if err != nil {
@@ -141,47 +140,38 @@ func putMessage(qObject ibmmq.MQObject, qDynamicObject ibmmq.MQObject) ([]byte, 
 func awaitResponse(qDynamicObject ibmmq.MQObject, correlId []byte) {
 	logger.Println("Waiting for a response")
 	var err error
-	msgAvail := true
 
-	for msgAvail == true && err == nil {
-		var datalen int
+	var datalen int
 
-		// The PUT requires control structures, the Message Descriptor (MQMD)
-		// and Put Options (MQPMO). Create those with default values. Reset the
-		// MQMD for each loop so the MsgId/Correlid from previous iterations do not interfere.
-		getmqmd := ibmmq.NewMQMD()
-		gmo := ibmmq.NewMQGMO()
+	// The PUT requires control structures, the Message Descriptor (MQMD)
+	// and Put Options (MQPMO). Create those with default values.
 
-		gmo.Options = ibmmq.MQGMO_WAIT | ibmmq.MQGMO_FAIL_IF_QUIESCING
-		gmo.WaitInterval = 3 * 1000 // The WaitInterval is in milliseconds
+	// We are only expecting a single response, so do not need to loop through replies
+	getmqmd := ibmmq.NewMQMD()
+	gmo := ibmmq.NewMQGMO()
 
-		// Setup the way to match the correct field in the MQMD
-		gmo.MatchOptions = ibmmq.MQMO_MATCH_CORREL_ID
-		getmqmd.CorrelId = correlId
+	gmo.Options = ibmmq.MQGMO_WAIT | ibmmq.MQGMO_FAIL_IF_QUIESCING
+	// Wait for up to 10 seconds in case the responder is not running yet
+	gmo.WaitInterval = 10 * 1000 // The WaitInterval is in milliseconds
 
-		logger.Println("Looking for a match on CorrelId:" + hex.EncodeToString(correlId))
+	// Setup the way to match the correct field in the MQMD
+	gmo.MatchOptions = ibmmq.MQMO_MATCH_CORREL_ID
+	getmqmd.CorrelId = correlId
 
-		// Create a buffer for the message data. This one is large enough
-		// for the messages put by the amqsput sample.
-		buffer := make([]byte, 1024)
+	logger.Println("Looking for a match on CorrelId:" + hex.EncodeToString(correlId))
 
-		// Now try to get the message
-		datalen, err = qDynamicObject.Get(getmqmd, gmo, buffer)
+	// Create a buffer for the message data. This one is large enough
+	// for the messages put by the amqsput sample.
+	buffer := make([]byte, 1024)
 
-		if err != nil {
-			msgAvail = false
-			mqret := err.(*ibmmq.MQReturn)
-			if mqret.MQRC == ibmmq.MQRC_NO_MSG_AVAILABLE {
-				// If there's no message available, then don't treat that as a real error as
-				// it's an expected situation
-				err = nil
-			} else {
-				logger.Println(err)
-			}
-		} else {
-			// Assume the message is a printable string
-			logger.Printf("Got message of length %d: ", datalen)
-			logger.Println("  " + strings.TrimSpace(string(buffer[:datalen])))
-		}
+	// Now try to get the message
+	datalen, err = qDynamicObject.Get(getmqmd, gmo, buffer)
+
+	if err != nil {
+		logError(err)
+	} else {
+		// Assume the message is a printable string
+		logger.Printf("Got message of length %d: ", datalen)
+		logger.Println("  " + strings.TrimSpace(string(buffer[:datalen])))
 	}
 }
