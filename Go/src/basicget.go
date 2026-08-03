@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, 2020 IBM Corp.
+ * Copyright 2019, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,11 @@ package main
 
 import (
 	"log"
-	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
 	"mqdevpatterns/src/mqsamputils"
 	"os"
 	"strings"
+
+	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
 )
 
 var logger = log.New(os.Stdout, "MQ Get: ", log.LstdFlags)
@@ -31,63 +32,58 @@ type message struct {
 	Value    int    `json:"value"`
 }
 
-// Main Entry to Put application
-// Creates Connection to Queue
+// Main entry to Get application
+// Creates connection to Queue Manager
 func main() {
 
-	logger.Println("Application is Starting")
+	logger.Println("Application is starting")
 
-	logSettings()
 	mqsamputils.EnvSettings.LogSettings()
 
-	numConnections := mqsamputils.EnvSettings.GetConnectionCount()
-	logger.Printf("There are %d connections", numConnections)
-
-	for i := 0; i < numConnections; i++ {
-		qMgr, err := mqsamputils.CreateConnection(i)
-		defer qMgr.Disc()
-		if err != nil {
-			mqret := err.(*ibmmq.MQReturn)
-			if mqret.MQRC == ibmmq.MQRC_Q_MGR_NOT_AVAILABLE {
-				logger.Println("Queue Manager not available, skipping this endpoint")
-				continue
-			} else {
-				logger.Fatalln("Unable to Establish Connection to server")
-				os.Exit(1)
-			}
-		}
-
-		qObject, err := mqsamputils.OpenGetQueue(qMgr, mqsamputils.Get, i)
-		if err != nil {
-			logger.Fatalln("Unable to Open Queue")
-			os.Exit(1)
-		}
-		defer qObject.Close(0)
-
-		getMessage(qObject)
-
-		// Need to Close the Queue and Connection so can be reused for next iteration
-		qObject.Close(0)
-		qMgr.Disc()
-
+	qMgr, err := mqsamputils.CreateConnection(mqsamputils.FULL_STRING)
+	if err != nil {
+		logger.Fatalln("Unable to establish connection to server")
 	}
+	defer qMgr.Disc()
 
-	logger.Println("Application is Ending")
+	qObject, err := openQueue(qMgr)
+	if err != nil {
+		logger.Fatalln("Unable to open queue")
+	}
+	defer qObject.Close(0)
+
+	getMessage(qObject)
+
+	logger.Println("Application is ending")
 }
 
-// Output authentication values to verify that they have
-// been read from the envrionment settings
-func logSettings() {
-	logger.Printf("Username is (%s)\n", mqsamputils.EnvSettings.User)
-	//logger.Printf("Password is (%s)\n", mqsamputils.EnvSettings.Password)
+func openQueue(qMgr ibmmq.MQQueueManager) (ibmmq.MQObject, error) {
+	// Create the Object Descriptor that allows us to give the queue name
+	mqod := ibmmq.NewMQOD()
+	mqod.ObjectType = ibmmq.MQOT_Q
+	mqod.ObjectName = mqsamputils.EnvSettings.QueueName
+
+	openOptions := ibmmq.MQOO_INPUT_EXCLUSIVE
+
+	logger.Printf("Attempting to open queue %s", mqod.ObjectName)
+	qObject, err := qMgr.Open(mqod, openOptions)
+
+	if err != nil {
+		logError(err)
+	} else {
+		logger.Printf("Opened object %s", qObject.Name)
+	}
+
+	return qObject, err
 }
 
 func logError(err error) {
 	logger.Println(err)
+	os.Exit(1)
 }
 
 func getMessage(qObject ibmmq.MQObject) {
-	logger.Println("Getting Message from Queue")
+	logger.Println("Getting message from queue")
 	var err error
 	msgAvail := true
 
@@ -117,22 +113,20 @@ func getMessage(qObject ibmmq.MQObject) {
 
 		if err != nil {
 			msgAvail = false
-			logger.Println(err)
+
 			mqret := err.(*ibmmq.MQReturn)
-			logger.Printf("return code %d, expected %d,", mqret.MQRC, ibmmq.MQRC_NO_MSG_AVAILABLE)
 			if mqret.MQRC == ibmmq.MQRC_NO_MSG_AVAILABLE {
 				// If there's no message available, then don't treat that as a real error as
-				// it's an expected situation
-				// but do end loop so can pull messages from next endpoint
-				// msgAvail = true
+				// it's an expected situation. But we still use it as an opportunity to exit.
 				err = nil
 				logger.Println("No more messages on this endpoint")
+			} else {
+				logError(err)
 			}
 		} else {
 			// Assume the message is a printable string
 			logger.Printf("Got message of length %d: ", datalen)
-			logger.Println(strings.TrimSpace(string(buffer[:datalen])))
-
+			logger.Println("  " + strings.TrimSpace(string(buffer[:datalen])))
 		}
 	}
 }

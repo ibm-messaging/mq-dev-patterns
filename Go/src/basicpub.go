@@ -1,5 +1,5 @@
 /**
- * Copyright 2019, 2020 IBM Corp.
+ * Copyright 2019, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -17,61 +17,75 @@
 package main
 
 import (
-	"encoding/hex"
 	"encoding/json"
 	"log"
 	"math/rand"
-	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
 	"mqdevpatterns/src/mqsamputils"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/ibm-messaging/mq-golang/v5/ibmmq"
 )
 
-var logger = log.New(os.Stdout, "MQ Put: ", log.LstdFlags)
+var logger = log.New(os.Stdout, "MQ Pub: ", log.LstdFlags)
 
 type message struct {
 	Greeting string `json:"greeting"`
 	Value    int    `json:"value"`
 }
 
-// Main Entry to Put application
-// Creates Connection to Queue
+// Main entry to Publish application
+// Creates connection to Queue Manager
 func main() {
 
-	logger.Println("Application is Starting")
+	logger.Println("Application is starting")
 
-	logSettings()
 	mqsamputils.EnvSettings.LogSettings()
 
 	qMgr, err := mqsamputils.CreateConnection(mqsamputils.FULL_STRING)
 	if err != nil {
-		logger.Fatalln("Unable to Establish Connection to server")
+		logger.Fatalln("Unable to establish connection to server")
 		os.Exit(1)
 	}
 	defer qMgr.Disc()
 
-	qObject, err := mqsamputils.OpenQueue(qMgr, mqsamputils.Pub)
+	topicObject, err := openTopic(qMgr)
 	if err != nil {
-		logger.Fatalln("Unable to publish to topic")
 		os.Exit(1)
 	}
-	defer qObject.Close(0)
+	defer topicObject.Close(0)
 
-	putMessage(qObject)
+	putMessage(topicObject)
 
-	logger.Println("Application is Ending")
-}
-
-// Output authentication values to verify that they have
-// been read from the envrionment settings
-func logSettings() {
-	logger.Printf("Username is (%s)\n", mqsamputils.EnvSettings.User)
-	//logger.Printf("Password is (%s)\n", mqsamputils.EnvSettings.Password)
+	logger.Println("Application is ending")
 }
 
 func logError(err error) {
 	logger.Println(err)
+	os.Exit(1)
+}
+
+func openTopic(qMgr ibmmq.MQQueueManager) (ibmmq.MQObject, error) {
+
+	// Create the Object Descriptor that allows us to give the queue name
+	mqod := ibmmq.NewMQOD()
+	mqod.ObjectType = ibmmq.MQOT_TOPIC
+	// Topics can be given in ObjectName or ObjectString or both, Easiest is ObjectString.
+	mqod.ObjectString = mqsamputils.EnvSettings.Topic
+
+	openOptions := ibmmq.MQOO_OUTPUT
+
+	logger.Printf("Attempting to open topic %s", mqod.ObjectString)
+	tpObject, err := qMgr.Open(mqod, openOptions)
+
+	if err != nil {
+		logError(err)
+	} else {
+		logger.Printf("Opened object %s", tpObject.Name)
+	}
+
+	return tpObject, err
 }
 
 func putMessage(topicObject ibmmq.MQObject) {
@@ -97,15 +111,13 @@ func putMessage(topicObject ibmmq.MQObject) {
 
 	data, err := json.Marshal(msgData)
 	if err != nil {
-		logger.Println("Unexpected error marhalling data to send")
+		logger.Println("Unexpected error marshalling data to send")
 		logError(err)
 		return
 	}
 
-	// The message is always sent as bytes, so has to be converted before the PUT.
-	//buffer := []byte(msgData.greeting)
-
-	// Now put the message to the queue
+	// Now put the message to the queue. The "data" needs to be byte[], which
+	// is already the return type from json.Marshal
 	logger.Printf("Sending message %s", data)
 	err = topicObject.Put(putmqmd, pmo, data)
 
@@ -113,7 +125,5 @@ func putMessage(topicObject ibmmq.MQObject) {
 		logError(err)
 	} else {
 		logger.Println("Published to topic:", strings.TrimSpace(topicObject.Name))
-		// Print the MsgId so it can be used as a parameter to amqsget
-		logger.Println("MsgId:" + hex.EncodeToString(putmqmd.MsgId))
 	}
 }

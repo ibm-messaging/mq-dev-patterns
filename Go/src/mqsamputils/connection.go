@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, 2025 IBM Corp.
+ * Copyright 2018, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -42,21 +42,26 @@ func getEndPoint(index int) Env {
 		index = 0
 	}
 
-	return MQ_ENDPOINTS.Points[index]
+	if len(MQ_ENDPOINTS.Points) > 0 && len(MQ_ENDPOINTS.Points) >= index {
+		return MQ_ENDPOINTS.Points[index]
+	} else {
+		return EnvSettings
+	}
 }
 
 func ccdtCheck() bool {
 
 	if fPath := os.Getenv(CCDT); "" != fPath {
+		// Open the file to check it's accessible. If so, we close it immediately anyway
 		ccdtFile, err := os.Open(strings.TrimPrefix(fPath, FILEPREFIX))
-		defer ccdtFile.Close()
 
 		if err == nil {
-			logger.Println("CCDT File found and will be used to configure connection")
+			ccdtFile.Close()
+			logger.Println("CCDT file found and will be used to configure connection")
 			return true
 		}
 
-		logger.Printf("CCDT File not found at %s", fPath)
+		logger.Printf("CCDT file not found at %s", fPath)
 		logger.Println(err)
 	}
 
@@ -82,7 +87,7 @@ func getClientConn(env Env, index int) *ibmmq.MQCD {
 	logger.Printf("Connecting to %s ", cd.ConnectionName)
 
 	if env.KeyRepository != "" {
-		logger.Println("Running in TLS Mode")
+		logger.Println("Running in TLS mode")
 		cd.SSLCipherSpec = env.Cipher
 		cd.SSLClientAuth = ibmmq.MQSCA_OPTIONAL
 	}
@@ -94,7 +99,7 @@ func getClientConn(env Env, index int) *ibmmq.MQCD {
 // Establishes the connection to the MQ Server. Returns the
 // Queue Manager if successful
 func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
-	logger.Println("Setting up Connection to MQ")
+	logger.Println("Setting up connection to MQ")
 
 	// Allocate the MQCNO structure needed for the CONNX call.
 	cno := ibmmq.NewMQCNO()
@@ -108,13 +113,13 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 		}
 
 	} else if env.User != "" {
-		logger.Printf("User %s has been specified, will be using Username and Password to authenticate", env.User)
+		logger.Printf("User \"%s\" has been specified, will be using Username and Password to authenticate", env.User)
 		// Make the CNO refer to the CSP structure returned, so it gets used during the connection
 		cno.SecurityParms = connectViaUserID(env)
 	}
 
 	if !ccdtCheck() {
-		logger.Println("CCDT URL export is not set, will be using json environment client connections settings")
+		logger.Println("CCDT URL export is not set, will be using json environment client connection settings")
 		// Make the CNO refer to the CSP structure returned, so it gets used during the connection
 		cno.ClientConn = getClientConn(env, index)
 	}
@@ -144,68 +149,8 @@ func CreateConnection(index int) (ibmmq.MQQueueManager, error) {
 
 	return qMgr, err
 }
-
-// Opens a Dynamic Queue as part of a response in a request / response pattern
-func OpenDynamicQueue(qMgrObject ibmmq.MQQueueManager, queueName string) (ibmmq.MQObject, error) {
-	return openQueue(qMgrObject, queueName, Response, FULL_STRING)
-}
-
-// Opens the queue. No queueName is provided.
-func OpenQueue(qMgrObject ibmmq.MQQueueManager, msgStyle string) (ibmmq.MQObject, error) {
-	return openQueue(qMgrObject, "", msgStyle, FULL_STRING)
-}
-
-// Opens the queue. No queueName is provided.
-func OpenGetQueue(qMgrObject ibmmq.MQQueueManager, msgStyle string, index int) (ibmmq.MQObject, error) {
-	return openQueue(qMgrObject, "", msgStyle, index)
-}
-
-// Internal function to allow it to be modified, without affecting the callers.
-func openQueue(qMgrObject ibmmq.MQQueueManager, replyToQ string, msgStyle string, index int) (ibmmq.MQObject, error) {
-	// Create the Object Descriptor that allows us to give the queue name
-	mqod := ibmmq.NewMQOD()
-	// We have to say how we are going to use this queue. In this case, to PUT
-	// messages. That is done in the openOptions parameter
-
-	env := getEndPoint(index)
-
-	openOptions := ibmmq.MQOO_OUTPUT
-
-	// Opening a QUEUE (rather than a Topic or other object type) and give the name
-	switch msgStyle {
-	case Put:
-		mqod.ObjectType = ibmmq.MQOT_Q
-		mqod.ObjectName = env.QueueName
-	case Get:
-		openOptions = ibmmq.MQOO_INPUT_EXCLUSIVE
-		mqod.ObjectType = ibmmq.MQOT_Q
-		mqod.ObjectName = env.QueueName
-	case Pub:
-		mqod.ObjectType = ibmmq.MQOT_TOPIC
-		mqod.ObjectString = env.Topic
-	case Dynamic:
-		openOptions = ibmmq.MQOO_INPUT_EXCLUSIVE
-		mqod.ObjectName = env.ModelQueueName
-		mqod.DynamicQName = env.DynamicQueueName
-	case Response:
-		mqod.ObjectType = ibmmq.MQOT_Q
-		mqod.ObjectName = replyToQ
-	}
-
-	logger.Printf("Attempting open queue/topic %s", env.QueueName)
-
-	qObject, err := qMgrObject.Open(mqod, openOptions)
-
-	if err != nil {
-		logError(err)
-	} else {
-		logger.Println("Opened queue/topic", qObject.Name)
-	}
-
-	return qObject, err
-}
-
 func logError(err error) {
 	logger.Println(err)
 	logger.Printf("Error Code %v", err.(*ibmmq.MQReturn).MQCC)
+	os.Exit(1)
 }

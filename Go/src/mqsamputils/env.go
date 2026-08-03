@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, 2025 IBM Corp.
+ * Copyright 2018, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,14 @@ package mqsamputils
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
-var logger = log.New(os.Stdout, "Env: ", log.LstdFlags)
+var logger = log.New(os.Stdout, "Config: ", log.LstdFlags)
 
 type Env struct {
 	User             string `json:"APP_USER"`
@@ -63,29 +64,32 @@ var MQ_ENDPOINTS MQEndpoints
 var JWT_ISSUER JwtEndpoints
 
 const FULL_STRING = -1
+const DEFAULT_CONFIG_FILE = "../../env.json"
 
+// Using "init" as the function name gets it invoked automatically on application startup
 func init() {
-	jsonFile, err := os.Open("../../env.json")
-	defer jsonFile.Close()
 
+	f := os.Getenv("CONFIG_JSON_FILE")
+	if f == "" {
+		f = DEFAULT_CONFIG_FILE
+	}
+	jsonFile, err := os.Open(f)
 	if err != nil {
 		logger.Println(err)
 		return
 	}
-	logger.Println("Successfully Opened env.json")
 
-	byteValue, _ := ioutil.ReadAll(jsonFile)
+	defer jsonFile.Close()
+
+	logger.Printf("Successfully opened %s", f)
+
+	byteValue, _ := io.ReadAll(jsonFile)
 	json.Unmarshal(byteValue, &MQ_ENDPOINTS)
-
 	json.Unmarshal(byteValue, &JWT_ISSUER)
 
-	// The .json should have supplied the MQ Endpoints as an array.
+	// The env.json should have supplied the MQ endpoints as an array.
 	// If there are no elements, then EnvSettings will be default
 	// initialised to be empty.
-	if len(MQ_ENDPOINTS.Points) > 0 {
-		EnvSettings = MQ_ENDPOINTS.Points[0]
-
-	}
 
 	if len(JWT_ISSUER.Points) > 0 {
 		jwt := JWT_ISSUER.Points[0] // Extract JWT config
@@ -98,40 +102,59 @@ func init() {
 	}
 
 	environmentOverides()
+
+	if len(MQ_ENDPOINTS.Points) > 0 {
+		EnvSettings = MQ_ENDPOINTS.Points[0]
+	}
+
 }
 
 func environmentOverides() {
-	logger.Println("Looking for Environment Overrides")
-	var s string
+	logger.Println("Looking for environment overrides")
 
-	overrides := map[string]*string{
-		"APP_USER":             &EnvSettings.User,
-		"APP_PASSWORD":         &EnvSettings.Password,
-		"QMGR":                 &EnvSettings.QManager,
-		"QUEUE_NAME":           &EnvSettings.QueueName,
-		"MODEL_QUEUE_NAME":     &EnvSettings.ModelQueueName,
-		"DYNAMIC_QUEUE_PREFIX": &EnvSettings.DynamicQueueName,
-		"BACKOUT_QUEUE":        &EnvSettings.BackoutQueue,
-		"HOST":                 &EnvSettings.Host,
-		"PORT":                 &EnvSettings.Port,
-		"CHANNEL":              &EnvSettings.Channel,
-		"TOPIC_NAME":           &EnvSettings.Topic,
-		"KEY_REPOSITORY":       &EnvSettings.KeyRepository,
-		"CIPHER":               &EnvSettings.Cipher,
+	for i := 0; i < len(MQ_ENDPOINTS.Points); i++ {
+		// Environment variables can override all of the endpoints in the Points array.
+		// So we have to check all of the available objects in turn.
+		overrides := map[string]*string{
+			// Main connection information
+			"APP_USER":             &MQ_ENDPOINTS.Points[i].User,
+			"APP_PASSWORD":         &MQ_ENDPOINTS.Points[i].Password,
+			"QMGR":                 &MQ_ENDPOINTS.Points[i].QManager,
+			"QUEUE_NAME":           &MQ_ENDPOINTS.Points[i].QueueName,
+			"MODEL_QUEUE_NAME":     &MQ_ENDPOINTS.Points[i].ModelQueueName,
+			"DYNAMIC_QUEUE_PREFIX": &MQ_ENDPOINTS.Points[i].DynamicQueueName,
+			"BACKOUT_QUEUE":        &MQ_ENDPOINTS.Points[i].BackoutQueue,
+			"HOST":                 &MQ_ENDPOINTS.Points[i].Host,
+			"PORT":                 &MQ_ENDPOINTS.Points[i].Port,
+			"CHANNEL":              &MQ_ENDPOINTS.Points[i].Channel,
+			"TOPIC_NAME":           &MQ_ENDPOINTS.Points[i].Topic,
+			"KEY_REPOSITORY":       &MQ_ENDPOINTS.Points[i].KeyRepository,
+			"CIPHER":               &MQ_ENDPOINTS.Points[i].Cipher,
 
-		//JWT variables
-		"JWT_TOKEN_ENDPOINT": &EnvSettings.JwtTokenEndpoint,
-		"JWT_TOKEN_USERNAME": &EnvSettings.JwtTokenUsername,
-		"JWT_TOKEN_PWD":      &EnvSettings.JwtTokenPwd,
-		"JWT_TOKEN_CLIENTID": &EnvSettings.JwtTokenClientID,
-		"JWT_KEY_REPOSITORY": &EnvSettings.JwtKeyRepository,
-	}
+			//JWT variables
+			"JWT_TOKEN_ENDPOINT": &MQ_ENDPOINTS.Points[i].JwtTokenEndpoint,
+			"JWT_TOKEN_USERNAME": &MQ_ENDPOINTS.Points[i].JwtTokenUsername,
+			"JWT_TOKEN_PWD":      &MQ_ENDPOINTS.Points[i].JwtTokenPwd,
+			"JWT_TOKEN_CLIENTID": &MQ_ENDPOINTS.Points[i].JwtTokenClientID,
+			"JWT_KEY_REPOSITORY": &MQ_ENDPOINTS.Points[i].JwtKeyRepository,
+		}
 
-	for f, v := range overrides {
-		logger.Printf("Overide for %s", f)
-		s = os.Getenv(f)
-		if s != "" {
-			*v = s
+		// Use LookupEnv instead of Getenv so we can tell if the environment variable has been explicitly set to an empty string
+		// rather than being unset
+		for f, v := range overrides {
+			// A "bare" environment variable name will apply to all entries in the list
+			s, b := os.LookupEnv(f)
+			if b {
+				//logger.Printf("Setting overide for %s", f)
+				*v = s
+			}
+
+			// But we also allow index-specific environment variable overrides by appending an index eg QMANAGER_1
+			s, b = os.LookupEnv(f + "_" + strconv.Itoa(i))
+			if b {
+				//logger.Printf("Setting overide for %s on entry %d", f, i)
+				*v = s
+			}
 		}
 	}
 }
@@ -154,27 +177,28 @@ func (Env) GetConnectionCount() int {
 }
 
 func (Env) LogSettings() {
-	logger.Println("Environment Settings are")
-	logger.Printf("Username is (%s)\n", EnvSettings.User)
-	//logger.Printf("Password is (%s)\n", EnvSettings.Password)
-	logger.Printf("Queue Manager is (%s)\n", EnvSettings.QManager)
-	logger.Printf("Queue Name is (%s)\n", EnvSettings.QueueName)
-	logger.Printf("ModelQueue Name is (%s)\n", EnvSettings.ModelQueueName)
-	logger.Printf("Backout Queue name is (%s)\n", EnvSettings.BackoutQueue)
-	logger.Printf("Host is (%s)\n", EnvSettings.Host)
-	logger.Printf("Port is (%s)\n", EnvSettings.Port)
-	logger.Printf("Connection is (%s)\n", EnvSettings.GetConnection(FULL_STRING))
-	logger.Printf("Channel is (%s)\n", EnvSettings.Channel)
-	logger.Printf("Topic is (%s)\n", EnvSettings.Topic)
-	logger.Printf("Key Respository is (%s)\n", EnvSettings.KeyRepository)
-	logger.Printf("Cipher (%s)\n", EnvSettings.Cipher)
+	logger.Println("Configuration settings are")
+	logger.Printf("  Username       : %s", EnvSettings.User)
+	//logger.Printf("  Password : %s", EnvSettings.Password)
+	logger.Printf("  Queue Manager  : %s", EnvSettings.QManager)
+	logger.Printf("  Queue Name     : %s", EnvSettings.QueueName)
+	logger.Printf("  Model Queue    : %s", EnvSettings.ModelQueueName)
+	logger.Printf("  Backout Queue  : %s", EnvSettings.BackoutQueue)
+	logger.Printf("  Host           : %s", EnvSettings.Host)
+	logger.Printf("  Port           : %s", EnvSettings.Port)
+	logger.Printf("  Connection     : %s", EnvSettings.GetConnection(FULL_STRING))
+	logger.Printf("  Channel        : %s", EnvSettings.Channel)
+	logger.Printf("  Topic          : %s", EnvSettings.Topic)
+	logger.Printf("  Key Repository : %s", EnvSettings.KeyRepository)
+	logger.Printf("  Cipher         : %s", EnvSettings.Cipher)
 
 	if len(JWT_ISSUER.Points) > 0 {
-		logger.Printf("jwt token endpoint is (%s)\n", EnvSettings.JwtTokenEndpoint)
-		logger.Printf("jwt token username is (%s)\n", EnvSettings.JwtTokenUsername)
-		//logger.Printf("JWT_TOKEN_PWD (%s)\n", EnvSettings.JWT_TOKEN_PWD)
-		logger.Printf("jwt token ID is (%s)\n", EnvSettings.JwtTokenClientID)
-		logger.Printf("jwt key repository path is (%s)\n", EnvSettings.JwtKeyRepository)
+		logger.Println("JWT configuration settings are")
+		logger.Printf("  Token Endpoint : %s", EnvSettings.JwtTokenEndpoint)
+		logger.Printf("  Token Username : %s", EnvSettings.JwtTokenUsername)
+		//logger.Printf("JWT_TOKEN_PWD : %s", EnvSettings.JWT_TOKEN_PWD)
+		logger.Printf("  Token ID       : %s", EnvSettings.JwtTokenClientID)
+		logger.Printf("  Key Repository : %s", EnvSettings.JwtKeyRepository)
 	}
 
 }
