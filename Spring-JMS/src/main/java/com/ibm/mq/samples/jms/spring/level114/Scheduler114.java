@@ -16,35 +16,36 @@
 
 package com.ibm.mq.samples.jms.spring.level114;
 
-import com.ibm.mq.samples.jms.spring.globals.Constants;
-import com.ibm.mq.samples.jms.spring.globals.data.OurData;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import com.ibm.mq.samples.jms.spring.globals.Constants;
+import com.ibm.mq.samples.jms.spring.globals.data.OurData;
+
 //@Component
 @EnableScheduling
 public class Scheduler114 {
-    protected final Log logger = LogFactory.getLog(getClass());
+  protected final Log logger = LogFactory.getLog(getClass());
 
-    private final SendMessageService114 service;
-    static private int i = 0;
+  private final SendMessageService114 service;
+  static private int i = 0;
 
-    Scheduler114(SendMessageService114 service) {
-        this.service = service;
-    }
+  Scheduler114(SendMessageService114 service) {
+    this.service = service;
+  }
 
-    @Scheduled(initialDelay = 55 * Constants.SECOND, fixedRate = 2 * Constants.MINUTE)
-    public void run() {
-        String greeting = "Sending data in cycle :" + i++;
-        OurData msg1 = new OurData(greeting);
+  @Scheduled(initialDelay = 55 * Constants.SECOND, fixedRate = 2 * Constants.MINUTE)
+  public void run() {
+    String greeting = "Sending data in cycle :" + i++;
+    OurData msg1 = new OurData(greeting);
 
-        logger.info("");
-        logger.info( this.getClass().getSimpleName());
-        logger.info("Sending messages");
+    logger.info("");
+    logger.info( this.getClass().getSimpleName());
+    logger.info("Sending messages");
 
-        logger.info(msg1);
-        service.send(msg1);
-    }
+    logger.info(msg1);
+    service.send(msg1);
+  }
 }

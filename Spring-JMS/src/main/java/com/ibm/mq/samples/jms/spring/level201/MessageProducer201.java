@@ -17,7 +17,6 @@
 package com.ibm.mq.samples.jms.spring.level201;
 
 import com.ibm.mq.samples.jms.spring.globals.data.DataSource;
-import com.ibm.mq.samples.jms.spring.globals.data.OurData;
 import com.ibm.mq.samples.jms.spring.globals.handlers.OurDestinationResolver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,37 +33,36 @@ import jakarta.jms.ConnectionFactory;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 // @Component
 public class MessageProducer201 {
-    protected final Log logger = LogFactory.getLog(getClass());
+  protected final Log logger = LogFactory.getLog(getClass());
 
-    @Autowired
-    private ConnectionFactory connectionFactory;
+  @Autowired
+  private ConnectionFactory connectionFactory;
 
-    @Value("${app.l201.queue.name1}")
-    public String sendQueue;
+  @Value("${app.l201.queue.name1}")
+  public String sendQueue;
 
 
-    @Bean
-    public IntegrationFlow myOurDataFlow() {
-        return IntegrationFlow.fromSupplier(new DataSource(), e -> e.poller(Pollers.fixedRate(Duration.of(120,TimeUnit.SECONDS.toChronoUnit()),Duration.of(60,TimeUnit.SECONDS.toChronoUnit()))))
-                .log()
-                .transform(Transformers.toJson())
-                .log()
-                .<String>handle((payload, headers) -> {
-                    logger.info("Transformed payload looks like : " + payload);
-                    return payload;
-                })
-                .handle(String.class, (payload, headers) -> {
-                    logger.info("Letting Spring take care of the conversion : " + payload);
-                    return payload;
-                })
-                .handle(Jms.outboundAdapter(connectionFactory)
-                            .destination(sendQueue)
-                            .configureJmsTemplate(c -> c.destinationResolver(new OurDestinationResolver())))
-                .get();
-    }
+  @Bean
+  public IntegrationFlow myOurDataFlow() {
+    return IntegrationFlow.fromSupplier(new DataSource(), e -> e.poller(Pollers.fixedRate(Duration.of(120,TimeUnit.SECONDS.toChronoUnit()),Duration.of(60,TimeUnit.SECONDS.toChronoUnit()))))
+        .log()
+        .transform(Transformers.toJson())
+        .log()
+        .<String>handle((payload, headers) -> {
+          logger.info("Transformed payload looks like : " + payload);
+          return payload;
+        })
+        .handle(String.class, (payload, headers) -> {
+          logger.info("Letting Spring take care of the conversion : " + payload);
+          return payload;
+        })
+        .handle(Jms.outboundAdapter(connectionFactory)
+            .destination(sendQueue)
+            .configureJmsTemplate(c -> c.destinationResolver(new OurDestinationResolver())))
+        .get();
+  }
 
 }

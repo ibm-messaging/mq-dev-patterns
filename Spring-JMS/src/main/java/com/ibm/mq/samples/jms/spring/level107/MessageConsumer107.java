@@ -16,34 +16,35 @@
 
 package com.ibm.mq.samples.jms.spring.level107;
 
-import com.ibm.mq.samples.jms.spring.globals.data.OurData;
-import com.ibm.mq.samples.jms.spring.globals.data.ReplyData;
-import com.ibm.mq.samples.jms.spring.globals.handlers.OurMessageConverter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
+
+import com.ibm.mq.samples.jms.spring.globals.data.ReplyData;
+import com.ibm.mq.samples.jms.spring.globals.handlers.OurMessageConverter;
+
 import jakarta.jms.Message;
 
 //@Component
 public class MessageConsumer107 {
-    protected final Log logger = LogFactory.getLog(getClass());
+  protected final Log logger = LogFactory.getLog(getClass());
 
-    final private OurMessageConverter converter = new OurMessageConverter();
+  final private OurMessageConverter converter = new OurMessageConverter();
 
-    @JmsListener(destination = "${app.l107.queue.name2}")
-    public void receiveOther(Message message) {
-        logger.info("");
-        logger.info( this.getClass().getSimpleName());
-        logger.info("Received message of type: " + message.getClass().getSimpleName());
-        ReplyData reply = converter.replyFromMessage(message);
-        if (null != reply) {
-            logger.info("Message was JSON Compliant");
-            reply.logResult();
-        } else {
-            logger.warn("Message string was not JSON");
-        }
+  @JmsListener(destination = "${app.l107.queue.name2}")
+  public void receiveOther(Message message) {
+    logger.info("");
+    logger.info( this.getClass().getSimpleName());
+    logger.info("Received message of type: " + message.getClass().getSimpleName());
+    ReplyData reply = converter.replyFromMessage(message);
+    if (null != reply) {
+      logger.info("Message was JSON Compliant");
+      reply.logResult();
+    } else {
+      logger.warn("Message string was not JSON");
     }
+  }
 
 }
