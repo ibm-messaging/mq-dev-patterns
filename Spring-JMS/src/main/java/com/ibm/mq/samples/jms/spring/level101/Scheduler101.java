@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 
 import com.ibm.mq.samples.jms.spring.globals.Constants;
 
-//@Component
+@Component
 @EnableScheduling
 public class Scheduler101 {
   protected final Log logger = LogFactory.getLog(getClass());

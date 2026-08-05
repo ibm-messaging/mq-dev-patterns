@@ -21,7 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
-//@Component
+@Component
 public class MessageConsumer101 {
   protected final Log logger = LogFactory.getLog(getClass());
 

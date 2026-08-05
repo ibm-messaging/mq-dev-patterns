@@ -60,8 +60,8 @@ The following are provided as commented out examples to use as directed by the s
 The application is split into levels, starting from the simple no-customisation-needed in level101, and increasing in
 complexity and customisation working up the levels.
 
-Each sample level is initially disabled. The only component that is initially enabled is `schedules/HeartBeat`. This
-ensures that when the application is started it continues to run until interrupted.
+Most sample level are initially disabled. The only components that are initially enabled are `schedules/HeartBeat` and
+Level 101. The HeartBeat component ensures that when the application is started it continues to run until interrupted.
 
 You can enable any number of levels, although multiple message consumers may compete with each other.
 
