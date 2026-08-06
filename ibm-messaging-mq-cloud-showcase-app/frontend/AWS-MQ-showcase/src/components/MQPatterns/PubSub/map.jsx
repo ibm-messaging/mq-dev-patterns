@@ -15,47 +15,36 @@
  **/
 
 import React, { useCallback, useRef, useState } from 'react';
-import ReactFlow, {    
+import ReactFlow, {
   Controls,
-  Background,  
+  Background,
   ReactFlowProvider,
 } from 'react-flow-renderer';
-import 'reactflow/dist/style.css';
-import ProducerNode from '../../Map/Producer.node';
-import ConsumerNode from '../../Map/Consumer.node';
-import QueueNode from '../../Map/Queue.node';
-import CustomEdge from '../../Map/Custom.edge';
-import Container from '../../Map/Container.node';
+import PublisherNode from '../../Map/Publisher.node';
+import SubscriberNode from '../../Map/Subscriber.node';
+import TopicNode from '../../Map/Topic.node';
+import CustomEdge from '../../Map/Custom-pubsub.edge';
 import '../../Map/map.css';
 import useStore from './store';
 import Sidebar from './Sidebar';
 
 const nodeTypes = {
-  producer: ProducerNode,
-  consumer: ConsumerNode,
-  queue: QueueNode,
-  container: Container,
+  consumer: SubscriberNode,
+  queue: TopicNode,
+  producer: PublisherNode,
 };
 
 const edgeTypes = {
   custom: CustomEdge,
 };
 
-let id = 150;
+let id = 50;
 const getId = () => `${id++}`;
-const availableQueueNames = ['DEV.QUEUE.1', 'DEV.QUEUE.2', 'DEV.QUEUE.3'];
+
 function Flow() {
-  const {
-    nodes,
-    edges,
-    onNodesChange,
-    onEdgesChange,
-    onEdgeUpdate,
-    onConnect,
-  } = useStore();
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = useStore();
 
   const _addNode = useStore(state => state.addNode);
-  const getQueues = useStore(state => state.getQueuesNodes);
 
   const reactFlowWrapper = useRef(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
@@ -63,7 +52,6 @@ function Flow() {
   const onDrop = useCallback(
     event => {
       event.preventDefault();
-
       const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
       const type = event.dataTransfer.getData('application/reactflow');
 
@@ -76,13 +64,14 @@ function Flow() {
         y: event.clientY - reactFlowBounds.top,
       });
       let node = {};
+
       if (type === 'producer') {
         node = {
           id: getId(),
           type: type,
           data: {
             role: 'Producer',
-            label: 'Producer Name',
+            label: 'Publisher',
             connectedQueue: '',
             isActive: false,
           },
@@ -95,32 +84,28 @@ function Flow() {
           type: type,
           data: {
             role: 'Consumer',
-            label: 'Consumer Name',
+            label: 'Subscriber',
             connectedQueue: '',
-            isActive: false,
+            subscriptionState: 0,
           },
           position: position,
-          sourcePosition: 'left',
+          targetPosition: 'left',
+          draggable: true,
         };
-      } else if (type === 'queue' && getQueues().length <= 1) {
-        let queues = getQueues();
-        let availableNames = availableQueueNames.copyWithin();
-        queues.forEach(x => {
-          let name = x.data.queueName;
-          availableNames = availableNames.filter(n => n !== name);
-        });
+      } else if (type === 'queue') {
         node = {
           id: getId(),
-          type: type,
-          label: availableNames[0],
+          type: 'queue',
+          isAqueue: 1,
           data: {
             role: 'q',
             depth: 0,
-            queueName: availableNames[0],
+            queueName: '',
           },
           position: position,
           sourcePosition: 'right',
-          sourcePosition: 'left',          
+          targetPosition: 'left',
+          draggable: true,
         };
       } else {
         return;
@@ -144,16 +129,15 @@ function Flow() {
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
-            onEdgeUpdate={onEdgeUpdate}
+            // onEdgeUpdate={onEdgeUpdate}
             onDrop={onDrop}
             onDragOver={onDragOver}
             onInit={setReactFlowInstance}
             onConnect={onConnect}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
-            defaultPosition={[0, 0]}
             className="touchdevice-flow"
-            defaultZoom={0.1}>
+            defaultZoom={0.5}>
             <Background variant="lines" />
             <Controls />
           </ReactFlow>

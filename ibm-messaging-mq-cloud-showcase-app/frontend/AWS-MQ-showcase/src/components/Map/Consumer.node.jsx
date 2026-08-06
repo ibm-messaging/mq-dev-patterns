@@ -225,48 +225,51 @@ const ConsumerNode = ({ id, data }) => {
           isConnectable={!data.connectedQueue}
         />
 
+        <div style={{ display: 'flex', paddingRight: '10px' }}>
+          <TextInput
+            style={{ marginRight: '30px' }}
+            className="consumer-node-name-label"
+            value={name}
+            size="sm"
+            onChange={e => changeName(e)}
+          />
 
-        <div style={{display: "flex", paddingRight: "10px"}}>          
-            <TextInput            
-              style={{marginRight: "30px"}}
-              className="consumer-node-name-label"
-              value={name}
-              size="sm"
-              onChange={e => changeName(e)}
-            />
-                      
-            <Toggle                          
-              id={id}
-              size="sm"
-              disabled={!data.connectedQueue}
-              toggled={data.isActive}
-              onToggle={() => {
-                _onClick(id);
-              }}
-            />
-          
+          <Toggle
+            id={id}
+            size="sm"
+            disabled={!data.connectedQueue}
+            toggled={data.isActive}
+            onToggle={() => {
+              _onClick(id);
+            }}
+          />
         </div>
 
-            <Tag style={{height:"5px", position: "absolute", right: "10px", bottom: "5px"}} type={!data.isActive ? 'red' : 'green'}>
-                  {' '}
-                  {data.isActive ? 'Buying tickets' : 'Service inactive'}{' '}
-            </Tag>
+        <Tag
+          style={{
+            height: '5px',
+            position: 'absolute',
+            right: '10px',
+            bottom: '5px',
+          }}
+          type={!data.isActive ? 'red' : 'green'}>
+          {' '}
+          {data.isActive ? 'Buying tickets' : 'Service inactive'}{' '}
+        </Tag>
 
-            <FormLabel className="consumer-subsection-title">
-              Last ticket received:
-            </FormLabel>
-            
-            <br></br>
-            <FormLabel>
-              Type: {lastMessage?.Message} | Date:{' '}
-              {lastMessage?.Sent?.substring(0, 25)}
-            </FormLabel>
-            <br></br>
-            <FormLabel>Counter: {lastMessage?.Count}</FormLabel>
-            <br></br>
-            <FormLabel>Tickets Received: {sessionCount}</FormLabel>
-     
+        <FormLabel className="consumer-subsection-title">
+          Last ticket received:
+        </FormLabel>
 
+        <br />
+        <FormLabel>
+          Type: {lastMessage?.Message} | Date:{' '}
+          {lastMessage?.Sent?.substring(0, 25)}
+        </FormLabel>
+        <br />
+        <FormLabel>Counter: {lastMessage?.Count}</FormLabel>
+        <br />
+        <FormLabel>Tickets Received: {sessionCount}</FormLabel>
       </div>
     );
   }

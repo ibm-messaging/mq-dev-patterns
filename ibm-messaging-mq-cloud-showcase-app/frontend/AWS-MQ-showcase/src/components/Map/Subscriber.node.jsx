@@ -179,13 +179,13 @@ const SubscriberNode = ({ id, data }) => {
         }}
         isConnectable={!data.connectedQueue}
       />
-    
+
       <TextInput
         className="consumer-node-name-label"
         value={name}
         size="sm"
         onChange={e => changeName(e)}
-      />                  
+      />
 
       <Column md={16} lg={16} sm={16}>
         <FormLabel className="consumer-subsection-title">
@@ -205,13 +205,18 @@ const SubscriberNode = ({ id, data }) => {
         <FormLabel>Notifications Received: {sessionCount}</FormLabel>
       </Column>
 
-      <Tag  
-            style={{height:"5px", position: "absolute", right: "10px", bottom: "5px"}} 
-            type={isSubscribed ? 'green' : 'orange'}>
-            {isSubscribed
-              ? 'Subscribed to: ' + data.connectedQueue
-              : 'No subscription'}
-        </Tag>
+      <Tag
+        style={{
+          height: '5px',
+          position: 'absolute',
+          right: '10px',
+          bottom: '5px',
+        }}
+        type={isSubscribed ? 'green' : 'orange'}>
+        {isSubscribed
+          ? 'Subscribed to: ' + data.connectedQueue
+          : 'No subscription'}
+      </Tag>
     </div>
   );
 };

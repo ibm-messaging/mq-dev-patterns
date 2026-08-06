@@ -47,7 +47,7 @@ const DEFAULTOPTION = {
   height: '400px',
 };
 
-const Chart2 = props => {  
+const Chart2 = props => {
   return <GroupedBarChart data={props.data} options={DEFAULTOPTION} />;
 };
 

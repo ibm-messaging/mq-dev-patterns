@@ -19,7 +19,7 @@ import { Button } from '@carbon/react';
 import { Handle } from 'react-flow-renderer';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/RequestResponse/store';
-import {NumberInput} from '@carbon/react';
+import { NumberInput } from '@carbon/react';
 import './map.css';
 import FormLabel from '@carbon/react/lib/components/FormLabel/FormLabel';
 import TextInput from '@carbon/react/lib/components/TextInput';
@@ -46,9 +46,9 @@ const RequestorNode = ({ id, data }) => {
   const [sessionID, setSessionID] = useState();
 
   useEffect(() => {
-    let _sessionID = Cookies.get("sessionID");        
+    let _sessionID = Cookies.get('sessionID');
     setSessionID(_sessionID);
-    
+
     if (animationState) {
       setTimeout(() => {
         animateConnection(id, false);

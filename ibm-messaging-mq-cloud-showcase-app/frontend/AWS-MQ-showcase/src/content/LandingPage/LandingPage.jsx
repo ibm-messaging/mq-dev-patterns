@@ -19,8 +19,8 @@ import PointPointIndex from '../../components/MQPatterns/PointToPoint/index';
 import PubSubIndex from '../../components/MQPatterns/PubSub';
 import RequestResponseIndex from '../../components/MQPatterns/RequestResponse';
 
-import {  
-  Tabs,  
+import {
+  Tabs,
   TabPanels,
   TabPanel,
   Grid,
@@ -46,7 +46,7 @@ const LandingPage = () => {
             let { index } = e;
             setSelectedTab(index);
           }}>
-          <Switch name="one" text="POINT-TO-POINT" />          
+          <Switch name="one" text="POINT-TO-POINT" />
           {isMobile ? <></> : <Switch name="two" text="PUBLISHER/SUBSCRIBER" />}
           <Switch name="three" text="REQUEST/RESPONSE" />
         </ContentSwitcher>
@@ -56,13 +56,13 @@ const LandingPage = () => {
             <TabPanel>
               <PointPointIndex />
             </TabPanel>
-            {
-              isMobile ?
-              <></> :
+            {isMobile ? (
+              <></>
+            ) : (
               <TabPanel>
-              <PubSubIndex />
-              </TabPanel> 
-            }            
+                <PubSubIndex />
+              </TabPanel>
+            )}
             <TabPanel>
               <RequestResponseIndex />
             </TabPanel>

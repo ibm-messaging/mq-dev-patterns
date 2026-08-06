@@ -28,7 +28,7 @@ import {
   HeaderGlobalAction,
   SkipToContent,
   SideNav,
-  SideNavItems
+  SideNavItems,
 } from '@carbon/react';
 
 const TutorialHeader = () => (

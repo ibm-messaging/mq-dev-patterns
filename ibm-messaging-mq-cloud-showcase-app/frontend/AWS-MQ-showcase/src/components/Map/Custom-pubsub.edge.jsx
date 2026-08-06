@@ -15,10 +15,7 @@
  **/
 
 import React, { useEffect, useState } from 'react';
-import {
-  getBezierPath,  
-  getSmoothStepPath,  
-} from 'react-flow-renderer';
+import { getBezierPath, getSmoothStepPath } from 'react-flow-renderer';
 import useStore from '../MQPatterns/PubSub/store';
 import './map.css';
 

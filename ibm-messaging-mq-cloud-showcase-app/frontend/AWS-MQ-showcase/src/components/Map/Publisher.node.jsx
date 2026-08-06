@@ -29,12 +29,12 @@ const PublisherNode = ({ id, data }) => {
   const animateConnection = useStore(
     state => state.changeEdgeAnimationFromNodeId
   );
-  const deleteMe = useStore(state => state.onDeleteNode);    
+  const deleteMe = useStore(state => state.onDeleteNode);
   const [animationState, setAnimationState] = useState(false);
   const [isToggleOn] = useState(false);
   const [message, setMessage] = useState();
   const [title, setTitle] = useState();
-  const [canSend, setCandSend] = useState(true);  
+  const [canSend, setCandSend] = useState(true);
   const refTitle = useRef('');
   const refMessage = useRef('');
 
@@ -52,7 +52,7 @@ const PublisherNode = ({ id, data }) => {
   };
 
   const publish = () => {
-    if(canSend) {
+    if (canSend) {
       setCandSend(false);
       setAnimationState(true);
       animateConnection(id, true);
@@ -81,8 +81,8 @@ const PublisherNode = ({ id, data }) => {
         console.log(e);
         setCandSend(true);
         setAnimationState(false);
-      }      
-    }  
+      }
+    }
   };
 
   useEffect(() => {
@@ -92,7 +92,7 @@ const PublisherNode = ({ id, data }) => {
         setAnimationState(false);
       }, 1000);
     }
-  }, [animationState]);  
+  }, [animationState]);
 
   return (
     <div className="producer-node-container">
@@ -128,7 +128,7 @@ const PublisherNode = ({ id, data }) => {
         size="sm"
         ref={refMessage}
         labelText="Content of your notification"
-        placeholder={'Don\'t forget about our WAITLIST! ' + data.connectedQueue}
+        placeholder={"Don't forget about our WAITLIST! " + data.connectedQueue}
         value={message}
         onChange={e => setMessage(e.value)}
       />

@@ -20,14 +20,12 @@
 ###########################################################
 # This starts the BUILD phase
 ###########################################################
-FROM node:18-slim as builder
-ENV APP_DIR /usr/local
+FROM node:20-slim AS builder
+ENV APP_DIR=/usr/local/
 WORKDIR ${APP_DIR}
 RUN apt-get update \
    && npm install yarn \
    && apt-get install -y git
-ENV APP_DIR /usr/local/
-WORKDIR ${APP_DIR}
 
 #get the application
 COPY ./AWS-MQ-showcase/ ./
@@ -43,7 +41,7 @@ RUN yarn run build
 ###########################################################
 # Now that there is a container with the compiled program we can have a smaller
 # runtime image.
-FROM nginx:stable-alpine3.17 as frontendImage
+FROM nginx:stable-alpine3.17 AS frontendimage
 
 #Set nginx configuration as per application requirements
 COPY nginx.conf.template /etc/nginx/conf.d/
@@ -51,7 +49,7 @@ COPY nginx.conf.proxy.template /etc/nginx/conf.d/
 COPY docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
 #Copy over only the built code to the default nginx location
-COPY --from=builder /usr/local/build /usr/share/nginx/html
+COPY --from=builder /usr/local/dist /usr/share/nginx/html
 
 EXPOSE 80
 
