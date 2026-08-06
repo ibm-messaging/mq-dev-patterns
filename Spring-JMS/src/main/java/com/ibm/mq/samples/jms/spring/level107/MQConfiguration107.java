@@ -27,18 +27,18 @@ import org.springframework.jms.core.JmsTemplate;
 
 import jakarta.jms.ConnectionFactory;
 
-@Configuration
+//@Configuration
 public class MQConfiguration107 {
-    protected final Log logger = LogFactory.getLog(getClass());
+  protected final Log logger = LogFactory.getLog(getClass());
 
-    @Autowired
-    private ConnectionFactory connectionFactory;
+  @Autowired
+  private ConnectionFactory connectionFactory;
 
-    @Bean("myNonJmsTemplate107")
-    public JmsTemplate myNonJmsTemplate107() {
-        JmsTemplate jmsTemplate = new JmsTemplate(connectionFactory);
-        jmsTemplate.setDestinationResolver(new OurDestinationResolver());
-        jmsTemplate.setMessageConverter(new OurMessageConverter());
-        return jmsTemplate;
-    }
+  @Bean("myNonJmsTemplate107")
+  public JmsTemplate myNonJmsTemplate107() {
+    JmsTemplate jmsTemplate = new JmsTemplate(connectionFactory);
+    jmsTemplate.setDestinationResolver(new OurDestinationResolver());
+    jmsTemplate.setMessageConverter(new OurMessageConverter());
+    return jmsTemplate;
+  }
 }

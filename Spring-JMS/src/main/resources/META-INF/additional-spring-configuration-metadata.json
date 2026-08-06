@@ -1,0 +1,207 @@
+{"properties": [
+  {
+    "name": "app.l101.dest.name1",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l101.dest.name1'"
+  },
+  {
+    "name": "app.l101.dest.name2",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l101.dest.name2'"
+  },
+  {
+    "name": "app.l102.queue.name1",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l102.dest.name1'"
+  },
+  {
+    "name": "app.l102.queue.name2",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l102.dest.name2'"
+  },
+  {
+    "name": "app.l102.topic.name1",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l102.topic.name1'"
+  },
+  {
+    "name": "app.l102.topic.name2",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l102.topic.name2'"
+  },
+  {
+    "name": "app.l103.queue.name2",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l103.queue.name2'"
+  },
+  {
+    "name": "app.l103.queue.name1",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l103.queue.name1'"
+  },
+  {
+    "name": "app.l108.queue.name2",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l108.queue.name2'"
+  },
+  {
+    "name": "app.l107.queue.name2",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l107.queue.name2'"
+  },
+  {
+    "name": "app.l107.queue.name1",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l107.queue.name1'"
+  },
+  {
+    "name": "app.l106.queue.name2",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l106.queue.name2'"
+  },
+  {
+    "name": "app.l104.queue.name2",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l104.queue.name2'"
+  },
+  {
+    "name": "app.l104.queue.name1",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l104.queue.name1'"
+  },
+  {
+    "name": "app.l112.queue.name2",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l112.queue.name2'"
+  },
+  {
+    "name": "app.l111.queue.name2",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l111.queue.name2'"
+  },
+  {
+    "name": "app.l110.queue.name3",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l110.queue.name3'"
+  },
+  {
+    "name": "app.l110.queue.name2",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l110.queue.name2'"
+  },
+  {
+    "name": "app.l109.queue.name2",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l109.queue.name2'"
+  },
+  {
+    "name": "app.l106.queue.name1",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l106.queue.name1'"
+  },
+  {
+    "name": "app.l105.queue.name2",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l105.queue.name2'"
+  },
+  {
+    "name": "app.l115.queue.name1",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l115.queue.name1'"
+  },
+  {
+    "name": "app.l114.queue.name2",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l114.queue.name2'"
+  },
+  {
+    "name": "app.l114.queue.name1",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l114.queue.name1'"
+  },
+  {
+    "name": "app.l113.queue.name2",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l113.queue.name2'"
+  },
+  {
+    "name": "app.l204.queue.name1",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l204.queue.name1'"
+  },
+  {
+    "name": "app.l203.topic.name2",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l203.topic.name2'"
+  },
+  {
+    "name": "app.l202.queue.name3",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l202.queue.name3'"
+  },
+  {
+    "name": "app.l202.queue.name1",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l202.queue.name1'"
+  },
+  {
+    "name": "app.l201.queue.name2",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l201.queue.name2'"
+  },
+  {
+    "name": "app.l201.queue.name1",
+    "type": "java.lang.String",
+    "description": "A description for 'app.l201.queue.name1'"
+  },
+  {
+    "name": "my.app.admin.user",
+    "type": "java.lang.String",
+    "description": "A description for 'my.app.admin.user'"
+  },
+  {
+    "name": "my.app.admin.port",
+    "type": "java.lang.String",
+    "description": "A description for 'my.app.admin.port'"
+  },
+  {
+    "name": "my.app.admin.password",
+    "type": "java.lang.String",
+    "description": "A description for 'my.app.admin.password'"
+  },
+  {
+    "name": "my.app.admin.host",
+    "type": "java.lang.String",
+    "description": "A description for 'my.app.admin.host'"
+  },
+  {
+    "name": "my.app.admin.channel",
+    "type": "java.lang.String",
+    "description": "A description for 'my.app.admin.channel'"
+  },
+  {
+    "name": "app.topic.name2",
+    "type": "java.lang.String",
+    "description": "A description for 'app.topic.name2'"
+  },
+  {
+    "name": "app.topic.name1",
+    "type": "java.lang.String",
+    "description": "A description for 'app.topic.name1'"
+  },
+  {
+    "name": "app.queue.name3",
+    "type": "java.lang.String",
+    "description": "A description for 'app.queue.name3'"
+  },
+  {
+    "name": "app.queue.name2",
+    "type": "java.lang.String",
+    "description": "A description for 'app.queue.name2'"
+  },
+  {
+    "name": "app.queue.name1",
+    "type": "java.lang.String",
+    "description": "A description for 'app.queue.name1'"
+  }
+]}

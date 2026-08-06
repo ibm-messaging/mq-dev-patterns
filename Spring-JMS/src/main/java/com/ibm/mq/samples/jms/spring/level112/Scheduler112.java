@@ -28,35 +28,34 @@ import org.springframework.stereotype.Component;
 //@Component
 @EnableScheduling
 public class Scheduler112 {
-    protected final Log logger = LogFactory.getLog(getClass());
+  protected final Log logger = LogFactory.getLog(getClass());
 
-    // The listener registry allows us to control the @JmsListener endpoints
-    private final JmsListenerEndpointRegistry registry;
+  // The listener registry allows us to control the @JmsListener endpoints
+  private final JmsListenerEndpointRegistry registry;
 
-    static private int i = 0;
+  static private int i = 0;
 
-    Scheduler112(JmsListenerEndpointRegistry registry) {
-        this.registry = registry;
+  Scheduler112(JmsListenerEndpointRegistry registry) {
+    this.registry = registry;
+  }
+
+  @Scheduled(initialDelay = 45 * Constants.SECOND, fixedRate = Constants.MINUTE)
+  public void run() {
+
+    logger.info("Registered listeners IDs are : ");
+    for (String listenerId : registry.getListenerContainerIds()) {
+      logger.info("ID : " + listenerId);
     }
 
-    @Scheduled(initialDelay = 45 * Constants.SECOND, fixedRate = Constants.MINUTE)
-    public void run() {
-        String greeting = "Checking listener status cycle :" + i++;
-
-        logger.info("Registered listeners IDs are : ");
-        for (String listenerId : registry.getListenerContainerIds()) {
-            logger.info("ID : " + listenerId);
-        }
-
-        logger.info("Checking our listener");
-        MessageListenerContainer mlc = registry.getListenerContainer("listener112");
-        if (! mlc.isRunning()) {
-            logger.warn("Listener is not running, restarting it");
-            mlc.start();
-        } else {
-            logger.warn("Listener is running, stopping it");
-            mlc.stop();
-        }
-
+    logger.info("Checking our listener");
+    MessageListenerContainer mlc = registry.getListenerContainer("listener112");
+    if (! mlc.isRunning()) {
+      logger.warn("Listener is not running, restarting it");
+      mlc.start();
+    } else {
+      logger.warn("Listener is running, stopping it");
+      mlc.stop();
     }
+
+  }
 }
