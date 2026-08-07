@@ -16,6 +16,7 @@
     "format:staged": "prettier --write"
   },
   "dependencies": {
+    "zustand": "^3.7.2",
     "@carbon/charts": "1.15.3",
     "@carbon/charts-react": "1.15.3",
     "@carbon/react": "1.53.0",
