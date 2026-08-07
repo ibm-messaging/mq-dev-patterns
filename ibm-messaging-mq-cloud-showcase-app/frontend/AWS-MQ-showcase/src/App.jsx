@@ -14,9 +14,9 @@
  * limitations under the License.
  **/
 
-import React, { Component } from 'react';
+import React from 'react';
 import TutorialHeader from './components/TutorialHeader';
-import { Route, Switch } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import LandingPage from './content/LandingPage';
 import RepoPage from './content/RepoPage';
 import { Content, Theme } from '@carbon/react';
@@ -24,32 +24,30 @@ import './app.scss';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 
-class App extends Component {
-  render() {
-    return (
-      <>
-        <Theme theme="g100">
-          <TutorialHeader />
-        </Theme>
-        <Content>
-          <ToastContainer
-            style={{ height: '50px' }}
-            position="bottom-right"
-            autoClose={2000}
-            hideProgressBar={false}
-            closeOnClick
-            pauseOnFocusLoss={false}
-            pauseOnHover={false}
-            theme="dark"
-          />
-          <Switch>
-            <Route exact path="/" component={LandingPage} />
-            <Route path="/repos" component={RepoPage} />
-          </Switch>
-        </Content>
-      </>
-    );
-  }
+function App() {
+  return (
+    <>
+      <Theme theme="g100">
+        <TutorialHeader />
+      </Theme>
+      <Content>
+        <ToastContainer
+          style={{ height: '50px' }}
+          position="bottom-right"
+          autoClose={2000}
+          hideProgressBar={false}
+          closeOnClick
+          pauseOnFocusLoss={false}
+          pauseOnHover={false}
+          theme="dark"
+        />
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/repos" element={<RepoPage />} />
+        </Routes>
+      </Content>
+    </>
+  );
 }
 
 export default App;
