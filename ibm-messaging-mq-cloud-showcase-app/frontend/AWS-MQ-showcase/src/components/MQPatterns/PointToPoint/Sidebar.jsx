@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2024 IBM Corp.
+ * Copyright 2022, 2023 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ function Sidebar() {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsBigScreen(window.innerWidth >=1000); // Adjust the breakpoint as needed
+      setIsBigScreen(window.innerWidth >= 1000); // Adjust the breakpoint as needed
     };
 
     // Add event listener for window resize
@@ -49,20 +49,20 @@ function Sidebar() {
           <div className="description">Add new elements to your model!</div>
           <div
             title="Producer"
-            className="dndnode publisher"
-            onDragStart={(event) => onDragStart(event, 'producer')}
+            className="dndnode producer"
+            onDragStart={event => onDragStart(event, 'producer')}
             draggable
           />
           <div
             title="Queue"
-            className="dndnode topic"
-            onDragStart={(event) => onDragStart(event, 'queue')}
+            className="dndnode queue"
+            onDragStart={event => onDragStart(event, 'queue')}
             draggable
           />
           <div
             title="Consumer"
-            className="dndnode subscriber"
-            onDragStart={(event) => onDragStart(event, 'consumer')}
+            className="dndnode consumer"
+            onDragStart={event => onDragStart(event, 'consumer')}
             draggable
           />
         </aside>

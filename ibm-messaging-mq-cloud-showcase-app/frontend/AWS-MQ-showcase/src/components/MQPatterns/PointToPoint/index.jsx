@@ -14,7 +14,7 @@
  * limitations under the License.
  **/
 
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { Grid, Column } from '@carbon/react';
 import Chart1 from './chart1';
 import Chart2 from './chart2';
@@ -30,7 +30,7 @@ const PointPointIndex = props => {
   const currentQueues = useStore(state => state.getQueuesNodes);
   const [initTime, setInitTime] = useState(true);
 
-  const updateChart = (result) => {
+  const updateChart = result => {
     if (result) {
       let _dataChart1 = [...dataChart1];
       let _dataChart2 = [...dataChart2];
@@ -57,7 +57,7 @@ const PointPointIndex = props => {
         }
         let i = 0;
         if (!isOnTheScreen && alreadyRenderedChart2) {
-          _dataChart2 = _dataChart2.filter(x => x.key !== queue.name);          
+          _dataChart2 = _dataChart2.filter(x => x.key !== queue.name);
         } else if (alreadyRenderedChart2) {
           //update current values
           _dataChart2.forEach(e => {
@@ -72,13 +72,13 @@ const PointPointIndex = props => {
             key: group,
             value: depth,
           });
-        }        
+        }
       });
       setDataChart2(_dataChart2);
       setDataChart1(_dataChart1);
       setTime(time + 1);
     }
-  }
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {

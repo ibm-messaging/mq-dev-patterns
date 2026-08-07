@@ -22,10 +22,9 @@ import RepoPage from './content/RepoPage';
 import { Content, Theme } from '@carbon/react';
 import './app.scss';
 import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer} from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 
 class App extends Component {
-  
   render() {
     return (
       <>
@@ -33,8 +32,8 @@ class App extends Component {
           <TutorialHeader />
         </Theme>
         <Content>
-        <ToastContainer
-            style={{height:"50px"}}
+          <ToastContainer
+            style={{ height: '50px' }}
             position="bottom-right"
             autoClose={2000}
             hideProgressBar={false}

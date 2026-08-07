@@ -41,13 +41,13 @@ const ResponderNode = ({ id, data }) => {
   const [responseMessage, setResponseMesasge] = useState();
   const [replyQueue, setReplyQueue] = useState();
   const [defaultInitQueue, setDefaultInitQueue] = useState();
-  const [sessionID , setSessionID] = useState()
+  const [sessionID, setSessionID] = useState();
 
-  useEffect(() => {    
-    let _sessionID = Cookies.get("sessionID");        
-    id = _sessionID;    
+  useEffect(() => {
+    let _sessionID = Cookies.get('sessionID');
+    id = _sessionID;
     setSessionID(_sessionID);
-    
+
     setDefaultInitQueue(data.connectedQueue);
   }, []);
 
@@ -158,36 +158,34 @@ const ResponderNode = ({ id, data }) => {
         </div>
       </div>
       <FormLabel>Last message received:</FormLabel>
-      <br></br>
+      <br />
       <FormLabel className={'consumer-subsection-title'}>
-            {lastMessage?.Message}
-      </FormLabel>      
+        {lastMessage?.Message}
+      </FormLabel>
       <FormLabel className={'consumer-subsection-title'}>
-            Replying in: {replyQueue}
-          </FormLabel>          
-          <br></br>
-          <FormLabel>Transactions Processed: {sessionCount}</FormLabel>
-          <br></br>
-          <br></br>
-          <TextInput
-            className="consumer-node-name-label"
-            placeholder="Write here your message"
-            value={responseMessage}
-            size="sm"
-            onChange={e => changeResponseMessage(e)}
-          />          
+        Replying in: {replyQueue}
+      </FormLabel>
+      <br />
+      <FormLabel>Transactions Processed: {sessionCount}</FormLabel>
+      <br />
+      <br />
+      <TextInput
+        className="consumer-node-name-label"
+        placeholder="Write here your message"
+        value={responseMessage}
+        size="sm"
+        onChange={e => changeResponseMessage(e)}
+      />
 
-          <Button
-            renderIcon={props => <Send size={42} {...props} />}
-            className="publisher-node-send-button"
-            size="sm"
-            onClick={() => {
-              onSendResponse();
-            }}>
-            Reply
-          </Button>                    
-          
-          
+      <Button
+        renderIcon={props => <Send size={42} {...props} />}
+        className="publisher-node-send-button"
+        size="sm"
+        onClick={() => {
+          onSendResponse();
+        }}>
+        Reply
+      </Button>
 
       {/* <Grid>
         <Column md={7} lg={{ offset: 13 }} sm={3} />

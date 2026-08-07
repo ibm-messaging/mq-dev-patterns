@@ -14,14 +14,13 @@
  * limitations under the License.
  **/
 
-
 import React, { useEffect, memo, useState } from 'react';
-import { Button, Column, Dropdown, Grid, Toggle} from '@carbon/react';
+import { Button, Column, Dropdown, Grid, Toggle } from '@carbon/react';
 import { Handle } from 'react-flow-renderer';
 import { Send } from '@carbon/react/icons';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PointToPoint/store';
-import {NumberInput} from '@carbon/react';
+import { NumberInput } from '@carbon/react';
 import './map.css';
 import TextInput from '@carbon/react/lib/components/TextInput';
 
@@ -34,11 +33,12 @@ const ProducerNode = ({ id, data }) => {
   const deleteMe = useStore(state => state.onDeleteNode);
   const [quantity, setQuantity] = useState(PRODUCTION_QUANTITY);
   const [animationState, setAnimationState] = useState(false);
-  const [name, setName] = useState(data.label);  
+  const [name, setName] = useState(data.label);
   const [isToggle, setIsToggle] = useState(false);
 
-  const isForTheCodingChallange = (process.env.REACT_APP_IS_FOR_CODING_CHALLENGE === 'true');  
-  const [selectedCurrency, setSelectedCurrency] = useState("EUR"); 
+  const isForTheCodingChallange =
+    process.env.REACT_APP_IS_FOR_CODING_CHALLENGE === 'true';
+  const [selectedCurrency, setSelectedCurrency] = useState('EUR');
 
   useEffect(() => {
     if (animationState) {
@@ -63,20 +63,21 @@ const ProducerNode = ({ id, data }) => {
     animateConnection(id, true);
     try {
       let message = 'You bought a new ticket!';
-      if(isForTheCodingChallange) {
-        adapter.put(quantity, 1, data.connectedQueue, selectedCurrency).then(res => {                    
-          if(isToggle) {
-            adapter.closeProducer()
-          }      
-        });      
+      if (isForTheCodingChallange) {
+        adapter
+          .put(quantity, 1, data.connectedQueue, selectedCurrency)
+          .then(res => {
+            if (isToggle) {
+              adapter.closeProducer();
+            }
+          });
       } else {
-        adapter.put(message, quantity, data.connectedQueue).then(res => {          
-          if(isToggle) {
-            adapter.closeProducer()
-          }      
-        });      
+        adapter.put(message, quantity, data.connectedQueue).then(res => {
+          if (isToggle) {
+            adapter.closeProducer();
+          }
+        });
       }
-      
     } catch (e) {
       console.log(e);
       setAnimationState(false);
@@ -90,26 +91,22 @@ const ProducerNode = ({ id, data }) => {
 
   const changeName = e => {
     setName(e.value);
-  };  
-
+  };
 
   useEffect(() => {
-    if(!data.connectedQueue) {
+    if (!data.connectedQueue) {
       adapter.closeProducer();
     }
-  }, [data.connectedQueue])
+  }, [data.connectedQueue]);
 
-  
-
-  if(isForTheCodingChallange) {
+  if (isForTheCodingChallange) {
     return (
-      
       <div style={{ width: 400 }} className="producer-node-container">
         <button
           className="edgebutton node"
           too
           onClick={() => {
-            deleteMe(id);            
+            deleteMe(id);
             adapter.closeProducer();
           }}>
           X
@@ -133,68 +130,63 @@ const ProducerNode = ({ id, data }) => {
 
         <Grid>
           <Column lg={9}>
-            <NumberInput            
-            id="tj-input"
-            invalidText="Number is not valid"
-            helperText="Amount"            
-            max={100}
-            min={1}
-            step={1}
-            value={quantity}
-            onChange={handleOnChange}
-          />
+            <NumberInput
+              id="tj-input"
+              invalidText="Number is not valid"
+              helperText="Amount"
+              max={100}
+              min={1}
+              step={1}
+              value={quantity}
+              onChange={handleOnChange}
+            />
           </Column>
-          
+
           <Column lg={7}>
-            <Dropdown                
-             
-                items={[
-                  { id: '1', text: 'EUR' },
-                  { id: '2', text: 'USD' },
-                  { id: '3', text: 'GBP' },
-                ]}
-                itemToElement={(item) =>
-                  item ? (
-                    <span className="test" style={{ color: 'red' }}>
-                      {item.text} 
-                    </span>
-                  ) : (
-                    ''
-                  )
-                }  
-                selectedItem = {selectedCurrency}
-                onChange={({ selectedItem }) => {                  
-                  setSelectedCurrency(selectedItem.text);                  
-                  }
-                }
-                helperText = "Currency" 
-              />
+            <Dropdown
+              items={[
+                { id: '1', text: 'EUR' },
+                { id: '2', text: 'USD' },
+                { id: '3', text: 'GBP' },
+              ]}
+              itemToElement={item =>
+                item ? (
+                  <span className="test" style={{ color: 'red' }}>
+                    {item.text}
+                  </span>
+                ) : (
+                  ''
+                )
+              }
+              selectedItem={selectedCurrency}
+              onChange={({ selectedItem }) => {
+                setSelectedCurrency(selectedItem.text);
+              }}
+              helperText="Currency"
+            />
           </Column>
         </Grid>
-
-        
 
         <Button
           className="publisher-node-send-button"
           renderIcon={props => <Send size={42} {...props} />}
           size="sm"
-          disabled={!data.connectedQueue || animationState || quantity<=0}
+          disabled={!data.connectedQueue || animationState || quantity <= 0}
           onClick={() => {
             _onClick(id);
           }}>
           Send cash
         </Button>
       </div>
-    )
+    );
   } else {
     return (
-      
       <div className="producer-node-container">
         <button
           className="edgebutton node"
           too
           onClick={() => {
-            deleteMe(id);                        
+            deleteMe(id);
           }}>
           X
         </button>
@@ -232,7 +224,7 @@ const ProducerNode = ({ id, data }) => {
         <Button
           className="producer-node-send-button"
           size="sm"
-          disabled={!data.connectedQueue || animationState || quantity<=0}
+          disabled={!data.connectedQueue || animationState || quantity <= 0}
           onClick={() => {
             _onClick(id);
           }}>
@@ -241,17 +233,16 @@ const ProducerNode = ({ id, data }) => {
 
         <Toggle
           id={id}
-          size="sm"           
-          labelA= {"Start auto"}
-          labelB= {"Stop auto"}
+          size="sm"
+          labelA={'Start auto'}
+          labelB={'Stop auto'}
           toggled={isToggle}
           onToggle={() => {
             setIsToggle(!isToggle);
           }}
         />
-        
       </div>
-    )
+    );
   }
 };
 

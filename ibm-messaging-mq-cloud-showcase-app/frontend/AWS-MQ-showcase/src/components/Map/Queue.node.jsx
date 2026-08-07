@@ -42,24 +42,24 @@ const QueueNode = ({ id, data, isConnectable }) => {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        if(canSend) {
+        if (canSend) {
           setCandSend(false);
-          let result = await adapter.getAllDepths(false);        
+          let result = await adapter.getAllDepths(false);
           setCandSend(true);
           if (!Number.isInteger(result)) {
-            let _lastDepth = result.find(q => q.name === data.queueName)['depth'];        
+            let _lastDepth = result.find(q => q.name === data.queueName)[
+              'depth'
+            ];
             _updateQueuedata(result);
             setCurrentDepth(_lastDepth);
-          } else if (result === 525 ) {
+          } else if (result === 525) {
             // MQ manager not reachable
-            toast.error("The queue manager is not reachable.");
+            toast.error('The queue manager is not reachable.');
           } else if (result === 505) {
             // Error on getting qdepth
-            toast.error("The backend server is not reachable.");
+            toast.error('The backend server is not reachable.');
           }
         }
-       
-        
       } catch (e) {
         console.log(e);
       }

@@ -15,10 +15,7 @@
  **/
 
 import React, { useState, useEffect } from 'react';
-import {
-  Grid,
-  Column,  
-} from '@carbon/react';
+import { Grid, Column } from '@carbon/react';
 import Chart1 from './chart1';
 import './index.scss';
 import Flow from '../PubSub/map';
@@ -26,7 +23,7 @@ import useStore from './store';
 
 const PubSub = props => {
   const [dataChart1, setDataChart1] = useState([]);
-  const [time, setTime] = useState(1);    
+  const [time, setTime] = useState(1);
   const _updateDataframe = useStore(state => state.setDataframeForChart);
 
   useEffect(() => {
