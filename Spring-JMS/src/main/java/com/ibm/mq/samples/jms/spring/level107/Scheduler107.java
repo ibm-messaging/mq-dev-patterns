@@ -18,8 +18,6 @@ package com.ibm.mq.samples.jms.spring.level107;
 
 import com.ibm.mq.samples.jms.spring.globals.Constants;
 import com.ibm.mq.samples.jms.spring.globals.data.OurData;
-import com.ibm.mq.samples.jms.spring.globals.data.OurOtherData;
-import com.ibm.mq.samples.jms.spring.level106.SendMessageService106;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -29,28 +27,28 @@ import org.springframework.stereotype.Component;
 //@Component
 @EnableScheduling
 public class Scheduler107 {
-    protected final Log logger = LogFactory.getLog(getClass());
+  protected final Log logger = LogFactory.getLog(getClass());
 
-    private final SendMessageService107 service;
-    static private int i = 0;
+  private final SendMessageService107 service;
+  static private int i = 0;
 
-    Scheduler107(SendMessageService107 service) {
-        this.service = service;
-    }
+  Scheduler107(SendMessageService107 service) {
+    this.service = service;
+  }
 
-    @Scheduled(initialDelay = 35 * Constants.SECOND, fixedRate = 2 * Constants.MINUTE)
-    public void run() {
-        String greeting = "Sending data in cycle :" + i++;
-        OurData msg1 = new OurData(greeting);
-        OurData msg2 = new OurData(greeting);
+  @Scheduled(initialDelay = 35 * Constants.SECOND, fixedRate = 2 * Constants.MINUTE)
+  public void run() {
+    String greeting = "Sending data in cycle :" + i++;
+    OurData msg1 = new OurData(greeting);
+    OurData msg2 = new OurData(greeting);
 
-        logger.info("");
-        logger.info( this.getClass().getSimpleName());
-        logger.info("Sending messages");
+    logger.info("");
+    logger.info( this.getClass().getSimpleName());
+    logger.info("Sending messages");
 
-        logger.info(msg1);
-        service.sendAsyncReply(msg2);
-        service.sendSyncReply(msg1);
+    logger.info(msg1);
+    service.sendAsyncReply(msg2);
+    service.sendSyncReply(msg1);
 
-    }
+  }
 }

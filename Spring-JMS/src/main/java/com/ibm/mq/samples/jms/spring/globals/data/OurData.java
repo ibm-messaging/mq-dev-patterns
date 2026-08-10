@@ -16,38 +16,40 @@
 
 package com.ibm.mq.samples.jms.spring.globals.data;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OurData implements Serializable {
-    private static Random r = new Random();
+  private static Random r = new Random();
 
-    private String id = UUID.randomUUID().toString();
+  private String id = UUID.randomUUID().toString();
 
-    @JsonAlias("Greeting")
-    private String greeting = "";
+  @JsonAlias("Greeting")
+  private String greeting = "";
 
-    private int value = r.nextInt(100);
-    private Date date = new Date();
-    private Date received = null;
-    private String correlation = null;
-    private String requestedReplyDest = null;
+  private int value = r.nextInt(100);
+  private Date date = new Date();
+  private Date received = null;
+  private String correlation = null;
+  private String requestedReplyDest = null;
 
-    public OurData(String greeting) {
-        this.greeting = greeting;
-    }
+  public OurData(String greeting) {
+    this.greeting = greeting;
+  }
+
 }
 
 

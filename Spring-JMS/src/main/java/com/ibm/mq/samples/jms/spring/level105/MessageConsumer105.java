@@ -16,30 +16,27 @@
 
 package com.ibm.mq.samples.jms.spring.level105;
 
-import jakarta.jms.*;
-
-import com.ibm.mq.samples.jms.spring.globals.Constants;
-import com.ibm.mq.samples.jms.spring.globals.data.OurData;
-import com.ibm.mq.samples.jms.spring.globals.data.OurOtherData;
-import com.ibm.mq.samples.jms.spring.globals.utils.MessageUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
-import java.io.Serializable;
+
+import com.ibm.mq.samples.jms.spring.globals.utils.MessageUtils;
+
+import jakarta.jms.Message;
 
 
 //@Component
 public class MessageConsumer105 {
-    protected final Log logger = LogFactory.getLog(getClass());
+  protected final Log logger = LogFactory.getLog(getClass());
 
-    @JmsListener(destination = "${app.l105.queue.name2}")
-    public void receiveData(Message message) {
-        logger.info("");
-        logger.info( this.getClass().getSimpleName());
-        logger.info("Received message of type: " + message.getClass().getSimpleName());
-        if (null != message) {
-            MessageUtils.checkMessageType(message);
-        }
+  @JmsListener(destination = "${app.l105.queue.name2}")
+  public void receiveData(Message message) {
+    logger.info("");
+    logger.info( this.getClass().getSimpleName());
+    logger.info("Received message of type: " + message.getClass().getSimpleName());
+    if (null != message) {
+      MessageUtils.checkMessageType(message);
     }
+  }
 }
