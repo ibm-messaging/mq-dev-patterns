@@ -17,7 +17,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Send } from '@carbon/react/icons';
 import { Button, TextArea } from '@carbon/react';
-import { Handle } from 'react-flow-renderer';
+import { Handle } from '@xyflow/react';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PubSub/store';
 import './map.css';

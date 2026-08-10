@@ -16,7 +16,7 @@
 
 import React, { useEffect, memo, useState } from 'react';
 import { Button } from '@carbon/react';
-import { Handle } from 'react-flow-renderer';
+import { Handle } from '@xyflow/react';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/RequestResponse/store';
 import { NumberInput } from '@carbon/react';

@@ -16,7 +16,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Button, Grid, Column, Toggle, Tag, TextInput } from '@carbon/react';
-import { Handle } from 'react-flow-renderer';
+import { Handle } from '@xyflow/react';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/RequestResponse/store';
 import FormLabel from '@carbon/react/lib/components/FormLabel/FormLabel';

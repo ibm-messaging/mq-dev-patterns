@@ -16,7 +16,7 @@
 
 import React, { useEffect, memo, useState } from 'react';
 import { Button, Column, Dropdown, Grid, Toggle } from '@carbon/react';
-import { Handle } from 'react-flow-renderer';
+import { Handle } from '@xyflow/react';
 import { Send } from '@carbon/react/icons';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PointToPoint/store';

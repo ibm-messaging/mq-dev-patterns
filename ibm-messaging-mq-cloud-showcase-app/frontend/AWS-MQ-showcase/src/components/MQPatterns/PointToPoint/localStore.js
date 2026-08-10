@@ -14,7 +14,7 @@
  * limitations under the License.
  **/
 
-import create from 'zustand';
+import { create } from 'zustand';
 import useStore from '../../Map/store';
 
 export const useBoundStore = create((...a) => ({

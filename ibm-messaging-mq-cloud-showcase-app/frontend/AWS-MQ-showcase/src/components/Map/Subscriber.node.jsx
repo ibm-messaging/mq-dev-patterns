@@ -16,7 +16,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Grid, Column, Tag, TextInput } from '@carbon/react';
-import { Handle } from 'react-flow-renderer';
+import { Handle } from '@xyflow/react';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PubSub/store';
 import FormLabel from '@carbon/react/lib/components/FormLabel/FormLabel';
@@ -212,7 +212,7 @@ const SubscriberNode = ({ id, data }) => {
           right: '10px',
           bottom: '5px',
         }}
-        type={isSubscribed ? 'green' : 'orange'}>
+        type={isSubscribed ? 'green' : 'warm-gray'}>
         {isSubscribed
           ? 'Subscribed to: ' + data.connectedQueue
           : 'No subscription'}

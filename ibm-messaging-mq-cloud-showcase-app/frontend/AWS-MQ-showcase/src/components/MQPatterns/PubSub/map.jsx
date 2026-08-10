@@ -15,11 +15,13 @@
  **/
 
 import React, { useCallback, useRef, useState } from 'react';
-import ReactFlow, {
+import {
+  ReactFlow,
   Controls,
   Background,
   ReactFlowProvider,
-} from 'react-flow-renderer';
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import PublisherNode from '../../Map/Publisher.node';
 import SubscriberNode from '../../Map/Subscriber.node';
 import TopicNode from '../../Map/Topic.node';
@@ -59,7 +61,7 @@ function Flow() {
         return;
       }
 
-      const position = reactFlowInstance.project({
+      const position = reactFlowInstance.screenToFlowPosition({
         x: event.clientX - reactFlowBounds.left,
         y: event.clientY - reactFlowBounds.top,
       });

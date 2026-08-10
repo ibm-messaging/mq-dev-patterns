@@ -14,8 +14,7 @@
  * limitations under the License.
  **/
 
-
-import { addEdge } from 'react-flow-renderer';
+import { addEdge } from '@xyflow/react';
 
 class MapUtils {
   updateConnectionNodeToQueue(
@@ -229,7 +228,7 @@ class MapUtils {
   }
 
   updateQueueOnDeletingEdge(set, get, edgeId, isSub = false) {
-    let split = edgeId.split('-');    
+    let split = edgeId.split('-');
     let srcId = split[0];
     let targetId = split[1];
 

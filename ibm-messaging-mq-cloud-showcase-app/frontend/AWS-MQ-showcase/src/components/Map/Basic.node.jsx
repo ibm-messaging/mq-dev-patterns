@@ -16,7 +16,7 @@
 
 import React, { useCallback } from 'react';
 import { Button } from '@carbon/react';
-import { Handle } from 'react-flow-renderer';
+import { Handle } from '@xyflow/react';
 
 const BasicNode = ({ data, isConnectable }) => {
   const _onClick = useCallback(evt => {

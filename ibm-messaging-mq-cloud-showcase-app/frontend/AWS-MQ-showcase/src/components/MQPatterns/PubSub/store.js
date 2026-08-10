@@ -14,12 +14,12 @@
  * limitations under the License.
  **/
 
-import create from 'zustand';
+import { create } from 'zustand';
 import {
   applyNodeChanges,
   applyEdgeChanges,
-  updateEdge,
-} from 'react-flow-renderer';
+  reconnectEdge,
+} from '@xyflow/react';
 import initialNodes from './nodes';
 import initialEdges from './edges';
 import MapUtils from '../../Map/utils';
@@ -41,10 +41,10 @@ const useStore = create((set, get) => ({
       edges: applyEdgeChanges(changes, get().edges),
     });
   },
-  onEdgeUpdate: (oldEdge, connection) => {
+  onReconnect: (oldEdge, connection) => {
     utils.updateConnectionNodeToQueue(set, get, connection, true);
     set({
-      edges: updateEdge(oldEdge, connection, get().edges),
+      edges: reconnectEdge(oldEdge, connection, get().edges),
     });
     utils.disabledNonConnetedQueue(set, get, oldEdge, connection);
   },

@@ -15,7 +15,7 @@
  **/
 
 import React, { useEffect, useState, memo } from 'react';
-import { Handle } from 'react-flow-renderer';
+import { Handle } from '@xyflow/react';
 import ProgressBar from '@carbon/react/lib/components/ProgressBar/ProgressBar';
 import './map.css';
 import APIAdapter from '../../adapters/API.adapter';
