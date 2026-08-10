@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,11 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { Send } from '@carbon/react/icons';
-import { Button, TextArea } from '@carbon/react';
+import { Button, TextArea, TextInput } from '@carbon/react';
 import { Handle } from '@xyflow/react';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PubSub/store';
 import './map.css';
-import TextInput from '@carbon/react/lib/components/TextInput';
 import { toast } from 'react-toastify';
 
 const PublisherNode = ({ id, data }) => {
@@ -115,6 +114,7 @@ const PublisherNode = ({ id, data }) => {
       />
 
       <TextInput
+        id={`publisher-title-${id}`}
         size="sm"
         className="producer-node-name-label"
         ref={refTitle}

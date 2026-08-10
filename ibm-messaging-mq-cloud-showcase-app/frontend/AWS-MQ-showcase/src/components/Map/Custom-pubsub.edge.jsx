@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,6 @@ export default function CustomEdge({
         className="react-flow__edge-path"
         d={edgePath}
         markerEnd={markerEnd}
-        connectionLineType={'straight'}
       />
       <foreignObject
         width={foreignObjectSize}
@@ -99,13 +98,13 @@ export default function CustomEdge({
         y={labelY - foreignObjectSize / 2}
         className="edgebutton-foreignobject"
         requiredExtensions="http://www.w3.org/1999/xhtml">
-        <body>
+        <div xmlns="http://www.w3.org/1999/xhtml">
           <button
             className="edgebutton"
             onClick={event => onEdgeClick(event, id)}>
             X
           </button>
-        </body>
+        </div>
       </foreignObject>
       {animated ? (
         <foreignObject
@@ -115,9 +114,9 @@ export default function CustomEdge({
           y={messageY - 35 / 2}
           className="edgebutton-foreignobject"
           requiredExtensions="http://www.w3.org/1999/xhtml">
-          <body>
+          <div xmlns="http://www.w3.org/1999/xhtml">
             <div style={{ background: '#0059ff' }} className="messageOnEdge" />
-          </body>
+          </div>
         </foreignObject>
       ) : (
         <></>

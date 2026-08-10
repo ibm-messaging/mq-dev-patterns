@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2024 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,20 @@
  **/
 
 import React, { useEffect, memo, useState } from 'react';
-import { Button, Column, Dropdown, Grid, Toggle } from '@carbon/react';
+import {
+  Button,
+  Column,
+  Dropdown,
+  Grid,
+  Toggle,
+  NumberInput,
+  TextInput,
+} from '@carbon/react';
 import { Handle } from '@xyflow/react';
 import { Send } from '@carbon/react/icons';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PointToPoint/store';
-import { NumberInput } from '@carbon/react';
 import './map.css';
-import TextInput from '@carbon/react/lib/components/TextInput';
 
 const PRODUCTION_QUANTITY = 5;
 const ProducerNode = ({ id, data }) => {
@@ -121,6 +127,7 @@ const ProducerNode = ({ id, data }) => {
           isConnectable={!data.connectedQueue}
         />
         <TextInput
+          id={`producer-name-${id}`}
           size="sm"
           className="producer-node-name-label"
           labelText="Name of your sender"
@@ -131,7 +138,7 @@ const ProducerNode = ({ id, data }) => {
         <Grid>
           <Column lg={9}>
             <NumberInput
-              id="tj-input"
+              id={`producer-quantity-${id}`}
               invalidText="Number is not valid"
               helperText="Amount"
               max={100}
@@ -200,6 +207,7 @@ const ProducerNode = ({ id, data }) => {
           isConnectable={!data.connectedQueue}
         />
         <TextInput
+          id={`producer-name-${id}`}
           size="sm"
           className="producer-node-name-label"
           labelText="Name of your application"
@@ -209,7 +217,7 @@ const ProducerNode = ({ id, data }) => {
 
         <NumberInput
           // helperText="At least 1 sub to start the pattern is required"
-          id="tj-input"
+          id={`producer-tickets-${id}`}
           invalidText="Number is not valid"
           label="Tickets created: "
           // warn={currentSubscribers == 0}

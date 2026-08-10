@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 import React, { useEffect, useState, memo } from 'react';
 import { Handle } from '@xyflow/react';
-import ProgressBar from '@carbon/react/lib/components/ProgressBar/ProgressBar';
+import { ProgressBar } from '@carbon/react';
 import './map.css';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PointToPoint/store';

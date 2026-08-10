@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,10 @@
  **/
 
 import React, { useEffect, useState } from 'react';
-import { Grid, Column, Tag, TextInput } from '@carbon/react';
+import { Grid, Column, Tag, TextInput, FormLabel } from '@carbon/react';
 import { Handle } from '@xyflow/react';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PubSub/store';
-import FormLabel from '@carbon/react/lib/components/FormLabel/FormLabel';
 import './map.css';
 import { toast } from 'react-toastify';
 
@@ -181,6 +180,8 @@ const SubscriberNode = ({ id, data }) => {
       />
 
       <TextInput
+        id={`subscriber-name-${id}`}
+        labelText="Name"
         className="consumer-node-name-label"
         value={name}
         size="sm"

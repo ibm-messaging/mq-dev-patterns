@@ -16,20 +16,19 @@
     "format:staged": "prettier --write"
   },
   "dependencies": {
-    "zustand": "^5",
-    "@carbon/charts": "1.15.3",
-    "@carbon/charts-react": "1.15.3",
-    "@carbon/react": "1.53.0",
-    "dom-to-image-more": "3.1.4",
+    "@carbon/charts": "1.27.18",
+    "@carbon/charts-react": "1.27.18",
+    "@carbon/react": "1.113.0",
+    "@xyflow/react": "^12",
     "axios": "1.18.0",
     "d3": "7.6.1",
     "js-cookie": "^3.0.5",
-    "react": "^18.3.0",
-    "react-dom": "^18.3.0",
-    "@xyflow/react": "^12",
-    "react-router-dom": "^6",
-    "react-toastify": "9.0.8",
-    "uuid": "^9.0.0"
+    "react": "^19",
+    "react-dom": "^19",
+    "react-router-dom": "^7.18.2",
+    "react-toastify": "^11.1.0",
+    "uuid": "^9.0.0",
+    "zustand": "^5"
   },
   "devDependencies": {
     "@commitlint/cli": "7.5.2",

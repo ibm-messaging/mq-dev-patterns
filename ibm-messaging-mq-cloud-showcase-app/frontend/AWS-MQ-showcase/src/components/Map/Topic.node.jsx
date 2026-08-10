@@ -106,6 +106,8 @@ const TopicNode = ({ id, data, isConnectable }) => {
       <FormLabel className="topic-label">Topic:</FormLabel>
 
       <TextInput
+        id={`topic-name-${id}`}
+        labelText="Topic name"
         className="topic-text-input"
         value={data.queueName}
         size="sm"
