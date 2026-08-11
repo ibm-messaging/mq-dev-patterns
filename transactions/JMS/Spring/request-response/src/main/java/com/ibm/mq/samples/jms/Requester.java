@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017, 2020 IBM Corp. All rights reserved.
+ * Copyright © 2017, 2026 IBM Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of the License at
@@ -26,12 +26,6 @@ package com.ibm.mq.samples.jms;
 
 import java.util.Date;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -41,6 +35,12 @@ import org.springframework.jms.connection.JmsTransactionManager;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
 
 @SpringBootApplication
 @EnableJms
@@ -53,6 +53,8 @@ public class Requester {
   static String correlID = null;
   static TextMessage message;
 
+  static  ConfigurableApplicationContext context;
+
   // Construct a Transaction Manager that will control local transactions.
   @Bean
   public JmsTransactionManager transactionManager(ConnectionFactory connectionFactory) {
@@ -60,45 +62,66 @@ public class Requester {
     return transactionManager;
   }
 
-  public static void main(String[] args) throws JMSException {
-    // Launch the application
-    ConfigurableApplicationContext context = SpringApplication.run(Requester.class, args);
+  public static void main(String[] args) {
+    int rc = 0;
 
+    // Launch the application
+    context = SpringApplication.run(Requester.class, args);
     printStarted();
 
-    // Create the JMS Template object to control connections and sessions.
-    JmsTemplate jmsTemplate = context.getBean(JmsTemplate.class);
-    jmsTemplate.setReceiveTimeout(5 * 1000); // How long to wait for a reply - milliseconds
+    try {
+      // Create the JMS Template object to control connections and sessions.
+      JmsTemplate jmsTemplate = context.getBean(JmsTemplate.class);
+      jmsTemplate.setReceiveTimeout(5 * 1000); // How long to wait for a reply - milliseconds
 
-    // Create a single message with a timestamp
-    String payload = "Hello from IBM MQ at " + new Date();
+      // Create a single message with a timestamp
+      String payload = "Hello from IBM MQ at " + new Date();
 
-    // Send the message and wait for a reply for up to the specified timeout
-    Message replyMsg = jmsTemplate.sendAndReceive(qName, new MessageCreator() {
-      @Override
-      public Message createMessage(Session session) throws JMSException {
-        message = session.createTextMessage(payload);
-        System.out.println("Sending message: " + message.getText());
-        return message;
-      }
-    });
+      // Send the message and wait for a reply for up to the specified timeout
+      Message replyMsg = jmsTemplate.sendAndReceive(qName, new MessageCreator() {
+        @Override
+        public Message createMessage(Session session) throws JMSException {
+          message = session.createTextMessage(payload);
+          System.out.println("Sending message: " + message.getText());
+          return message;
+        }
+      });
 
-
-    if (replyMsg != null) {
-      if (replyMsg instanceof TextMessage) {
-        System.out.println("Reply message is: " + ((TextMessage) replyMsg).getText());
+      if (replyMsg != null) {
+        if (replyMsg instanceof TextMessage) {
+          System.out.println("Reply message is: " + ((TextMessage) replyMsg).getText());
+        }
+        else {
+          System.out.println("Reply message is: " + replyMsg.toString());
+        }
       }
       else {
-        System.out.println("Reply message is: " + replyMsg.toString());
+        System.out.println("No reply received");
       }
-    }
-    else {
-      System.out.println("No reply received");
+    } catch (Exception e) {
+      System.out.printf("ERROR: %s\n",e.getMessage());
+      e.printStackTrace();
+      rc = 1;
     }
 
     System.out.println("Done.");
-    System.exit(0);
+    exit(rc);
   }
+
+  static void exit(int rc) {
+
+    // Wait a little while to give everything else a chance to tidy
+    try {
+      Thread.sleep(2000);
+    }
+    catch (InterruptedException e) {
+    }
+
+    // Finally, this is how we force an exit from a Spring application. It might take a little while, and generate
+    // exception stacks, but at least it does finish.
+    System.exit(SpringApplication.exit(context, () -> rc));
+  }
+
 
   static void printStarted() {
     System.out.println();

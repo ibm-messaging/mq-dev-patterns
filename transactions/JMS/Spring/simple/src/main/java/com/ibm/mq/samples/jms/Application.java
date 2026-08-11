@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017, 2020 IBM Corp. All rights reserved.
+ * Copyright © 2017, 2026 IBM Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of the License at
@@ -30,8 +30,6 @@ package com.ibm.mq.samples.jms;
 
 import java.util.Date;
 
-import javax.jms.Message;
-
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -40,6 +38,8 @@ import org.springframework.jms.connection.JmsTransactionManager;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import jakarta.jms.Message;
 
 @SpringBootApplication
 @EnableJms
