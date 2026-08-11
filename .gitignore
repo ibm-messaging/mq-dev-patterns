@@ -16,6 +16,8 @@ amqp-vertx/target/*
 terraform.tfstate.*
 terraform.tfstate
 
+mqjms.log.*
+
 # Associated with the Python code
 venv*
 Python/tmp/
