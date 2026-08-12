@@ -2,6 +2,7 @@
   "name": "ibm-mq-demo",
   "version": "0.0.0",
   "private": true,
+  "packageManager": "npm@10.9.2",
   "repository": "git@github.com:ibm-messaging/mq-dev-patterns.git",
   "license": "Apache-2.0",
   "scripts": {
@@ -9,11 +10,12 @@
     "start": "vite --port 3000",
     "build": "vite build",
     "preview": "vite preview",
-    "ci-check": "yarn format:diff",
-    "clean": "yarn cache clean && yarn install",
-    "format": "prettier --write \"**/*.{js,jsx,md,scss}\"",
-    "format:diff": "prettier --list-different \"**/*.{js,jsx,md,scss}\"",
-    "format:staged": "prettier --write"
+    "ci-check": "npm run format:diff",
+    "clean": "rm -rf node_modules && npm install",
+    "format": "prettier --write \"**/*.{js,jsx,scss,css,md}\"",
+    "format:diff": "prettier --check \"**/*.{js,jsx,scss,css,md}\"",
+    "format:staged": "prettier --write",
+    "prepare": "cd ../../.. && husky ibm-messaging-mq-cloud-showcase-app/frontend/AWS-MQ-showcase/.husky"
   },
   "dependencies": {
     "@carbon/charts": "1.27.18",
@@ -31,12 +33,12 @@
     "zustand": "^5"
   },
   "devDependencies": {
-    "@commitlint/cli": "7.5.2",
-    "@commitlint/config-conventional": "7.5.0",
+    "@commitlint/cli": "^19",
+    "@commitlint/config-conventional": "^19",
     "@vitejs/plugin-react": "^6",
-    "husky": "1.3.1",
-    "lint-staged": "8.1.5",
-    "prettier": "1.17.0",
+    "husky": "^9",
+    "lint-staged": "^15",
+    "prettier": "^3",
     "sass": "^1.70.0",
     "vite": "^8"
   },
@@ -49,33 +51,16 @@
     "not ie <= 11",
     "not op_mini all"
   ],
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS",
-      "pre-commit": "lint-staged"
-    }
-  },
   "commitlint": {
     "extends": [
       "@commitlint/config-conventional"
     ]
   },
   "lint-staged": {
-    "*.{js,jsx}": [
-      "prettier --write",
-      "git add"
-    ],
-    "*.{scss,css}": [
-      "prettier --write",
-      "git add"
-    ],
-    "*.md": [
-      "prettier --write",
-      "git add"
-    ]
+    "*.{js,jsx,scss,css,md}": "prettier --write"
   },
   "prettier": {
-    "jsxBracketSameLine": true,
+    "bracketSameLine": true,
     "printWidth": 80,
     "singleQuote": true,
     "trailingComma": "es5"

@@ -24,17 +24,17 @@ FROM node:20-slim AS builder
 ENV APP_DIR=/usr/local/
 WORKDIR ${APP_DIR}
 RUN apt-get update \
-   && npm install yarn \
    && apt-get install -y git
 
 #get the application
 COPY ./AWS-MQ-showcase/ ./
 
 #install packages for the application
-RUN yarn install
+ENV HUSKY=0
+RUN npm install
 
 #Build the application
-RUN yarn run build
+RUN npm run build
 
 ###########################################################
 # This starts the RUNTIME phase
