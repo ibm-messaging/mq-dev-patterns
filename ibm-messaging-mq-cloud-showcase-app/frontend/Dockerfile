@@ -1,5 +1,5 @@
 
-#  Copyright 2022, 2024 IBM Corp.
+#  Copyright 2022, 2026 IBM Corp.
 #  Licensed under the Apache License, Version 2.0 (the 'License');
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
@@ -24,17 +24,17 @@ FROM node:20-slim AS builder
 ENV APP_DIR=/usr/local/
 WORKDIR ${APP_DIR}
 RUN apt-get update \
-   && npm install yarn \
    && apt-get install -y git
 
 #get the application
 COPY ./AWS-MQ-showcase/ ./
 
 #install packages for the application
-RUN yarn install
+ENV HUSKY=0
+RUN npm install
 
 #Build the application
-RUN yarn run build
+RUN npm run build
 
 ###########################################################
 # This starts the RUNTIME phase

@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
  * limitations under the License.
  **/
 
-import create from 'zustand';
+import { create } from 'zustand';
 import {
   applyNodeChanges,
   applyEdgeChanges,
-  updateEdge,
-} from 'react-flow-renderer';
+  reconnectEdge,
+} from '@xyflow/react';
 import MapUtils from '../../Map/utils';
 import Cookies from 'js-cookie';
 //import { persist } from 'zustand/middleware';
@@ -34,13 +34,13 @@ const setCookies = () => {
     sessionID = uuidv4().replace(/-/g, '');
     requestorSessionID = uuidv4().replace(/-/g, '');
     Cookies.set('sessionID', sessionID);
-    Cookies.set('requestorSessionID', requestorSessionID);      
+    Cookies.set('requestorSessionID', requestorSessionID);
   }
-}
+};
 
 setCookies();
 
-const _initialNodes = [  
+const _initialNodes = [
   {
     id: requestorSessionID,
     type: 'producer',
@@ -81,9 +81,8 @@ const _initialNodes = [
     position: { x: 650, y: 20 },
     sourcePosition: 'right',
     targetPosition: 'left',
-    draggable: true,    
+    draggable: true,
   },
-
 ];
 
 const _initialEdges = [
@@ -96,7 +95,7 @@ const _initialEdges = [
     style: {
       stroke: '#0050e6',
       strokeWidth: 1,
-    }
+    },
   },
   {
     id: requestorSessionID + '-17',
@@ -107,10 +106,9 @@ const _initialEdges = [
     style: {
       stroke: '#0050e6',
       strokeWidth: 1,
-    }
-  }
+    },
+  },
 ];
-
 
 const useStore = create((set, get) => ({
   nodes: _initialNodes,
@@ -126,10 +124,10 @@ const useStore = create((set, get) => ({
       edges: applyEdgeChanges(changes, get().edges),
     });
   },
-  onEdgeUpdate: (oldEdge, connection) => {
+  onReconnect: (oldEdge, connection) => {
     utils.updateConnectionNodeToQueue(set, get, connection);
     set({
-      edges: updateEdge(oldEdge, connection, get().edges),
+      edges: reconnectEdge(oldEdge, connection, get().edges),
     });
     utils.disabledNonConnetedQueue(set, get, oldEdge, connection);
   },

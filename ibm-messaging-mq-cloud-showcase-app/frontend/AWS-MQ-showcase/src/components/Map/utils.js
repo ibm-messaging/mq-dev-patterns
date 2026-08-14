@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,7 @@
  * limitations under the License.
  **/
 
-
-import { addEdge } from 'react-flow-renderer';
+import { addEdge } from '@xyflow/react';
 
 class MapUtils {
   updateConnectionNodeToQueue(
@@ -229,7 +228,7 @@ class MapUtils {
   }
 
   updateQueueOnDeletingEdge(set, get, edgeId, isSub = false) {
-    let split = edgeId.split('-');    
+    let split = edgeId.split('-');
     let srcId = split[0];
     let targetId = split[1];
 

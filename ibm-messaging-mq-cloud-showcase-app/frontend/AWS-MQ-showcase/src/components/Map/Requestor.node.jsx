@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2024 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,11 @@
  **/
 
 import React, { useEffect, memo, useState } from 'react';
-import { Button } from '@carbon/react';
-import { Handle } from 'react-flow-renderer';
+import { Button, NumberInput, FormLabel, TextInput } from '@carbon/react';
+import { Handle } from '@xyflow/react';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/RequestResponse/store';
-import { NumberInput } from '@carbon/react';
 import './map.css';
-import FormLabel from '@carbon/react/lib/components/FormLabel/FormLabel';
-import TextInput from '@carbon/react/lib/components/TextInput';
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
 
@@ -117,7 +114,6 @@ const RequestorNode = ({ id, data }) => {
     <div className="producer-node-container">
       <button
         className="edgebutton node"
-        too
         onClick={() => {
           deleteMe(id);
         }}>
@@ -142,6 +138,7 @@ const RequestorNode = ({ id, data }) => {
         isConnectable={!data.connectedQueue}
       />
       <TextInput
+        id={`requestor-name-${id}`}
         size="sm"
         className="producer-node-name-label"
         labelText="Name of your application"
@@ -151,7 +148,7 @@ const RequestorNode = ({ id, data }) => {
 
       <NumberInput
         // helperText="At least 1 sub to start the pattern is required"
-        id="tj-input"
+        id={`requestor-quantity-${id}`}
         invalidText="Number is not valid"
         label="Quantity request: "
         // warn={currentSubscribers == 0}

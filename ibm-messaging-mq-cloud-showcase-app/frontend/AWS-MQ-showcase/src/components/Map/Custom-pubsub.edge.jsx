@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  **/
 
 import React, { useEffect, useState } from 'react';
-import { getBezierPath, getSmoothStepPath } from 'react-flow-renderer';
+import { getBezierPath } from '@xyflow/react';
 import useStore from '../MQPatterns/PubSub/store';
 import './map.css';
 
@@ -33,7 +33,7 @@ export default function CustomEdge({
   style = {},
   markerEnd,
 }) {
-  const edgePath = getBezierPath({
+  const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
     sourcePosition,
@@ -42,68 +42,39 @@ export default function CustomEdge({
     targetPosition,
   });
 
-  getSmoothStepPath({
-    sourceX,
-    sourceY,
-    sourcePosition,
-    targetX,
-    targetY,
-    targetPosition,
-  });
   const _deleteOnClick = useStore(state => state.onDeleteEdge);
-  const [messageX, setMessageX] = useState();
-  const [messageY, setMessageY] = useState();
+  const [messageX, setMessageX] = useState(labelX);
+  const [messageY, setMessageY] = useState(labelY);
   const TRANSITION_TIME = 300;
-
-  const calculateLabelPosition = () => {
-    let _edgePathPoints = edgePath.split(' ');
-    let sumX = 0;
-    let sumY = 0;
-    let _3mainPoints = [];
-    _edgePathPoints.forEach((x, i) => {
-      let c = x.split(',');
-      if (i === 0 || i === 1) {
-        c[0] = c[0].substring(1);
-      }
-      let _x = parseFloat(c[0]);
-      let _y = parseFloat(c[1]);
-      sumX += _x;
-      sumY += _y;
-      _3mainPoints.push([_x, _y]);
-    });
-    let xPosition = sumX / _edgePathPoints.length;
-    let yPosition = sumY / _edgePathPoints.length;
-
-    return [xPosition, yPosition, _3mainPoints];
-  };
 
   const [animationCounter, setAnimationCounter] = useState(0);
 
   useEffect(() => {
-    let _3mainPoints = calculateLabelPosition()[2];
     if (animated && animationCounter === 0) {
-      setMessageX(_3mainPoints[0][0]);
-      setMessageY(_3mainPoints[0][1]);
+      setMessageX(sourceX);
+      setMessageY(sourceY);
       setAnimationCounter(1);
     } else if (animated && animationCounter === 1) {
-      setTimeout(() => {
-        setMessageX(parseInt(calculateLabelPosition()[0]));
-        setMessageY(parseInt(calculateLabelPosition()[1]));
+      const t = setTimeout(() => {
+        setMessageX(labelX);
+        setMessageY(labelY);
         setAnimationCounter(2);
       }, TRANSITION_TIME);
+      return () => clearTimeout(t);
     } else if (animated && animationCounter === 2) {
-      setTimeout(() => {
-        setMessageX(_3mainPoints[3][0]);
-        setMessageY(_3mainPoints[3][1]);
+      const t = setTimeout(() => {
+        setMessageX(targetX);
+        setMessageY(targetY);
         setAnimationCounter(3);
       }, TRANSITION_TIME);
+      return () => clearTimeout(t);
     } else if (animated && animationCounter === 3) {
-      setTimeout(() => {
-        //animateConnection(id, false, true);
+      const t = setTimeout(() => {
         setAnimationCounter(0);
       }, TRANSITION_TIME);
+      return () => clearTimeout(t);
     }
-  });
+  }, [animated, animationCounter]);
 
   const onEdgeClick = (evt, id) => {
     evt.stopPropagation();
@@ -119,23 +90,21 @@ export default function CustomEdge({
         className="react-flow__edge-path"
         d={edgePath}
         markerEnd={markerEnd}
-        connectionLineType={'straight'}
       />
       <foreignObject
         width={foreignObjectSize}
         height={foreignObjectSize}
-        x={parseInt(calculateLabelPosition()[0]) - foreignObjectSize / 2}
-        y={parseInt(calculateLabelPosition()[1]) - foreignObjectSize / 2}
+        x={labelX - foreignObjectSize / 2}
+        y={labelY - foreignObjectSize / 2}
         className="edgebutton-foreignobject"
         requiredExtensions="http://www.w3.org/1999/xhtml">
-        <body>
+        <div xmlns="http://www.w3.org/1999/xhtml">
           <button
             className="edgebutton"
-            too
             onClick={event => onEdgeClick(event, id)}>
             X
           </button>
-        </body>
+        </div>
       </foreignObject>
       {animated ? (
         <foreignObject
@@ -145,9 +114,9 @@ export default function CustomEdge({
           y={messageY - 35 / 2}
           className="edgebutton-foreignobject"
           requiredExtensions="http://www.w3.org/1999/xhtml">
-          <body>
+          <div xmlns="http://www.w3.org/1999/xhtml">
             <div style={{ background: '#0059ff' }} className="messageOnEdge" />
-          </body>
+          </div>
         </foreignObject>
       ) : (
         <></>

@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,13 @@
  **/
 
 import React, { useCallback, useRef, useState } from 'react';
-import ReactFlow, {
+import {
+  ReactFlow,
   Controls,
   Background,
   ReactFlowProvider,
-} from 'react-flow-renderer';
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import ProducerNode from '../../Map/Producer.node';
 import ConsumerNode from '../../Map/Consumer.node';
 import QueueNode from '../../Map/Queue.node';
@@ -49,7 +51,7 @@ function Flow() {
     edges,
     onNodesChange,
     onEdgesChange,
-    onEdgeUpdate,
+    onReconnect,
     onConnect,
   } = useStore();
 
@@ -70,7 +72,7 @@ function Flow() {
         return;
       }
 
-      const position = reactFlowInstance.project({
+      const position = reactFlowInstance.screenToFlowPosition({
         x: event.clientX - reactFlowBounds.left,
         y: event.clientY - reactFlowBounds.top,
       });
@@ -103,7 +105,7 @@ function Flow() {
         };
       } else if (type === 'queue' && getQueues().length <= 1) {
         let queues = getQueues();
-        let availableNames = availableQueueNames.copyWithin();
+        let availableNames = [...availableQueueNames];
         queues.forEach(x => {
           let name = x.data.queueName;
           availableNames = availableNames.filter(n => n !== name);
@@ -118,8 +120,7 @@ function Flow() {
             queueName: availableNames[0],
           },
           position: position,
-          sourcePosition: 'right',
-          sourcePosition: 'left',
+          targetPosition: 'left',
         };
       } else {
         return;
@@ -143,16 +144,15 @@ function Flow() {
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
-            onEdgeUpdate={onEdgeUpdate}
+            onReconnect={onReconnect}
             onDrop={onDrop}
             onDragOver={onDragOver}
             onInit={setReactFlowInstance}
             onConnect={onConnect}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
-            defaultPosition={[0, 0]}
-            className="touchdevice-flow"
-            defaultZoom={0.1}>
+            defaultViewport={{ x: 0, y: 0, zoom: 0.1 }}
+            className="touchdevice-flow">
             <Background variant="lines" />
             <Controls />
           </ReactFlow>

@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,13 @@
  **/
 
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import './index.scss';
 import App from './App';
 import { HashRouter as Router } from 'react-router-dom';
 
-ReactDOM.render(
+createRoot(document.getElementById('root')).render(
   <Router>
     <App />
-  </Router>,
-  document.getElementById('root')
+  </Router>
 );

@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  **/
 
 import React, { useEffect, useState } from 'react';
-import { Handle } from 'react-flow-renderer';
+import { Handle } from '@xyflow/react';
 import './map.css';
 
 import useStore from '../MQPatterns/PubSub/store';
@@ -106,6 +106,8 @@ const TopicNode = ({ id, data, isConnectable }) => {
       <FormLabel className="topic-label">Topic:</FormLabel>
 
       <TextInput
+        id={`topic-name-${id}`}
+        labelText="Topic name"
         className="topic-text-input"
         value={data.queueName}
         size="sm"

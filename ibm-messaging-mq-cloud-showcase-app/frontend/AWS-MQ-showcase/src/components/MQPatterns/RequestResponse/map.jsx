@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,13 @@
  **/
 
 import React, { useCallback, useRef, useState } from 'react';
-import ReactFlow, {
+import {
+  ReactFlow,
   Controls,
   Background,
   ReactFlowProvider,
-} from 'react-flow-renderer';
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import RequestorNode from '../../Map/Requestor.node';
 import ResponderNode from '../../Map/Responder.node';
 import QueueNode from '../../Map/Queue.node';
@@ -48,7 +50,7 @@ function Flow() {
     edges,
     onNodesChange,
     onEdgesChange,
-    onEdgeUpdate,
+    onReconnect,
     onConnect,
   } = useStore();
 
@@ -68,7 +70,7 @@ function Flow() {
         return;
       }
 
-      const position = reactFlowInstance.project({
+      const position = reactFlowInstance.screenToFlowPosition({
         x: event.clientX - reactFlowBounds.left,
         y: event.clientY - reactFlowBounds.top,
       });
@@ -101,7 +103,7 @@ function Flow() {
         };
       } else if (type === 'queue' && getQueues().length <= 2) {
         let queues = getQueues();
-        let availableNames = availableQueueNames.copyWithin();
+        let availableNames = [...availableQueueNames];
         queues.forEach(x => {
           let name = x.data.queueName;
           availableNames = availableNames.filter(n => n !== name);
@@ -142,7 +144,7 @@ function Flow() {
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
-            onEdgeUpdate={onEdgeUpdate}
+            onReconnect={onReconnect}
             onDrop={onDrop}
             onDragOver={onDragOver}
             onInit={setReactFlowInstance}
@@ -150,7 +152,7 @@ function Flow() {
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             className="touchdevice-flow"
-            defaultZoom={0.5}>
+            defaultViewport={{ x: 0, y: 0, zoom: 0.5 }}>
             <Background variant="lines" />
             <Controls />
           </ReactFlow>
