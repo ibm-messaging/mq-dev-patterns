@@ -110,7 +110,6 @@ const ProducerNode = ({ id, data }) => {
       <div style={{ width: 400 }} className="producer-node-container">
         <button
           className="edgebutton node"
-          too
           onClick={() => {
             deleteMe(id);
             adapter.closeProducer();
@@ -191,7 +190,6 @@ const ProducerNode = ({ id, data }) => {
       <div className="producer-node-container">
         <button
           className="edgebutton node"
-          too
           onClick={() => {
             deleteMe(id);
           }}>

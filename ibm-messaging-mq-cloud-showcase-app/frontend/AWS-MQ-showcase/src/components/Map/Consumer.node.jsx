@@ -93,7 +93,6 @@ const ConsumerNode = ({ id, data }) => {
         className={`consumer-node-container ${data.isActive && 'blob'}`}>
         <button
           className="edgebutton node"
-          too
           onClick={() => {
             deleteMe(id);
           }}>
@@ -209,7 +208,6 @@ const ConsumerNode = ({ id, data }) => {
         className={`consumer-node-container ${data.isActive && 'blob'}`}>
         <button
           className="edgebutton node"
-          too
           onClick={() => {
             deleteMe(id);
             closeConsumerConnection();
