@@ -25,7 +25,7 @@
     "@carbon/charts-react": "1.27.18",
     "@carbon/react": "1.113.0",
     "@xyflow/react": "^12",
-    "axios": "1.18.0",
+    "axios": "^1.19.0",
     "js-cookie": "^3.0.5",
     "react": "^19",
     "react-dom": "^19",
