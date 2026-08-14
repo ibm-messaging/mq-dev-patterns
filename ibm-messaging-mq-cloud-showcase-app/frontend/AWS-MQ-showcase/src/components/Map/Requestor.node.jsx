@@ -114,7 +114,6 @@ const RequestorNode = ({ id, data }) => {
     <div className="producer-node-container">
       <button
         className="edgebutton node"
-        too
         onClick={() => {
           deleteMe(id);
         }}>

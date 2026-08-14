@@ -162,7 +162,6 @@ const SubscriberNode = ({ id, data }) => {
     <div className="subscriber-node-container ">
       <button
         className="edgebutton node"
-        too
         onClick={() => {
           deleteMe();
         }}>
