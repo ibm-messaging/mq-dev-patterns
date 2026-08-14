@@ -117,7 +117,6 @@ const ResponderNode = ({ id, data }) => {
     <div style={{ width: 400 }} className="consumer-node-container">
       <button
         className="edgebutton node"
-        too
         onClick={() => {
           deleteMe(id);
         }}>

@@ -50,6 +50,7 @@ const DEFAULTOPTION = {
 const Chart2 = props => {
   const [options, setOption] = useState(DEFAULTOPTION);
 
+  if (!props.data || !props.data.length) return null;
   return <GroupedBarChart data={props.data} options={options} />;
 };
 
