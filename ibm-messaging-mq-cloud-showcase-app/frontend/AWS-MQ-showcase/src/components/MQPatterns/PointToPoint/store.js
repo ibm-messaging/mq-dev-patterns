@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
  * limitations under the License.
  **/
 
-import create from 'zustand';
+import { create } from 'zustand';
 import {
   applyNodeChanges,
   applyEdgeChanges,
-  updateEdge,
-} from 'react-flow-renderer';
+  reconnectEdge,
+} from '@xyflow/react';
 import initialNodes from './nodes';
 import initialEdges from './edges';
 import MapUtils from '../../Map/utils';
@@ -40,10 +40,10 @@ const useStore = create((set, get) => ({
       edges: applyEdgeChanges(changes, get().edges),
     });
   },
-  onEdgeUpdate: (oldEdge, connection) => {
+  onReconnect: (oldEdge, connection) => {
     utils.updateConnectionNodeToQueue(set, get, connection);
     set({
-      edges: updateEdge(oldEdge, connection, get().edges),
+      edges: reconnectEdge(oldEdge, connection, get().edges),
     });
     utils.disabledNonConnetedQueue(set, get, oldEdge, connection);
   },

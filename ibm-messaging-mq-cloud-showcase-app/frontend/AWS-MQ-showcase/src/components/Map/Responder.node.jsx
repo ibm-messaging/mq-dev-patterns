@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,18 @@
  **/
 
 import React, { useEffect, useState } from 'react';
-import { Button, Grid, Column, Toggle, Tag, TextInput } from '@carbon/react';
-import { Handle } from 'react-flow-renderer';
+import {
+  Button,
+  Grid,
+  Column,
+  Toggle,
+  Tag,
+  TextInput,
+  FormLabel,
+} from '@carbon/react';
+import { Handle } from '@xyflow/react';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/RequestResponse/store';
-import FormLabel from '@carbon/react/lib/components/FormLabel/FormLabel';
 import { Send } from '@carbon/react/icons';
 import { toast } from 'react-toastify';
 import './map.css';
@@ -110,7 +117,6 @@ const ResponderNode = ({ id, data }) => {
     <div style={{ width: 400 }} className="consumer-node-container">
       <button
         className="edgebutton node"
-        too
         onClick={() => {
           deleteMe(id);
         }}>
@@ -139,6 +145,8 @@ const ResponderNode = ({ id, data }) => {
 
       <div style={{ display: 'flex', paddingRight: '10px' }}>
         <TextInput
+          id={`responder-name-${id}`}
+          labelText="Name"
           style={{ marginRight: '30px' }}
           className="consumer-node-name-label"
           value={name}
@@ -170,6 +178,8 @@ const ResponderNode = ({ id, data }) => {
       <br />
       <br />
       <TextInput
+        id={`responder-reply-${id}`}
+        labelText="Reply message"
         className="consumer-node-name-label"
         placeholder="Write here your message"
         value={responseMessage}

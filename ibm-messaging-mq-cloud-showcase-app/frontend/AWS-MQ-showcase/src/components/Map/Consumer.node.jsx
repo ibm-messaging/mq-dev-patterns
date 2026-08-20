@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ import {
   TextInput,
   Dropdown,
 } from '@carbon/react';
-import { Handle } from 'react-flow-renderer';
+import { Handle } from '@xyflow/react';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PointToPoint/store';
-import FormLabel from '@carbon/react/lib/components/FormLabel/FormLabel';
+import { FormLabel } from '@carbon/react';
 import './map.css';
 
 const ConsumerNode = ({ id, data }) => {
@@ -93,7 +93,6 @@ const ConsumerNode = ({ id, data }) => {
         className={`consumer-node-container ${data.isActive && 'blob'}`}>
         <button
           className="edgebutton node"
-          too
           onClick={() => {
             deleteMe(id);
           }}>
@@ -115,6 +114,8 @@ const ConsumerNode = ({ id, data }) => {
             <Grid>
               <Column md={10} lg={10} sm={10}>
                 <TextInput
+                  id={`consumer-name-${id}`}
+                  labelText="Name"
                   className="consumer-node-name-label"
                   value={name}
                   size="sm"
@@ -207,7 +208,6 @@ const ConsumerNode = ({ id, data }) => {
         className={`consumer-node-container ${data.isActive && 'blob'}`}>
         <button
           className="edgebutton node"
-          too
           onClick={() => {
             deleteMe(id);
             closeConsumerConnection();
@@ -227,6 +227,8 @@ const ConsumerNode = ({ id, data }) => {
 
         <div style={{ display: 'flex', paddingRight: '10px' }}>
           <TextInput
+            id={`consumer-name-${id}`}
+            labelText="Name"
             style={{ marginRight: '30px' }}
             className="consumer-node-name-label"
             value={name}
