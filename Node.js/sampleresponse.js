@@ -52,7 +52,7 @@ async function msgCB(md, buf) {
   if (md.Format == "MQSTR") {
     let msgObject = null;
     try {
-      msgObject = JSON.parse(buf);
+      msgObject = JSON.parse(buf.toString().replace(/\0/g, '').trim());
       debug_info('JSON Message Object found', msgObject);
       if (ok) {
         debug_info('Starting response sequence');
@@ -230,3 +230,5 @@ mqBoilerPlate.initialise('GET', true)
         process.exit(1);
       })
   })
+
+module.exports = { performCalc, MSG_TRESHOLD };
