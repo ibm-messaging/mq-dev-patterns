@@ -67,12 +67,12 @@ class MQBoilerPlate {
     this.applName = this.determineApplName();
     this.isDurable = this.determineDurability();
     bpInstance = this;
-    debug_info('MQi Boilerplate constructed');
+    debug_info('MQI Boilerplate constructed');
   }
 
   determineApplName() {
     let name = process.env["ApplName"];
-    if (name && name.trim().length !== 0) { 
+    if (name && name.trim().length !== 0) {
       return name;
     }
     return "Sample node app";
@@ -81,7 +81,7 @@ class MQBoilerPlate {
   determineDurability() {
     let durable = process.env["DURABLE"];
     // Just check if the envrionment value is set
-    if (durable) { 
+    if (durable) {
       return true;
     }
     return false;
@@ -126,12 +126,13 @@ class MQBoilerPlate {
 
   teardown() {
     debug_info('Closing MQ');
-    MQBoilerPlate.closeSubscription(this.hObjSubscription);
+    // MQBoilerPlate.closeSubscription(this.hObjSubscription);
     let me = this;
     return new Promise(function resolver(resolve, reject) {
       MQBoilerPlate.closeMQConnection(me.mqObj)
         .then(() => {
           me.mqObj = null;
+          debug_info("About to MQDISC for %j", me.mqConn)
           return MQBoilerPlate.disconnectFromMQ(me.mqConn);
         })
         .then(() => {
@@ -163,12 +164,18 @@ class MQBoilerPlate {
         this.credentials[f] = process.env[pField] || env.MQ_ENDPOINTS[i][pField];
       });
     }
-    
+
     // Load the JWT Endpoint details from the env.json file, if enabled
     // The json file allows for multiple endpoints, for seperate token issuers
     if (env.JWT_ISSUER) {
       ['JWT_TOKEN_ENDPOINT', 'JWT_TOKEN_USERNAME', 'JWT_TOKEN_PWD', 'JWT_TOKEN_CLIENTID', 'JWT_KEY_REPOSITORY'].forEach((f) => {
-        this.MQDetails[f] = process.env[f] || env.JWT_ISSUER[i][f];
+        let s = null;
+        try {
+          s = process.env[f] || env.JWT_ISSUER[i][f];
+        } catch (TypeError) {
+
+        }
+        this.MQDetails[f] = s;
       });
     } else {
       debug_info('jwt credentials not found');
@@ -322,7 +329,7 @@ class MQBoilerPlate {
           gmo.MatchOptions = MQC.MQMO_NONE;
       }
 
-      gmo.WaitInterval = waitInterval * 1000; 
+      gmo.WaitInterval = waitInterval * 1000;
 
       if (msgId != null) {
         debug_info("Setting Match Option for MsgId");
@@ -461,12 +468,12 @@ class MQBoilerPlate {
       debug_info('JWT credentials not found, will not be using JWT to authenticate');
       return false;
 
-    } else if (MQDetails.JWT_TOKEN_ENDPOINT === null || MQDetails.JWT_TOKEN_USERNAME === null || 
+    } else if (MQDetails.JWT_TOKEN_ENDPOINT === null || MQDetails.JWT_TOKEN_USERNAME === null ||
         MQDetails.JWT_TOKEN_PWD === null || MQDetails.JWT_TOKEN_CLIENTID === null) {
 
       debug_info('One or more JWT credentials missing, will not be using JWT to authenticate');
       return false;
-    } 
+    }
 
     debug_info('JWT credentials found, will be using JWT to authenticate');
     return true;
@@ -478,7 +485,7 @@ class MQBoilerPlate {
     let accessToken;
 
     debug_info('Obtaining token from:', me.MQDetails.JWT_TOKEN_ENDPOINT);
-    
+
     let formData = querystring.stringify({
       username: me.MQDetails.JWT_TOKEN_USERNAME,
       password: me.MQDetails.JWT_TOKEN_PWD,
@@ -491,7 +498,7 @@ class MQBoilerPlate {
     // and the JWT obtained has a valid 'iss' claim
     let match = me.MQDetails.JWT_TOKEN_ENDPOINT.match(/^https?:\/\/([^/]+)/i);
     let hostAndPort = match ? match[1] : null;
-    
+
     // Creating server request
     let options = {
       method: 'POST',
@@ -510,12 +517,12 @@ class MQBoilerPlate {
     if (me.MQDetails.JWT_KEY_REPOSITORY) {
       options.httpsAgent = new https.Agent({ ca: fs.readFileSync(me.MQDetails.JWT_KEY_REPOSITORY)});
     }
-      
+
     // Sending request to token server
     // Wait until response received
     let response = await axios(options);
 
-    // Extracting access token out of JSON response 
+    // Extracting access token out of JSON response
     accessToken = response.data.access_token;
     debug_info('Using token:', accessToken);
 
@@ -535,14 +542,14 @@ class MQBoilerPlate {
     // For no authentication, disable this block
     // If JWT enabled, a JWT will be used to authenticate to MQ,
     // otherwise will default to username and password authenftication
-    if (this.jwtCheck(this.MQDetails)) {  
+    if (this.jwtCheck(this.MQDetails)) {
 
       // Asynchronous handling, to ensure code blocks on the server request
       // Waits for a response, if request fails, the error is caught
       try {
         let accessToken = await this.obtainToken();
         let csp = new mq.MQCSP();
-        csp.Token = accessToken; 
+        csp.Token = accessToken;
         mqcno.SecurityParms = csp;
 
       } catch (error) {
@@ -667,7 +674,6 @@ class MQBoilerPlate {
     });
   }
 
-
   openMQConnection(hConn, type) {
     let me = this;
     return new Promise(function resolver(resolve, reject) {
@@ -714,8 +720,8 @@ class MQBoilerPlate {
 
       // We initialise the openCall variable with the default Open call of MQ when the type is not part of the
       // Request-Response scenario. When the type is "DYNREP", we refer to the response application, which is trying to open
-      // the dynamic reply to queue. Since the default Open call is an asynchronous call, and the responder application has a 
-      // background async get call, adding another async on top of the async callback, causes the MQRC 2500. 
+      // the dynamic reply to queue. Since the default Open call is an asynchronous call, and the responder application has a
+      // background async get call, adding another async on top of the async callback, causes the MQRC 2500.
       // To avoid this, we switch to the synchronous version of Open when in a Request-Response scenario.
       let openCall = mq.Open;
       if ('DYNREP' === type) {
@@ -749,9 +755,9 @@ class MQBoilerPlate {
         MQC.MQSO_MANAGED;
 
       if (me.isDurable) {
-        debug_info('Durable subscription being created'); 
-        sd.SubName = me.applName; 
-        sd.Options |= MQC.MQSO_DURABLE | MQC.MQSO_RESUME;     
+        debug_info('Durable subscription being created');
+        sd.SubName = me.applName;
+        sd.Options |= MQC.MQSO_DURABLE | MQC.MQSO_RESUME;
       } else {
         debug_info('Non durable subscription being created');
         sd.Options |= MQC.MQSO_NON_DURABLE
@@ -775,7 +781,6 @@ class MQBoilerPlate {
     });
   }
 
-
   static closeSubscription(hObjSubscription) {
     return new Promise(function resolver(resolve, reject) {
       if (!hObjSubscription) {
@@ -798,9 +803,10 @@ class MQBoilerPlate {
   static closeMQConnection(hObj) {
     return new Promise(function resolver(resolve, reject) {
       if (!hObj) {
+        debug_warn("Trying to MQCLOSE when hObj is null");
         resolve();
       } else {
-        mq.Close(hObj, 0, function (err) {
+        mq.CloseSync(hObj, 0, function (err) {
           if (err) {
             MQBoilerPlate.reportError(err);
             reject(err);
@@ -816,9 +822,10 @@ class MQBoilerPlate {
   static disconnectFromMQ(hConn) {
     return new Promise(function resolver(resolve, reject) {
       if (!hConn) {
+        debug_warn('Trying to disconnect when hConn is null');
         resolve();
       } else {
-        mq.Disc(hConn, function (err) {
+        mq.DiscSync(hConn, function (err) {
           if (err) {
             debug_warn('Error Detected in Disconnect operation', err);
             reject(err);
