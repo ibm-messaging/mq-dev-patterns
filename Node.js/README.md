@@ -31,28 +31,13 @@ prerequsites by running :
 
 `npm install`
 
-## Intro to Node.js Samples
+## Node.js Samples
 
-### Stand alone Node.js samples
+The samples make use of promises and a shared boilerplate library to reduce duplication.
 
-**basicput.js** - Puts message to a queue
+**sampleput.js** - Puts a message to a queue
 
-**basicget.js** - Gets message from a queue
-
-**basicsubscribe.js** - Subscribes to a topic string and gets publications/messages
-
-**basicpublish.js** - Publishes messages to a topic string
-
-**basicrequest.js** - Puts a message on a request queue and waits for a response
-
-**basicresponse.js** - Gets message from a request queue, does something with the message and puts it to the reply queue.
-
-
-### Refactored samples to reduce duplication
-
-**sampleput.js** - Puts message to a queue
-
-**sampleget.js** - Gets message from a queue
+**sampleget.js** - Gets messages from a queue
 
 **samplesubscribe.js** - Subscribes to a topic string and gets publications/messages
 
@@ -60,9 +45,9 @@ prerequsites by running :
 
 **samplerequest.js** - Puts a message on a request queue and waits for a response
 
-**sampleresponse.js**- Gets message from a request queue, does something with the message and puts it to the reply queue.
+**sampleresponse.js** - Gets messages from a request queue, processes them, and puts replies to the reply queue
 
-***boilerplate.js*** - Common class, manages the connection to queue manager, contains generic consumer and producer code.
+***boilerplate.js*** - Common class that manages the connection to the queue manager and contains generic consumer and producer code
 
 The location and name of the env.json file defaults
 to `../env.json`. This can be overriden by setting the environment option `EnvFile`. Before running the samples, export the path to the JSON file as shown below:
@@ -72,7 +57,7 @@ export EnvFile="../../envfile.json"
 ````
 
 
-### Running refactored samples with JWT authentication
+### Running samples with JWT authentication
 
 To enable token-based authentication, ensure you have a configured token issuer and queue manager [JWT README](jwt-jwks-docs/README.md) and then edit the `JWT_ISSUER` block in the env.json file
 
@@ -91,149 +76,79 @@ If you would like to proceed with JWT authentication without JWKS validation, ed
 
 ## Put / Get
 The put application places a json object onto the queue.
-To run the basic application with logging, run
+
+To run with logging:
 
 On Mac and Linux:
 
-`DEBUG=amqs*:* node basicput.js`
-
-On Windows:
-````
-SET DEBUG=amqs*:*
-node basicput.js
-````
-
-The get application reads a json object from the queue.
-
-To run the basic application with logging, run
-
-On Mac and Linux:
-
-`DEBUG=amqs*:* node basicget.js`
-
-On Windows:
-````
-SET DEBUG=amqs*:*
-node basicget.js
-````
-
-The sample get and put applications have the common MQ boiler plate
-factorised into a library and make use of
-promises.
-
-To run with logging, run
-
-On Mac and Linux: <br>
-`DEBUG=sample*:*,boiler:* node sampleput.js` <br>
-and <br>
-`DEBUG=sample*:*,boiler:* node sampleget.js`
+`DEBUG=sample*:*,boiler:* node sampleput.js`
 
 On Windows:
 ````
 SET DEBUG=sample*:*,boiler:*
 node sampleput.js
 ````
-and
+
+The get application reads json objects from the queue.
+
+To run with logging:
+
+On Mac and Linux:
+
+`DEBUG=sample*:*,boiler:* node sampleget.js`
+
+On Windows:
 ````
 SET DEBUG=sample*:*,boiler:*
 node sampleget.js
 ````
 
-To set the application name, which is useful for problem determination, `SET` the envrionment variable `ApplName`. eg.
-On Mac and Linux: <br>
-`DEBUG=sample*:*,boiler:* ApplName="sample put app" node sampleput.js` <br>
-and <br>
+To set the application name, which is useful for problem determination, `SET` the environment variable `ApplName`. eg.
+
+On Mac and Linux:
+`DEBUG=sample*:*,boiler:* ApplName="sample put app" node sampleput.js`
+and
 `DEBUG=sample*:*,boiler:* ApplName="sample get app" node sampleget.js`
 
 
 ## Publish / Subscribe
 The publish application publishes a json object onto a topic.
-To run the basic applications with logging, run
 
-On Mac and Linux: <br>
-`DEBUG=amqs*:* node basicpublish.js`
+To run with logging:
 
-On Windows:
-````
-SET DEBUG=amqs*:*
-node basicpublish.js
-````
-
-The subscribe application subscribes to a
-topic.
-
-To run with logging, run
-
-On Mac and Linux: <br>
-`DEBUG=amqs*:* node basicsubscribe.js`
-
-On Windows:
-````
-SET DEBUG=amqs*:*
-node basicsubcscribe.js
-````
-
-The sample publish and subscribe applications have the common MQ boiler plate
-factorised into a library and makes use of
-promises.
-
-To run with logging, run
-
-On Mac and Linux <br>
+On Mac and Linux:
 `DEBUG=sample*:*,boiler:* node samplepublish.js`
-
-and
-
-`DEBUG=sample*:*,boiler:* node samplesubscribe.js`
-
-It is possible to set the application name, by setting the environment value `ApplName`.
-
-To create a durable subscription set the envrionment variable `DURABLE` to any value. eg.
-
-`DEBUG=sample*:*,boiler:* DURABLE=1 ApplName="sample durable subscriber" node samplesubscribe.js`
 
 On Windows:
 ````
 SET DEBUG=sample*:*,boiler:*
 node samplepublish.js
 ````
-and
+
+The subscribe application subscribes to a topic.
+
+To run with logging:
+
+On Mac and Linux:
+`DEBUG=sample*:*,boiler:* node samplesubscribe.js`
+
+On Windows:
 ````
 SET DEBUG=sample*:*,boiler:*
 node samplesubscribe.js
 ````
 
+It is possible to set the application name by setting the environment value `ApplName`.
+
+To create a durable subscription set the environment variable `DURABLE` to any value. eg.
+
+`DEBUG=sample*:*,boiler:* DURABLE=1 ApplName="sample durable subscriber" node samplesubscribe.js`
+
 
 ## Request / Response
-The request application create a dynamic queue for a reply, and
-places a json object consisting of the request onto a queue, then waits
-for a response to the request.
+The request application creates a dynamic queue for a reply, places a json object onto a request queue, then waits for a response.
 
-To run the basic applications with logging, run
-
-On Mac and Linux:
-
-`DEBUG=amqs*:* node basicrequest.js`
-
-and
-
-`DEBUG=amqs*:* node basicresponse.js`
-
-On Windows:
-````
-SET DEBUG=amqs*:*
-node basicrequest.js
-````
-and
-````
-SET DEBUG=amqs*:*
-node basicresponse.js
-````
-The request / response applications have the common MQ boiler plate
-factorised into a library and makes use of
-promises.
-
-To run the sample applications with logging, run
+To run with logging, start the responder first, then the requester:
 
 On Mac and Linux:
 
@@ -256,4 +171,63 @@ SET DEBUG=sample*:*,boiler:*
 node samplerequest.js
 ````
 
-It is possible to set the application name, by setting the environment value `ApplName`.
+It is possible to set the application name by setting the environment value `ApplName`.
+
+## Tests
+
+Tests use [Mocha](https://mochajs.org/) and [Chai](https://www.chaijs.com/). Run them with:
+
+```
+npm test
+```
+
+**21 test cases across 17 suites** in 6 files. All tests connect to a live IBM MQ broker configured via `env.json`.
+
+### Test file breakdown
+
+#### `sampleput.test.js` — 5 suites · 5 tests
+
+| Suite | Tests | Description |
+|---|---|---|
+| `MQBoilerPlate.toHexString` | 1 | Converts a `Uint8Array` to the correct lowercase hex string |
+| `MQBoilerPlate#getConnection` | 1 | Returns `host(port)` pairs for every endpoint in `env.json` |
+| `MQBoilerPlate.ccdtCheck` | 1 | Returns `true` only when `MQCCDTURL` env var is set and file exists |
+| `MQBoilerPlate putMessage integration` | 1 | MQPUT increases queue depth by 1; asserted via `Inq` |
+| `Multi-endpoint connection string` | 1 | All endpoints appear in the connection string |
+
+#### `sampleget.test.js` — 4 suites · 4 tests
+
+| Suite | Tests | Description |
+|---|---|---|
+| `MQBoilerPlate.ccdtCheck (get context)` | 1 | CCDT flag mirrors `MQCCDTURL` env var presence |
+| `MQBoilerPlate buildMQDetails (via initialise)` | 1 | All `MQDetails` fields populated from `env.json` after `initialise('GET')` |
+| `MQBoilerPlate GET lifecycle` | 1 | Connect → open queue → teardown resolves cleanly |
+| `MQBoilerPlate getMessage (async callback)` | 1 | Put then get: async callback receives the message |
+
+#### `samplepublish.test.js` — 2 suites · 2 tests
+
+| Suite | Tests | Description |
+|---|---|---|
+| `MQBoilerPlate PUBLISH — no subscribers` | 1 | Publish tolerates `MQRC_NO_SUBS_MATCHED` without rejecting |
+| `MQBoilerPlate PUBLISH + SUBSCRIBE — message delivery` | 1 | Subscriber receives message from publisher end-to-end |
+
+#### `samplesubscribe.test.js` — 2 suites · 2 tests
+
+| Suite | Tests | Description |
+|---|---|---|
+| `MQBoilerPlate SUBSCRIBE — non-durable receives published message` | 1 | Non-durable subscription delivers a published message |
+| `MQBoilerPlate SUBSCRIBE — DURABLE environment variable` | 1 | `DURABLE=1` sets `isDurable=true` and subscription opens successfully |
+
+#### `samplerequest.test.js` — 1 suite · 1 test
+
+| Suite | Tests | Description |
+|---|---|---|
+| `samplerequest — end-to-end request / response round-trip` | 1 | Spawns `sampleresponse.js` as live responder; requester receives correlated reply with `result` field |
+
+#### `sampleresponse.test.js` — 3 suites · 7 tests
+
+| Suite | Tests | Description |
+|---|---|---|
+| `performCalc — unit tests` | 5 | Inputs 12, 7, 1, 60; `MSG_TRESHOLD` value |
+| `sampleresponse — end-to-end request → reply (commit path)` | 1 | Spawns live responder; verifies reply received and dynamic queue depth returns to baseline |
+| `sampleresponse — null-byte trimming regression` | 1 | Short payload (null-padded 1024-byte buffer) is parsed cleanly and a reply is returned |
