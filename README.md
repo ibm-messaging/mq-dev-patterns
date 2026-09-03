@@ -289,5 +289,5 @@ are set and exported (see language README docs for more info).
 
 ### MQ container deployment examples
 #### [compose](/container/queuemanager/compose/README.md)
-#### [compose](/container/queuemanager/terraform-aws/README.md)
+#### [terraform-aws](/container/queuemanager/terraform-aws/README.md)
 
