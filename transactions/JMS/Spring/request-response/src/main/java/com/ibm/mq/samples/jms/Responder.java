@@ -27,8 +27,8 @@ import jakarta.jms.TextMessage;
 
 /*
  * This is a very simple listener that may continue trying to run even when there are Exceptions.
- * More sophisticated techniques do exist in Spring to control error handling and retry processing,
- * but they would obscure the processing here.
+ * An error handler bean has been wired into the construction, so we do get to see that an exception
+ * has been thrown.
  */
 
 @Component
@@ -56,17 +56,19 @@ public class Responder implements SessionAwareMessageListener {
     final String msgID = msg.getJMSMessageID();
 
     MessageProducer replyDest = session.createProducer(msg.getJMSReplyTo());
-    TextMessage replyMsg = session.createTextMessage("Replying to " + text);
+    TextMessage replyMsg = session.createTextMessage("Replying to: " + text);
     replyMsg.setJMSCorrelationID(msgID);
     replyDest.send(replyMsg);
 
     // We deliberately fail the first attempt at sending a reply. The message is
-    // put back on its original queue and then redelivered. At that point, we
+    // put back on its original queue and then redelivered. At that point, we also
     // try to commit the reply.
+    // To indicate the failure, we can either do an explicit rollback, or throw an exception
+    // so Spring will do the rollback.
     if (!msg.getJMSRedelivered()) {
       System.out.println("Doing a rollback");
-      session.rollback();
-      /*throw new JMSException("Instead of rollback"); - might prefer this to see what happens*/
+      //session.rollback();
+      throw new JMSException("Forcing an implicit rollback");
     }
     else {
       System.out.println("Doing a commit");

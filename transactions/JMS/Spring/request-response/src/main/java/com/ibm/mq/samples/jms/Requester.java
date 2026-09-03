@@ -31,10 +31,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jms.annotation.EnableJms;
+import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.connection.JmsTransactionManager;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.util.ErrorHandler;
 
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSException;
@@ -57,7 +59,7 @@ public class Requester {
 
   // Construct a Transaction Manager that will control local transactions.
   @Bean
-  public JmsTransactionManager transactionManager(ConnectionFactory connectionFactory) {
+  JmsTransactionManager transactionManager(ConnectionFactory connectionFactory) {
     JmsTransactionManager transactionManager = new JmsTransactionManager(connectionFactory);
     return transactionManager;
   }
@@ -88,12 +90,15 @@ public class Requester {
       });
 
       if (replyMsg != null) {
+        System.out.println();
+        System.out.println("========================================");
         if (replyMsg instanceof TextMessage) {
           System.out.println("Reply message is: " + ((TextMessage) replyMsg).getText());
         }
         else {
           System.out.println("Reply message is: " + replyMsg.toString());
         }
+        System.out.println("========================================");
       }
       else {
         System.out.println("No reply received");
@@ -106,6 +111,30 @@ public class Requester {
 
     System.out.println("Done.");
     exit(rc);
+  }
+
+  // Create a Listener container factory that will bring in an error handler that prints the error message.
+  @Bean
+  DefaultJmsListenerContainerFactory jmsListenerContainerFactory(
+      ConnectionFactory connectionFactory, JmsTransactionManager transactionManager) {
+    DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
+    factory.setConnectionFactory(connectionFactory);
+    factory.setTransactionManager(transactionManager);
+    factory.setSessionTransacted(true);
+    factory.setErrorHandler(new ErrorHandler() {
+      @Override
+      public void handleError(Throwable t) {
+        System.err.println("ErrorHandler for Message listener invoked: " + t.getMessage());
+        if (t instanceof JMSException) {
+          JMSException jmse = (JMSException)t;
+          System.err.println(jmse.getMessage());
+          if (jmse.getLinkedException() != null) {
+            System.err.println(jmse.getLinkedException().getMessage());
+          }
+        }
+      }
+    });
+    return factory;
   }
 
   static void exit(int rc) {
