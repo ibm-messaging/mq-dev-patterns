@@ -1,0 +1,70 @@
+#
+# * Copyright 2024 IBM Corp.
+# *
+# * Licensed under the Apache License, Version 2.0 (the 'License');
+# * you may not use this file except in compliance with the License.
+# * You may obtain a copy of the License at
+# *
+# * http://www.apache.org/licenses/LICENSE-2.0
+# *
+# * Unless required by applicable law or agreed to in writing, software
+# * distributed under the License is distributed on an "AS IS" BASIS,
+# * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# * See the License for the specific language governing permissions and
+# * limitations under the License.
+
+# AWS Copilot manifest for IBM MQ on AWS ECS Fargate with EFS persistent storage.
+#
+# Before deploying, replace the two placeholder values below:
+#   YOUR_EFS_ID       - the EFS file system ID (e.g. fs-xxxxxxxxxxxxxxxxx)
+#   YOUR_EFS_AP       - the EFS Access Point ID (e.g. fsap-xxxxxxxxxxxxxxxxx)
+#
+# Deploy with:
+#   copilot svc deploy --name mq --env dev
+
+name: mq
+type: Load Balanced Web Service
+
+# Use an NLB (Network Load Balancer) instead of an ALB.
+# NLB does pure TCP forwarding and does not perform HTTP health checks.
+# This is required because MQ's web console on port 9443 uses HTTPS only —
+# an ALB HTTP health check would fail against it.
+http: false
+
+nlb:
+  port: 9443/tcp
+  additional_listeners:
+    - port: 1414/tcp
+  healthcheck:
+    port: 1414
+    protocol: TCP
+    healthy_threshold: 2
+    unhealthy_threshold: 5
+    interval: 30s
+    timeout: 10s
+
+image:
+  location: icr.io/ibm-messaging/mq:latest
+  port: 9443
+
+cpu: 1024
+memory: 4096
+count: 1
+exec: true
+
+variables:
+  LICENSE: accept
+  MQ_QMGR_NAME: QM1
+  MQ_APP_PASSWORD: passw0rd
+  MQ_ADMIN_PASSWORD: passw0rd
+
+storage:
+  volumes:
+    qm1data:
+      path: /mnt/mqm
+      read_only: false
+      efs:
+        id: YOUR_EFS_ID
+        auth:
+          iam: true
+          access_point_id: YOUR_EFS_AP
