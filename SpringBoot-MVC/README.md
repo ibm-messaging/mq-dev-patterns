@@ -4,7 +4,8 @@ This application presents a basic web application that interacts with MQ to send
 Boot components, including the MQ and Tomcat Boot Starters.
 
 The configuration is in _src/main/resources/application.properties_. There are options for connecting as a client to a
-queue manager, and to set which port the Tomcat server listens on.
+queue manager, and to set which port the Tomcat server listens on. The port can also be overridden by setting the
+`SERVER_PORT` environment variable.
 
 You may need to adjust values in that file for your environment.
 

@@ -15,7 +15,9 @@
  **/
 
 
-document.addEventListener('DOMContentLoaded', async function() {            
+const BASE_URL = window.location.origin;
+
+document.addEventListener('DOMContentLoaded', async function() {
     let res = await performGetQMAddress();
     let address = res.data;
     if(res.status >=200 && res.status<300) {
@@ -34,7 +36,7 @@ const openMQConsole = () => {
 const performGetQMAddress = async () => {
   try {
     
-    const response = await fetch(`http://localhost:8088/address`);
+    const response = await fetch(`${BASE_URL}/address`);
 
     if (!response.ok) {
       return { status: false, data: "Some errors occured" };
@@ -50,7 +52,7 @@ const performGetQMAddress = async () => {
 const performSend = async (msg) => {
   try {
     const response = await fetch(
-      `http://localhost:8088/send?msg=${encodeURIComponent(msg)}`
+      `${BASE_URL}/send?msg=${encodeURIComponent(msg)}`
     );
 
     if (!response.ok) {
@@ -66,7 +68,7 @@ const performSend = async (msg) => {
 
 const performGet = async () => {
   try {
-    const response = await fetch(`http://localhost:8088/recv`);
+    const response = await fetch(`${BASE_URL}/recv`);
 
     if (!response.ok) {
       return { status: false, data: "Some errors occured" };
