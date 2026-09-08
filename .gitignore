@@ -10,13 +10,14 @@
 !**/Go/src/*.go
 **/node_modules/*
 .idea
-amqp-vertx/target/*
+**/target/*
 .terraform.*
 .terraform/
 terraform.tfstate.*
 terraform.tfstate
 
 mqjms.log.*
+FFDC/
 
 # Associated with the Python code
 venv*
