@@ -10,7 +10,7 @@
 !**/Go/src/*.go
 **/node_modules/*
 .idea
-amqp-vertx/target/*
+**/target/*
 .terraform.*
 .terraform/
 terraform.tfstate.*
