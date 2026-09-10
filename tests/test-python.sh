@@ -43,6 +43,9 @@ pip install ibmmq
 cd ../Python
 
 (
+
+pip show ibmmq 2>&1 | head -2 # Display the active version
+
 python basicput.py
 checkRc $? "PUT"
 python basicget.py
