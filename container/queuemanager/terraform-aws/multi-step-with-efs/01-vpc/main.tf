@@ -17,6 +17,7 @@
 # Create a new VPC making use of the terraform aws vpc module
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
+  version = "~> 5.0"
 
   name = "mq-ecs-vpc-${var.name_suffix}"
   cidr = var.vpc_cidr_block

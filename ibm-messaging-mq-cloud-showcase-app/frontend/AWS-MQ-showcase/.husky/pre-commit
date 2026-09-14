@@ -1,0 +1,2 @@
+cd ibm-messaging-mq-cloud-showcase-app/frontend/AWS-MQ-showcase
+npx --no-install lint-staged

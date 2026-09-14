@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -16,40 +16,45 @@
 
 package com.example.demo.services;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.JmsException;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class MessageService {
 
-	private final JmsTemplate jmsTemplate;
-	
-	@Value("${ibm.mq.queue}")
-	private String queue;
+  private final JmsTemplate jmsTemplate;
 
-	public MessageService(JmsTemplate jmsTemplate) {
-		this.jmsTemplate = jmsTemplate;
-	}
+  @Value("${demo.mq.queue}")
+  private String queue;
 
-	public String send(String message) {				
-		try {						
-			jmsTemplate.convertAndSend(queue, message);						
-			return "{ \"message\" : \"Message Sent: "  + message +"\" }";
-		} catch (JmsException ex) {
-			ex.printStackTrace();
-			return "{ \"message\" : \"Some errors occured on sending the message: "+ message+ "\" }";			
-		}
-	}
+  public MessageService(JmsTemplate jmsTemplate) {
+    this.jmsTemplate = jmsTemplate;
+  }
 
-	public String recv() {
-		try {
-			String msg = jmsTemplate.receiveAndConvert(queue).toString();
-			return "{ \"message\" : \"Message Received: "  + msg + "\" }";
-		} catch (JmsException ex) {
-			ex.printStackTrace();
-			return "{ \"message\" : \"Error on receiving the message\" }";
-		}
-	}
+  public String send(String message) {
+    try {
+      jmsTemplate.convertAndSend(queue, message);
+      return "{ \"message\" : \"Message Sent: "  + message +"\" }";
+    } catch (JmsException ex) {
+      ex.printStackTrace();
+      return "{ \"message\" : \"Some errors occured on sending the message: "+ message+ "\" }";
+    }
+  }
+
+  public String recv() {
+    try {
+      Object msg = jmsTemplate.receiveAndConvert(queue);
+      if (msg == null) {
+        msg = "<< No message received in time>>";
+      } else {
+        msg = msg.toString();
+      }
+      return "{ \"message\" : \"Message Received: "  + msg + "\" }";
+    } catch (JmsException ex) {
+      ex.printStackTrace();
+      return "{ \"message\" : \"Error on receiving the message\" }";
+    }
+  }
 }

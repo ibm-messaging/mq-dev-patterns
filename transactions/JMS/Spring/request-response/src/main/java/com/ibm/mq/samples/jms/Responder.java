@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017, 2020 IBM Corp. All rights reserved.
+ * Copyright © 2017, 2026 IBM Corp. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of the License at
@@ -14,23 +14,30 @@
 
 package com.ibm.mq.samples.jms;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.listener.SessionAwareMessageListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
+
+/*
+ * This is a very simple listener that may continue trying to run even when there are Exceptions.
+ * An error handler bean has been wired into the construction, so we do get to see that an exception
+ * has been thrown.
+ */
+
 @Component
 public class Responder implements SessionAwareMessageListener {
 
+  @Override
   @JmsListener(destination = Requester.qName)
   @Transactional(rollbackFor = Exception.class)
-  public void onMessage(Message msg, Session session) throws JMSException {
+  public void onMessage(Message msg, Session session) throws JMSException  {
     String text;
 
     if (msg instanceof TextMessage) {
@@ -42,7 +49,6 @@ public class Responder implements SessionAwareMessageListener {
 
     System.out.println();
     System.out.println("========================================");
-
     System.out.println("Responder received message: " + text);
     System.out.println("           Redelivery flag: " + msg.getJMSRedelivered());
     System.out.println("========================================");
@@ -50,23 +56,23 @@ public class Responder implements SessionAwareMessageListener {
     final String msgID = msg.getJMSMessageID();
 
     MessageProducer replyDest = session.createProducer(msg.getJMSReplyTo());
-    TextMessage replyMsg = session.createTextMessage("Replying to " + text);
+    TextMessage replyMsg = session.createTextMessage("Replying to: " + text);
     replyMsg.setJMSCorrelationID(msgID);
     replyDest.send(replyMsg);
 
     // We deliberately fail the first attempt at sending a reply. The message is
-    // put back on its original queue and then redelivered. At that point, we
+    // put back on its original queue and then redelivered. At that point, we also
     // try to commit the reply.
+    // To indicate the failure, we can either do an explicit rollback, or throw an exception
+    // so Spring will do the rollback.
     if (!msg.getJMSRedelivered()) {
       System.out.println("Doing a rollback");
-      session.rollback();
-      /*throw new JMSException("Instead of rollback"); - might prefer this to see what happens*/
+      //session.rollback();
+      throw new JMSException("Forcing an implicit rollback");
     }
     else {
       System.out.println("Doing a commit");
       session.commit();
     }
-
   }
-
 }

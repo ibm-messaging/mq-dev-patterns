@@ -26,7 +26,6 @@ Simple put transaction sample
 ![Point-to-point with a transaction](/transactions/JMS/SE/images/ibm_mq_transaction_MSG_rollback_2.png)
 
 
-
 ## Steps
 
 Open a terminal window.
@@ -35,7 +34,7 @@ Have the terminal window side-by-side with a browser window open at your MQ Cons
 
 Move to your local cloned `mq-dev-patterns/transactions/JMS/SE` directory.
 
-Check you have the `javax.jms-api-2.0.1` and the `com.ibm.mq.allclient` jars.
+Check you have the `jakarta.jms-api` and the `com.ibm.mq.jakarta.client` jars.
 
 Run the list command
 
@@ -46,20 +45,20 @@ ls
 You should see the jars in amongst the other files:
 
 ```
-javax.jms-api-2.0.1.jar
-com.ibm.mq.allclient.9.2.0.0.jar
+jakarta.jms-api.jar
+com.ibm.mq.jakarta.client.jar
 ```
 
-Compile the simple put transaction sample:
+Compile the message transaction sample:
 
 ```
-javac -cp ./com.ibm.mq.allclient-9.2.0.0.jar:./javax.jms-api-2.0.1.jar com/ibm/mq/samples/jms/simpleJmsTransaction.java
+javac -cp ./com.ibm.mq.jakarta.client.jar:./jakarta.jms-api.jar  com/ibm/mq/samples/jms/SimpleJmsTransaction.java
 ```
 
 Run the compiled program:
 
 ```
-java -cp ./com.ibm.mq.allclient-9.2.0.0.jar:./javax.jms-api-2.0.1.jar:. com.ibm.mq.samples.jms.simpleJmsTransaction
+java -cp ./com.ibm.mq.jakarta.client.jar:./jakarta.jms-api.jar:. com.ibm.mq.samples.jms.SimpleJmsTransaction
 ```
 
 Refresh the queues.
@@ -77,10 +76,10 @@ If the random number was even, rollback is called and the message is rolled back
 
 Go ahead and try
 
-- [Transaction in a request response scenario](simpleJMSTransReqRespReadme.md)
+- [Transaction in a request response scenario](SimpleJMSTransReqRespReadme.md)
 
 or
 
-- [Transaction when sending several messages together](simpleJMSTransMultiReadme.md)
+- [Transaction when sending several messages together](SimpleJMSTransMultiReadme.md)
 
 You can also go back to the starting [README](README.md) to read more and check out links to other useful topics on transactions.

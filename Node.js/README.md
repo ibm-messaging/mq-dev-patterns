@@ -1,80 +1,57 @@
 # IBM MQ Node.js samples
-The Node.js samples are based on https://github.com/ibm-messaging/mq-mqi-nodejs/tree/master/samples
-and have been built and tested with Node.js v18.20.8 and v22.14.0
+The Node.js samples are based on a selection from
+[here](https://github.com/ibm-messaging/mq-mqi-nodejs/tree/master/samples). Additional examples can be found in that
+repository.
 
+You must first install the IBM MQ C client SDK. You may also need a C++ compiler to build the add-on library that
+interfaces between the Node engine and the MQ C libraries.
 
-Install/unzip IBM MQ client
+## MQ Client installation
+### Windows and Linux
 
-## Mac
+The latest MQ Redistributable client packages can be downloaded from
+[here](https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist).
+* The Windows package is named `version`-IBM-MQC-Redist-Win64.zip
+  * For simplicity, this file should be unpacked into _C:\Program Files\IBM\MQ_. The main MQI header file should then be
+    at _C:\Program Files\IBM\MQ\Tools\C\Include\cmqc.h_
+* The Linux package is named `version`-IBM-MQC-Redist-LinuxX64.tar.gz
+  * For simplicity, this file should be unpacked into _/opt/mqm_. The main MQI header file should then be at
+    _/opt/mqm/inc/cmqc.h_
 
-[IBM MQ MacOS toolkit for developers download](https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/mactoolkit/)
+### MacOS
 
-Add
-`/opt/mqm/bin` and
-`/opt/mqm/samp/bin`, to the PATH by editing `/etc/paths`
+See [MacOS Toolkit](https://ibm.biz/mq-mac-toolkit)
 
-`export DYLD_LIBRARY_PATH=/opt/mqm/lib64`
+* Add `/opt/mqm/bin` and `/opt/mqm/samp/bin` to the PATH by editing `/etc/paths`
+* Also `export DYLD_LIBRARY_PATH=/opt/mqm/lib64`
 
-`export MQ_INSTALLATION_PATH=/opt/mqm`
+### Other platforms
+The full MQ client packages can be downloaded from [FixCentral](https://www.ibm.com/support/fixcentral/swg/)
 
-## Windows
+## The sample programs
 
-[Windows client v 9.1.1.0 download](https://www-945.ibm.com/support/fixcentral/swg/selectFixes?parent=ibm~WebSphere&product=ibm/WebSphere/WebSphere+MQ&release=9.1.1&platform=Windows+64-bit,+x86&function=fixId&fixids=9.1.1.0-IBM-MQC-Win64+&useReleaseAsTarget=true&includeSupersedes=0)
+### Introduction
+To run the examples, go to the Node.js directory and install the prerequsites by running: `npm install`
 
+* **sampleput.js** - Puts message to a queue
+* **sampleget.js** - Gets message from a queue
+* **samplesubscribe.js** - Subscribes to a topic string and gets publications/messages
+* **samplepublish.js** - Publishes messages to a topic string
+* **samplerequest.js** - Puts a message on a request queue and waits for a response
+* **sampleresponse.js**- Gets message from a request queue, does something with the message and puts it to the reply queue.
+* **boilerplate.js** - Common class, manages the connection to queue manager, contains generic consumer and producer code.
 
-## Linux
-
-[Linux Ubuntu client v 9.1.1.0 download](https://www-945.ibm.com/support/fixcentral/swg/selectFixes?parent=ibm~WebSphere&product=ibm/WebSphere/WebSphere+MQ&release=9.1.1&platform=Linux+64-bit,x86_64&function=fixId&fixids=9.1.1.0-IBM-MQC-UbuntuLinuxX64+&useReleaseAsTarget=true&includeSupersedes=0)
-
-To run the examples cd to the Node.js directory and install the
-prerequsites by running :
-
-`npm install`
-
-## Intro to Node.js Samples
-
-### Stand alone Node.js samples
-
-**basicput.js** - Puts message to a queue
-
-**basicget.js** - Gets message from a queue
-
-**basicsubscribe.js** - Subscribes to a topic string and gets publications/messages
-
-**basicpublish.js** - Publishes messages to a topic string
-
-**basicrequest.js** - Puts a message on a request queue and waits for a response
-
-**basicresponse.js** - Gets message from a request queue, does something with the message and puts it to the reply queue.
-
-
-### Refactored samples to reduce duplication
-
-**sampleput.js** - Puts message to a queue
-
-**sampleget.js** - Gets message from a queue
-
-**samplesubscribe.js** - Subscribes to a topic string and gets publications/messages
-
-**samplepublish.js** - Publishes messages to a topic string
-
-**samplerequest.js** - Puts a message on a request queue and waits for a response
-
-**sampleresponse.js**- Gets message from a request queue, does something with the message and puts it to the reply queue.
-
-***boilerplate.js*** - Common class, manages the connection to queue manager, contains generic consumer and producer code.
-
-The location and name of the env.json file defaults
-to `../env.json`. This can be overriden by setting the environment option `EnvFile`. Before running the samples, export the path to the JSON file as shown below:
+The location and name of the env.json file defaults to `../env.json`. This can be overriden by setting the environment
+option `EnvFile`. Before running the samples, export the path to the JSON file as shown below:
 
 ````
 export EnvFile="../../envfile.json"
 ````
 
+### Running samples with JWT authentication
 
-### Running refactored samples with JWT authentication
-
-To enable token-based authentication, ensure you have a configured token issuer and queue manager [JWT README](jwt-jwks-docs/README.md) and then edit the `JWT_ISSUER` block in the env.json file
+To enable token-based authentication, ensure you have a configured token issuer and queue manager [JWT
+README](jwt-jwks-docs/README.md) and then edit the `JWT_ISSUER` block in the env.json file
 
 ```JSON
 "JWT_ISSUER" : [{
@@ -85,175 +62,52 @@ To enable token-based authentication, ensure you have a configured token issuer 
     "JWT_KEY_REPOSITORY": "path/to/tokenIssuerKeystore"
   }]
 ```
-For JWT authentication via JWKS, make sure `JWT_KEY_REPOSITORY` points to your token issuer's public certificate and your queue manager is configured to retrieve the JWKS
+For JWT authentication via JWKS, make sure `JWT_KEY_REPOSITORY` points to your token issuer's public certificate and
+your queue manager is configured to retrieve the JWKS
 
-If you would like to proceed with JWT authentication without JWKS validation, edit the endpoint to use the correct URL (beginning with http) and leave `JWT_KEY_REPOSITORY` blank
+If you would like to proceed with JWT authentication without JWKS validation, edit the endpoint to use the correct URL
+(beginning with http) and leave `JWT_KEY_REPOSITORY` blank
 
-## Put / Get
-The put application places a json object onto the queue.
-To run the basic application with logging, run
+### Logging output from the samples
+To get any output from the programs, set the DEBUG environment variable.
 
-On Mac and Linux:
+* On Mac and Linux: `export DEBUG=sample*:*,boiler:*`
+* On Windows: `SET DEBUG=sample*:*,boiler:*`
 
-`DEBUG=amqs*:* node basicput.js`
+Without this setting, successful executions of the program run silently.
 
-On Windows:
-````
-SET DEBUG=amqs*:*
-node basicput.js
-````
+You can also set the ApplName environment variable which may help distinguish traces.
+* On Mac and Linux: `export ApplName="SamplePut"`
+* On Windows: `set ApplName=SamplePut`
 
-The get application reads a json object from the queue.
-
-To run the basic application with logging, run
-
-On Mac and Linux:
-
-`DEBUG=amqs*:* node basicget.js`
-
-On Windows:
-````
-SET DEBUG=amqs*:*
-node basicget.js
-````
-
-The sample get and put applications have the common MQ boiler plate
-factorised into a library and make use of
-promises.
-
-To run with logging, run
-
-On Mac and Linux: <br>
-`DEBUG=sample*:*,boiler:* node sampleput.js` <br>
-and <br>
-`DEBUG=sample*:*,boiler:* node sampleget.js`
-
-On Windows:
-````
-SET DEBUG=sample*:*,boiler:*
+### Put / Get
+The Put application places a json object onto the queue, while the Get application retrieves it:
+```
 node sampleput.js
-````
-and
-````
-SET DEBUG=sample*:*,boiler:*
 node sampleget.js
-````
+```
 
-To set the application name, which is useful for problem determination, `SET` the envrionment variable `ApplName`. eg.
-On Mac and Linux: <br>
-`DEBUG=sample*:*,boiler:* ApplName="sample put app" node sampleput.js` <br>
-and <br>
-`DEBUG=sample*:*,boiler:* ApplName="sample get app" node sampleget.js`
-
-
-## Publish / Subscribe
+### Publish / Subscribe
 The publish application publishes a json object onto a topic.
-To run the basic applications with logging, run
 
-On Mac and Linux: <br>
-`DEBUG=amqs*:* node basicpublish.js`
+You have to run the subscriber sample first so it creates a subscription and waits for a
+publication. To create a durable subscription set the environment variable `DURABLE` to any value. `
 
-On Windows:
-````
-SET DEBUG=amqs*:*
-node basicpublish.js
-````
+Open two terminals.
 
-The subscribe application subscribes to a
-topic.
+In the first terminal, run: `node samplesubscribe.js`
 
-To run with logging, run
+In the second terminal, run: `node samplepublish.js`
 
-On Mac and Linux: <br>
-`DEBUG=amqs*:* node basicsubscribe.js`
+### Request / Response
+The request application creates a dynamic queue for a reply, and places a json object consisting of the request onto a
+queue, then waits for a response to the request.
 
-On Windows:
-````
-SET DEBUG=amqs*:*
-node basicsubcscribe.js
-````
+Open two terminals.
 
-The sample publish and subscribe applications have the common MQ boiler plate
-factorised into a library and makes use of
-promises.
+In the first terminal, run: `node sampleresponse.js`
 
-To run with logging, run
-
-On Mac and Linux <br>
-`DEBUG=sample*:*,boiler:* node samplepublish.js`
-
-and
-
-`DEBUG=sample*:*,boiler:* node samplesubscribe.js`
-
-It is possible to set the application name, by setting the environment value `ApplName`.
-
-To create a durable subscription set the envrionment variable `DURABLE` to any value. eg.
-
-`DEBUG=sample*:*,boiler:* DURABLE=1 ApplName="sample durable subscriber" node samplesubscribe.js`
-
-On Windows:
-````
-SET DEBUG=sample*:*,boiler:*
-node samplepublish.js
-````
-and
-````
-SET DEBUG=sample*:*,boiler:*
-node samplesubscribe.js
-````
+In the second terminal, run:`node samplerequest.js`
 
 
-## Request / Response
-The request application create a dynamic queue for a reply, and
-places a json object consisting of the request onto a queue, then waits
-for a response to the request.
 
-To run the basic applications with logging, run
-
-On Mac and Linux:
-
-`DEBUG=amqs*:* node basicrequest.js`
-
-and
-
-`DEBUG=amqs*:* node basicresponse.js`
-
-On Windows:
-````
-SET DEBUG=amqs*:*
-node basicrequest.js
-````
-and
-````
-SET DEBUG=amqs*:*
-node basicresponse.js
-````
-The request / response applications have the common MQ boiler plate
-factorised into a library and makes use of
-promises.
-
-To run the sample applications with logging, run
-
-On Mac and Linux:
-
-`DEBUG=sample*:*,boiler:* node sampleresponse.js`
-
-and
-
-`DEBUG=sample*:*,boiler:* node samplerequest.js`
-
-On Windows:
-````
-SET DEBUG=sample*:*,boiler:*
-node sampleresponse.js
-````
-
-and
-
-````
-SET DEBUG=sample*:*,boiler:*
-node samplerequest.js
-````
-
-It is possible to set the application name, by setting the environment value `ApplName`.

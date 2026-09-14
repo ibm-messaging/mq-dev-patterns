@@ -1,5 +1,5 @@
 /*
- * (c) Copyright IBM Corporation 2020, 2023
+ * (c) Copyright IBM Corporation 2020, 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,16 @@
 
 package com.ibm.mq.samples.jms;
 
-import com.ibm.msg.client.jms.JmsConnectionFactory;
-import com.ibm.msg.client.jms.JmsFactoryFactory;
-import com.ibm.msg.client.wmq.WMQConstants;
 import java.util.Random;
-import javax.jms.Destination;
-import javax.jms.JMSContext;
-import javax.jms.JMSException;
-import javax.jms.JMSProducer;
-import javax.jms.TextMessage;
+
+import com.ibm.msg.client.jakarta.jms.JmsConnectionFactory;
+
+import jakarta.jms.Destination;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSException;
+import jakarta.jms.JMSProducer;
+import jakarta.jms.JMSRuntimeException;
+import jakarta.jms.TextMessage;
 
 /**
  * A minimal and simple application for Point-to-point messaging.
@@ -35,7 +36,7 @@ import javax.jms.TextMessage;
  *
  * Notes:
  *
- * API type: JMS API (v2.0, simplified domain)
+ * API type: Jakarta JMS API
  *
  * Messaging domain: Point-to-point
  *
@@ -46,19 +47,10 @@ import javax.jms.TextMessage;
  * JNDI in use: No
  *
  */
-public class simpleJmsTransMulti {
+public class SimpleJmsTransMulti {
 
   // System exit status value (assume unset value to be 1)
   private static int status = 1;
-
-  // Create variables for the connection to MQ
-  private static final String HOST = "localhost"; // Host name or IP address
-  private static final int PORT = 1414; // Listener port for your queue manager
-  private static final String CHANNEL = "DEV.APP.SVRCONN"; // Channel name
-  private static final String QMGR = "QM1"; // Queue manager name
-  private static final String APP_USER = "app"; // User name that application uses to connect to MQ
-  private static final String APP_PASSWORD = "passw0rd"; // Password that the application uses to connect to MQ
-  private static final String QUEUE_NAME = "DEV.QUEUE.1"; // Queue that the application uses to put and get messages to and from
 
   /**
    * Main method
@@ -71,7 +63,7 @@ public class simpleJmsTransMulti {
     Destination destination = null;
     JMSProducer producer = null;
 
-    Random rand = new Random(); //instance of random class
+    Random rand = new Random(); // instance of random class
     int upperbound = 999;
     boolean ROLLBACK = false;
 
@@ -84,84 +76,49 @@ public class simpleJmsTransMulti {
       }
     }
 
-
     try {
       // Create a connection factory
-      JmsFactoryFactory ff = JmsFactoryFactory.getInstance(
-        WMQConstants.WMQ_PROVIDER
-      );
-      JmsConnectionFactory cf = ff.createConnectionFactory();
-
-      // Set the properties
-      cf.setStringProperty(WMQConstants.WMQ_HOST_NAME, HOST);
-      cf.setIntProperty(WMQConstants.WMQ_PORT, PORT);
-      cf.setStringProperty(WMQConstants.WMQ_CHANNEL, CHANNEL);
-      cf.setIntProperty(
-        WMQConstants.WMQ_CONNECTION_MODE,
-        WMQConstants.WMQ_CM_CLIENT
-      );
-      cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, QMGR);
-      cf.setStringProperty(
-        WMQConstants.WMQ_APPLICATIONNAME,
-        "simpleJmsTransMulti"
-      );
-      cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
-      cf.setStringProperty(WMQConstants.USERID, APP_USER);
-      cf.setStringProperty(WMQConstants.PASSWORD, APP_PASSWORD);
+      JmsConnectionFactory cf = Common.createCF();
 
       // Create JMS objects
       context = cf.createContext(JMSContext.SESSION_TRANSACTED);
-      destination = context.createQueue("queue:///" + QUEUE_NAME);
-
-
+      destination = context.createQueue("queue:///" + Common.QUEUE_NAME);
 
       int uniqueNumber = rand.nextInt(upperbound);
 
       // if unique number is EVEN an exception will be thrown before all messages can be sent
       // causing a rollback so no messages will be sent
-
       if (uniqueNumber % 2 == 0) {
         ROLLBACK = true;
         System.out.println("RANDOM NUMBER EVEN, DEMONSTRATING ROLLBACK");
-      }
-      else {
+      } else {
         System.out.println("RANDOM NUMBER ODD, DEMONSTRATING COMMIT");
       }
 
-
-      TextMessage message1 = context.createTextMessage(
-        "Your lucky number today is 1"
-      );
-      TextMessage message2 = context.createTextMessage(
-        "Your lucky number today is 2"
-      );
-      TextMessage message3 = context.createTextMessage(
-        "Your lucky number today is 3"
-      );
+      TextMessage message1 = context.createTextMessage("Your lucky number today is 1");
+      TextMessage message2 = context.createTextMessage("Your lucky number today is 2");
+      TextMessage message3 = context.createTextMessage("Your lucky number today is 3");
 
       producer = context.createProducer();
 
       // send message 1
       producer.send(destination, message1);
-      System.out.println("REFRESH - Message 1 sent but not committed, number of messages on DEV.QUEUE.1 will increase by 1 but new message won't be visible");
+      System.out.printf("Message 1 sent but not committed. Messages on %s will increase by 1 but new message won't be visible.\n",Common.QUEUE_NAME);
       Pause();
 
       // send message 2
       producer.send(destination, message2);
-      System.out.println("REFRESH - Message 2 sent but not committed, number of messages on DEV.QUEUE.1 will increase by 1 but new message won't be visible");
+      System.out.printf("Message 2 sent but not committed. Messages on %s will increase by 1 but new message won't be visible.\n",Common.QUEUE_NAME);
       Pause();
 
-
-      // throw an exception here to cause a rollback resulting in none of the 3 messages being committed
+      // throw an exception here to cause a rollback resulting in none of the messages being committed
       if (ROLLBACK) {
-        throw new PutTransactionRollbackException(
-          "Triggering a ROLLBACK so no messages will be committed"
-        );
+        throw new PutTransactionRollbackException("Triggering a ROLLBACK so no messages will be committed");
       }
 
       // send message 3
       producer.send(destination, message3);
-      System.out.println("REFRESH - Message 3 sent but not committed, number of messages on DEV.QUEUE.1 will increase by 1 but new message won't be visible");
+      System.out.printf("Message 3 sent but not committed. Messages on %s will increase by 1 but new message won't be visible.\n",Common.QUEUE_NAME);
       Pause();
 
       // Commit all messages
@@ -171,24 +128,24 @@ public class simpleJmsTransMulti {
       System.out.println("Sent message:" + message1 + "\n");
       System.out.println("Sent message:" + message2 + "\n");
       System.out.println("Sent message:" + message3 + "\n");
-      System.out.println("All messages have now been COMMITTED to DEV.QUEUE.1 and should be visible there");
+      System.out.printf("All messages have now been COMMITTED to %s and should be visible there.\n",Common.QUEUE_NAME);
       recordSuccess();
-    } 
-    
-    catch (JMSException jmsex) {
-      context.rollback();
+    }
+
+    catch (JMSException | JMSRuntimeException jmsex) {
+      if (context != null) {
+        context.rollback();
+      }
       recordFailure(jmsex);
       System.out.println("JMSEX ");
       jmsex.printStackTrace();
-    } 
-    catch (PutTransactionRollbackException ptsex) {
+    } catch (PutTransactionRollbackException ptsex) {
       context.rollback();
       recordFailure(ptsex);
-      System.out.println(
-        "REFRESH - ROLLBACK was successful, number of messages on DEV.QUEUE.1 will go down by 2"
-      );
-    } 
-    catch (Exception ex) {
+      System.out.printf("ROLLBACK was successful, number of messages on %s will go down by 2\n",Common.QUEUE_NAME);
+      // This is an expected exception, so reset the status to OK
+      status = 0;
+    } catch (Exception ex) {
       System.out.println("EX ");
       ex.printStackTrace();
     }
@@ -200,18 +157,18 @@ public class simpleJmsTransMulti {
    * Record this run as successful.
    */
   private static void recordSuccess() {
-    System.out.println("REFRESH - COMMIT was successful, all 3 messages will be visible on DEV.QUEUE.1");
+    System.out.printf("COMMIT was successful, all 3 messages will be visible on %s\n",Common.QUEUE_NAME);
     status = 0;
     return;
   }
 
-
   /**
-   * 5 second pause between sending messages to allow users to refresh MQ console and see the results.
+   * 5 second pause between sending messages to allow users to refresh MQ console
+   * and see the results.
    */
   private static void Pause() {
-      try {
-      // Sleep for 15 seconds before publishing the next event
+    try {
+      // Sleep for 5 seconds before publishing the next event
       Thread.sleep(5000);
     } catch (InterruptedException e) {
       System.out.println("Pause to check MQ console");
@@ -253,4 +210,5 @@ public class simpleJmsTransMulti {
     }
     return;
   }
+
 }

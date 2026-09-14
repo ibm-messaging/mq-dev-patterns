@@ -1,0 +1,35 @@
+# Some functions that might be used throughout the test scripts
+
+function clearQ {
+  if [ "$CMD_CONT" = "" ]
+  then
+     CMD_CONT="podman"
+  fi
+  cont=`$CMD_CONT ps | grep ibm-messaging | awk '{print $1}'`
+  cat << EOF | $CMD_CONT exec -it $cont runmqsc -e QM1 >/dev/null 2>&1
+CLEAR QL(DEV.QUEUE.1)
+CLEAR QL(DEV.QUEUE.2)
+
+CLEAR QL(DEV.DEAD.LETTER.QUEUE)
+CLEAR QL(DEV.QUEUE.BACKOUT)
+END
+EOF
+}
+
+function checkRc {
+    rc=$1
+    p="$2"
+    if [ $rc -ne 0 ]
+    then
+      echo "ERROR: $p ended with rc: $rc"
+      exit 1
+    else
+      echo "DONE : $p ended OK"
+    fi
+}
+
+# Using Java 25 can give deprecation warnings for some of the maven
+# components. So, for now, use Java 21. Using a newer version of maven
+# may also resolve this.
+ export JAVA_HOME=/usr/lib/jvm/java-21-temurin-jdk/
+

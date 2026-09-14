@@ -22,7 +22,7 @@ Have the terminal windows side by side with a browser window with your `MQ Conso
 
 Move to your local `mq-dev-patterns/transactions/JMS/SE` directory in each terminal.
 
-Check you have the `javax.jms-api-2.0.1` and the `com.ibm.mq.allclient` jars.
+Check you have the `jakarta.jms-api` and the `com.ibm.mq.jakarta.client` jars.
 
 Run the list command
 
@@ -33,37 +33,36 @@ ls
 You should see the jars in amongst the other files:
 
 ```
-javax.jms-api-2.0.1.jar
-com.ibm.mq.allclient.9.2.0.0.jar
+jakarta.jms-api.jar
+com.ibm.mq.jakarta.client.jar
 ```
 
-In the first terminal you'll be running the requestor app.
+In the first terminal you'll be running the requester app.
 
 In the second, you'll be running the responder app.
 
-
-Compile the requestor transaction sample in the first terminal.
+Compile the requester transaction sample in the first terminal.
 
 ```
-javac -cp ./com.ibm.mq.allclient-9.2.0.0.jar:./javax.jms-api-2.0.1.jar com/ibm/mq/samples/jms/simpleJmsTransRequest.java
+javac -cp ../com.ibm.mq.jakarta.client.jar:./jakarta.jms-api.jar com/ibm/mq/samples/jms/simpleJmsTransRequest.java
 ```
 
 Compile the responder transaction sample in the second terminal.
 
 ```
-javac -cp ./com.ibm.mq.allclient-9.2.0.0.jar:./javax.jms-api-2.0.1.jar com/ibm/mq/samples/jms/simpleJmsTransResponse.java
+javac -cp ./com.ibm.mq.jakarta.client.jar:./jakarta.jms-api.jar com/ibm/mq/samples/jms/simpleJmsTransResponse.java
 ```
 
-Run the compiled requestor transaction sample.
+Run the compiled requester transaction sample.
 
 ```
-java -cp ./com.ibm.mq.allclient-9.2.0.0.jar:./javax.jms-api-2.0.1.jar:. com.ibm.mq.samples.jms.simpleJmsTransRequest
+java -cp ./com.ibm.mq.jakarta.client.jar:./jakarta.jms-api.jar:. com.ibm.mq.samples.jms.simpleJmsTransRequest
 ```
 
 Run the compiled responder transaction sample.
 
 ```
-java -cp ./com.ibm.mq.allclient-9.2.0.0.jar:./javax.jms-api-2.0.1.jar:. com.ibm.mq.samples.jms.simpleJmsTransResponse
+java -cp ./com.ibm.mq.jakarta.client.jar:./jakarta.jms-api.jar:. com.ibm.mq.samples.jms.simpleJmsTransResponse
 ```
 
 Refresh the queues on the `MQ Console` page.
@@ -78,15 +77,12 @@ If the random number was odd, commit is called and the message is put on the `DE
 
 If the random number was even, rollback is called and the message is rolled back to the `BACKOUT.Q`.
 
-
-
-
 ### Go ahead and try
 
-- [Simple put transaction sample](simpleJMSTransaction.md)
+- [Simple put transaction sample](SimpleJMSTransaction.md)
 
 or
 
-- [Transaction when sending several messages together](simpleJMSTransMultiReadme.md)
+- [Transaction when sending several messages together](SimpleJMSTransMultiReadme.md)
 
 You can also go back to the starting [README](README.md) to read more and check out links to other useful topics on transactions.
