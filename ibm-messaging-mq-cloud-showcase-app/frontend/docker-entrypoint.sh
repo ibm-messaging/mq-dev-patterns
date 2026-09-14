@@ -22,16 +22,20 @@ set -eu
 frontend_as_proxy="${REACT_APP_FE_AS_PROXY:-false}"
 backend_tls="${REACT_APP_BE_TLS:-false}"
 
-# Validate boolean values — reject anything other than 'true' or 'false'
+# Validate boolean values — collect all errors before exiting
+errors=0
+
 case "$frontend_as_proxy" in
     true|false) ;;
-    *) echo "REACT_APP_FE_AS_PROXY must be 'true' or 'false'" >&2; exit 1 ;;
+    *) echo "REACT_APP_FE_AS_PROXY must be 'true' or 'false'" >&2; errors=1 ;;
 esac
 
 case "$backend_tls" in
     true|false) ;;
-    *) echo "REACT_APP_BE_TLS must be 'true' or 'false'" >&2; exit 1 ;;
+    *) echo "REACT_APP_BE_TLS must be 'true' or 'false'" >&2; errors=1 ;;
 esac
+
+[ "$errors" = "0" ] || exit 1
 
 # Select nginx template based on proxy mode
 nginxTemplate="nginx.conf.template"

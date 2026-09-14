@@ -20,7 +20,6 @@
 ###########################################################
 # This starts the BUILD phase
 ###########################################################
-# ECR public mirror — avoids Docker Hub.
 # Node 22 Alpine — smallest image with no native binaries requiring glibc.
 FROM public.ecr.aws/docker/library/node:22-alpine AS builder
 WORKDIR /app
@@ -41,7 +40,6 @@ RUN npm run build
 ###########################################################
 # This starts the RUNTIME phase
 ###########################################################
-# ECR public mirror — avoids Docker Hub.
 # nginx-unprivileged — runs as UID 101 (non-root) and listens on port 8080.
 FROM public.ecr.aws/nginx/nginx-unprivileged:stable-alpine AS frontendimage
 
@@ -59,7 +57,7 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 EXPOSE 8080
 
 # Alpine-based image ships wget, enabling this loopback health check.
-# Docker polls every 30s and marks the container unhealthy after 3 failures.
+# Docker / Podman polls every 30s and marks the container unhealthy after 3 failures.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD wget -qO- http://localhost:8080/ || exit 1
 
