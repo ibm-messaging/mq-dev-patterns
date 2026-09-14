@@ -15,54 +15,45 @@ function checkRc {
 curdir=`pwd`
 logFile=$curdir/logs/testpython.log
 
-venv=$curdir/venv
-if [ ! -d $venv ]
-then
-  python -m venv venv
-  if [ $? -ne 0 ]
-  then
-    echo "ERROR: Cannot create Python virtual env at $venv"
-    exit 1
-  fi
+# Require uv — install it if absent (curl pipe to sh is the official installer)
+if ! command -v uv &>/dev/null; then
+  echo "INFO : uv not found, installing..."
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  export PATH="$HOME/.local/bin:$PATH"
 fi
-
-. $venv/bin/activate
-if [ $? -ne 0 ]
-then
-  echo "ERROR: Cannot activate Python virtual env at $venv"
-  exit 1
-fi
-
-# Install the latest ibmmq package
-pip uninstall -y ibmmq 2>/dev/null
-pip install --upgrade pip >/dev/null 2>&1
-pip install ibmmq
-
-# Can now get round to running the tests
 
 cd ../Python
 
+# Sync the venv from pyproject.toml + uv.lock (creates .venv if needed,
+# upgrades ibmmq to the latest matching version, removes stale packages).
+uv sync --upgrade
+if [ $? -ne 0 ]
+then
+  echo "ERROR: uv sync failed"
+  exit 1
+fi
+
 (
 
-pip show ibmmq 2>&1 | head -2 # Display the active version
+uv run pip show ibmmq 2>&1 | head -2 # Display the active version
 
-python basicput.py
+uv run python basicput.py
 checkRc $? "PUT"
-python basicget.py
+uv run python basicget.py
 checkRc $? "GET"
 
-(python basicsubscribe.py; echo $? > /tmp/rc) &
+(uv run python basicsubscribe.py; echo $? > /tmp/rc) &
 pid=$!
 sleep 1
-python basicpublish.py
+uv run python basicpublish.py
 checkRc $? "PUB"
 wait $pid
 checkRc `cat /tmp/rc` "SUB"
 
-(python basicresponse.py; echo $? > /tmp/rc) &
+(uv run python basicresponse.py; echo $? > /tmp/rc) &
 pid=$!
 sleep 1
-python basicrequest.py
+uv run python basicrequest.py
 checkRc $? "REQ"
 wait $pid
 checkRc `cat /tmp/rc` "RES"

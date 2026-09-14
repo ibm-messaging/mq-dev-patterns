@@ -28,15 +28,34 @@ The MQ Redistributed Client for Linux x64 can be downloaded from
 For other platforms, you can use the regular MQ iamges to install, at minimum, the MQ Client and SDK components.
 
 ## IBM MQ Python package installation
-You may like to work inside a Python virtual environment. If so, create and initialise that in the usual ways.
-For example:
 
+This project uses [uv](https://docs.astral.sh/uv/) for fast, reproducible dependency management.
+Install `uv` once (if you don't already have it):
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
+
+Then, from the `Python/` directory, sync all dependencies (creates `.venv` automatically):
+
+```bash
+cd Python
+uv sync
+```
+
+To add or upgrade a package (e.g. after a new `ibmmq` release):
+
+```bash
+uv sync --upgrade
+```
+
+If you prefer a plain venv workflow, you can still do:
+
+```bash
 python -m venv my_venv
 . my_venv/bin/activate
+pip install ibmmq
 ```
-
-Then install the prerequsite package by running: `pip install ibmmq`.
 
 ## Sample Configuration
 All of the programs read a JSON-formatted configuration file. The name of the file can be given by setting the
@@ -64,21 +83,26 @@ On some systems, you might need to explicitly use the `python3` command instead 
 ### Put/Get
 The `basicput` application places a short string message onto the queue.
 
-`python ./basicput`
+```bash
+uv run python basicput.py
+```
 
 The `basicget` application reads all messages from the queue and displays the contents.
 
-`python ./basicget`
+```bash
+uv run python basicget.py
+```
 
 ### Publish/Subscribe
 Run these samples as a pair.
 
-Start the `basicsubcribe` program in one window (or in the background) and immediately afterwards start the
+Start the `basicsubscribe` program in one window (or in the background) and immediately afterwards start the
 `basicpublish` program in another window.
 
-`python ./basicsubscribe`
-
-`python ./basicpublish`
+```bash
+uv run python basicsubscribe.py   # window 1
+uv run python basicpublish.py     # window 2
+```
 
 ### Request/Response
 Run these samples as a pair.
@@ -86,6 +110,17 @@ Run these samples as a pair.
 Start the `basicresponse` program in one window (or in the background) and immediately afterwards start the
 `basicrequest` program in another window.
 
-`python ./basicresponse`
+```bash
+uv run python basicresponse.py    # window 1
+uv run python basicrequest.py     # window 2
+```
 
-`python ./basicrequest`
+## Running the unit tests
+
+The tests require no live IBM MQ broker — the `ibmmq` C extension is fully stubbed.
+
+```bash
+cd Python
+uv sync --extra dev        # install pytest + pytest-mock into the venv
+uv run pytest              # runs tests/ with -v (configured in pyproject.toml)
+```

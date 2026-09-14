@@ -33,13 +33,14 @@ Python/
 ├── basicrequest.py          # Pattern: Request/Response (Requester)
 ├── basicresponse.py         # Pattern: Request/Response (Responder)
 │
-├── tests/
-│   ├── conftest.py          # ibmmq stub + shared fixtures
-│   ├── test_env.py          # EnvStore unit tests (30 tests)
-│   └── test_samples.py      # Sample script function tests (46 tests)
+├── pyproject.toml           # uv project manifest (ibmmq dependency + metadata)
+├── uv.lock                  # Pinned dependency lock file (commit this)
 │
 └── services/
     └── catalog-app.yaml     # Backstage component manifest
+
+tests/                       # Repository-level integration tests
+└── test-python.sh           # Runs all six samples against a live MQ broker
 ```
 
 ---
@@ -331,61 +332,45 @@ All samples read from a shared `env.json` file. The path can be overridden via t
 
 ---
 
-## 9. Test Coverage — 76 / 76 passed
+## 9. Testing
 
-Tests run with `pytest` and require no live IBM MQ broker. The `ibmmq` C-extension is replaced by an in-process stub defined in `tests/conftest.py`.
+Integration tests are provided by `tests/test-python.sh` in the repository root. The script runs all six sample scripts as real processes against a live IBM MQ queue manager and verifies each one exits cleanly.
 
-### Test files
+### 9.1 Prerequisites
+
+- A running IBM MQ queue manager reachable at the host/port configured in `env.json`
+- `uv` installed (the script installs it automatically if absent)
+- The MQ C client libraries available on the library path (see Section 1 of `README.md`)
+
+### 9.2 What the script does
 
 ```
-Python/tests/
-├── conftest.py        # ibmmq stub (QueueManager, Queue, Topic, Subscription,
-│                      #  CSP, CD, SCO, OD, MD, PMO, GMO, SD, MQMIError, CMQC)
-│                      # env_json_file fixture → tmp env.json + JSON_CONFIG env var
-│
-├── test_env.py        # 30 tests — EnvStore class
-│
-└── test_samples.py    # 46 tests — all six sample scripts
+tests/test-python.sh
 ```
 
-### 9.1 EnvStore Tests (`test_env.py` — 30 tests)
+| Step | Detail |
+|---|---|
+| **1. Ensure uv** | Checks for `uv` on `PATH`; installs it via the official installer if missing |
+| **2. `uv sync --upgrade`** | Creates/updates `.venv` in `Python/` from `pyproject.toml` + `uv.lock`; upgrades `ibmmq` to the latest matching version |
+| **3. Print ibmmq version** | `uv run pip show ibmmq` — records the active package version in the log |
+| **4. PUT / GET** | Runs `basicput.py` then `basicget.py` sequentially; each must exit 0 |
+| **5. PUB / SUB** | Starts `basicsubscribe.py` in the background, waits 1 s, runs `basicpublish.py`; both must exit 0 |
+| **6. REQ / RES** | Starts `basicresponse.py` in the background, waits 1 s, runs `basicrequest.py`; both must exit 0 |
+| **7. Count successes** | Greps the log for `"ended OK"`; fails if the count is not exactly 6 |
 
-| Test Class | Count | What is covered |
-|---|---|---|
-| `TestEnvStoreInit` | 4 | Config loaded from `JSON_CONFIG`; raises on missing or invalid file; class variable shared across instances |
-| `TestIsEndpointList` | 4 | True when `MQ_ENDPOINTS` is a list; False when env is None, key missing, or value is not a list |
-| `TestBuildConnectionString` | 5 | Single/multiple endpoints; skips entry missing HOST; skips entry missing PORT; empty list |
-| `TestGetEndpointCount` | 3 | Returns 1, 2 for endpoint lists; returns 1 for non-list config |
-| `TestGetNextConnectionString` | 2 | Yields `(index, "host(port)")` for one and two endpoints |
-| `TestSetEnv` | 3 | Writes HOST/PORT to `os.environ`; builds `CONN_STRING`; no-op when not an endpoint list |
-| `TestGetenvValue` | 3 | Reads from `os.environ` at index 0; returns None when absent; reads from JSON at index > 0 |
-| `TestGetConnection` | 2 | Returns `CONN_STRING` env var; falls back to host(port) construction |
-| `TestIsCcdtAvailable` | 4 | False when env var unset; False when file absent; True when file exists; True with `file://` prefix |
+### 9.3 Running the tests
 
-### 9.2 Sample Script Tests (`test_samples.py` — 46 tests)
-
-| Test Class | Count | What is covered |
-|---|---|---|
-| `TestBasicPut` | 8 | `build_mq_details`; `connect` returns QueueManager / None on error; `get_queue` returns Queue / None on error; `put_message` appends to queue, payload is valid JSON, swallows `MQMIError` |
-| `TestBasicGet` | 6 | `build_mq_details` (with index); `connect` returns QueueManager / None on error; `get_queue`; `get_messages` exits on empty queue; `get_messages` logs received message |
-| `TestBasicPublish` | 6 | `build_mq_details` includes `TOPIC_NAME`; `connect`; `get_topic`; `publish_message` appends, payload JSON, swallows error |
-| `TestBasicSubscribe` | 5 | `build_mq_details` includes `TOPIC_NAME`; `connect`; `get_subscription` (`SD.set_vs`); `get_messages` exits on empty; `get_messages` logs publication |
-| `TestBasicRequest` | 7 | `build_mq_details` includes MODEL/DYNAMIC keys; `connect`; `put_message` returns MsgId, sets `MQMT_REQUEST`, sets `ReplyToQ`; `await_response` exits on empty queue, logs reply |
-| `TestBasicResponse` | 14 | `perform_calc` (prime=[], 1=[], 12=[2,2,3], 60 divisible, 100 divisible); `rollback` backout path; `rollback` poison-message `AttributeError`; `rollback` returns False on `MQMIError`; `respond_to_request` calls `put1` returns True, sets `MQMT_REPLY`, copies MsgId to CorrelId, returns False on `put1` error; `get_messages` commits on success, exits on empty queue |
-
-### 9.3 Running the Tests
+From the `tests/` directory (or any directory — the script uses relative paths):
 
 ```bash
-# Install test dependencies (once)
-pip install pytest pytest-mock
-
-# Run from the Python directory
-cd Python
-python3 -m pytest tests/ -v
+cd tests
+bash test-python.sh
 ```
 
-### 9.4 Known Limitation Documented by Tests
+Logs are written to `tests/logs/testpython.log`. The script exits 0 on full success, 1 on any failure.
+
+### 9.4 Known limitation
 
 > **Poison-message path in `basicresponse.rollback()`**
 >
-> When `backout_counter >= 5`, the code calls `backout_queue.stringForVersion(...)` on a plain `str` value obtained from `MQDetails`. This raises an `AttributeError` which is *not* caught by the surrounding `except mq.MQMIError` block, causing the exception to propagate. The test `test_rollback_poison_message_raises_attribute_error` explicitly documents this behaviour.
+> When `backout_counter >= 5`, the code calls `backout_queue.stringForVersion(...)` on a plain `str` value obtained from `MQDetails`. This raises an `AttributeError` which is not caught by the surrounding `except mq.MQMIError` block, causing the exception to propagate. The integration test will surface this as a non-zero exit code from `basicresponse.py`.
