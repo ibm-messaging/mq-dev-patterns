@@ -15,11 +15,10 @@ function checkRc {
 curdir=`pwd`
 logFile=$curdir/logs/testpython.log
 
-# Require uv — install it if absent (curl pipe to sh is the official installer)
+# Require uv — install it if absent (pip works cross-platform including Windows)
 if ! command -v uv &>/dev/null; then
   echo "INFO : uv not found, installing..."
-  curl -LsSf https://astral.sh/uv/install.sh | sh
-  export PATH="$HOME/.local/bin:$PATH"
+  pip install uv
 fi
 
 cd ../Python
@@ -42,21 +41,23 @@ checkRc $? "PUT"
 uv run basicget
 checkRc $? "GET"
 
-(uv run basicsubscribe; echo $? > /tmp/rc) &
+rc_file=$(mktemp)
+(uv run basicsubscribe; echo $? > "$rc_file") &
 pid=$!
 sleep 1
 uv run basicpublish
 checkRc $? "PUB"
 wait $pid
-checkRc `cat /tmp/rc` "SUB"
+checkRc $(cat "$rc_file") "SUB"
 
-(uv run basicresponse; echo $? > /tmp/rc) &
+(uv run basicresponse; echo $? > "$rc_file") &
 pid=$!
 sleep 1
 uv run basicrequest
 checkRc $? "REQ"
 wait $pid
-checkRc `cat /tmp/rc` "RES"
+checkRc $(cat "$rc_file") "RES"
+rm -f "$rc_file"
 
 ) 2>&1 | tee $logFile
 cnt=`grep "ended OK" $logFile | wc -l `
