@@ -1,5 +1,5 @@
 #
-# * Copyright 2022, 2023 IBM Corp.
+# * Copyright 2022, 2026 IBM Corp.
 # *
 # * Licensed under the Apache License, Version 2.0 (the 'License');
 # * you may not use this file except in compliance with the License.
@@ -33,13 +33,20 @@ services:
       context: frontend/.
       labels:
         - com.ibm.mq.app=mqapp
-    image: ${IMAGE_ECS_REGISTRY_URI:?err}/${CLUSTER_NAME:?err}:frontend    
+    image: ${IMAGE_ECS_REGISTRY_URI:?err}/${CLUSTER_NAME:?err}:frontend
     ports:
-      - 3000:3000  
+      # Host port 3000 → container port 8080 (nginx-unprivileged listens on 8080).
+      # In ECS/AWS deployments the ALB handles external traffic; this mapping is
+      # only used when running aws-docker-compose.yaml locally for testing.
+      - 3000:8080
     networks:
-      - app-pubic-network  
-    environment:   
-      - REACT_APP_BE_HOST=be     
+      - app-pubic-network
+    environment:
+      # REACT_APP_BE_TLS is omitted — TLS is terminated by the AWS ALB, not the
+      # container. The entrypoint defaults to http:// when this variable is absent.
+      - REACT_APP_BE_HOST=be
+      - REACT_APP_BE_PORT=8080
+      - REACT_APP_FE_AS_PROXY=true
       - REACT_APP_IS_FOR_CODING_CHALLENGE=false
     depends_on:
       - be
@@ -48,57 +55,57 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: 2Gb  
+          cpus: "1"
+          memory: 2G
   be:
     build:
       context: backend/.
       labels:
         - com.ibm.mq.app=mqapp
-    image: ${IMAGE_ECS_REGISTRY_URI:?err}/${CLUSTER_NAME:?err}:backend   
-    container_name: node-be 
+    image: ${IMAGE_ECS_REGISTRY_URI:?err}/${CLUSTER_NAME:?err}:backend
+    container_name: node-be
     networks:
       - app-pubic-network
-      - qm1network    
+      - qm1network
     depends_on:
       - mq
     labels:
-      - com.ibm.mq.app=mqapp    
-    environment:   
+      - com.ibm.mq.app=mqapp
+    environment:
       - HOST=mq
       - APP_PASSWORD=${APP_PASSWORD:?err}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:?err}     
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:?err}
       - MQ_QMGR_PORT_MQI=1414
-      - MQ_QMGR_PORT_API=9443   
+      - MQ_QMGR_PORT_API=9443
     deploy:
       resources:
         limits:
-          cpus: '2'
-          memory: 4Gb         
+          cpus: "2"
+          memory: 4G
   mq:
     image: "icr.io/ibm-messaging/mq:latest"
     ports:
-      - 9443:9443    
+      - 9443:9443
     environment:
       - LICENSE=accept
       - MQ_QMGR_NAME=QM1
       - MQ_APP_PASSWORD=${APP_PASSWORD:?err}
       - MQ_ADMIN_PASSWORD=${ADMIN_PASSWORD:?err}
     volumes:
-      - qm1data:/mnt/mqm  
+      - qm1data:/mnt/mqm
     networks:
       - qm1network
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: 2Gb  
+          cpus: "1"
+          memory: 2G
 volumes:
   qm1data:
     driver_opts:
       gid: 0
     labels:
-      - com.ibm.mq=qm1      
+      - com.ibm.mq=qm1
 networks:
   qm1network:
     labels:
@@ -119,4 +126,4 @@ networks:
 #         Certificates:
 #           - CertificateArn: "arn:aws:acm:certificate/123abc"
 #         Protocol: HTTPS
-#         Port: 443      
+#         Port: 443
