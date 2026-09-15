@@ -28,15 +28,37 @@ The MQ Redistributed Client for Linux x64 can be downloaded from
 For other platforms, you can use the regular MQ iamges to install, at minimum, the MQ Client and SDK components.
 
 ## IBM MQ Python package installation
-You may like to work inside a Python virtual environment. If so, create and initialise that in the usual ways.
-For example:
 
-```
-python -m venv my_venv
-. my_venv/bin/activate
+Choose either **uv** (recommended — fast, lock-file reproducible) or the standard **venv** workflow.
+
+### Option A — uv
+
+Install `uv` once (if you don't already have it):
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Then install the prerequsite package by running: `pip install ibmmq`.
+Then, from the `Python/` directory, install dependencies (creates `.venv` automatically):
+
+```bash
+cd Python
+uv sync            # installs the version recorded in uv.lock (reproducible)
+uv sync --upgrade  # resolves and installs the current latest from PyPI
+```
+
+### Option B — venv
+
+```bash
+cd Python
+python -m venv .venv
+# macOS / Linux
+source .venv/bin/activate
+# Windows
+.venv\Scripts\activate
+
+pip install ibmmq
+```
 
 ## Sample Configuration
 All of the programs read a JSON-formatted configuration file. The name of the file can be given by setting the
@@ -64,21 +86,42 @@ On some systems, you might need to explicitly use the `python3` command instead 
 ### Put/Get
 The `basicput` application places a short string message onto the queue.
 
-`python ./basicput`
+**uv**
+```bash
+uv run basicput
+```
+**venv** (activate first — see above)
+```bash
+python basicput.py
+```
 
 The `basicget` application reads all messages from the queue and displays the contents.
 
-`python ./basicget`
+**uv**
+```bash
+uv run basicget
+```
+**venv**
+```bash
+python basicget.py
+```
 
 ### Publish/Subscribe
 Run these samples as a pair.
 
-Start the `basicsubcribe` program in one window (or in the background) and immediately afterwards start the
+Start the `basicsubscribe` program in one window (or in the background) and immediately afterwards start the
 `basicpublish` program in another window.
 
-`python ./basicsubscribe`
-
-`python ./basicpublish`
+**uv**
+```bash
+uv run basicsubscribe   # window 1
+uv run basicpublish     # window 2
+```
+**venv**
+```bash
+python basicsubscribe.py   # window 1
+python basicpublish.py     # window 2
+```
 
 ### Request/Response
 Run these samples as a pair.
@@ -86,6 +129,13 @@ Run these samples as a pair.
 Start the `basicresponse` program in one window (or in the background) and immediately afterwards start the
 `basicrequest` program in another window.
 
-`python ./basicresponse`
-
-`python ./basicrequest`
+**uv**
+```bash
+uv run basicresponse    # window 1
+uv run basicrequest     # window 2
+```
+**venv**
+```bash
+python basicresponse.py    # window 1
+python basicrequest.py     # window 2
+```
