@@ -29,7 +29,10 @@ For other platforms, you can use the regular MQ iamges to install, at minimum, t
 
 ## IBM MQ Python package installation
 
-This project uses [uv](https://docs.astral.sh/uv/) for fast, reproducible dependency management.
+Choose either **uv** (recommended — fast, lock-file reproducible) or the standard **venv** workflow.
+
+### Option A — uv
+
 Install `uv` once (if you don't already have it):
 
 ```bash
@@ -43,17 +46,22 @@ cd Python
 uv sync
 ```
 
-To add or upgrade a package (e.g. after a new `ibmmq` release):
+To upgrade to the latest package versions:
 
 ```bash
 uv sync --upgrade
 ```
 
-If you prefer a plain venv workflow, you can still do:
+### Option B — venv
 
 ```bash
-python -m venv my_venv
-. my_venv/bin/activate
+cd Python
+python -m venv .venv
+# macOS / Linux
+source .venv/bin/activate
+# Windows
+.venv\Scripts\activate
+
 pip install ibmmq
 ```
 
@@ -83,14 +91,24 @@ On some systems, you might need to explicitly use the `python3` command instead 
 ### Put/Get
 The `basicput` application places a short string message onto the queue.
 
+**uv**
 ```bash
 uv run python basicput.py
+```
+**venv** (activate first — see above)
+```bash
+python basicput.py
 ```
 
 The `basicget` application reads all messages from the queue and displays the contents.
 
+**uv**
 ```bash
 uv run python basicget.py
+```
+**venv**
+```bash
+python basicget.py
 ```
 
 ### Publish/Subscribe
@@ -99,9 +117,15 @@ Run these samples as a pair.
 Start the `basicsubscribe` program in one window (or in the background) and immediately afterwards start the
 `basicpublish` program in another window.
 
+**uv**
 ```bash
 uv run python basicsubscribe.py   # window 1
 uv run python basicpublish.py     # window 2
+```
+**venv**
+```bash
+python basicsubscribe.py   # window 1
+python basicpublish.py     # window 2
 ```
 
 ### Request/Response
@@ -110,17 +134,31 @@ Run these samples as a pair.
 Start the `basicresponse` program in one window (or in the background) and immediately afterwards start the
 `basicrequest` program in another window.
 
+**uv**
 ```bash
 uv run python basicresponse.py    # window 1
 uv run python basicrequest.py     # window 2
+```
+**venv**
+```bash
+python basicresponse.py    # window 1
+python basicrequest.py     # window 2
 ```
 
 ## Running the unit tests
 
 The tests require no live IBM MQ broker — the `ibmmq` C extension is fully stubbed.
 
+**uv**
 ```bash
 cd Python
 uv sync --extra dev        # install pytest + pytest-mock into the venv
 uv run pytest              # runs tests/ with -v (configured in pyproject.toml)
+```
+**venv**
+```bash
+cd Python
+# activate .venv first (see above), then:
+pip install pytest pytest-mock
+pytest                     # runs tests/ with -v (configured in pyproject.toml)
 ```
