@@ -3,4 +3,5 @@ AWS-MQ-showcase/dist
 AWS-MQ-showcase/.env
 AWS-MQ-showcase/.env.*
 AWS-MQ-showcase/coverage
+AWS-MQ-showcase/.husky
 .DS_Store
