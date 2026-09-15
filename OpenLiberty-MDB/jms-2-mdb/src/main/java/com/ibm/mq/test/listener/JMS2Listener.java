@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-package com.ibm.com.mq.test.listener;
+package com.ibm.mq.test.listener;
 
 import javax.ejb.MessageDriven;
 import javax.jms.JMSException;
