@@ -109,34 +109,41 @@ def build_mq_details():
                 EnvStore.PORT, EnvStore.KEY_REPOSITORY, EnvStore.CIPHER]:
         MQDetails[key] = EnvStore.getenv_value(key)
 
-# Application Logic starts here
-logger.info('Application "BasicPut" is starting')
+def main():
+    global MQDetails, conn_info, msg_object, qmgr, queue
 
-envStore = EnvStore()
-envStore.set_env()
+    # Application Logic starts here
+    logger.info('Application "BasicPut" is starting')
 
-MQDetails = {}
+    envStore = EnvStore()
+    envStore.set_env()
 
-build_mq_details()
-conn_info = EnvStore.get_connection(EnvStore.HOST, EnvStore.PORT)
+    MQDetails = {}
 
-logger.info('Connection is %s', conn_info)
+    build_mq_details()
+    conn_info = EnvStore.get_connection(EnvStore.HOST, EnvStore.PORT)
 
-msg_object = {
-    'Greeting': 'Hello from Python! ' + str(datetime.datetime.now())
-}
+    logger.info('Connection is %s', conn_info)
 
-qmgr = None
-queue = None
+    msg_object = {
+        'Greeting': 'Hello from Python! ' + str(datetime.datetime.now())
+    }
 
-qmgr = connect()
-if qmgr is not None:
-    queue = get_queue()
-if queue is not None:
-    put_message()
-    queue.close()
+    qmgr = None
+    queue = None
 
-if qmgr is not None:
-    qmgr.disconnect()
+    qmgr = connect()
+    if qmgr is not None:
+        queue = get_queue()
+    if queue is not None:
+        put_message()
+        queue.close()
 
-logger.info('Application is ending')
+    if qmgr is not None:
+        qmgr.disconnect()
+
+    logger.info('Application is ending')
+
+
+if __name__ == '__main__':
+    main()

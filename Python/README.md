@@ -93,7 +93,7 @@ The `basicput` application places a short string message onto the queue.
 
 **uv**
 ```bash
-uv run python basicput.py
+uv run basicput
 ```
 **venv** (activate first — see above)
 ```bash
@@ -104,7 +104,7 @@ The `basicget` application reads all messages from the queue and displays the co
 
 **uv**
 ```bash
-uv run python basicget.py
+uv run basicget
 ```
 **venv**
 ```bash
@@ -119,8 +119,8 @@ Start the `basicsubscribe` program in one window (or in the background) and imme
 
 **uv**
 ```bash
-uv run python basicsubscribe.py   # window 1
-uv run python basicpublish.py     # window 2
+uv run basicsubscribe   # window 1
+uv run basicpublish     # window 2
 ```
 **venv**
 ```bash
@@ -136,8 +136,8 @@ Start the `basicresponse` program in one window (or in the background) and immed
 
 **uv**
 ```bash
-uv run python basicresponse.py    # window 1
-uv run python basicrequest.py     # window 2
+uv run basicresponse    # window 1
+uv run basicrequest     # window 2
 ```
 **venv**
 ```bash

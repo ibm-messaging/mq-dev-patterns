@@ -9,6 +9,14 @@ dependencies = [
     "ibmmq",
 ]
 
+[project.scripts]
+basicput       = "basicput:main"
+basicget       = "basicget:main"
+basicpublish   = "basicpublish:main"
+basicsubscribe = "basicsubscribe:main"
+basicrequest   = "basicrequest:main"
+basicresponse  = "basicresponse:main"
+
 [tool.uv]
 # uv generates uv.lock alongside this file; commit it for reproducible installs.
 # To regenerate: uv lock

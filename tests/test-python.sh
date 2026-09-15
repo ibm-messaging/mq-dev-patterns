@@ -37,23 +37,23 @@ fi
 
 uv run pip show ibmmq 2>&1 | head -2 # Display the active version
 
-uv run python basicput.py
+uv run basicput
 checkRc $? "PUT"
-uv run python basicget.py
+uv run basicget
 checkRc $? "GET"
 
-(uv run python basicsubscribe.py; echo $? > /tmp/rc) &
+(uv run basicsubscribe; echo $? > /tmp/rc) &
 pid=$!
 sleep 1
-uv run python basicpublish.py
+uv run basicpublish
 checkRc $? "PUB"
 wait $pid
 checkRc `cat /tmp/rc` "SUB"
 
-(uv run python basicresponse.py; echo $? > /tmp/rc) &
+(uv run basicresponse; echo $? > /tmp/rc) &
 pid=$!
 sleep 1
-uv run python basicrequest.py
+uv run basicrequest
 checkRc $? "REQ"
 wait $pid
 checkRc `cat /tmp/rc` "RES"
