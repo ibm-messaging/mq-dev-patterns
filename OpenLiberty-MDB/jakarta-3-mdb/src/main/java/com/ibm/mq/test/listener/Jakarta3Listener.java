@@ -16,19 +16,19 @@
 
 package com.ibm.mq.test.listener;
 
-import javax.ejb.MessageDriven;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
+import jakarta.ejb.MessageDriven;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageListener;
 
-@MessageDriven(name = "JMS2ListenerMDB")
-public class JMS2Listener implements MessageListener {
+@MessageDriven(name = "Jakarta3ListenerMDB")
+public class Jakarta3Listener implements MessageListener {
 
   @Override
   public void onMessage(Message message) {
     try {
       //Sample assumes JMS Text Message
-      System.out.println("JMS 2.0 Messaging MDB received message: " + message.getBody(String.class));
+      System.out.println("Jakarta 3.0 Messaging MDB received message: " + message.getBody(String.class));
     } catch (JMSException e) {
       //Avoid rollback/retry cycle in sample, give up!
       throw new RuntimeException(e);
@@ -36,5 +36,6 @@ public class JMS2Listener implements MessageListener {
   }
 
 }
+
 
 
