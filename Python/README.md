@@ -144,21 +144,3 @@ uv run python basicrequest.py     # window 2
 python basicresponse.py    # window 1
 python basicrequest.py     # window 2
 ```
-
-## Running the unit tests
-
-The tests require no live IBM MQ broker — the `ibmmq` C extension is fully stubbed.
-
-**uv**
-```bash
-cd Python
-uv sync --extra dev        # install pytest + pytest-mock into the venv
-uv run pytest              # runs tests/ with -v (configured in pyproject.toml)
-```
-**venv**
-```bash
-cd Python
-# activate .venv first (see above), then:
-pip install pytest pytest-mock
-pytest                     # runs tests/ with -v (configured in pyproject.toml)
-```
