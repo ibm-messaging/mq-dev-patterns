@@ -39,17 +39,12 @@ Install `uv` once (if you don't already have it):
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Then, from the `Python/` directory, sync all dependencies (creates `.venv` automatically):
+Then, from the `Python/` directory, install dependencies (creates `.venv` automatically):
 
 ```bash
 cd Python
-uv sync
-```
-
-To upgrade to the latest package versions:
-
-```bash
-uv sync --upgrade
+uv sync            # installs the version recorded in uv.lock (reproducible)
+uv sync --upgrade  # resolves and installs the current latest from PyPI
 ```
 
 ### Option B — venv
