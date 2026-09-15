@@ -28,4 +28,7 @@ Python/tmp/
 .settings 
 .classpath
 
+# VSCode
+.vscode
+
 

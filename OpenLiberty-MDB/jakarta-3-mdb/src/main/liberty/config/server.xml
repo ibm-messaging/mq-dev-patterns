@@ -5,32 +5,30 @@
     <featureManager>
         <feature>jakartaee-9.1</feature>
     </featureManager>
-    
-    
+
+
+    <variable name="ibmmq.port" defaultValue="1414" />
+
     <resourceAdapter id="wmqjmsra" location="https://repo.maven.apache.org/maven2/com/ibm/mq/wmq.jakarta.jmsra/9.3.2.0/wmq.jakarta.jmsra-9.3.2.0.rar" />
 
     <jmsConnectionFactory jndiName="jms/jmsCF" connectionManagerRef="QM1Dev" containerAuthDataRef="mqauthid">
         <properties.wmqjmsra
             channel="DEV.APP.SVRCONN"
-            hostName="${server-ibmmq-hostName}" 
-            port="1414"
+            hostName="${server-ibmmq-hostName}"
+            port="${ibmmq.port}"
             queueManager="QM1"
             transportType="CLIENT"
         />
     </jmsConnectionFactory>
-    <!--
 
-	    password="${ibmmq.password}" 
-	    userName="${ibmmq.username}"
---> 
     <connectionManager id="QM1Dev" maxPoolSize="10"/>
 
     <authData id="mqauthid" user="${server-ibmmq-username}" password="${server-ibmmq-password}"/>
     <jmsActivationSpec id="ibm-mq-mdb/Jakarta3ListenerMDB" authDataRef="mqauthid">
         <properties.wmqjmsra
             channel="DEV.APP.SVRCONN"
-            hostName="${server-ibmmq-hostName}" 
-            port="1414"
+            hostName="${server-ibmmq-hostName}"
+            port="${ibmmq.port}"
             queueManager="QM1"
             transportType="CLIENT"
             destinationRef="jms/dev.queue.1"

@@ -12,6 +12,10 @@
     "DYNAMIC_QUEUE_PREFIX": "APP.REPLIES.*",
     "TOPIC_NAME": "dev/",
     "CIPHER": "",
-    "CIPHER_SUITE": ""
+    "CIPHER_SUITE": "",
+    "QUEUES": [
+         "DEV.QUEUE.1",
+         "DEV.QUEUE.2"
+       ]
   }]
 }
