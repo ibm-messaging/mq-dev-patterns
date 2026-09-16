@@ -248,6 +248,7 @@ are set and exported (see language README docs for more info).
 ### Language based MQI / JMS / XMS samples
 #### [Node.js](/Node.js/README.md)
 #### [JMS](/JMS/README.md)
+#### [Java-MQ](/Java-MQ/README.md)
 #### [Python](/Python/README.md)
 #### [C# .Net](/dotnet/README.md)
 #### [Go](/Go/README.md)
@@ -290,4 +291,3 @@ are set and exported (see language README docs for more info).
 ### MQ container deployment examples
 #### [compose](/container/queuemanager/compose/README.md)
 #### [compose](/container/queuemanager/terraform-aws/README.md)
-
