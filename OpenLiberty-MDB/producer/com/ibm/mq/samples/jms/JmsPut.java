@@ -42,7 +42,7 @@ public class JmsPut {
   private static String CHANNEL; // = "DEV.APP.SVRCONN"; // Channel name
   private static String QMGR; // = "QM1"; //System.getenv("QMGR"); // Queue manager name
   private static String APP_USER; // = "app"; // User name that application uses to connect to MQ
-  private static String APP_PASSWORD; // = "passw0rd"; // Password that the application uses to connect to MQ
+  private static String APP_PASSWORD; // = "password"; // Password that the application uses to connect to MQ
   private static String QUEUES[];
 
   private static String CIPHER_SUITE;
