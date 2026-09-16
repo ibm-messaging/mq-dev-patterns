@@ -147,37 +147,44 @@ def build_mq_details(index):
                 EnvStore.PORT, EnvStore.KEY_REPOSITORY, EnvStore.CIPHER]:
         MQDetails[key] = EnvStore.getenv_value(key, index)
 
-# Application logic starts here
-logger.info('Application "BasicGet" is starting')
+def main():
+    global MQDetails, qmgr, queue
 
-envStore = EnvStore()
-envStore.set_env()
+    # Application logic starts here
+    logger.info('Application "BasicGet" is starting')
 
-MQDetails = {}
+    envStore = EnvStore()
+    envStore.set_env()
 
-qmgr = None
-queue = None
+    MQDetails = {}
 
-numEndPoints = envStore.get_endpoint_count()
-logger.info('There are %d connections', numEndPoints)
+    qmgr = None
+    queue = None
 
-# Loop through the connection options. If one succeeds, do the
-# work and then quit.
-for index, conn_info in envStore.get_next_connection_string():
-    logger.info('Trying connection: %s', conn_info)
+    numEndPoints = envStore.get_endpoint_count()
+    logger.info('There are %d connections', numEndPoints)
 
-    build_mq_details(index)
+    # Loop through the connection options. If one succeeds, do the
+    # work and then quit.
+    for index, conn_info in envStore.get_next_connection_string():
+        logger.info('Trying connection: %s', conn_info)
 
-    qmgr = connect(index)
-    if qmgr is not None:
-        queue = get_queue()
-        if queue is not None:
-            get_messages()
-            queue.close()
+        build_mq_details(index)
 
-        qmgr.disconnect()
-        break
+        qmgr = connect(index)
+        if qmgr is not None:
+            queue = get_queue()
+            if queue is not None:
+                get_messages()
+                queue.close()
 
-MQDetails.clear()
+            qmgr.disconnect()
+            break
 
-logger.info('Application is ending')
+    MQDetails.clear()
+
+    logger.info('Application is ending')
+
+
+if __name__ == '__main__':
+    main()
