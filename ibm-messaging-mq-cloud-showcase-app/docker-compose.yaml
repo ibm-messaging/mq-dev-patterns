@@ -21,7 +21,7 @@ services:
     ports:
       - 3000:8080
     networks:
-      - app-pubic-network
+      - app-public-network
     depends_on:
       - be
     labels:
@@ -41,7 +41,7 @@ services:
     ports:
       - 8080:8080
     networks:
-      - app-pubic-network
+      - app-public-network
       - qm1network
     depends_on:
       - mq
@@ -82,6 +82,6 @@ networks:
   qm1network:
     labels:
       - com.ibm.mq=qm1
-  app-pubic-network:
+  app-public-network:
     labels:
       - com.ibm.mq.app=mqapp

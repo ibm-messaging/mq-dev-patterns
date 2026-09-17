@@ -40,7 +40,7 @@ services:
       # only used when running aws-docker-compose.yaml locally for testing.
       - 3000:8080
     networks:
-      - app-pubic-network
+      - app-public-network
     environment:
       # REACT_APP_BE_TLS is omitted — TLS is terminated by the AWS ALB, not the
       # container. The entrypoint defaults to http:// when this variable is absent.
@@ -65,7 +65,7 @@ services:
     image: ${IMAGE_ECS_REGISTRY_URI:?err}/${CLUSTER_NAME:?err}:backend
     container_name: node-be
     networks:
-      - app-pubic-network
+      - app-public-network
       - qm1network
     depends_on:
       - mq
@@ -110,7 +110,7 @@ networks:
   qm1network:
     labels:
       - com.ibm.mq=qm1
-  app-pubic-network:
+  app-public-network:
     labels:
       - com.ibm.mq.app=mqapp
 
