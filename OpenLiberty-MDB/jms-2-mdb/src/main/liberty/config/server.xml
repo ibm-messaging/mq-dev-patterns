@@ -6,17 +6,19 @@
         <feature>javaee-8.0</feature>
     </featureManager>
 
+    <variable name="ibmmq.port" defaultValue="1414" />
+
     <!-- Auth details for IBM MQ default developer config -->
     <!-- <variable name="ibmmq.username" value="app"/>
     <variable name="ibmmq.password" value="yourUsernamePassword"/> -->
 
     <resourceAdapter id="wmqjmsra" location="https://repo.maven.apache.org/maven2/com/ibm/mq/wmq.jmsra/9.3.2.0/wmq.jmsra-9.3.2.0.rar" />
-    
+
     <jmsConnectionFactory jndiName="jms/jmsCF" connectionManagerRef="QM1Dev">
         <properties.wmqjmsra
             channel="DEV.APP.SVRCONN"
             hostName="localhost"
-            port="1414"
+            port="${ibmmq.port}"
             userName="${ibmmq.username}"
             password="${ibmmq.password}"
             queueManager="QM1"
@@ -30,7 +32,7 @@
         <properties.wmqjmsra
             channel="DEV.APP.SVRCONN"
             hostName="${server-ibmmq-hostName}"
-            port="1414"
+            port="${ibmmq.port}"
             userName="${server-ibmmq-username}"
             password="${server-ibmmq-password}"
             queueManager="QM1"
