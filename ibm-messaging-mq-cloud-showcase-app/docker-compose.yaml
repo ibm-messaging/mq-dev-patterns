@@ -38,6 +38,7 @@ services:
         - com.ibm.mq.app=mqapp
     image: backend:0.1
     container_name: node-be
+    platform: linux/amd64
     ports:
       - 8080:8080
     networks:

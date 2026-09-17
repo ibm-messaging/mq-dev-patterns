@@ -64,6 +64,7 @@ services:
         - com.ibm.mq.app=mqapp
     image: ${IMAGE_ECS_REGISTRY_URI:?err}/${CLUSTER_NAME:?err}:backend
     container_name: node-be
+    platform: linux/amd64
     networks:
       - app-public-network
       - qm1network
