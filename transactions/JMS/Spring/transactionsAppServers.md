@@ -45,7 +45,7 @@ We added a transacted property to a JMS context (or session) before starting a m
 
 In the app server environment, service components take over the role of managing transactions. Rather than just knowing which JMS classes to use, you need to know that at a certain point the JEE platform will take over, do things under the covers and provide transactionality for your app.  Your application needs to behave in the right way.
 
-This is where we get to the concept of transaction demarcation. This means setting the boundaries of where the transaction begins and ends.  
+This is where we get to the concept of transaction demarcation. This means setting the boundaries of where the transaction begins and ends.
 
 In Java EE, there are two ways to manage transactions. They help you understand what and how much you're responsible for when including a transaction in your app.
 
@@ -173,9 +173,9 @@ Transactions are an essential part of enterprise application programming. Regard
 
 [Getting IBM JMS samples working in a WAS Liberty Web Server on Ubuntu for people who cannot spell Java Massage Service](https://colinpaice.blog/2018/12/03/getting-ibm-jms-samples-working-in-a-was-libery-web-server-on-ubuntu-for-people-who-cannot-spell-java-massage-service/)
 
-[Installing the resource adapter in Liberty](https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_9.2.0/com.ibm.mq.dev.doc/q128160_.html)
+[Installing the resource adapter in Liberty](https://www.ibm.com/docs/en/ibm-mq/latest?topic=imra-installing-mq-resource-adapter-into-websphere-liberty-using-websphere-liberty-mq-messaging-provider)
 
-[Verifying the resource adapter installation (with an Installation Verification Test (IVT) sample)](https://www.ibm.com/support/knowledgecenter/SSFKSJ_9.2.0/com.ibm.mq.dev.doc/q031760_.html)
+[Verifying the resource adapter installation (with an Installation Verification Test (IVT) sample)](https://www.ibm.com/docs/en/ibm-mq/latest?topic=adapters-verifying-mq-resource-adapter-installation)
 
 [WAS: Java EE architecture: Containers, Components, Annotations](https://www.youtube.com/watch?v=5CVbtcHoVxA)
 
