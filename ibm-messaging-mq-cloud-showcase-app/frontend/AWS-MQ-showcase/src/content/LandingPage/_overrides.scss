@@ -13,22 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
- 
-.landing-page__r2 .cds--tabs--scrollable {
-  transform: translateZ(0);
-  justify-content: flex-end;
-}
 
-.landing-page__r2 .cds--tab-content {
+.landing-page__tabs .cds--tab-content {
   padding: 0;
 }
 
-.cds--tab--list {
-  justify-content: flex-end;
-  padding-right: 1rem;
-}
-
 .cds--subgrid--wide {
-  //fix needed to keep the subgrid from scrolling horizontally
+  // fix needed to keep the subgrid from scrolling horizontally
   margin-right: 1rem;
 }

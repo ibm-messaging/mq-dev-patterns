@@ -16,6 +16,33 @@
 
 import { addEdge } from '@xyflow/react';
 
+export function emitMessageFlow(edgeId) {
+  window.dispatchEvent(
+    new CustomEvent('mq-message-flow', {
+      detail: {
+        edgeId,
+        id: Math.random()
+          .toString(36)
+          .slice(2),
+      },
+    })
+  );
+}
+
+export function emitMessageFlowReverse(edgeId) {
+  window.dispatchEvent(
+    new CustomEvent('mq-message-flow', {
+      detail: {
+        edgeId,
+        id: Math.random()
+          .toString(36)
+          .slice(2),
+        reverse: true,
+      },
+    })
+  );
+}
+
 class MapUtils {
   updateConnectionNodeToQueue(
     set,
@@ -45,7 +72,7 @@ class MapUtils {
                 data: {
                   ...node.data,
                   connectedQueue: queueName,
-                  subscriptionState: isSub ? true : 0,
+                  subscriptionState: 0,
                 },
               };
             }
@@ -65,7 +92,7 @@ class MapUtils {
                 data: {
                   ...node.data,
                   connectedQueue: queueName,
-                  subscriptionState: isSub ? true : 0,
+                  subscriptionState: 0,
                 },
               };
             }
@@ -139,13 +166,10 @@ class MapUtils {
     set({
       edges: get().edges.map(edge => {
         if (edge.source === nodeId || edge.target === nodeId) {
-          edge = {
+          return {
             ...edge,
             animated: !edge.animated,
-            style: {
-              stroke: '#0050e6',
-              strokeWidth: 1.5,
-            },
+            style: { stroke: '#0050e6', strokeWidth: 1.5 },
           };
         }
         return edge;
@@ -157,13 +181,10 @@ class MapUtils {
     set({
       edges: get().edges.map(edge => {
         if (edge.source === nodeId || (isFromEdge && edge.id === nodeId)) {
-          edge = {
+          return {
             ...edge,
             animated: state,
-            style: {
-              stroke: '#0050e6',
-              strokeWidth: 1.5,
-            },
+            style: { stroke: '#0050e6', strokeWidth: 1.5 },
           };
         }
         return edge;
@@ -178,13 +199,10 @@ class MapUtils {
           (edge.source === source && edge.target === target) ||
           (edge.target === source && edge.source === target)
         ) {
-          edge = {
+          return {
             ...edge,
             animated: true,
-            style: {
-              stroke: '#0050e6',
-              strokeWidth: 1.5,
-            },
+            style: { stroke: '#0050e6', strokeWidth: 1.5 },
           };
         }
         return edge;
@@ -193,6 +211,9 @@ class MapUtils {
   }
 
   setActiveNodeAndAnimateFromNodeId(set, get, nodeId) {
+    const currentNode = get().nodes.find(n => n.id === nodeId);
+    const newIsActive = currentNode ? !currentNode.data.isActive : false;
+
     set({
       nodes: get().nodes.map(node => {
         if (node.id === nodeId) {
@@ -200,14 +221,23 @@ class MapUtils {
             ...node,
             data: {
               ...node.data,
-              isActive: !node.data.isActive,
+              isActive: newIsActive,
             },
           };
         }
         return node;
       }),
+      edges: get().edges.map(edge => {
+        if (edge.source === nodeId || edge.target === nodeId) {
+          return {
+            ...edge,
+            animated: newIsActive,
+            style: { stroke: '#0050e6', strokeWidth: 1.5 },
+          };
+        }
+        return edge;
+      }),
     });
-    this.animateEdgeFromNodeIds(set, get, nodeId);
   }
 
   drawConnectionNodeToQueueFromConnection(set, get, connection) {

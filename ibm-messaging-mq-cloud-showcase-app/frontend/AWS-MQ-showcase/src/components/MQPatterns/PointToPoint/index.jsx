@@ -95,9 +95,9 @@ const PointPointIndex = props => {
   }, [_result]);
 
   return (
-    <Grid>
+    <Grid condensed>
       <Column md={8} lg={16} sm={4}>
-        <div style={{ height: 700, marginTop: 10 }}>
+        <div className="flow-container">
           <Flow />
         </div>
 

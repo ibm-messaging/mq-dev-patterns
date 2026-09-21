@@ -15,36 +15,36 @@
  **/
 
 import React, { useEffect, useState } from 'react';
-import {
-  Grid,
-  Column,
-  Row,
-  Toggle,
-  Tag,
-  TextInput,
-  Dropdown,
-} from '@carbon/react';
+import { Toggle, Dropdown } from '@carbon/react';
+import { CheckmarkFilled, SubtractAlt } from '@carbon/react/icons';
 import { Handle } from '@xyflow/react';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PointToPoint/store';
-import { FormLabel } from '@carbon/react';
-import './map.css';
+import NodeCard from './NodeCard';
+import AppIcon from './AppIcon';
+
+const HEADER_BG_ACTIVE = '#defbe6';
+const HEADER_BORDER_ACTIVE = '#24a148';
+const HEADER_BG_IDLE = '#f4f4f4';
+const HEADER_BORDER_IDLE = '#c6c6c6';
 
 const ConsumerNode = ({ id, data }) => {
   const adapter = new APIAdapter();
   const _onClick = useStore(state => state.onClick);
   const deleteMe = useStore(state => state.onDeleteNode);
-  const [lastMessage, setLastMessage] = useState();
-  const [sessionCount, setSessionCount] = useState(0);
-
-  const [name, setName] = useState(data.label);
   const animateConnection = useStore(
     state => state.changeEdgeAnimationFromNodeId
   );
+  const consumeMessageFromQueue = useStore(
+    state => state.consumeMessageFromQueue
+  );
+
+  const [lastMessage, setLastMessage] = useState();
+  const [sessionCount, setSessionCount] = useState(0);
+  const [selectedCurrency, setSelectedCurrency] = useState('EUR');
 
   const isForTheCodingChallange =
     process.env.REACT_APP_IS_FOR_CODING_CHALLENGE === 'true';
-  const [selectedCurrency, setSelectedCurrency] = useState('EUR');
 
   const closeConsumerConnection = async () => {
     try {
@@ -58,7 +58,6 @@ const ConsumerNode = ({ id, data }) => {
     if (data.isActive && data.connectedQueue) {
       const interval = setInterval(async () => {
         try {
-          animateConnection(id, true);
           let _lastMessages;
           if (isForTheCodingChallange) {
             _lastMessages = await adapter.getFromLimitCodingChallange(
@@ -72,6 +71,8 @@ const ConsumerNode = ({ id, data }) => {
           }
           setLastMessage(_lastMessages);
           if (_lastMessages) {
+            animateConnection(id, true);
+            consumeMessageFromQueue(id);
             setSessionCount(state => state + 1);
           }
         } catch (e) {
@@ -82,199 +83,155 @@ const ConsumerNode = ({ id, data }) => {
     }
   });
 
-  const changeName = e => {
-    setName(e.value);
-  };
+  const handle = (
+    <Handle
+      type="target"
+      position="left"
+      style={{
+        zIndex: 200,
+        backgroundColor: data.connectedQueue ? '#555' : 'orange',
+      }}
+      isConnectable={!data.connectedQueue}
+    />
+  );
+
+  const StatusIcon = data.isActive ? (
+    <CheckmarkFilled size={14} className="queue-node__status-icon" />
+  ) : (
+    <SubtractAlt size={14} style={{ color: '#6f6f6f' }} />
+  );
+
+  const headerToggle = (
+    <Toggle
+      id={`consumer-toggle-${id}`}
+      size="sm"
+      hideLabel
+      labelA="Off"
+      labelB="On"
+      disabled={!data.connectedQueue}
+      toggled={data.isActive}
+      onToggle={() => _onClick(id)}
+    />
+  );
 
   if (isForTheCodingChallange) {
     return (
-      <div
-        style={{ width: 400 }}
-        className={`consumer-node-container ${data.isActive && 'blob'}`}>
-        <button
-          className="edgebutton node"
-          onClick={() => {
-            deleteMe(id);
-          }}>
-          X
-        </button>
-        <Handle
-          type={'target'}
-          position={'left'}
-          style={{
-            zIndex: 200,
-            backgroundColor: data.connectedQueue ? '#555' : 'orange',
-            marginRight: 10,
-          }}
-          isConnectable={!data.connectedQueue}
+      <NodeCard
+        headerBg={data.isActive ? HEADER_BG_ACTIVE : HEADER_BG_IDLE}
+        headerBorderColor={
+          data.isActive ? HEADER_BORDER_ACTIVE : HEADER_BORDER_IDLE
+        }
+        icon={<AppIcon size={20} />}
+        title="Consumer app"
+        headerAction={headerToggle}
+        className={data.isActive ? 'blob' : ''}
+        onDelete={() => deleteMe(id)}>
+        {handle}
+
+        <Dropdown
+          id={`consumer-currency-${id}`}
+          items={[
+            { id: '1', text: 'EUR' },
+            { id: '2', text: 'USD' },
+            { id: '3', text: 'GBP' },
+          ]}
+          itemToString={item => (item ? item.text : '')}
+          selectedItem={{ text: selectedCurrency }}
+          onChange={({ selectedItem }) =>
+            setSelectedCurrency(selectedItem.text)
+          }
+          helperText={'Filtering by ' + selectedCurrency}
+          label="Currency"
         />
 
-        <Grid>
-          <Column md={16} lg={16} sm={16}>
-            <Grid>
-              <Column md={10} lg={10} sm={10}>
-                <TextInput
-                  id={`consumer-name-${id}`}
-                  labelText="Name"
-                  className="consumer-node-name-label"
-                  value={name}
-                  size="sm"
-                  onChange={e => changeName(e)}
-                />
-              </Column>
-              <Column md={4} lg={4} sm={4}>
-                <div style={{ width: 200 }}>
-                  <Tag type={!data.isActive ? 'red' : 'green'}>
-                    {' '}
-                    {data.isActive ? 'Active' : 'Inactive'}{' '}
-                  </Tag>
-                </div>
-              </Column>
-            </Grid>
-          </Column>
-
-          <Column md={16} lg={16} sm={16}>
-            <Grid>
-              <Column md={14} lg={14} sm={14}>
-                <Dropdown
-                  items={[
-                    { id: '1', text: 'EUR' },
-                    { id: '2', text: 'USD' },
-                    { id: '3', text: 'GBP' },
-                  ]}
-                  itemToElement={item =>
-                    item ? (
-                      <span className="test" style={{ color: 'red' }}>
-                        {item.text}
-                      </span>
-                    ) : (
-                      ''
-                    )
-                  }
-                  selectedItem={selectedCurrency}
-                  onChange={({ selectedItem }) => {
-                    setSelectedCurrency(selectedItem.text);
-                  }}
-                  helperText={'Filtering by ' + selectedCurrency}
-                />
-              </Column>
-              <Column md={2} lg={2} sm={2}>
-                <div style={{ width: 200 }}>
-                  <Toggle
-                    id={id}
-                    size="sm"
-                    disabled={!data.connectedQueue}
-                    toggled={data.isActive}
-                    onToggle={() => {
-                      _onClick(id);
-                    }}
-                  />
-                </div>
-              </Column>
-            </Grid>
-          </Column>
-          <br />
-
-          <Column md={16} lg={16} sm={16}>
-            <FormLabel className="consumer-subsection-title">
-              Last payment:
-            </FormLabel>
-          </Column>
-          <Column md={16} lg={16} sm={16}>
-            <FormLabel>
-              Amount Received: {lastMessage?.message?.Message} | Currency:{' '}
-              {lastMessage?.currency}
-            </FormLabel>
-          </Column>
-          <Column md={16} lg={16} sm={16}>
-            <FormLabel>
-              Date:
-              {lastMessage?.message?.Sent?.substring(0, 25)}
-            </FormLabel>
-          </Column>
-          <Column md={16} lg={16} sm={16}>
-            <FormLabel>Counter: {lastMessage?.message?.count}</FormLabel>
-          </Column>
-          <Column md={16} lg={16} sm={16}>
-            <FormLabel>Payments Received: {sessionCount}</FormLabel>
-          </Column>
-        </Grid>
-      </div>
-    );
-  } else {
-    return (
-      <div
-        style={{ width: 400 }}
-        className={`consumer-node-container ${data.isActive && 'blob'}`}>
-        <button
-          className="edgebutton node"
-          onClick={() => {
-            deleteMe(id);
-            closeConsumerConnection();
-          }}>
-          X
-        </button>
-        <Handle
-          type={'target'}
-          position={'left'}
-          style={{
-            zIndex: 200,
-            backgroundColor: data.connectedQueue ? '#555' : 'orange',
-            marginRight: 10,
-          }}
-          isConnectable={!data.connectedQueue}
-        />
-
-        <div style={{ display: 'flex', paddingRight: '10px' }}>
-          <TextInput
-            id={`consumer-name-${id}`}
-            labelText="Name"
-            style={{ marginRight: '30px' }}
-            className="consumer-node-name-label"
-            value={name}
-            size="sm"
-            onChange={e => changeName(e)}
-          />
-
-          <Toggle
-            id={id}
-            size="sm"
-            disabled={!data.connectedQueue}
-            toggled={data.isActive}
-            onToggle={() => {
-              _onClick(id);
-            }}
-          />
+        <div className="node-card__stats">
+          <div className="node-card__stat-row">
+            <span className="node-card__stat-label">Status: </span>
+            <span className="node-card__stat-value--with-icon">
+              {StatusIcon}
+              {data.isActive ? 'Active' : 'Inactive'}
+            </span>
+          </div>
+          <div className="node-card__stat-row">
+            <span className="node-card__stat-label">Received</span>
+            <span className="node-card__stat-value">{sessionCount}</span>
+          </div>
+          <div className="node-card__stat-row">
+            <span className="node-card__stat-label">Amount</span>
+            <span className="node-card__stat-value">
+              {lastMessage?.message?.Message ?? '—'}
+            </span>
+          </div>
+          <div className="node-card__stat-row">
+            <span className="node-card__stat-label">Currency</span>
+            <span className="node-card__stat-value">
+              {lastMessage?.currency ?? '—'}
+            </span>
+          </div>
+          <div className="node-card__stat-row">
+            <span className="node-card__stat-label">Date</span>
+            <span className="node-card__stat-value">
+              {lastMessage?.message?.Sent?.substring(0, 10) ?? '—'}
+            </span>
+          </div>
+          <span className="node-card__stat-label">Count</span>
+          <div className="node-card__stat-row">
+            <span className="node-card__stat-value">
+              {lastMessage?.message?.count ?? '—'}
+            </span>
+          </div>
         </div>
-
-        <Tag
-          style={{
-            height: '5px',
-            position: 'absolute',
-            right: '10px',
-            bottom: '5px',
-          }}
-          type={!data.isActive ? 'red' : 'green'}>
-          {' '}
-          {data.isActive ? 'Buying tickets' : 'Service inactive'}{' '}
-        </Tag>
-
-        <FormLabel className="consumer-subsection-title">
-          Last ticket received:
-        </FormLabel>
-
-        <br />
-        <FormLabel>
-          Type: {lastMessage?.Message} | Date:{' '}
-          {lastMessage?.Sent?.substring(0, 25)}
-        </FormLabel>
-        <br />
-        <FormLabel>Counter: {lastMessage?.Count}</FormLabel>
-        <br />
-        <FormLabel>Tickets Received: {sessionCount}</FormLabel>
-      </div>
+      </NodeCard>
     );
   }
+
+  return (
+    <NodeCard
+      headerBg={data.isActive ? HEADER_BG_ACTIVE : HEADER_BG_IDLE}
+      headerBorderColor={
+        data.isActive ? HEADER_BORDER_ACTIVE : HEADER_BORDER_IDLE
+      }
+      icon={<AppIcon size={20} />}
+      title="Consumer app"
+      headerAction={headerToggle}
+      className={data.isActive ? 'blob' : ''}
+      onDelete={() => {
+        deleteMe(id);
+        closeConsumerConnection();
+      }}>
+      {handle}
+
+      <div className="node-card__stats">
+        <div className="node-card__stat-row">
+          <span className="node-card__stat-label">Status</span>
+          <span className="node-card__stat-value--with-icon">
+            {StatusIcon}
+            {data.isActive ? 'Active' : 'Inactive'}
+          </span>
+        </div>
+        <div className="node-card__stat-row">
+          <span className="node-card__stat-label">Received</span>
+          <span className="node-card__stat-value">{sessionCount}</span>
+        </div>
+        <div className="node-card__stat-row">
+          <span className="node-card__stat-label">Type</span>
+          <span className="node-card__stat-value">
+            {lastMessage?.Message ?? '—'}
+          </span>
+        </div>
+        <div className="node-card__stat-row">
+          <span className="node-card__stat-label">Date</span>
+          <span className="node-card__stat-value">
+            {lastMessage?.Sent?.substring(0, 10) ?? '—'}
+          </span>
+        </div>
+      </div>
+
+      <p className="node-card__stat-line">
+        Counter: <strong>{lastMessage?.Count ?? 0}</strong>
+      </p>
+    </NodeCard>
+  );
 };
 
 export default ConsumerNode;

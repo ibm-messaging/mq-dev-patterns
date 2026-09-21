@@ -15,37 +15,36 @@
  **/
 
 import React, { useEffect, useState } from 'react';
-import {
-  Button,
-  Grid,
-  Column,
-  Toggle,
-  Tag,
-  TextInput,
-  FormLabel,
-} from '@carbon/react';
+import { Button, Toggle, TextInput } from '@carbon/react';
+import { Send, CheckmarkFilled, SubtractAlt } from '@carbon/react/icons';
 import { Handle } from '@xyflow/react';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/RequestResponse/store';
-import { Send } from '@carbon/react/icons';
+import NodeCard from './NodeCard';
+import AppIcon from './AppIcon';
 import { toast } from 'react-toastify';
-import './map.css';
 import Cookies from 'js-cookie';
+
+const HEADER_BG_ACTIVE = '#defbe6';
+const HEADER_BORDER_ACTIVE = '#24a148';
+const HEADER_BG_IDLE = '#f4f4f4';
+const HEADER_BORDER_IDLE = '#c6c6c6';
 
 const ResponderNode = ({ id, data }) => {
   const adapter = new APIAdapter();
   const _onClick = useStore(state => state.onClick);
   const deleteMe = useStore(state => state.onDeleteNode);
+  const drainMessageFromQueue = useStore(state => state.drainMessageFromQueue);
   const _drawTmpConnection = useStore(state => state.drawTmpConnection);
   const _animateTmpConnection = useStore(state => state.animateTmpConnection);
   const _deleteTmpConnection = useStore(
     state => state.deleteEdgeFromConnection
   );
+  const [name, setName] = useState(data.label);
   const [lastMessage, setLastMessage] = useState({});
   const [sessionCount, setSessionCount] = useState(0);
-  const [name, setName] = useState(data.label);
   const [getNext, setGetNext] = useState(true);
-  const [responseMessage, setResponseMesasge] = useState();
+  const [responseMessage, setResponseMesasge] = useState('');
   const [replyQueue, setReplyQueue] = useState();
   const [defaultInitQueue, setDefaultInitQueue] = useState();
   const [sessionID, setSessionID] = useState();
@@ -54,7 +53,6 @@ const ResponderNode = ({ id, data }) => {
     let _sessionID = Cookies.get('sessionID');
     id = _sessionID;
     setSessionID(_sessionID);
-
     setDefaultInitQueue(data.connectedQueue);
   }, []);
 
@@ -70,17 +68,19 @@ const ResponderNode = ({ id, data }) => {
               sessionID,
               'DYNREP'
             );
-            _onClick(id);
             setGetNext(true);
-            setLastMessage(_lastMessages.message);
-            let _replyQueue = _lastMessages.replyQueue;
-            setReplyQueue(_replyQueue);
-            if (_replyQueue) {
-              // Drow connection
-              _drawTmpConnection(_replyQueue, id, true);
-              toast.success('Message received! It is time to reply!');
+            if (_lastMessages) {
+              drainMessageFromQueue(id);
+              _onClick(id);
+              setLastMessage(_lastMessages.message);
+              let _replyQueue = _lastMessages.replyQueue;
+              setReplyQueue(_replyQueue);
+              if (_replyQueue) {
+                _drawTmpConnection(_replyQueue, id, true);
+                toast.success('Message received! It is time to reply!');
+              }
+              setSessionCount(state => state + 1);
             }
-            setSessionCount(state => state + 1);
           } catch (e) {
             console.log(e);
           }
@@ -90,19 +90,16 @@ const ResponderNode = ({ id, data }) => {
     }
   });
 
-  const changeName = e => {
-    setName(e.value);
-  };
   const changeResponseMessage = e => {
     setResponseMesasge(e.target.value);
   };
+
   const onSendResponse = () => {
     _animateTmpConnection(replyQueue, id);
     let _responseMessage = responseMessage;
     adapter
       .dynPut(_responseMessage, 1, replyQueue, 'DYNREP', id)
       .then(res => {
-        // animate connection
         _deleteTmpConnection(replyQueue, id);
         setReplyQueue('');
         setLastMessage('');
@@ -113,130 +110,110 @@ const ResponderNode = ({ id, data }) => {
         toast.error('Error on sending your response.');
       });
   };
+
+  const StatusIcon = data.isActive ? (
+    <CheckmarkFilled size={14} className="queue-node__status-icon" />
+  ) : (
+    <SubtractAlt size={14} style={{ color: '#6f6f6f' }} />
+  );
+
+  const headerToggle = (
+    <Toggle
+      id={`responder-toggle-${id}`}
+      size="sm"
+      hideLabel
+      labelA="Off"
+      labelB="On"
+      disabled={!defaultInitQueue}
+      toggled={data.isActive}
+      onToggle={() => _onClick(id)}
+    />
+  );
+
   return (
-    <div style={{ width: 400 }} className="consumer-node-container">
-      <button
-        className="edgebutton node"
-        onClick={() => {
-          deleteMe(id);
-        }}>
-        X
-      </button>
+    <NodeCard
+      headerBg={data.isActive ? HEADER_BG_ACTIVE : HEADER_BG_IDLE}
+      headerBorderColor={
+        data.isActive ? HEADER_BORDER_ACTIVE : HEADER_BORDER_IDLE
+      }
+      icon={<AppIcon size={20} />}
+      title="Responder app"
+      headerAction={headerToggle}
+      onDelete={() => deleteMe(id)}
+      className="responder-app">
       <Handle
-        type={'target'}
-        position={'left'}
+        type="target"
+        position="left"
         style={{
           zIndex: 200,
           backgroundColor: defaultInitQueue ? '#555' : 'orange',
-          marginRight: 10,
         }}
         isConnectable={!defaultInitQueue}
       />
       <Handle
-        type={'source'}
-        position={'left'}
+        type="source"
+        position="left"
         style={{
           zIndex: 200,
           backgroundColor: defaultInitQueue ? '#555' : 'orange',
-          marginRight: 10,
         }}
         isConnectable={!defaultInitQueue}
       />
 
-      <div style={{ display: 'flex', paddingRight: '10px' }}>
-        <TextInput
-          id={`responder-name-${id}`}
-          labelText="Name"
-          style={{ marginRight: '30px' }}
-          className="consumer-node-name-label"
-          value={name}
-          size="sm"
-          onChange={e => changeName(e)}
-        />
-        <div style={{ height: 10 }}>
-          <Toggle
-            id={id}
-            size="sm"
-            disabled={!defaultInitQueue}
-            toggled={data.isActive}
-            onToggle={() => {
-              _onClick(id);
-            }}
-          />
+      <TextInput
+        id={`responder-name-${id}`}
+        size="sm"
+        labelText="Application name"
+        value={name}
+        onChange={e => setName(e.target.value)}
+      />
+
+      <div className="node-card__stats">
+        <div className="node-card__stat-row">
+          <span className="node-card__stat-label">Status</span>
+          <span className="node-card__stat-value--with-icon">
+            {StatusIcon}
+            {data.isActive ? 'Listening' : 'Idle'}
+          </span>
+        </div>
+        <div className="node-card__stat-row">
+          <span className="node-card__stat-label">Transactions</span>
+          <span className="node-card__stat-value">{sessionCount}</span>
+        </div>
+        <div className="node-card__stat-row">
+          <span className="node-card__stat-label">Last message</span>
+          <span className="node-card__stat-value">
+            {lastMessage?.Message ?? '—'}
+          </span>
+        </div>
+        <div className="node-card__stat-row">
+          <span className="node-card__stat-label">Reply queue</span>
+          <span className="node-card__stat-value">{replyQueue ?? '—'}</span>
         </div>
       </div>
-      <FormLabel>Last message received:</FormLabel>
-      <br />
-      <FormLabel className={'consumer-subsection-title'}>
-        {lastMessage?.Message}
-      </FormLabel>
-      <FormLabel className={'consumer-subsection-title'}>
-        Replying in: {replyQueue}
-      </FormLabel>
-      <br />
-      <FormLabel>Transactions Processed: {sessionCount}</FormLabel>
-      <br />
-      <br />
+
+      <hr className="node-card__divider" />
+
       <TextInput
         id={`responder-reply-${id}`}
         labelText="Reply message"
-        className="consumer-node-name-label"
-        placeholder="Write here your message"
+        placeholder="Write your response here"
         value={responseMessage}
         size="sm"
         onChange={e => changeResponseMessage(e)}
       />
 
       <Button
-        renderIcon={props => <Send size={42} {...props} />}
-        className="publisher-node-send-button"
+        renderIcon={props => <Send size={20} {...props} />}
         size="sm"
-        onClick={() => {
-          onSendResponse();
-        }}>
-        Reply
+        kind="primary"
+        style={{ width: '100%' }}
+        disabled={!replyQueue}
+        onClick={onSendResponse}>
+        Send reply
       </Button>
-
-      {/* <Grid>
-        <Column md={7} lg={{ offset: 13 }} sm={3} />
-        <Column md={16} lg={16} sm={16}>
-          <FormLabel>Last message received:</FormLabel>
-        </Column>
-        <Column md={16} lg={16} sm={16}>
-          <FormLabel className={'consumer-subsection-title'}>
-            {lastMessage?.Message}
-          </FormLabel>
-        </Column>
-        <Column md={16} lg={16} sm={16}>
-          <FormLabel className={'consumer-subsection-title'}>
-            Replying in: {replyQueue}
-          </FormLabel>
-        </Column>
-        <Column md={8} lg={8} sm={8}>
-          <TextInput
-            className="consumer-node-name-label"
-            placeholder="Write here your message"
-            value={responseMessage}
-            size="sm"
-            onChange={e => changeResponseMessage(e)}
-          />
-        </Column>
-        <Column md={8} lg={8} sm={8}>
-          <Button
-            renderIcon={props => <Send size={42} {...props} />}
-            className="publisher-node-send-button"
-            size="sm"
-            onClick={() => {
-              onSendResponse();
-            }}>
-            Reply
-          </Button>
-        </Column>
-        <Column md={16} lg={16} sm={16}>
-          <FormLabel>Transactions Processed: {sessionCount}</FormLabel>
-        </Column>
-      </Grid> */}
-    </div>
+    </NodeCard>
   );
 };
+
 export default ResponderNode;

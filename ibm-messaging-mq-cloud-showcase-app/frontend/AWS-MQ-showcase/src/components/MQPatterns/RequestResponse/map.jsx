@@ -19,6 +19,7 @@ import {
   ReactFlow,
   Controls,
   Background,
+  BackgroundVariant,
   ReactFlowProvider,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -29,6 +30,7 @@ import CustomEdge from '../../Map/Custom.edge';
 import Container from '../../Map/Container.node';
 import '../../Map/map.css';
 import useStore from './store';
+import Sidebar from './Sidebar';
 
 const nodeTypes = {
   producer: RequestorNode,
@@ -137,7 +139,7 @@ function Flow() {
   return (
     <div className="dndflow">
       <ReactFlowProvider>
-        {/* <Sidebar /> */}
+        <Sidebar />
         <div className="reactflow-wrapper" ref={reactFlowWrapper}>
           <ReactFlow
             nodes={nodes}
@@ -152,8 +154,13 @@ function Flow() {
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             className="touchdevice-flow"
-            defaultViewport={{ x: 0, y: 0, zoom: 0.5 }}>
-            <Background variant="lines" />
+            defaultViewport={{ x: 0, y: 0, zoom: 0.9 }}>
+            <Background
+              variant={BackgroundVariant.Lines}
+              gap={20}
+              size={1}
+              color="var(--cds-border-subtle-00, #e0e0e0)"
+            />
             <Controls />
           </ReactFlow>
         </div>

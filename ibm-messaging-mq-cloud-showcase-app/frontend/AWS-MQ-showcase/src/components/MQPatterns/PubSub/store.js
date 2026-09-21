@@ -22,7 +22,7 @@ import {
 } from '@xyflow/react';
 import initialNodes from './nodes';
 import initialEdges from './edges';
-import MapUtils from '../../Map/utils';
+import MapUtils, { emitMessageFlow } from '../../Map/utils';
 //import { persist } from 'zustand/middleware';
 const utils = new MapUtils();
 
@@ -91,6 +91,16 @@ const useStore = create((set, get) => ({
   },
   changeEdgeAnimationFromNodeId: (nodeId, state) => {
     utils.animateEdgeFromNodeIds(set, get, nodeId);
+  },
+  publisherSent: publisherNodeId => {
+    get().edges.forEach(edge => {
+      if (edge.source === publisherNodeId) emitMessageFlow(edge.id);
+    });
+  },
+  subscriberReceived: subscriberNodeId => {
+    get().edges.forEach(edge => {
+      if (edge.target === subscriberNodeId) emitMessageFlow(edge.id);
+    });
   },
   onDeleteEdge: edgeId => {
     utils.updateQueueOnDeletingEdge(set, get, edgeId, true);

@@ -18,6 +18,10 @@ terraform.tfstate
 
 mqjms.log.*
 
+**/dist/
+**/build/
+**/.vite/
+
 # Associated with the Python code
 venv*
 Python/tmp/

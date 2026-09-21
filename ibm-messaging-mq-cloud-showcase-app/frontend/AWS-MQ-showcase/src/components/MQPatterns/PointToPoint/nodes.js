@@ -14,7 +14,7 @@
  * limitations under the License.
  **/
 
-const initialNodes = [  
+const initialNodes = [
   {
     id: '1',
     type: 'producer',
@@ -37,7 +37,7 @@ const initialNodes = [
       connectedQueue: 'DEV.QUEUE.1',
       isActive: false,
     },
-    position: { x: 1350, y: 50 },
+    position: { x: 1150, y: 62 },
     targetPosition: 'left',
     draggable: true,
   },
@@ -53,7 +53,7 @@ const initialNodes = [
     position: { x: 650, y: 105 },
     sourcePosition: 'right',
     targetPosition: 'left',
-    draggable: true,        
-  }
+    draggable: true,
+  },
 ];
 export default initialNodes;

@@ -16,11 +16,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { Handle } from '@xyflow/react';
-import './map.css';
-
-import useStore from '../MQPatterns/PubSub/store';
-import { FormLabel, TextInput } from '@carbon/react';
+import { TextInput } from '@carbon/react';
+import { Close, MediaCast } from '@carbon/react/icons';
 import { toast } from 'react-toastify';
+import useStore from '../MQPatterns/PubSub/store';
+import './NodeCard.scss';
 
 const TopicNode = ({ id, data, isConnectable }) => {
   const _updateTopicName = useStore(state => state.updateTopicName);
@@ -40,7 +40,6 @@ const TopicNode = ({ id, data, isConnectable }) => {
     let index = text.indexOf('#');
     let _isAWildcard = false;
     let isInvalidName = false;
-    // if # is in the topic name
     if (index > -1) {
       let textLength = text.length;
       if (index === textLength - 1) {
@@ -72,47 +71,46 @@ const TopicNode = ({ id, data, isConnectable }) => {
   };
 
   return (
-    <div className="topic-node-container">
+    <div className="topic-node">
       <button
-        style={{ right: '44%' }}
-        className="edgebutton node"
-        onClick={() => {
-          deleteMe(id, true);
-        }}>
-        X
+        className="topic-node__close"
+        aria-label="Delete Topic"
+        onClick={() => deleteMe(id, true)}>
+        <Close size={10} />
       </button>
-      {!isAWildcard ? (
+
+      {!isAWildcard && (
         <Handle
           type="target"
           position="left"
-          style={{
-            background: '#0050e6',
-          }}
-          onConnect={params => console.log('handle onConnect', params)}
+          className="topic-node__handle topic-node__handle--left"
           isConnectable={isConnectable}
         />
-      ) : (
-        <></>
       )}
 
       <Handle
         type="source"
         position="right"
-        style={{ background: 'orange' }}
-        onConnect={params => console.log('handle onConnect', params)}
+        className="topic-node__handle topic-node__handle--right"
         isConnectable={isConnectable}
       />
 
-      <FormLabel className="topic-label">Topic:</FormLabel>
-
-      <TextInput
-        id={`topic-name-${id}`}
-        labelText="Topic name"
-        className="topic-text-input"
-        value={data.queueName}
-        size="sm"
-        onChange={e => onTextInputChange(e)}
-      />
+      <div className="topic-node__inner">
+        <MediaCast size={22} className="topic-node__icon" />
+        <span className="topic-node__label">TOPIC</span>
+        <div className="topic-node__input-wrap">
+          <TextInput
+            id={`topic-name-${id}`}
+            labelText=""
+            hideLabel
+            value={data.queueName}
+            size="sm"
+            placeholder="tickets/classic"
+            onChange={e => onTextInputChange(e)}
+            className="topic-node__input"
+          />
+        </div>
+      </div>
     </div>
   );
 };

@@ -15,28 +15,34 @@
  **/
 
 import React, { useEffect, memo, useState } from 'react';
-import { Button, NumberInput, FormLabel, TextInput } from '@carbon/react';
+import { Button, NumberInput, TextInput } from '@carbon/react';
 import { Handle } from '@xyflow/react';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/RequestResponse/store';
-import './map.css';
+import NodeCard from './NodeCard';
+import AppIcon from './AppIcon';
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
+
+// Figma spec: blue accent header — same as Producer
+const HEADER_BG = '#e8f3ff';
+const HEADER_BORDER = '#0f62fe';
 
 const RequestorNode = ({ id, data }) => {
   const adapter = new APIAdapter();
   const animateConnection = useStore(
     state => state.changeEdgeAnimationFromNodeId
   );
+  const sendMessages = useStore(state => state.sendMessages);
   const deleteMe = useStore(state => state.onDeleteNode);
   const _drawTmpQueue = useStore(state => state.creteTmpQueue);
   const _drawTmpConnection = useStore(state => state.drawTmpConnection);
   const _deleteTmpQueue = useStore(
     state => state.deleteTmpQueueFromTmpQueueName
   );
+  const [name, setName] = useState(data.label);
   const [quantity, setQuantity] = useState(1);
   const [animationState, setAnimationState] = useState(false);
-  const [name, setName] = useState(data.label);
   const [tmpQueueName, setTmpQueueName] = useState();
   const [isWaitingForReply, setIsWaitingForReply] = useState(false);
   const [responseMessage, setResponseMessage] = useState();
@@ -79,9 +85,9 @@ const RequestorNode = ({ id, data }) => {
   const _onClick = id => {
     setAnimationState(true);
     animateConnection(id, true);
+    sendMessages(id, quantity);
     try {
       let message = 'Request';
-      // Adapter DYNPUT
       adapter
         .dynPut(message, 1, data.connectedQueue, 'DYNPUT', id, sessionID)
         .then(res => {
@@ -106,22 +112,16 @@ const RequestorNode = ({ id, data }) => {
     setQuantity(quantity + delta);
   };
 
-  const changeName = e => {
-    setName(e.value);
-  };
-
   return (
-    <div className="producer-node-container">
-      <button
-        className="edgebutton node"
-        onClick={() => {
-          deleteMe(id);
-        }}>
-        X
-      </button>
+    <NodeCard
+      headerBg={HEADER_BG}
+      headerBorderColor={HEADER_BORDER}
+      icon={<AppIcon size={20} />}
+      title="Requestor app"
+      onDelete={() => deleteMe(id)}>
       <Handle
-        type={'source'}
-        position={'right'}
+        type="source"
+        position="right"
         style={{
           zIndex: 200,
           backgroundColor: data.connectedQueue ? '#555' : '#0050e6',
@@ -129,30 +129,27 @@ const RequestorNode = ({ id, data }) => {
         isConnectable={!data.connectedQueue}
       />
       <Handle
-        type={'target'}
-        position={'right'}
+        type="target"
+        position="right"
         style={{
           zIndex: 200,
           backgroundColor: data.connectedQueue ? '#555' : '#0050e6',
         }}
         isConnectable={!data.connectedQueue}
       />
+
       <TextInput
         id={`requestor-name-${id}`}
         size="sm"
-        className="producer-node-name-label"
         labelText="Name of your application"
         value={name}
-        onChange={e => changeName(e)}
+        onChange={e => setName(e.target.value)}
       />
 
       <NumberInput
-        // helperText="At least 1 sub to start the pattern is required"
         id={`requestor-quantity-${id}`}
         invalidText="Number is not valid"
-        label="Quantity request: "
-        // warn={currentSubscribers == 0}
-        // warnText="At least 1 sub to start the pattern is required"
+        label="Request quantity"
         max={100}
         min={1}
         step={10}
@@ -161,19 +158,20 @@ const RequestorNode = ({ id, data }) => {
       />
 
       <Button
-        className="producer-node-send-button"
         size="sm"
-        disabled={isWaitingForReply}
-        onClick={() => {
-          _onClick(id);
-        }}>
-        Submit Request
+        kind="primary"
+        style={{ width: '100%' }}
+        disabled={isWaitingForReply || !data.connectedQueue}
+        onClick={() => _onClick(id)}>
+        {isWaitingForReply ? 'Waiting for reply…' : 'Submit request'}
       </Button>
 
-      <FormLabel className={'consumer-subsection-title'}>
-        Response: {responseMessage}
-      </FormLabel>
-    </div>
+      {responseMessage && (
+        <p className="node-card__stat-line">
+          Response: <strong>{responseMessage}</strong>
+        </p>
+      )}
+    </NodeCard>
   );
 };
 

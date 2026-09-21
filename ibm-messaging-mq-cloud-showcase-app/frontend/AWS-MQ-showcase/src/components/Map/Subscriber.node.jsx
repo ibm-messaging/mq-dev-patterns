@@ -14,30 +14,37 @@
  * limitations under the License.
  **/
 
-import React, { useEffect, useState } from 'react';
-import { Grid, Column, Tag, TextInput, FormLabel } from '@carbon/react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Handle } from '@xyflow/react';
+import { TextInput } from '@carbon/react';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PubSub/store';
-import './map.css';
+import NodeCard from './NodeCard';
+import AppIcon from './AppIcon';
 import { toast } from 'react-toastify';
+
+const HEADER_BG = '#defbe6';
+const HEADER_BORDER = '#24a148';
+const HEADER_BG_SUBSCRIBED = '#a7f0ba';
 
 const SubscriberNode = ({ id, data }) => {
   const adapter = new APIAdapter();
   const animateConnection = useStore(
     state => state.changeEdgeAnimationFromNodeId
   );
-  const [animationState, setAnimationState] = useState(false);
+  const subscriberReceived = useStore(state => state.subscriberReceived);
   const _deleteMe = useStore(state => state.onDeleteNode);
-  const _deleteEdgeDueToFailingSUb = useStore(
+  const _deleteEdgeDueToFailingSub = useStore(
     state => state.deleteEdgeFromNode
   );
+
   const [lastMessage, setLastMessage] = useState(undefined);
   const [sessionCount, setSessionCount] = useState(0);
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const [name, setName] = useState(data.label);
   const [canSend, setCandSend] = useState(true);
-  // Randomize the intervals between API invocations.
+  const [animationState, setAnimationState] = useState(false);
+  const nameRef = useRef(null);
+
   const intervalTillTheLastMessage = between(1500, 3500);
 
   function between(min, max) {
@@ -45,7 +52,7 @@ const SubscriberNode = ({ id, data }) => {
   }
 
   useEffect(() => {
-    if (data.connectedQueue) {
+    if (data.connectedQueue && isSubscribed) {
       const interval = setInterval(async () => {
         try {
           if (canSend) {
@@ -58,13 +65,12 @@ const SubscriberNode = ({ id, data }) => {
 
             if (_lastMessages !== undefined) {
               if (_lastMessages === -1) {
-                // if -1 it means that the sub is not subcscribed to
-                // the topic. So maybe we can sub it
                 setIsSubscribed(true);
                 toast.success('Success on subscription');
               } else {
                 setAnimationState(true);
                 animateConnection(id, true);
+                subscriberReceived(id);
                 setLastMessage(_lastMessages);
                 setSessionCount(state => state + 1);
               }
@@ -88,27 +94,13 @@ const SubscriberNode = ({ id, data }) => {
   }, [animationState]);
 
   useEffect(() => {
-    switch (data.subscriptionState) {
-      // if it is not subscribed
-      case 0:
-        if (data.connectedQueue) {
-          subscribe();
-        } else if (!data.connectedQueue) {
-          setIsSubscribed(false);
-        }
-        break;
-      // when the connection edge is deleted
-      case 2:
-        unsub();
-        break;
-      default:
-        break;
+    if (data.connectedQueue && data.subscriptionState !== 2) {
+      subscribe();
+    } else if (!data.connectedQueue || data.subscriptionState === 2) {
+      if (isSubscribed) unsub();
+      else setIsSubscribed(false);
     }
-  }, [data.subscriptionState]);
-
-  const changeName = e => {
-    setName(e.value);
-  };
+  }, [data.connectedQueue, data.subscriptionState]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const unsub = () => {
     let promise = new Promise((resolve, reject) => {
@@ -123,7 +115,6 @@ const SubscriberNode = ({ id, data }) => {
           setIsSubscribed(false);
         });
     });
-
     toast.promise(promise, {
       pending: 'Waiting for unsubscribing',
       success: 'Success on unsubscribing',
@@ -141,8 +132,7 @@ const SubscriberNode = ({ id, data }) => {
         })
         .catch(err => {
           reject();
-          // Clean connection
-          _deleteEdgeDueToFailingSUb(id);
+          _deleteEdgeDueToFailingSub(id);
           setIsSubscribed(false);
         });
     });
@@ -159,65 +149,69 @@ const SubscriberNode = ({ id, data }) => {
   };
 
   return (
-    <div className="subscriber-node-container ">
-      <button
-        className="edgebutton node"
-        onClick={() => {
-          deleteMe();
-        }}>
-        X
-      </button>
+    <NodeCard
+      headerBg={isSubscribed ? HEADER_BG_SUBSCRIBED : HEADER_BG}
+      headerBorderColor={HEADER_BORDER}
+      icon={<AppIcon size={20} />}
+      title="Subscriber"
+      titleColor="#161616"
+      onDelete={deleteMe}>
       <Handle
-        type={'target'}
-        position={'left'}
+        type="target"
+        position="left"
         style={{
           zIndex: 200,
           backgroundColor: data.connectedQueue ? '#555' : 'orange',
-          marginRight: 10,
         }}
         isConnectable={!data.connectedQueue}
       />
 
+      {/* Name field */}
       <TextInput
+        ref={nameRef}
         id={`subscriber-name-${id}`}
-        labelText="Name"
-        className="consumer-node-name-label"
-        value={name}
         size="sm"
-        onChange={e => changeName(e)}
+        labelText="Name"
+        defaultValue={data.label || 'Subscriber'}
       />
 
-      <Column md={16} lg={16} sm={16}>
-        <FormLabel className="consumer-subsection-title">
-          Last Notification received:
-        </FormLabel>
-      </Column>
-      <Column md={16} lg={16} sm={16}>
-        <FormLabel>Title: {lastMessage?.Title}</FormLabel>
-      </Column>
-      <Column md={16} lg={16} sm={16}>
-        <FormLabel>Message: {lastMessage?.Message}</FormLabel>
-      </Column>
-      <Column md={16} lg={16} sm={16}>
-        <FormLabel>Date: {lastMessage?.Date}</FormLabel>
-      </Column>
-      <Column md={16} lg={16} sm={16}>
-        <FormLabel>Notifications Received: {sessionCount}</FormLabel>
-      </Column>
+      <span className="node-card__section-label">
+        Last notification received
+      </span>
 
-      <Tag
-        style={{
-          height: '5px',
-          position: 'absolute',
-          right: '10px',
-          bottom: '5px',
-        }}
-        type={isSubscribed ? 'green' : 'warm-gray'}>
-        {isSubscribed
-          ? 'Subscribed to: ' + data.connectedQueue
-          : 'No subscription'}
-      </Tag>
-    </div>
+      <div className="node-card__msg-grid">
+        <span className="node-card__msg-label">Title</span>
+        <span className="node-card__msg-value">
+          {lastMessage?.Title ?? '—'}
+        </span>
+
+        <span className="node-card__msg-label">Message</span>
+        <span className="node-card__msg-value">
+          {lastMessage?.Message ?? '—'}
+        </span>
+
+        <span className="node-card__msg-label">Date</span>
+        <span className="node-card__msg-value">{lastMessage?.Date ?? '—'}</span>
+      </div>
+
+      <div>
+        {isSubscribed && data.connectedQueue ? (
+          <span className="node-card__sub-badge">
+            Subscribed to: {data.connectedQueue}
+          </span>
+        ) : (
+          <span className="node-card__sub-badge node-card__sub-badge--empty">
+            —
+          </span>
+        )}
+      </div>
+
+      <div
+        className="node-card__count-footer"
+        style={{ margin: '0 -12px -12px' }}>
+        Notifications received:&nbsp;<strong>{sessionCount}</strong>
+      </div>
+    </NodeCard>
   );
 };
 

@@ -19,6 +19,7 @@ import {
   ReactFlow,
   Controls,
   Background,
+  BackgroundVariant,
   ReactFlowProvider,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -151,9 +152,14 @@ function Flow() {
             onConnect={onConnect}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
-            defaultViewport={{ x: 0, y: 0, zoom: 0.1 }}
+            defaultViewport={{ x: 0, y: 0, zoom: 0.9 }}
             className="touchdevice-flow">
-            <Background variant="lines" />
+            <Background
+              variant={BackgroundVariant.Dots}
+              gap={20}
+              size={1}
+              color="var(--cds-border-subtle-00, #e0e0e0)"
+            />
             <Controls />
           </ReactFlow>
         </div>

@@ -55,9 +55,9 @@ const PubSub = props => {
   }
 
   return (
-    <Grid>
+    <Grid condensed>
       <Column md={8} lg={16} sm={4} className="landing-page__tab-content">
-        <div style={{ height: 700, marginBottom: 10 }}>
+        <div className="flow-container">
           <Flow />
         </div>
         <Chart1 data={dataChart1} />

@@ -28,19 +28,26 @@ import { Handle } from '@xyflow/react';
 import { Send } from '@carbon/react/icons';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PointToPoint/store';
-import './map.css';
+import NodeCard from './NodeCard';
+import AppIcon from './AppIcon';
 
 const PRODUCTION_QUANTITY = 5;
+const HEADER_BG = '#e8f3ff';
+const HEADER_BORDER = '#0f62fe';
+
 const ProducerNode = ({ id, data }) => {
   const adapter = new APIAdapter();
   const animateConnection = useStore(
     state => state.changeEdgeAnimationFromNodeId
   );
+  const sendMessages = useStore(state => state.sendMessages);
   const deleteMe = useStore(state => state.onDeleteNode);
+
   const [quantity, setQuantity] = useState(PRODUCTION_QUANTITY);
   const [animationState, setAnimationState] = useState(false);
   const [name, setName] = useState(data.label);
   const [isToggle, setIsToggle] = useState(false);
+  const [totalSent, setTotalSent] = useState(0);
 
   const isForTheCodingChallange =
     process.env.REACT_APP_IS_FOR_CODING_CHALLENGE === 'true';
@@ -68,20 +75,20 @@ const ProducerNode = ({ id, data }) => {
     setAnimationState(true);
     animateConnection(id, true);
     try {
-      let message = 'You bought a new ticket!';
       if (isForTheCodingChallange) {
         adapter
           .put(quantity, 1, data.connectedQueue, selectedCurrency)
-          .then(res => {
-            if (isToggle) {
-              adapter.closeProducer();
-            }
+          .then(() => {
+            sendMessages(id, quantity);
+            setTotalSent(prev => prev + quantity);
+            if (isToggle) adapter.closeProducer();
           });
       } else {
-        adapter.put(message, quantity, data.connectedQueue).then(res => {
-          if (isToggle) {
-            adapter.closeProducer();
-          }
+        let message = 'You bought a new ticket!';
+        adapter.put(message, quantity, data.connectedQueue).then(() => {
+          sendMessages(id, quantity);
+          setTotalSent(prev => prev + quantity);
+          if (isToggle) adapter.closeProducer();
         });
       }
     } catch (e) {
@@ -95,43 +102,43 @@ const ProducerNode = ({ id, data }) => {
     setQuantity(quantity + delta);
   };
 
-  const changeName = e => {
-    setName(e.value);
-  };
-
   useEffect(() => {
     if (!data.connectedQueue) {
       adapter.closeProducer();
     }
   }, [data.connectedQueue]);
 
+  const handle = (
+    <Handle
+      type="source"
+      position="right"
+      style={{
+        zIndex: 200,
+        backgroundColor: data.connectedQueue ? '#555' : '#0050e6',
+      }}
+      isConnectable={!data.connectedQueue}
+    />
+  );
+
   if (isForTheCodingChallange) {
     return (
-      <div style={{ width: 400 }} className="producer-node-container">
-        <button
-          className="edgebutton node"
-          onClick={() => {
-            deleteMe(id);
-            adapter.closeProducer();
-          }}>
-          X
-        </button>
-        <Handle
-          type={'source'}
-          position={'right'}
-          style={{
-            zIndex: 200,
-            backgroundColor: data.connectedQueue ? '#555' : '#0050e6',
-          }}
-          isConnectable={!data.connectedQueue}
-        />
+      <NodeCard
+        headerBg={HEADER_BG}
+        headerBorderColor={HEADER_BORDER}
+        icon={<AppIcon size={20} />}
+        title="Producer app"
+        onDelete={() => {
+          deleteMe(id);
+          adapter.closeProducer();
+        }}>
+        {handle}
+
         <TextInput
           id={`producer-name-${id}`}
           size="sm"
-          className="producer-node-name-label"
           labelText="Name of your sender"
           value={name}
-          onChange={e => changeName(e)}
+          onChange={e => setName(e.target.value)}
         />
 
         <Grid>
@@ -147,109 +154,97 @@ const ProducerNode = ({ id, data }) => {
               onChange={handleOnChange}
             />
           </Column>
-
           <Column lg={7}>
             <Dropdown
+              id={`producer-currency-${id}`}
               items={[
                 { id: '1', text: 'EUR' },
                 { id: '2', text: 'USD' },
                 { id: '3', text: 'GBP' },
               ]}
-              itemToElement={item =>
-                item ? (
-                  <span className="test" style={{ color: 'red' }}>
-                    {item.text}
-                  </span>
-                ) : (
-                  ''
-                )
+              itemToString={item => (item ? item.text : '')}
+              selectedItem={{ text: selectedCurrency }}
+              onChange={({ selectedItem }) =>
+                setSelectedCurrency(selectedItem.text)
               }
-              selectedItem={selectedCurrency}
-              onChange={({ selectedItem }) => {
-                setSelectedCurrency(selectedItem.text);
-              }}
               helperText="Currency"
             />
           </Column>
         </Grid>
 
         <Button
-          className="publisher-node-send-button"
-          renderIcon={props => <Send size={42} {...props} />}
+          renderIcon={props => <Send size={20} {...props} />}
           size="sm"
+          kind="primary"
+          style={{ width: '100%' }}
           disabled={!data.connectedQueue || animationState || quantity <= 0}
-          onClick={() => {
-            _onClick(id);
-          }}>
+          onClick={() => _onClick(id)}>
           Send cash
         </Button>
-      </div>
-    );
-  } else {
-    return (
-      <div className="producer-node-container">
-        <button
-          className="edgebutton node"
-          onClick={() => {
-            deleteMe(id);
-          }}>
-          X
-        </button>
-        <Handle
-          type={'source'}
-          position={'right'}
-          style={{
-            zIndex: 200,
-            backgroundColor: data.connectedQueue ? '#555' : '#0050e6',
-          }}
-          isConnectable={!data.connectedQueue}
-        />
-        <TextInput
-          id={`producer-name-${id}`}
-          size="sm"
-          className="producer-node-name-label"
-          labelText="Name of your application"
-          value={name}
-          onChange={e => changeName(e)}
-        />
 
-        <NumberInput
-          // helperText="At least 1 sub to start the pattern is required"
-          id={`producer-tickets-${id}`}
-          invalidText="Number is not valid"
-          label="Tickets created: "
-          // warn={currentSubscribers == 0}
-          // warnText="At least 1 sub to start the pattern is required"
-          max={100}
-          min={1}
-          step={1}
-          value={quantity}
-          onChange={handleOnChange}
-        />
-
-        <Button
-          className="producer-node-send-button"
-          size="sm"
-          disabled={!data.connectedQueue || animationState || quantity <= 0}
-          onClick={() => {
-            _onClick(id);
-          }}>
-          Create Bookings
-        </Button>
-
-        <Toggle
-          id={id}
-          size="sm"
-          labelA={'Start auto'}
-          labelB={'Stop auto'}
-          toggled={isToggle}
-          onToggle={() => {
-            setIsToggle(!isToggle);
-          }}
-        />
-      </div>
+        <p className="node-card__stat-line">
+          Total sent: <strong>{totalSent}</strong>
+        </p>
+      </NodeCard>
     );
   }
+
+  return (
+    <NodeCard
+      headerBg={HEADER_BG}
+      headerBorderColor={HEADER_BORDER}
+      icon={<AppIcon size={20} />}
+      title="Producer app"
+      onDelete={() => deleteMe(id)}>
+      {handle}
+
+      <TextInput
+        id={`producer-name-${id}`}
+        size="sm"
+        labelText="Application name"
+        value={name}
+        onChange={e => setName(e.target.value)}
+      />
+
+      <NumberInput
+        id={`producer-tickets-${id}`}
+        invalidText="Number is not valid"
+        label="Quantity per request"
+        max={100}
+        min={1}
+        step={1}
+        value={quantity}
+        onChange={handleOnChange}
+      />
+
+      <Button
+        size="sm"
+        kind="primary"
+        style={{ width: '100%' }}
+        disabled={!data.connectedQueue || animationState || quantity <= 0}
+        onClick={() => _onClick(id)}>
+        Create booking
+      </Button>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span style={{ fontSize: '11px', color: '#525252' }}>Auto send</span>
+        <Toggle
+          id={`producer-toggle-${id}`}
+          size="sm"
+          hideLabel
+          toggled={isToggle}
+          onToggle={() => setIsToggle(!isToggle)}
+        />
+        <span style={{ fontSize: '11px', color: '#161616' }}>
+          {isToggle ? 'On' : 'Off'}
+        </span>
+      </div>
+
+      <p className="node-card__stat-line">
+        Total sent: <strong>{totalSent}</strong>
+      </p>
+    </NodeCard>
+  );
 };
 
 export default memo(ProducerNode);

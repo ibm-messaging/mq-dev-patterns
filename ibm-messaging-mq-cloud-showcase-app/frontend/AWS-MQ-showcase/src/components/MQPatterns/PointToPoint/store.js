@@ -22,7 +22,7 @@ import {
 } from '@xyflow/react';
 import initialNodes from './nodes';
 import initialEdges from './edges';
-import MapUtils from '../../Map/utils';
+import MapUtils, { emitMessageFlow } from '../../Map/utils';
 //import { persist } from 'zustand/middleware';
 const utils = new MapUtils();
 
@@ -30,6 +30,8 @@ const useStore = create((set, get) => ({
   nodes: initialNodes,
   edges: initialEdges,
   queueData: [],
+  nodeDepths: {},
+  localDepths: {},
   onNodesChange: changes => {
     set({
       nodes: applyNodeChanges(changes, get().nodes),
@@ -62,6 +64,64 @@ const useStore = create((set, get) => ({
   changeEdgeAnimationFromNodeId: (nodeId, state, isFromEdge = false) => {
     utils.animateEdgeFromProducer(set, get, nodeId, state, isFromEdge);
   },
+  sendMessages: (nodeId, count) => {
+    const edges = get().edges;
+    const outEdge = edges.find(e => e.source === nodeId);
+    if (!outEdge) return;
+    // Find the target queue node id from the edge
+    const queueNodeId = outEdge.target;
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        emitMessageFlow(outEdge.id);
+        setTimeout(() => {
+          set({
+            nodes: get().nodes.map(node => {
+              if (node.id === queueNodeId) {
+                return {
+                  ...node,
+                  data: {
+                    ...node.data,
+                    landCount: (node.data?.landCount || 0) + 1,
+                  },
+                };
+              }
+              return node;
+            }),
+          });
+        }, 950);
+      }, i * 1000);
+    }
+  },
+
+  consumeMessageFromQueue: consumerNodeId => {
+    const MAX_SLOTS = 5;
+    const edges = get().edges;
+    const inboundEdge = edges.find(e => e.target === consumerNodeId);
+    if (!inboundEdge) return;
+    const queueNodeId = inboundEdge.source;
+    emitMessageFlow(inboundEdge.id);
+    const prevLocal =
+      get().localDepths[queueNodeId] ?? get().nodeDepths[queueNodeId] ?? 0;
+    const newLocal = Math.max(prevLocal - 1, 0);
+    set(state => ({
+      localDepths: { ...state.localDepths, [queueNodeId]: newLocal },
+      nodes: state.nodes.map(node => {
+        if (node.id === queueNodeId) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              drainCount:
+                prevLocal <= MAX_SLOTS
+                  ? (node.data?.drainCount || 0) + 1
+                  : node.data?.drainCount || 0,
+            },
+          };
+        }
+        return node;
+      }),
+    }));
+  },
   onDeleteEdge: edgeId => {
     utils.updateQueueOnDeletingEdge(set, get, edgeId);
     set({
@@ -86,6 +146,12 @@ const useStore = create((set, get) => ({
     set({
       nodes: get().nodes.concat(node),
     });
+  },
+  setNodeDepth: (nodeId, depth) => {
+    set(state => ({
+      nodeDepths: { ...state.nodeDepths, [nodeId]: depth },
+      localDepths: { ...state.localDepths, [nodeId]: depth },
+    }));
   },
   updateQueueData: data => {
     set(state => ({

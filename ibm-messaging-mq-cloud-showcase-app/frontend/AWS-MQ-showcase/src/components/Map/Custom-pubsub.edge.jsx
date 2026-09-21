@@ -14,12 +14,72 @@
  * limitations under the License.
  **/
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { getBezierPath } from '@xyflow/react';
 import useStore from '../MQPatterns/PubSub/store';
 import './map.css';
 
 const foreignObjectSize = 40;
+const DURATION = 950;
+const REMOVE_AFTER = DURATION + 100;
+
+function MessageIcon({ color }) {
+  return (
+    <g>
+      <rect x="-9" y="-6" width="18" height="13" rx="2" fill={color} />
+      <polyline
+        points="-9,-6 0,2 9,-6"
+        stroke="white"
+        strokeWidth="1.5"
+        fill="none"
+      />
+    </g>
+  );
+}
+
+function AnimatedParticle({ pathRef, reverse, color }) {
+  const gRef = useRef(null);
+
+  useEffect(() => {
+    let raf;
+    const waitForPath = () => {
+      const pathEl = pathRef.current;
+      if (!pathEl || !gRef.current) {
+        raf = requestAnimationFrame(waitForPath);
+        return;
+      }
+      const el = gRef.current;
+      const start = performance.now();
+
+      const tick = now => {
+        const t = Math.min((now - start) / DURATION, 1);
+        // Quintic ease-in-out
+        const ease = t < 0.5 ? 16 * t ** 5 : 1 - Math.pow(-2 * t + 2, 5) / 2;
+        const len = pathEl.getTotalLength();
+        const dist = reverse ? (1 - ease) * len : ease * len;
+        const pt = pathEl.getPointAtLength(dist);
+        el.setAttribute('transform', `translate(${pt.x},${pt.y})`);
+        if (t < 1) raf = requestAnimationFrame(tick);
+      };
+
+      raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(waitForPath);
+    return () => cancelAnimationFrame(raf);
+  }, [pathRef, reverse]);
+
+  return (
+    <g ref={gRef}>
+      <MessageIcon color={color} />
+    </g>
+  );
+}
+
+const COLORS = ['#0f62fe', '#0050e6', '#4589ff', '#0043ce', '#002d9c'];
+function randomColor() {
+  return COLORS[Math.floor(Math.random() * COLORS.length)];
+}
 
 export default function CustomEdge({
   id,
@@ -27,7 +87,6 @@ export default function CustomEdge({
   sourceY,
   targetX,
   targetY,
-  animated,
   sourcePosition,
   targetPosition,
   style = {},
@@ -43,54 +102,45 @@ export default function CustomEdge({
   });
 
   const _deleteOnClick = useStore(state => state.onDeleteEdge);
-  const [messageX, setMessageX] = useState(labelX);
-  const [messageY, setMessageY] = useState(labelY);
-  const TRANSITION_TIME = 300;
-
-  const [animationCounter, setAnimationCounter] = useState(0);
+  const pathRef = useRef(null);
+  const [particles, setParticles] = useState([]);
 
   useEffect(() => {
-    if (animated && animationCounter === 0) {
-      setMessageX(sourceX);
-      setMessageY(sourceY);
-      setAnimationCounter(1);
-    } else if (animated && animationCounter === 1) {
-      const t = setTimeout(() => {
-        setMessageX(labelX);
-        setMessageY(labelY);
-        setAnimationCounter(2);
-      }, TRANSITION_TIME);
-      return () => clearTimeout(t);
-    } else if (animated && animationCounter === 2) {
-      const t = setTimeout(() => {
-        setMessageX(targetX);
-        setMessageY(targetY);
-        setAnimationCounter(3);
-      }, TRANSITION_TIME);
-      return () => clearTimeout(t);
-    } else if (animated && animationCounter === 3) {
-      const t = setTimeout(() => {
-        setAnimationCounter(0);
-      }, TRANSITION_TIME);
-      return () => clearTimeout(t);
-    }
-  }, [animated, animationCounter]);
+    const handler = e => {
+      const detail = e.detail;
+      if (detail.edgeId !== id) return;
 
-  const onEdgeClick = (evt, id) => {
+      const pid = detail.id;
+      const rev = !!detail.reverse;
+      const col = randomColor();
+
+      setParticles(prev => [...prev, { id: pid, reverse: rev, color: col }]);
+
+      setTimeout(() => {
+        setParticles(prev => prev.filter(p => p.id !== pid));
+      }, REMOVE_AFTER);
+    };
+
+    window.addEventListener('mq-message-flow', handler);
+    return () => window.removeEventListener('mq-message-flow', handler);
+  }, [id]);
+
+  const onEdgeClick = (evt, edgeId) => {
     evt.stopPropagation();
-    _deleteOnClick(id);
+    _deleteOnClick(edgeId);
   };
 
   return (
     <>
       <path
-        type="straight"
-        id={sourceX + '-' + sourceY}
+        ref={pathRef}
+        id={`edge-path-${id}`}
         style={style}
         className="react-flow__edge-path"
         d={edgePath}
         markerEnd={markerEnd}
       />
+
       <foreignObject
         width={foreignObjectSize}
         height={foreignObjectSize}
@@ -106,21 +156,15 @@ export default function CustomEdge({
           </button>
         </div>
       </foreignObject>
-      {animated ? (
-        <foreignObject
-          width={40}
-          height={35}
-          x={messageX - 40 / 2}
-          y={messageY - 35 / 2}
-          className="edgebutton-foreignobject"
-          requiredExtensions="http://www.w3.org/1999/xhtml">
-          <div xmlns="http://www.w3.org/1999/xhtml">
-            <div style={{ background: '#0059ff' }} className="messageOnEdge" />
-          </div>
-        </foreignObject>
-      ) : (
-        <></>
-      )}
+
+      {particles.map(p => (
+        <AnimatedParticle
+          key={p.id}
+          pathRef={pathRef}
+          reverse={p.reverse}
+          color={p.color}
+        />
+      ))}
     </>
   );
 }

@@ -14,55 +14,41 @@
  * limitations under the License.
  **/
 
-import React, { useState } from 'react';
+import React from 'react';
 import PointPointIndex from '../../components/MQPatterns/PointToPoint/index';
 import PubSubIndex from '../../components/MQPatterns/PubSub';
 import RequestResponseIndex from '../../components/MQPatterns/RequestResponse';
 
 import {
   Tabs,
+  TabList,
+  Tab,
   TabPanels,
   TabPanel,
   Grid,
   Column,
-  ContentSwitcher,
-  Switch,
 } from '@carbon/react';
 
 const LandingPage = () => {
-  const [selectedTab, setSelectedTab] = useState(0);
-  const isMobile = /Mobile/.test(navigator.userAgent);
   return (
-    <Grid className="lanKLandding-page" fullWidth>
-      <Column lg={16} md={8} sm={4} className="landing-page__banner">
-        <h1 className="landing-page__heading"> IBM MQ PATTERNS</h1>
+    <Grid className="landing-page" condensed>
+      <Column lg={16} md={8} sm={4} className="landing-page__heading-section">
+        <h1 className="landing-page__heading">IBM MQ messaging patterns</h1>
       </Column>
-      <Column lg={16} md={8} sm={4} className="landing-page__r2">
-        <ContentSwitcher
-          light
-          selectedIndex={selectedTab}
-          size={'sm'}
-          onChange={e => {
-            let { index } = e;
-            setSelectedTab(index);
-          }}>
-          <Switch name="one" text="POINT-TO-POINT" />
-          {isMobile ? <></> : <Switch name="two" text="PUBLISHER/SUBSCRIBER" />}
-          <Switch name="three" text="REQUEST/RESPONSE" />
-        </ContentSwitcher>
-
-        <Tabs selectedIndex={selectedTab}>
+      <Column lg={16} md={8} sm={4} className="landing-page__tabs">
+        <Tabs>
+          <TabList aria-label="IBM MQ messaging patterns" contained={false}>
+            <Tab>POINT-TO-POINT</Tab>
+            <Tab>PUBLISHER / SUBSCRIBER</Tab>
+            <Tab>REQUEST / RESPONSE</Tab>
+          </TabList>
           <TabPanels>
             <TabPanel>
               <PointPointIndex />
             </TabPanel>
-            {isMobile ? (
-              <></>
-            ) : (
-              <TabPanel>
-                <PubSubIndex />
-              </TabPanel>
-            )}
+            <TabPanel>
+              <PubSubIndex />
+            </TabPanel>
             <TabPanel>
               <RequestResponseIndex />
             </TabPanel>

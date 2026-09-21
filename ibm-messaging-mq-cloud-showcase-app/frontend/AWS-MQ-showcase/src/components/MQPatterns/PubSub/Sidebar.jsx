@@ -14,61 +14,37 @@
  * limitations under the License.
  **/
 
-import React, { useState, useEffect } from 'react';
-import '../../Map/map.css';
+import React from 'react';
+import { MediaCast } from '@carbon/react/icons';
+import AppIcon from '../../Map/AppIcon';
+import PatternSidebar from '../../Map/PatternSidebar';
 
-function Sidebar() {
-  const [isBigScreen, setIsBigScreen] = useState(true);
+const ITEMS = [
+  {
+    nodeType: 'producer',
+    icon: <AppIcon size={24} />,
+    label: 'Publisher app',
+    description: 'Publishes notifications to a topic',
+  },
+  {
+    nodeType: 'queue',
+    icon: <MediaCast size={24} />,
+    label: 'Topic',
+    description: 'Routes messages to subscribers',
+  },
+  {
+    nodeType: 'consumer',
+    icon: <AppIcon size={24} />,
+    label: 'Subscriber',
+    description: 'Receives topic notifications',
+  },
+];
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsBigScreen(window.innerWidth >= 1000); // Adjust the breakpoint as needed
-    };
-
-    // Add event listener for window resize
-    window.addEventListener('resize', handleResize);
-
-    // Call handleResize initially
-    handleResize();
-
-    // Clean up the event listener
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  const onDragStart = (event, nodeType) => {
-    event.dataTransfer.setData('application/reactflow', nodeType);
-    event.dataTransfer.effectAllowed = 'move';
-  };
-
-  return (
-    <>
-      {isBigScreen && (
-        <aside style={{ width: 170 }}>
-          <div className="description">Add new elements to your model!</div>
-          <div
-            title="Producer"
-            className="dndnode publisher"
-            onDragStart={event => onDragStart(event, 'producer')}
-            draggable
-          />
-          <div
-            title="Queue"
-            className="dndnode topic"
-            onDragStart={event => onDragStart(event, 'queue')}
-            draggable
-          />
-          <div
-            title="Consumer"
-            className="dndnode subscriber"
-            onDragStart={event => onDragStart(event, 'consumer')}
-            draggable
-          />
-        </aside>
-      )}
-    </>
-  );
-}
+const Sidebar = () => (
+  <PatternSidebar
+    items={ITEMS}
+    instruction="Drag onto canvas. Connect publisher to topic, topic to subscribers. Toggle subscriber on to receive."
+  />
+);
 
 export default Sidebar;

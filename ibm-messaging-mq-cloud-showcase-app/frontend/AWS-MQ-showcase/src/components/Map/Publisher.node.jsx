@@ -20,14 +20,19 @@ import { Button, TextArea, TextInput } from '@carbon/react';
 import { Handle } from '@xyflow/react';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PubSub/store';
-import './map.css';
+import NodeCard from './NodeCard';
+import AppIcon from './AppIcon';
 import { toast } from 'react-toastify';
+
+const HEADER_BG = '#e8f3ff';
+const HEADER_BORDER = '#0f62fe';
 
 const PublisherNode = ({ id, data }) => {
   const adapter = new APIAdapter();
   const animateConnection = useStore(
     state => state.changeEdgeAnimationFromNodeId
   );
+  const publisherSent = useStore(state => state.publisherSent);
   const deleteMe = useStore(state => state.onDeleteNode);
   const [animationState, setAnimationState] = useState(false);
   const [isToggleOn] = useState(false);
@@ -64,6 +69,7 @@ const PublisherNode = ({ id, data }) => {
             .publish(messageToSend, 1, data.connectedQueue, id)
             .then(res => {
               setCandSend(true);
+              publisherSent(id);
               resolve();
             })
             .catch(err => {
@@ -73,7 +79,7 @@ const PublisherNode = ({ id, data }) => {
         });
         toast.promise(promise, {
           pending: 'Sending your notification...',
-          success: 'Your notification has been sent with sucess',
+          success: 'Your notification has been sent with success',
           error: 'Error on sending your notification',
         });
       } catch (e) {
@@ -94,17 +100,15 @@ const PublisherNode = ({ id, data }) => {
   }, [animationState]);
 
   return (
-    <div className="producer-node-container">
-      <button
-        className="edgebutton node"
-        onClick={() => {
-          deleteMe(id);
-        }}>
-        X
-      </button>
+    <NodeCard
+      headerBg={HEADER_BG}
+      headerBorderColor={HEADER_BORDER}
+      icon={<AppIcon size={20} />}
+      title="Publisher app"
+      onDelete={() => deleteMe(id)}>
       <Handle
-        type={'source'}
-        position={'right'}
+        type="source"
+        position="right"
         style={{
           zIndex: 200,
           backgroundColor: data.connectedQueue ? '#555' : '#0050e6',
@@ -115,35 +119,32 @@ const PublisherNode = ({ id, data }) => {
       <TextInput
         id={`publisher-title-${id}`}
         size="sm"
-        className="producer-node-name-label"
         ref={refTitle}
-        labelText="Title of your notification"
+        labelText="Notification title"
         value={title}
         placeholder="Waitlist reminder"
         onChange={e => setTitle(e.value)}
       />
-      <br />
+
       <TextArea
         size="sm"
         ref={refMessage}
-        labelText="Content of your notification"
+        labelText="Notification content"
         placeholder={"Don't forget about our WAITLIST! " + data.connectedQueue}
         value={message}
         onChange={e => setMessage(e.value)}
       />
-      <br />
 
       <Button
-        renderIcon={props => <Send size={42} {...props} />}
-        className="publisher-node-send-button"
+        renderIcon={props => <Send size={20} {...props} />}
         size="sm"
+        kind="primary"
+        style={{ width: '100%' }}
         disabled={!data.connectedQueue || animationState}
-        onClick={() => {
-          onClick();
-        }}>
-        Send Notification
+        onClick={onClick}>
+        Send notification
       </Button>
-    </div>
+    </NodeCard>
   );
 };
 
