@@ -1,0 +1,42 @@
+APP="ibm-messaging-mq-cloud-showcase-app"
+FE="$APP/frontend/AWS-MQ-showcase"
+BE="$APP/backend/AWS-showcase-backend"
+
+# In a commit-msg hook, $1 is the commit-message file.
+case "$1" in
+  /*) COMMIT_MSG_FILE="$1" ;;
+  *)  COMMIT_MSG_FILE="$PWD/$1" ;;
+esac
+
+# Capture staged paths once to avoid running git twice.
+staged=$(git diff --cached --name-only)
+
+has_staged_files() {
+  printf '%s\n' "$staged" | grep -q "^$1/"
+}
+
+run_commitlint() {
+  dir="$1"
+  label="$2"
+
+  if ! has_staged_files "$dir"; then
+    return 0
+  fi
+
+  bin="$dir/node_modules/.bin/commitlint"
+
+  if [ ! -x "$bin" ]; then
+    printf '%s\n' \
+      "error: staged $label files detected but tools are not installed." \
+      "       Run: cd $dir && npm install" >&2
+    return 1
+  fi
+
+  (
+    cd "$dir" &&
+    ./node_modules/.bin/commitlint --edit "$COMMIT_MSG_FILE"
+  )
+}
+
+run_commitlint "$FE" "frontend" || exit 1
+run_commitlint "$BE" "backend" || exit 1

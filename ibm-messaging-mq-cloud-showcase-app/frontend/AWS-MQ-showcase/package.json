@@ -18,7 +18,7 @@
     "format": "prettier --write \"**/*.{js,jsx,scss,css,md}\"",
     "format:diff": "prettier --check \"**/*.{js,jsx,scss,css,md}\"",
     "format:staged": "prettier --write",
-    "prepare": "cd ../../.. && husky ibm-messaging-mq-cloud-showcase-app/frontend/AWS-MQ-showcase/.husky"
+    "prepare": "cd ../../.. && (husky ibm-messaging-mq-cloud-showcase-app/.husky || true)"
   },
   "dependencies": {
     "@carbon/charts": "1.27.18",
