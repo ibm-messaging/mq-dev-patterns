@@ -37,7 +37,7 @@ const initialNodes = [
       connectedQueue: 'DEV.QUEUE.1',
       isActive: false,
     },
-    position: { x: 1350, y: 50 },
+    position: { x: 1150, y: 62 },
     targetPosition: 'left',
     draggable: true,
   },

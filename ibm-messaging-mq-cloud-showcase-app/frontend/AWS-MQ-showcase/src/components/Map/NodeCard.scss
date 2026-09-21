@@ -1,0 +1,440 @@
+/**
+ * Copyright 2022, 2026 IBM Corp.
+ *
+ * Licensed under the Apache License, Version 2.0 (the 'License');
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **/
+
+@use '@carbon/react/scss/spacing' as *;
+@use '@carbon/react/scss/type' as *;
+@use '@carbon/react/scss/theme' as *;
+
+// ─── Card shell ─────────────────────────────────────────────────────────────
+
+.node-card {
+  position: relative;
+  background-color: $layer-02;
+  border: 1px dashed $border-disabled;
+  border-radius: 2px;
+  filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.12));
+  display: flex;
+  flex-direction: column;
+  min-width: 185px;
+
+  // Active (blob) animation — applied by node components when consumer is on
+  &.blob {
+    border-style: solid;
+    border-color: $border-interactive;
+  }
+}
+
+// ─── Close button ────────────────────────────────────────────────────────────
+
+.node-card__close {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 15px;
+  height: 15px;
+  padding: 0;
+
+  background-color: $background-inverse;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  color: $icon-on-color;
+  cursor: pointer;
+  line-height: 1;
+
+  &:hover {
+    background-color: $background-inverse-hover;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $focus;
+    outline-offset: 2px;
+  }
+}
+
+// ─── Header bar ──────────────────────────────────────────────────────────────
+
+.node-card__header {
+  // backgroundColor and borderBottomColor are set inline from props
+  border-bottom-width: 2px;
+  border-bottom-style: solid;
+
+  display: flex;
+  align-items: center;
+  gap: $spacing-03; // 8px
+  padding: $spacing-03 $spacing-04; // 8px 12px — close to Figma's 7.4px / 11px
+}
+
+.node-card__header-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.node-card__header-title {
+  @include type-style('body-compact-01');
+  font-weight: 600;
+  // color set inline from titleColor prop
+  white-space: nowrap;
+  flex: 1; // take remaining space so headerAction is pushed to the right
+}
+
+// ─── Header action slot (e.g. Toggle) ────────────────────────────────────────
+
+.node-card__header-action {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  flex-shrink: 0;
+
+  // Carbon Toggle inside the header: tighten it up, inherit label colour
+  .cds--toggle__label {
+    @include type-style('label-01');
+    color: inherit;
+  }
+
+  // Hide the verbose labelText ("Receive messages") — only show A/B labels
+  .cds--toggle__label-text {
+    display: none;
+  }
+}
+
+// ─── Body ────────────────────────────────────────────────────────────────────
+
+.node-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-04; // 12px
+  padding: $spacing-04; // 12px
+}
+
+.node-card__divider {
+  border: none;
+  border-top: 1px solid $border-disabled;
+  margin: 0;
+  width: 100%;
+}
+
+.node-card__stat-row {
+  display: flex;
+  padding: $spacing-03 0;
+  align-items: center;
+}
+
+.node-card__stat-label {
+  @include type-style('helper-text-01');
+  color: $text-secondary;
+  flex: 0 0 40%;
+}
+
+.node-card__stat-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: $text-primary;
+  flex: 1 1 auto;
+}
+
+.node-card__stat-value--with-icon {
+  display: flex;
+  align-items: center;
+  gap: $spacing-02; // 4px
+  color: $text-secondary;
+  font-weight: 400;
+}
+
+.node-card__stat-line {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: $text-secondary;
+  padding-top: $spacing-03; // 8px
+  border-top: 1px solid $border-disabled;
+
+  strong {
+    color: $interactive;
+    font-weight: 600;
+  }
+}
+
+.queue-node {
+  min-width: 230px;
+}
+
+.queue-node__body {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-04; // 12px
+  padding: 0;
+}
+
+.queue-node__stats {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-02; // 4px
+  flex: 1;
+  min-width: 0;
+}
+
+.queue-node__type-label {
+  @include type-style('label-01');
+  color: $text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.32px;
+  margin: 0;
+}
+
+.queue-node__name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: $text-primary;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.queue-node__bar-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-02;
+  padding-top: $spacing-03;
+}
+
+.queue-node__bar-track {
+  height: 4px;
+  background-color: $border-subtle-02;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.queue-node__bar-fill {
+  height: 100%;
+  background-color: $interactive;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.queue-node__depth {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: $text-secondary;
+  margin: 0;
+}
+
+.queue-node__footer-status {
+  display: flex;
+  align-items: center;
+  gap: $spacing-02; // 4px
+  font-size: 11px;
+  color: $text-secondary;
+}
+
+.queue-node__status-icon {
+  color: $support-success;
+}
+
+.topic-node {
+  position: relative;
+  width: 167px;
+  height: 167px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #6fdc8c 8.5%, #24a148 91.5%);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+}
+
+.topic-node__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 16px;
+  height: 16px;
+  padding: 0;
+
+  background-color: $background-inverse;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  color: $icon-on-color;
+  cursor: pointer;
+  line-height: 1;
+
+  &:hover {
+    background-color: $background-inverse-hover;
+  }
+  &:focus-visible {
+    outline: 2px solid $focus;
+    outline-offset: 2px;
+  }
+}
+
+.topic-node__handle {
+  width: 5px !important;
+  height: 28px !important;
+  border-radius: 2px !important;
+  border: none !important;
+
+  &--left {
+    left: -5px !important;
+    background: #4589ff !important;
+  }
+
+  &--right {
+    right: -5px !important;
+    background: #393939 !important;
+  }
+}
+
+.topic-node__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-top: 8px;
+  width: 124px;
+}
+
+.topic-node__icon {
+  color: rgba(255, 255, 255, 0.85);
+  flex-shrink: 0;
+}
+
+.topic-node__label {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.96px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.topic-node__input-wrap {
+  width: 100%;
+
+  .cds--text-input-wrapper,
+  .cds--form-item {
+    width: 100%;
+  }
+
+  .topic-node__input.cds--text-input,
+  .cds--text-input-wrapper .cds--text-input {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.5) !important;
+    color: white !important;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    caret-color: white;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    &:focus {
+      outline: none;
+      box-shadow: none;
+    }
+  }
+}
+
+.node-card__section-label {
+  @include type-style('label-01');
+  font-weight: 600;
+  color: $text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.48px;
+  border-top: 1px solid $border-disabled;
+  padding-top: $spacing-03; // 8px
+  width: 100%;
+}
+
+.node-card__msg-grid {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  row-gap: $spacing-02; // 4px
+  width: 100%;
+}
+
+.node-card__msg-label {
+  @include type-style('helper-text-01');
+  color: $text-secondary;
+}
+
+.node-card__msg-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: $text-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.node-card__sub-badge {
+  display: inline-flex;
+  align-items: center;
+  background: #a7f0ba;
+  color: #0e6027;
+  border-radius: 16px;
+  padding: 2px 8px;
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.node-card__sub-badge--empty {
+  background: transparent;
+  color: $text-secondary;
+  padding-left: 0;
+}
+
+.node-card__count-footer {
+  display: flex;
+  align-items: center;
+  background-color: $layer-01;
+  border-top: 1px solid $border-disabled;
+  padding: $spacing-02 $spacing-04;
+
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: $text-secondary;
+
+  strong {
+    color: $interactive;
+    font-weight: 600;
+    margin-left: 2px;
+  }
+}
+
+.responder-app {
+  max-width: 350px;
+  min-width: 250px;
+}
