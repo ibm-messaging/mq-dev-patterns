@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2024 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -14,80 +14,89 @@
  * limitations under the License.
  **/
 
- const { v4: uuidv4, stringify } = require('uuid');
- const MQClient = require("../msms/message-session-manager");
+const { v4: uuidv4, stringify } = require('uuid');
+const MQClient = require('../msms/message-session-manager');
 
- //Set Logging options
+//Set Logging options
 let debug_info = require('debug')('mqapp-responder:info');
 let debug_warn = require('debug')('mqapp-responder:warn');
 
 class Responder {
-    constructor(appId) {
-        this.appId = appId;
-        this.mqclient = new MQClient();        
-        this.myID = uuidv4();
-    }
+  constructor(appId) {
+    this.appId = appId;
+    this.mqclient = new MQClient();
+    this.myID = uuidv4();
+  }
 
-    getMessageFromQueue(queueName) {
-        return new Promise((resolve, reject) => {
-            debug_info(`Responder ${this.myID} getting message from queue`);
-            this.mqclient.get(queueName,1,null, 'DYNAMIC', this.appId)
-            .then((messages) => {
-                debug_warn(`The producer retrieved this message ${JSON.stringify(messages)}`);
-                if (messages.length === 0) {
-                    debug_info("Poison Message");
-                    resolve(null);
-                } else if (!messages[0].replyToMsg) {
-                    debug_warn("This is not a reply to queue valid message");
-                    resolve(null);
-                } else if (messages[0].replyToMsg) {
-                    this.mqclient.checkQueueExists(messages[0].replyToMsg)
-                    .then((flag) => {
-                        if (!flag) {
-                            debug_warn("Some Poison Message");
-                            messages[0].replyToMsg = null;
-                            messages[0].msgObject = null;
-                            resolve(messages);
-                        } else {
-                            debug_info(`Responder ${this.myID} obtained message from queue`);
-                            resolve(messages);
-                        }
-                    })
-                    .catch((err) => {
-                        debug_warn("Some error has occured : ", err);
-                        reject(err);
-                    })
+  getMessageFromQueue(queueName) {
+    return new Promise((resolve, reject) => {
+      debug_info(`Responder ${this.myID} getting message from queue`);
+      this.mqclient
+        .get(queueName, 1, null, 'DYNAMIC', this.appId)
+        .then((messages) => {
+          debug_warn(
+            `The producer retrieved this message ${JSON.stringify(messages)}`
+          );
+          if (messages.length === 0) {
+            debug_info('Poison Message');
+            resolve(null);
+          } else if (!messages[0].replyToMsg) {
+            debug_warn('This is not a reply to queue valid message');
+            resolve(null);
+          } else if (messages[0].replyToMsg) {
+            this.mqclient
+              .checkQueueExists(messages[0].replyToMsg)
+              .then((flag) => {
+                if (!flag) {
+                  debug_warn('Some Poison Message');
+                  messages[0].replyToMsg = null;
+                  messages[0].msgObject = null;
+                  resolve(messages);
+                } else {
+                  debug_info(
+                    `Responder ${this.myID} obtained message from queue`
+                  );
+                  resolve(messages);
                 }
-            })
-            .catch((err) => {
-                debug_warn(`Responder ${this.myID} error obtaining message ${err}`);
-                reject();
-            })
-        });
-    }
-
-    putToQueue(queueName, message, quantity) {
-        let putRequest = {
-            message : message,
-            quantity : quantity,
-            queueName : queueName
-        };
-
-        return new Promise((resolve, reject) => {
-            debug_info(`Responder ${this.myID} replying to request`);
-            this.mqclient.put(putRequest, 'DYNREP')
-            .then(() => {
-                debug_info(`Responder ${this.myID} replied successfully`);
-                resolve("ok");
-            })
-            .catch((err) => {
-                debug_warn(`Responder ${this.myID} error sending reply ${err}`);
+              })
+              .catch((err) => {
+                debug_warn('Some error has occured : ', err);
                 reject(err);
-            })
+              });
+          }
+        })
+        .catch((err) => {
+          debug_warn(`Responder ${this.myID} error obtaining message ${err}`);
+          reject();
         });
-    }
+    });
+  }
 
-    getAppId() {return this.appId;}
+  putToQueue(queueName, message, quantity) {
+    let putRequest = {
+      message: message,
+      quantity: quantity,
+      queueName: queueName,
+    };
+
+    return new Promise((resolve, reject) => {
+      debug_info(`Responder ${this.myID} replying to request`);
+      this.mqclient
+        .put(putRequest, 'DYNREP')
+        .then(() => {
+          debug_info(`Responder ${this.myID} replied successfully`);
+          resolve('ok');
+        })
+        .catch((err) => {
+          debug_warn(`Responder ${this.myID} error sending reply ${err}`);
+          reject(err);
+        });
+    });
+  }
+
+  getAppId() {
+    return this.appId;
+  }
 }
 
-module.exports = {Responder};
+module.exports = { Responder };

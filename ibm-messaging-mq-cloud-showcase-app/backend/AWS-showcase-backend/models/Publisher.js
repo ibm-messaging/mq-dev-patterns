@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -16,47 +16,52 @@
 
 const { v4: uuidv4 } = require('uuid');
 
-const MQClient = require("../msms/message-session-manager");
+const MQClient = require('../msms/message-session-manager');
 
 //Set Logging options
 let debug_info = require('debug')('mqapp-publisher:info');
 let debug_warn = require('debug')('mqapp-publisher:warn');
 
 class Publisher {
-    constructor(appId, topic) {
-        this.mqclient = new MQClient();
-        this.myID = uuidv4();
-        this.appId = appId;
-        this.topic = topic;
-    }
-    
+  constructor(appId, topic) {
+    this.mqclient = new MQClient();
+    this.myID = uuidv4();
+    this.appId = appId;
+    this.topic = topic;
+  }
 
-    async publishMessages(topic, quantity, message) {
-        debug_info(`Publisher ${this.myID} publishing ${quantity} messages to topic ${topic}`);
-        if(topic !== this.topic) {
-            await this.cleanUp();
-            this.topic = topic;
-        }
-        return new Promise((resolve, reject) => {
-            this.mqclient.pub(topic,quantity,message)
-            .then((pubRes) => {
-                debug_info(`Publisher ${this.myID} received response from pub ${pubRes}`);
-                resolve(pubRes);
-            })
-            .catch((err) => {
-                debug_warn(`Error ${err} thrown by publisher ${this.myID}`);
-                reject(err);
-            })
+  async publishMessages(topic, quantity, message) {
+    debug_info(
+      `Publisher ${this.myID} publishing ${quantity} messages to topic ${topic}`
+    );
+    if (topic !== this.topic) {
+      await this.cleanUp();
+      this.topic = topic;
+    }
+    return new Promise((resolve, reject) => {
+      this.mqclient
+        .pub(topic, quantity, message)
+        .then((pubRes) => {
+          debug_info(
+            `Publisher ${this.myID} received response from pub ${pubRes}`
+          );
+          resolve(pubRes);
+        })
+        .catch((err) => {
+          debug_warn(`Error ${err} thrown by publisher ${this.myID}`);
+          reject(err);
         });
-        
-    }
+    });
+  }
 
-    cleanUp() {
-        debug_info(`publisher ${this.myID} cleanUp`);
-        return this.mqclient.performCleanUp();
-    }
+  cleanUp() {
+    debug_info(`publisher ${this.myID} cleanUp`);
+    return this.mqclient.performCleanUp();
+  }
 
-    getAppId() { return this.appId; }
+  getAppId() {
+    return this.appId;
+  }
 }
 
-module.exports = {Publisher};
+module.exports = { Publisher };

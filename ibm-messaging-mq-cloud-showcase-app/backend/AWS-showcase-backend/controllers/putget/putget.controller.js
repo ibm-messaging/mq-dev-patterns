@@ -14,13 +14,13 @@
  * limitations under the License.
  **/
 
-const { Producer } = require("../../models/Producer");
-const { Consumer } = require("../../models/Consumer");
-const { DeQueue } = require("../../models/DeQue");
+const { Producer } = require('../../models/Producer');
+const { Consumer } = require('../../models/Consumer');
+const { DeQueue } = require('../../models/DeQue');
 
 // Set Logging options
-let debug_info = require("debug")("mqapp-approutes:info");
-let debug_warn = require("debug")("mqapp-approutes:warn");
+let debug_info = require('debug')('mqapp-approutes:info');
+let debug_warn = require('debug')('mqapp-approutes:warn');
 
 let consumers = new DeQueue();
 let producer;
@@ -29,20 +29,20 @@ const DEFAULT_LIMIT = 1;
 //This function puts a message to a provided queue
 function put(req, res, next) {
   let data = req.body;
-  let _message = data.message || "Default Message app running in Cloud Engine";
-  let _quantityInString = data.quantity || "";
+  let _message = data.message || 'Default Message app running in Cloud Engine';
+  let _quantityInString = data.quantity || '';
   let quantity = parseInt(_quantityInString);
   let _QUEUE_NAME = data.queueName;
   let currency = data.currency;
 
   if (!_QUEUE_NAME || isNaN(quantity)) {
     return res.status(500).send({
-      error: "Please provide valid inputs",
+      error: 'Please provide valid inputs',
     });
   }
 
   if (quantity < 0) {
-    debug_info("negating the negative quantity provided!");
+    debug_info('negating the negative quantity provided!');
     quantity *= -1;
   } else if (quantity === 0) {
     quantity = 1;
@@ -59,7 +59,7 @@ function put(req, res, next) {
       });
     })
     .catch((err) => {
-      debug_warn("Put has failed with error : ", err);
+      debug_warn('Put has failed with error : ', err);
       return res.status(500).send({
         error: err,
       });
@@ -78,7 +78,7 @@ async function closeProducerConnection(req, res) {
       .catch((err) => {});
   } else {
     return res.json({
-      status: "init producer",
+      status: 'init producer',
     });
   }
 }
@@ -89,7 +89,7 @@ async function closeConsumerConnection(req, res) {
 
   if (!consumerId) {
     return res.status(500).send({
-      error: "Please provide a valid id",
+      error: 'Please provide a valid id',
     });
   }
 
@@ -97,7 +97,7 @@ async function closeConsumerConnection(req, res) {
 
   if (consumer === -1) {
     return res.status(500).send({
-      error: "This consumer does not exist",
+      error: 'This consumer does not exist',
     });
   } else {
     consumer
@@ -134,7 +134,7 @@ async function getCodingChallange(req, res, next) {
 
   if (!_QUEUE_NAME || isNaN(limit) || limit <= 0 || !consumerId) {
     return res.status(500).send({
-      error: "Please provide valid inputs",
+      error: 'Please provide valid inputs',
     });
   }
 
@@ -168,7 +168,7 @@ function get(req, res, next) {
 
   if (!_QUEUE_NAME || isNaN(limit) || limit <= 0) {
     return res.status(500).send({
-      error: "Please provide valid inputs",
+      error: 'Please provide valid inputs',
     });
   }
   //create a new Consumer instance
@@ -189,7 +189,7 @@ function get(req, res, next) {
 
 //This function gets some messages from a queue
 function about(req, res, next) {
-  res.json({ response: "hello" });
+  res.json({ response: 'hello' });
 }
 
 module.exports = {

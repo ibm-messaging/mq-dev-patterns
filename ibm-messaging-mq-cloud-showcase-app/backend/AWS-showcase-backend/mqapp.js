@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
- // This is an Node.js express application that provide a web app and associated
- // api that perform IBM MQ get / put operations.
+// This is an Node.js express application that provide a web app and associated
+// api that perform IBM MQ get / put operations.
 
 var createError = require('http-errors');
 const express = require('express');
@@ -27,7 +27,6 @@ const app = express();
 app.use(cors());
 app.use(logger(process.env.REQUEST_LOG_FORMAT || 'dev'));
 
-
 // The Web page routes and API can be found here.
 const routes = require('./routes/putget.route');
 
@@ -35,20 +34,17 @@ const routes = require('./routes/putget.route');
 let debug_info = require('debug')('mqapp-app:info');
 let debug_warn = require('debug')('mqapp-app:warn');
 
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-
 app.use('/', routes);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   debug_warn('Returning a 404');
   next(createError(404));
 });
-
 
 module.exports = app;
