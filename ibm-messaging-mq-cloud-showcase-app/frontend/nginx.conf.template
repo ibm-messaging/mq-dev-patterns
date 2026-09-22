@@ -13,7 +13,6 @@
 
 server {
     listen       8080;
-    listen  [::]:8080;
     server_name  _;
 
     location / {

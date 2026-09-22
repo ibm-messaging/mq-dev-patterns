@@ -44,8 +44,8 @@ RUN npm run build
 FROM public.ecr.aws/nginx/nginx-unprivileged:stable-alpine AS frontendimage
 
 # Set nginx configuration as per application requirements
-COPY nginx.conf.template /etc/nginx/conf.d/
-COPY nginx.conf.proxy.template /etc/nginx/conf.d/
+COPY --chmod=644 nginx.conf.template /etc/nginx/conf.d/
+COPY --chmod=644 nginx.conf.proxy.template /etc/nginx/conf.d/
 # --chmod=755 guarantees the script is executable regardless of host umask.
 COPY --chmod=755 docker-entrypoint.sh /docker-entrypoint.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
