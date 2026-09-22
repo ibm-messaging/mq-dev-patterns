@@ -145,28 +145,35 @@ def build_mq_details():
         MQDetails[key] = EnvStore.getenv_value(key)
 
 
-# Application Logic starts here
-logger.info('Application "BasicSubscribe" is starting')
+def main():
+    global MQDetails, conn_info, qmgr, subscription
 
-envStore = EnvStore()
-envStore.set_env()
+    # Application Logic starts here
+    logger.info('Application "BasicSubscribe" is starting')
 
-MQDetails = {}
-build_mq_details()
+    envStore = EnvStore()
+    envStore.set_env()
 
-conn_info = EnvStore.get_connection(EnvStore.HOST, EnvStore.PORT)
+    MQDetails = {}
+    build_mq_details()
 
-qmgr = None
-subscription = None
+    conn_info = EnvStore.get_connection(EnvStore.HOST, EnvStore.PORT)
 
-qmgr = connect()
-if qmgr is not None:
-    subscription = get_subscription()
-if subscription is not None:
-    get_messages()
-    subscription.close(close_sub_queue=True)
+    qmgr = None
+    subscription = None
 
-if qmgr is not None:
-    qmgr.disconnect()
+    qmgr = connect()
+    if qmgr is not None:
+        subscription = get_subscription()
+    if subscription is not None:
+        get_messages()
+        subscription.close(close_sub_queue=True)
 
-logger.info('Application is ending')
+    if qmgr is not None:
+        qmgr.disconnect()
+
+    logger.info('Application is ending')
+
+
+if __name__ == '__main__':
+    main()
