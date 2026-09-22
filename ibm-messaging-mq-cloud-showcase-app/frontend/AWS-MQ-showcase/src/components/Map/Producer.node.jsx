@@ -34,9 +34,9 @@ const PRODUCTION_QUANTITY = 5;
 const ProducerNode = ({ id, data }) => {
   const adapter = new APIAdapter();
   const animateConnection = useStore(
-    state => state.changeEdgeAnimationFromNodeId
+    (state) => state.changeEdgeAnimationFromNodeId
   );
-  const deleteMe = useStore(state => state.onDeleteNode);
+  const deleteMe = useStore((state) => state.onDeleteNode);
   const [quantity, setQuantity] = useState(PRODUCTION_QUANTITY);
   const [animationState, setAnimationState] = useState(false);
   const [name, setName] = useState(data.label);
@@ -64,7 +64,7 @@ const ProducerNode = ({ id, data }) => {
     }
   });
 
-  const _onClick = id => {
+  const _onClick = (id) => {
     setAnimationState(true);
     animateConnection(id, true);
     try {
@@ -72,13 +72,13 @@ const ProducerNode = ({ id, data }) => {
       if (isForTheCodingChallange) {
         adapter
           .put(quantity, 1, data.connectedQueue, selectedCurrency)
-          .then(res => {
+          .then((res) => {
             if (isToggle) {
               adapter.closeProducer();
             }
           });
       } else {
-        adapter.put(message, quantity, data.connectedQueue).then(res => {
+        adapter.put(message, quantity, data.connectedQueue).then((res) => {
           if (isToggle) {
             adapter.closeProducer();
           }
@@ -95,7 +95,7 @@ const ProducerNode = ({ id, data }) => {
     setQuantity(quantity + delta);
   };
 
-  const changeName = e => {
+  const changeName = (e) => {
     setName(e.value);
   };
 
@@ -131,7 +131,7 @@ const ProducerNode = ({ id, data }) => {
           className="producer-node-name-label"
           labelText="Name of your sender"
           value={name}
-          onChange={e => changeName(e)}
+          onChange={(e) => changeName(e)}
         />
 
         <Grid>
@@ -155,7 +155,7 @@ const ProducerNode = ({ id, data }) => {
                 { id: '2', text: 'USD' },
                 { id: '3', text: 'GBP' },
               ]}
-              itemToElement={item =>
+              itemToElement={(item) =>
                 item ? (
                   <span className="test" style={{ color: 'red' }}>
                     {item.text}
@@ -175,7 +175,7 @@ const ProducerNode = ({ id, data }) => {
 
         <Button
           className="publisher-node-send-button"
-          renderIcon={props => <Send size={42} {...props} />}
+          renderIcon={(props) => <Send size={42} {...props} />}
           size="sm"
           disabled={!data.connectedQueue || animationState || quantity <= 0}
           onClick={() => {
@@ -210,7 +210,7 @@ const ProducerNode = ({ id, data }) => {
           className="producer-node-name-label"
           labelText="Name of your application"
           value={name}
-          onChange={e => changeName(e)}
+          onChange={(e) => changeName(e)}
         />
 
         <NumberInput

@@ -42,7 +42,7 @@ export default function CustomEdge({
     targetPosition,
   });
 
-  const _deleteOnClick = useStore(state => state.onDeleteEdge);
+  const _deleteOnClick = useStore((state) => state.onDeleteEdge);
   const [messageX, setMessageX] = useState(labelX);
   const [messageY, setMessageY] = useState(labelY);
   const TRANSITION_TIME = 300;
@@ -101,7 +101,7 @@ export default function CustomEdge({
         <div xmlns="http://www.w3.org/1999/xhtml">
           <button
             className="edgebutton"
-            onClick={event => onEdgeClick(event, id)}>
+            onClick={(event) => onEdgeClick(event, id)}>
             X
           </button>
         </div>

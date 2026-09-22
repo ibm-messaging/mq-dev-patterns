@@ -23,15 +23,15 @@ import { FormLabel, TextInput } from '@carbon/react';
 import { toast } from 'react-toastify';
 
 const TopicNode = ({ id, data, isConnectable }) => {
-  const _updateTopicName = useStore(state => state.updateTopicName);
-  const deleteMe = useStore(state => state.onDeleteNode);
+  const _updateTopicName = useStore((state) => state.updateTopicName);
+  const deleteMe = useStore((state) => state.onDeleteNode);
   const [isAWildcard, setIsWildCard] = useState(false);
 
   useEffect(() => {
     isValidText(data.queueName);
   }, [data.queueName]);
 
-  const isValidText = text => {
+  const isValidText = (text) => {
     var format = /[!@$%^&*()_+\-=[\]{};':"\\|,.<>?]+/;
     if (format.test(text)) {
       toast.warning('Please use a valid topic name');
@@ -63,7 +63,7 @@ const TopicNode = ({ id, data, isConnectable }) => {
     return true;
   };
 
-  const onTextInputChange = e => {
+  const onTextInputChange = (e) => {
     let text = e.target.value;
     let isValid = isValidText(text);
     if (isValid) {
@@ -88,7 +88,7 @@ const TopicNode = ({ id, data, isConnectable }) => {
           style={{
             background: '#0050e6',
           }}
-          onConnect={params => console.log('handle onConnect', params)}
+          onConnect={(params) => console.log('handle onConnect', params)}
           isConnectable={isConnectable}
         />
       ) : (
@@ -99,7 +99,7 @@ const TopicNode = ({ id, data, isConnectable }) => {
         type="source"
         position="right"
         style={{ background: 'orange' }}
-        onConnect={params => console.log('handle onConnect', params)}
+        onConnect={(params) => console.log('handle onConnect', params)}
         isConnectable={isConnectable}
       />
 
@@ -111,7 +111,7 @@ const TopicNode = ({ id, data, isConnectable }) => {
         className="topic-text-input"
         value={data.queueName}
         size="sm"
-        onChange={e => onTextInputChange(e)}
+        onChange={(e) => onTextInputChange(e)}
       />
     </div>
   );

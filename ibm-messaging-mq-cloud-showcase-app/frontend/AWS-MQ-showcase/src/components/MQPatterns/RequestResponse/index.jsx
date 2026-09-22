@@ -18,7 +18,7 @@ import { Grid, Column } from '@carbon/react';
 import './index.scss';
 import Flow from './map';
 
-const RequestResponseIndex = props => {
+const RequestResponseIndex = (props) => {
   return (
     <Grid>
       <Column md={8} lg={16} sm={4}>

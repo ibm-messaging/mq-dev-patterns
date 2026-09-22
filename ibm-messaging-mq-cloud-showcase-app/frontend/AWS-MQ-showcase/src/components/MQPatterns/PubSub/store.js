@@ -31,12 +31,12 @@ const useStore = create((set, get) => ({
   edges: initialEdges,
   dataframe: [],
 
-  onNodesChange: changes => {
+  onNodesChange: (changes) => {
     set({
       nodes: applyNodeChanges(changes, get().nodes),
     });
   },
-  onEdgesChange: changes => {
+  onEdgesChange: (changes) => {
     set({
       edges: applyEdgeChanges(changes, get().edges),
     });
@@ -56,7 +56,7 @@ const useStore = create((set, get) => ({
       edges: [],
     });
   },
-  onConnect: connection => {
+  onConnect: (connection) => {
     var setConnection = utils.updateConnectionNodeToQueue(
       set,
       get,
@@ -71,7 +71,7 @@ const useStore = create((set, get) => ({
       alert('Impossible setting the connection between these two components');
     }
   },
-  onClick: nodeId => {
+  onClick: (nodeId) => {
     utils.setActiveNodeAndAnimateFromNodeId(set, get, nodeId);
     //activete nodes connected to the topic
     /*let edge = get().edges.filter (
@@ -92,44 +92,44 @@ const useStore = create((set, get) => ({
   changeEdgeAnimationFromNodeId: (nodeId, state) => {
     utils.animateEdgeFromNodeIds(set, get, nodeId);
   },
-  onDeleteEdge: edgeId => {
+  onDeleteEdge: (edgeId) => {
     utils.updateQueueOnDeletingEdge(set, get, edgeId, true);
     set({
-      edges: get().edges.filter(edge => edge.id !== edgeId),
+      edges: get().edges.filter((edge) => edge.id !== edgeId),
     });
   },
   onDeleteNode: (nodeId, isAQueue = false) => {
     if (isAQueue) {
       // if we are deleting a queue we have to update the connections
       let edges = get().edges.filter(
-        edge => edge.target === nodeId || edge.source === nodeId
+        (edge) => edge.target === nodeId || edge.source === nodeId
       );
-      edges.forEach(e => {
+      edges.forEach((e) => {
         get().onDeleteEdge(e.id);
       });
     }
     set({
-      nodes: get().nodes.filter(node => node.id !== nodeId),
+      nodes: get().nodes.filter((node) => node.id !== nodeId),
     });
   },
-  addNode: node => {
+  addNode: (node) => {
     set({
       nodes: get().nodes.concat(node),
     });
   },
   getQueuesNodes: () => {
-    return get().nodes.filter(node => node.type === 'queue');
+    return get().nodes.filter((node) => node.type === 'queue');
   },
   updateTopicName: (id, inputText) => {
     // delete edges
 
     let edgesToDelete = utils.getEdgesFromNode(set, get, id);
-    edgesToDelete.forEach(edge => {
+    edgesToDelete.forEach((edge) => {
       get().onDeleteEdge(edge.id);
     });
 
     set({
-      nodes: get().nodes.map(node => {
+      nodes: get().nodes.map((node) => {
         if (node.id === id) {
           node = {
             ...node,
@@ -147,14 +147,14 @@ const useStore = create((set, get) => ({
     // Each grup is a specific topic
     let _dataframe = [];
     let currentTopicNames = [];
-    get().nodes.forEach(node => {
+    get().nodes.forEach((node) => {
       if (node.data.role === 'q') {
         currentTopicNames.push(node.data.queueName);
       }
     });
-    currentTopicNames.forEach(topic => {
+    currentTopicNames.forEach((topic) => {
       let subsToThisTopic = get().nodes.filter(
-        node =>
+        (node) =>
           node.data.role === 'Consumer' && node.data.connectedQueue === topic
       );
       let numberOfSubsToTopic = subsToThisTopic.length;
@@ -165,20 +165,20 @@ const useStore = create((set, get) => ({
     });
     return _dataframe;
   },
-  deleteEdgeFromNode: nodeId => {
+  deleteEdgeFromNode: (nodeId) => {
     // Get the edges connected to the node
     let edges = utils.getEdgesFromNode(set, get, nodeId);
     // if exists more than one edge connected to that nodeId
     if (edges.length > 0) {
       // delete all the edges
-      edges.forEach(edge => {
+      edges.forEach((edge) => {
         get().onDeleteEdge(edge.id);
       });
     }
   },
   getAvailableTopic: () => {
     let currentTopicNames = [];
-    get().nodes.forEach(node => {
+    get().nodes.forEach((node) => {
       if (node.data.role === 'q') {
         let _entry = {
           id: node.id,

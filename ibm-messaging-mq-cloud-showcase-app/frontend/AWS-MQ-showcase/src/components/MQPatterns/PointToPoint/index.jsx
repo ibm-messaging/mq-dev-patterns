@@ -22,27 +22,29 @@ import './index.scss';
 import Flow from './map';
 import useStore from './store';
 
-const PointPointIndex = props => {
+const PointPointIndex = (props) => {
   const [dataChart1, setDataChart1] = useState([]);
   const [dataChart2, setDataChart2] = useState([]);
   const [time, setTime] = useState(1);
-  const _result = useStore(state => state.queueData);
-  const currentQueues = useStore(state => state.getQueuesNodes);
+  const _result = useStore((state) => state.queueData);
+  const currentQueues = useStore((state) => state.getQueuesNodes);
   const [initTime, setInitTime] = useState(true);
 
-  const updateChart = result => {
+  const updateChart = (result) => {
     if (result) {
       let _dataChart1 = [...dataChart1];
       let _dataChart2 = [...dataChart2];
       let entries = [];
-      result.forEach(queue => {
+      result.forEach((queue) => {
         let isOnTheScreen = currentQueues().find(
-          x => x.data.queueName === queue.name
+          (x) => x.data.queueName === queue.name
         );
         let alreadyRenderedChart1 = _dataChart1.find(
-          x => x.group === queue.name && x.time === time
+          (x) => x.group === queue.name && x.time === time
         );
-        let alreadyRenderedChart2 = _dataChart2.find(x => x.key === queue.name);
+        let alreadyRenderedChart2 = _dataChart2.find(
+          (x) => x.key === queue.name
+        );
         let group = queue['name'];
         let depth = parseInt(queue['depth']);
         if (isOnTheScreen && !alreadyRenderedChart1) {
@@ -57,10 +59,10 @@ const PointPointIndex = props => {
         }
         let i = 0;
         if (!isOnTheScreen && alreadyRenderedChart2) {
-          _dataChart2 = _dataChart2.filter(x => x.key !== queue.name);
+          _dataChart2 = _dataChart2.filter((x) => x.key !== queue.name);
         } else if (alreadyRenderedChart2) {
           //update current values
-          _dataChart2.forEach(e => {
+          _dataChart2.forEach((e) => {
             if (e['key'] === queue['name']) {
               _dataChart2[i]['value'] = parseInt(queue['depth']);
             }

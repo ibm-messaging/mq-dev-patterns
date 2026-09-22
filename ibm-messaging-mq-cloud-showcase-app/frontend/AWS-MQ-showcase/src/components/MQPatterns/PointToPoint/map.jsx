@@ -46,23 +46,17 @@ let id = 150;
 const getId = () => `${id++}`;
 const availableQueueNames = ['DEV.QUEUE.1', 'DEV.QUEUE.2', 'DEV.QUEUE.3'];
 function Flow() {
-  const {
-    nodes,
-    edges,
-    onNodesChange,
-    onEdgesChange,
-    onReconnect,
-    onConnect,
-  } = useStore();
+  const { nodes, edges, onNodesChange, onEdgesChange, onReconnect, onConnect } =
+    useStore();
 
-  const _addNode = useStore(state => state.addNode);
-  const getQueues = useStore(state => state.getQueuesNodes);
+  const _addNode = useStore((state) => state.addNode);
+  const getQueues = useStore((state) => state.getQueuesNodes);
 
   const reactFlowWrapper = useRef(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
 
   const onDrop = useCallback(
-    event => {
+    (event) => {
       event.preventDefault();
 
       const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
@@ -106,9 +100,9 @@ function Flow() {
       } else if (type === 'queue' && getQueues().length <= 1) {
         let queues = getQueues();
         let availableNames = [...availableQueueNames];
-        queues.forEach(x => {
+        queues.forEach((x) => {
           let name = x.data.queueName;
-          availableNames = availableNames.filter(n => n !== name);
+          availableNames = availableNames.filter((n) => n !== name);
         });
         node = {
           id: getId(),
@@ -129,7 +123,7 @@ function Flow() {
     },
     [reactFlowInstance]
   );
-  const onDragOver = useCallback(event => {
+  const onDragOver = useCallback((event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
   }, []);
