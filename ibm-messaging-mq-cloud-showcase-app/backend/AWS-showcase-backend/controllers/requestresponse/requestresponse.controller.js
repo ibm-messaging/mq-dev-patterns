@@ -14,12 +14,12 @@
  * limitations under the License.
  **/
 
-const { Requestor } = require("../../models/Requestor");
-const { Responder } = require("../../models/Responder");
+const { Requestor } = require('../../models/Requestor');
+const { Responder } = require('../../models/Responder');
 
 // Set Logging options
-let debug_info = require("debug")("mqapp-approutes:info");
-let debug_warn = require("debug")("mqapp-approutes:warn");
+let debug_info = require('debug')('mqapp-approutes:info');
+let debug_warn = require('debug')('mqapp-approutes:warn');
 
 const DEFAULT_LIMIT = 1;
 let applications = [];
@@ -31,8 +31,8 @@ function putReq(req, res, next) {
     let data = req.body;
     let appId = data.appId || -1;
     let _message =
-      data.message || "Default Message app running in Cloud Engine";
-    let _quantityInString = data.quantity || "";
+      data.message || 'Default Message app running in Cloud Engine';
+    let _quantityInString = data.quantity || '';
     let quantity = parseInt(_quantityInString);
     let _QUEUE_NAME = data.queueName;
     let sessionID = data.sessionID || -1;
@@ -40,12 +40,12 @@ function putReq(req, res, next) {
 
     if (!appId || !type || !quantity) {
       return res.status(500).send({
-        error: "Please provide valid inputs",
+        error: 'Please provide valid inputs',
       });
     }
 
     if (quantity < 0) {
-      debug_info("negating the negative quantity provided!");
+      debug_info('negating the negative quantity provided!');
       quantity *= -1;
     } else if (quantity === 0) {
       quantity = 1;
@@ -56,20 +56,20 @@ function putReq(req, res, next) {
     // If the application with appId has not been found in applications
     if (isExitingAppId <= -1) {
       // If the put request has been requested from a Requestor
-      if (type === "DYNPUT") {
+      if (type === 'DYNPUT') {
         // Create a new Requestor object
         let newRequestor = new Requestor(appId, sessionID);
         // Add the new requestor to the application's list
         applications.push(newRequestor);
         // Set the current application as the newRequestor
         application = newRequestor;
-      } else if (type === "DYNREP") {
+      } else if (type === 'DYNREP') {
         // If the put request has been requested from a Responder
         // Create a new Responder object
         let newResponder = new Responder(appId);
         // Add the new responder to the application's list
         applications.push(newResponder);
-        console.log("Creating new responder");
+        console.log('Creating new responder');
         // Set the current application as the newResponder
         application = newResponder;
       }
@@ -78,7 +78,7 @@ function putReq(req, res, next) {
       // save the object into the application variable
       application = applications[isExitingAppId];
     }
-    console.log("Current applications:" + applications);
+    console.log('Current applications:' + applications);
     //Perform the put request for either the Responder or the Requestor
     application
       .putToQueue(_QUEUE_NAME, _message, quantity)
@@ -87,13 +87,13 @@ function putReq(req, res, next) {
         return res.send(hObjDyn);
       })
       .catch((err) => {
-        debug_warn("Put has failed with error : ", err);
+        debug_warn('Put has failed with error : ', err);
         return res.status(500).send({
           error: err,
         });
       });
   } catch (err) {
-    debug_warn("Error: " + err);
+    debug_warn('Error: ' + err);
     return res.status(500).send({
       error: err,
     });
@@ -112,7 +112,7 @@ function getRes(req, res, next) {
 
   if (!appId || !type || isNaN(limit) || limit <= 0) {
     return res.status(500).send({
-      error: "Please provide valid inputs",
+      error: 'Please provide valid inputs',
     });
   }
   // Looking for the applicaiton with appId = appId in applications
@@ -121,19 +121,19 @@ function getRes(req, res, next) {
   // If the application with appId has not been found in applications
   if (isExitingAppId <= -1) {
     // If the get request has been requested from a Requestor
-    if (type === "DYNPUT") {
+    if (type === 'DYNPUT') {
       // Create a new Requestor object
       let newRequestor = new Requestor(appId, sessionID);
       applications.push(newRequestor);
       application = newRequestor;
-      console.log("Creating new Requestor");
-    } else if (type === "DYNREP") {
+      console.log('Creating new Requestor');
+    } else if (type === 'DYNREP') {
       // If the get request has been request from a Responder
       // Create a new Responder object
       let newResponder = new Responder(appId);
       applications.push(newResponder);
       application = newResponder;
-      console.log("Creating new Responder");
+      console.log('Creating new Responder');
     }
   } else {
     // If the application with appId = apId has been found,

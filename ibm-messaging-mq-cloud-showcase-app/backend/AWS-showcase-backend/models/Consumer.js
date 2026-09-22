@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -13,40 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-const MQClient = require("../msms/message-session-manager");
+const MQClient = require('../msms/message-session-manager');
 
 class Consumer {
-    constructor(consumerId=null) {
-        this.mqclient = new MQClient();
-        this.consumerId = consumerId;
-    }
+  constructor(consumerId = null) {
+    this.mqclient = new MQClient();
+    this.consumerId = consumerId;
+  }
 
-    getMessages(queueName, quantity, currency = undefined) {        
-        return new Promise((resolve, reject) => {
-            this.mqclient.get(queueName,quantity, currency)
-            .then((data) => {
-                resolve(data);
-            })
-            .catch((err) => {
-                reject(err);
-            })
-        });
-    }
-
-    closeConnection() {
-        return new Promise((resolve, reject) => {
-            this.mqclient.cleanUp()
-            .then((data) => {
-                resolve(data);
-            })
-            .catch((err) => {
-                reject(err);
-            })
+  getMessages(queueName, quantity, currency = undefined) {
+    return new Promise((resolve, reject) => {
+      this.mqclient
+        .get(queueName, quantity, currency)
+        .then((data) => {
+          resolve(data);
         })
-    }
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  }
 
-    getAppId() { return this.consumerId; }
+  closeConnection() {
+    return new Promise((resolve, reject) => {
+      this.mqclient
+        .cleanUp()
+        .then((data) => {
+          resolve(data);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  }
 
+  getAppId() {
+    return this.consumerId;
+  }
 }
 
-module.exports={Consumer};
+module.exports = { Consumer };

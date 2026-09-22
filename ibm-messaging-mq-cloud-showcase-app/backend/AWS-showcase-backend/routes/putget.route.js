@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ router.get('/api/mqget', putgetController.get);
 router.post('/api/mqput', putgetController.put);
 router.get('/api/closeProducer', putgetController.closeProducerConnection);
 router.get('/api/closeConsumer', putgetController.closeConsumerConnection);
-router.get('/api/getCodingChallange', putgetController.getCodingChallange)
+router.get('/api/getCodingChallange', putgetController.getCodingChallange);
 router.get('/api/qdepth', utilsController.get);
 router.post('/api/sub', pubsubController.sub);
 router.post('/api/pub', pubsubController.pub);
@@ -35,6 +35,5 @@ router.post('/api/putReq', reuqestreponseController.putReq);
 router.get('/api/getRes', reuqestreponseController.getRes);
 
 router.get('/', putgetController.about);
-
 
 module.exports = router;

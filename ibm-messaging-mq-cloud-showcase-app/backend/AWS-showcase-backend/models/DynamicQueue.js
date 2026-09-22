@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,29 @@
  * limitations under the License.
  **/
 
-class DynQueue{
-    constructor(mqclient, hObjDyn, hObjDynName) {
-        this.hObjDyn = hObjDyn;
-        this.dynQueueName = hObjDynName;
-        this.lastMessages = [];
-        this.mqclient = mqclient;
-    }
+class DynQueue {
+  constructor(mqclient, hObjDyn, hObjDynName) {
+    this.hObjDyn = hObjDyn;
+    this.dynQueueName = hObjDynName;
+    this.lastMessages = [];
+    this.mqclient = mqclient;
+  }
 
-    getLastMessage() {
-        this.lastMessages[0].pop();
-    }
+  getLastMessage() {
+    this.lastMessages[0].pop();
+  }
 
-    addMessage(msg) {
-        this.lastMessages.push(msg);
-    }
+  addMessage(msg) {
+    this.lastMessages.push(msg);
+  }
 
-    getHObjDyn() {return this.hObjDyn;}
+  getHObjDyn() {
+    return this.hObjDyn;
+  }
 
-    getName() { return this.dynQueueName;}
+  getName() {
+    return this.dynQueueName;
+  }
 }
 
-
-module.exports = {DynQueue};
+module.exports = { DynQueue };

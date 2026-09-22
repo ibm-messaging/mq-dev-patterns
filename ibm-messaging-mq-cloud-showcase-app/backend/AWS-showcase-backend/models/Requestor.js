@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -15,89 +15,98 @@
  **/
 
 const { v4: uuidv4 } = require('uuid');
-const {DynQueue} = require('./DynamicQueue');
-const MQClient = require("../msms/message-session-manager");
+const { DynQueue } = require('./DynamicQueue');
+const MQClient = require('../msms/message-session-manager');
 
- //Set Logging options
+//Set Logging options
 let debug_info = require('debug')('mqapp-requestor:info');
 let debug_warn = require('debug')('mqapp-requestor:warn');
 
 class Requestor {
-    constructor(appId, sessionID) {
-        this.appId = appId;
-        this.mqclient = new MQClient();
-        this.sessionID = sessionID;
-        this.openDynQueues = [];
-        this.myID = uuidv4();
-    }
+  constructor(appId, sessionID) {
+    this.appId = appId;
+    this.mqclient = new MQClient();
+    this.sessionID = sessionID;
+    this.openDynQueues = [];
+    this.myID = uuidv4();
+  }
 
-    getMessageFromQueue(dynQueueName) {                
-        return new Promise ((resolve, reject) => {
-            try {
-                debug_info(`requester ${this.myID} getting message from queue`);
-                let dynQueue = this.openDynQueues.find( q => q.dynQueueName === dynQueueName);                
-                let message = dynQueue.lastMessages; 
-                
-                if (null !== message && Array.isArray(message) && message.length > 0) {
-                    resolve(message[0].pop());
-                } else {
-                    resolve(null);
-                }             
-               
-            } catch(err) {
-                debug_warn(`requester ${this.myID} error getting message from queue ${err}`);
-                reject(err);
-            }
-        });                               
-    }
+  getMessageFromQueue(dynQueueName) {
+    return new Promise((resolve, reject) => {
+      try {
+        debug_info(`requester ${this.myID} getting message from queue`);
+        let dynQueue = this.openDynQueues.find(
+          (q) => q.dynQueueName === dynQueueName
+        );
+        let message = dynQueue.lastMessages;
 
-    putToQueue(queueName, message, quantity) {
-        let putRequest = {
-            message : message,
-            quantity : quantity,
-            queueName : queueName
-        };
+        if (null !== message && Array.isArray(message) && message.length > 0) {
+          resolve(message[0].pop());
+        } else {
+          resolve(null);
+        }
+      } catch (err) {
+        debug_warn(
+          `requester ${this.myID} error getting message from queue ${err}`
+        );
+        reject(err);
+      }
+    });
+  }
 
-        return new Promise((resolve, reject) => {
-            this.mqclient.put(putRequest, 'DYNPUT', this.sessionID)
-            .then((hObjDyn) => {
-                debug_info(`requester ${this.myID} putting message onto queue ${JSON.stringify(hObjDyn)}`);
+  putToQueue(queueName, message, quantity) {
+    let putRequest = {
+      message: message,
+      quantity: quantity,
+      queueName: queueName,
+    };
 
-                let name = hObjDyn._name;                
-                let newDyn = new DynQueue(this.mqclient, hObjDyn, name);                
-                this.openDynQueues.push(newDyn);                
-                this.pullingTheQueue(newDyn);
-                resolve(hObjDyn);
-            })
-            .catch((err) => {
-                debug_warn(`requester ${this.myID} error putting message onto queue`);
-                debug_warn(err);
-                reject(err);
-            })
+    return new Promise((resolve, reject) => {
+      this.mqclient
+        .put(putRequest, 'DYNPUT', this.sessionID)
+        .then((hObjDyn) => {
+          debug_info(
+            `requester ${this.myID} putting message onto queue ${JSON.stringify(hObjDyn)}`
+          );
+
+          let name = hObjDyn._name;
+          let newDyn = new DynQueue(this.mqclient, hObjDyn, name);
+          this.openDynQueues.push(newDyn);
+          this.pullingTheQueue(newDyn);
+          resolve(hObjDyn);
+        })
+        .catch((err) => {
+          debug_warn(`requester ${this.myID} error putting message onto queue`);
+          debug_warn(err);
+          reject(err);
         });
-    }
+    });
+  }
 
-    pullingTheQueue(dynQueue) {        
-        setTimeout(() => {                        
-            let hObjDyn = dynQueue.getHObjDyn();            
-            this.mqclient.performGet(1,hObjDyn)
-            .then((message) => {                                    
-                if (message.length > 0) {
-                    dynQueue.addMessage(message);      
-                } else {
-                    this.pullingTheQueue(dynQueue);
-                }                                    
-            })
-            .catch((err) => {
-                debug_warn(`requester ${this.myID} error pulling message from queue ${err}`);                
-                this.pullingTheQueue(dynQueue);
-            })            
-        }, 5000);       
-    } 
+  pullingTheQueue(dynQueue) {
+    setTimeout(() => {
+      let hObjDyn = dynQueue.getHObjDyn();
+      this.mqclient
+        .performGet(1, hObjDyn)
+        .then((message) => {
+          if (message.length > 0) {
+            dynQueue.addMessage(message);
+          } else {
+            this.pullingTheQueue(dynQueue);
+          }
+        })
+        .catch((err) => {
+          debug_warn(
+            `requester ${this.myID} error pulling message from queue ${err}`
+          );
+          this.pullingTheQueue(dynQueue);
+        });
+    }, 5000);
+  }
 
-    getAppId() {return this.appId;}
-
-
+  getAppId() {
+    return this.appId;
+  }
 }
 
-module.exports = {Requestor};
+module.exports = { Requestor };

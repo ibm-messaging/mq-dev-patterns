@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -14,44 +14,45 @@
  * limitations under the License.
  **/
 
-const MQClient = require("../msms/message-session-manager");
+const MQClient = require('../msms/message-session-manager');
 
 class Producer {
-    constructor() {        
-        this.mqclient = new MQClient();        
-    }
+  constructor() {
+    this.mqclient = new MQClient();
+  }
 
-    closeConnection() {
-        return new Promise((resolve, reject) => {
-            this.mqclient.cleanUp()
-            .then((res) => {
-                resolve(res)
-            })
-            .catch((err) => {
-                reject(err);
-            })
+  closeConnection() {
+    return new Promise((resolve, reject) => {
+      this.mqclient
+        .cleanUp()
+        .then((res) => {
+          resolve(res);
         })
-    }
-
-    putMessages(message, quantity, queueName, currency) {
-
-        let _putRequest = {
-            message : message,
-            quantity : quantity,
-            queueName : queueName,
-            currency : currency
-        };
-
-        return new Promise((resolve, reject) => {
-            this.mqclient.put(_putRequest)
-            .then((statusMsg) => {
-                resolve(statusMsg);
-            })
-            .catch((err) => {
-                reject(err);
-            });
+        .catch((err) => {
+          reject(err);
         });
-    }
+    });
+  }
+
+  putMessages(message, quantity, queueName, currency) {
+    let _putRequest = {
+      message: message,
+      quantity: quantity,
+      queueName: queueName,
+      currency: currency,
+    };
+
+    return new Promise((resolve, reject) => {
+      this.mqclient
+        .put(_putRequest)
+        .then((statusMsg) => {
+          resolve(statusMsg);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  }
 }
 
-module.exports = {Producer};
+module.exports = { Producer };
