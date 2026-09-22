@@ -114,12 +114,12 @@ const useStore = create((set, get) => ({
   nodes: _initialNodes,
   edges: _initialEdges,
   queueData: [],
-  onNodesChange: changes => {
+  onNodesChange: (changes) => {
     set({
       nodes: applyNodeChanges(changes, get().nodes),
     });
   },
-  onEdgesChange: changes => {
+  onEdgesChange: (changes) => {
     set({
       edges: applyEdgeChanges(changes, get().edges),
     });
@@ -131,7 +131,7 @@ const useStore = create((set, get) => ({
     });
     utils.disabledNonConnetedQueue(set, get, oldEdge, connection);
   },
-  onConnect: connection => {
+  onConnect: (connection) => {
     var setConnection = utils.updateConnectionNodeToQueue(set, get, connection);
 
     if (setConnection) {
@@ -140,44 +140,44 @@ const useStore = create((set, get) => ({
       alert('Impossible setting the connection between these two components');
     }
   },
-  onClick: nodeId => {
+  onClick: (nodeId) => {
     utils.setActiveNodeAndAnimateFromNodeId(set, get, nodeId);
   },
   changeEdgeAnimationFromNodeId: (nodeId, state) => {
     utils.animateEdgeFromProducer(set, get, nodeId, state);
   },
-  onDeleteEdge: edgeId => {
+  onDeleteEdge: (edgeId) => {
     utils.updateQueueOnDeletingEdge(set, get, edgeId);
     set({
-      edges: get().edges.filter(edge => edge.id !== edgeId),
+      edges: get().edges.filter((edge) => edge.id !== edgeId),
     });
   },
   onDeleteNode: (nodeId, isAQueue = false) => {
     if (isAQueue) {
       // if we are deleting a queue we have to update the connections
       let edges = get().edges.filter(
-        edge => edge.target === nodeId || edge.source === nodeId
+        (edge) => edge.target === nodeId || edge.source === nodeId
       );
-      edges.forEach(e => {
+      edges.forEach((e) => {
         get().onDeleteEdge(e.id);
       });
     }
     set({
-      nodes: get().nodes.filter(node => node.id !== nodeId),
+      nodes: get().nodes.filter((node) => node.id !== nodeId),
     });
   },
-  addNode: node => {
+  addNode: (node) => {
     set({
       nodes: get().nodes.concat(node),
     });
   },
-  updateQueueData: data => {
-    set(state => ({
+  updateQueueData: (data) => {
+    set((state) => ({
       queueData: data,
     }));
   },
   getQueuesNodes: () => {
-    return get().nodes.filter(node => node.type === 'queue');
+    return get().nodes.filter((node) => node.type === 'queue');
   },
   creteTmpQueue: (tmpQueueName, requestNodeId) => {
     let tmpQueue = {
@@ -204,7 +204,7 @@ const useStore = create((set, get) => ({
   },
   drawTmpConnection: (tmpQueueName, responderId, isResp) => {
     let node = get().nodes.filter(
-      node => node.data.role === 'q' && node.data.queueName === tmpQueueName
+      (node) => node.data.role === 'q' && node.data.queueName === tmpQueueName
     );
     let connection = {};
     if (isResp) {
@@ -224,7 +224,7 @@ const useStore = create((set, get) => ({
 
   animateTmpConnection: (tmpQueueName, responderId) => {
     let node = get().nodes.filter(
-      node => node.data.role === 'q' && node.data.queueName === tmpQueueName
+      (node) => node.data.role === 'q' && node.data.queueName === tmpQueueName
     );
     let connection = {
       source: node[0].id,
@@ -240,7 +240,7 @@ const useStore = create((set, get) => ({
   },
   deleteEdgeFromConnection: (tmpQueueName, responderId) => {
     let node = get().nodes.filter(
-      node => node.data.role === 'q' && node.data.queueName === tmpQueueName
+      (node) => node.data.role === 'q' && node.data.queueName === tmpQueueName
     );
     let connection = {
       source: responderId,
@@ -249,12 +249,12 @@ const useStore = create((set, get) => ({
     let edgeId = connection.source + '-' + connection.target;
     get().onDeleteEdge(edgeId);
   },
-  deleteTmpQueueFromTmpQueueName: tmpQueueName => {
+  deleteTmpQueueFromTmpQueueName: (tmpQueueName) => {
     let tmpQueueNodeId = get().nodes.filter(
-      node => node.data.queueName === tmpQueueName
+      (node) => node.data.queueName === tmpQueueName
     );
     set({
-      nodes: get().nodes.filter(node => node.id !== tmpQueueNodeId[0].id),
+      nodes: get().nodes.filter((node) => node.id !== tmpQueueNodeId[0].id),
     });
   },
 }));

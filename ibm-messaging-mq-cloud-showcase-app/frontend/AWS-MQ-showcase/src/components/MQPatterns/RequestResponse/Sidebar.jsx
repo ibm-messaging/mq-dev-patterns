@@ -30,19 +30,19 @@ function Sidebar() {
       </div>
       <div
         className="dndnode input"
-        onDragStart={event => onDragStart(event, 'producer')}
+        onDragStart={(event) => onDragStart(event, 'producer')}
         draggable>
         Producer
       </div>
       <div
         className="dndnode"
-        onDragStart={event => onDragStart(event, 'consumer')}
+        onDragStart={(event) => onDragStart(event, 'consumer')}
         draggable>
         Consumer
       </div>
       <div
         className="dndnode output"
-        onDragStart={event => onDragStart(event, 'queue')}
+        onDragStart={(event) => onDragStart(event, 'queue')}
         draggable>
         Queue
       </div>

@@ -21,10 +21,10 @@ import './index.scss';
 import Flow from '../PubSub/map';
 import useStore from './store';
 
-const PubSub = props => {
+const PubSub = (props) => {
   const [dataChart1, setDataChart1] = useState([]);
   const [time, setTime] = useState(1);
-  const _updateDataframe = useStore(state => state.setDataframeForChart);
+  const _updateDataframe = useStore((state) => state.setDataframeForChart);
 
   useEffect(() => {
     let dataframe = _updateDataframe();
@@ -42,7 +42,7 @@ const PubSub = props => {
   function updateChart(result) {
     if (result) {
       let _dataChart1 = [...dataChart1];
-      result.forEach(entry => {
+      result.forEach((entry) => {
         _dataChart1.push({
           group: entry.group,
           time: time,

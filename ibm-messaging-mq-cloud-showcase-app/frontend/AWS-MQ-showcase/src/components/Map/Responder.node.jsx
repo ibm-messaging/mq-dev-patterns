@@ -34,12 +34,12 @@ import Cookies from 'js-cookie';
 
 const ResponderNode = ({ id, data }) => {
   const adapter = new APIAdapter();
-  const _onClick = useStore(state => state.onClick);
-  const deleteMe = useStore(state => state.onDeleteNode);
-  const _drawTmpConnection = useStore(state => state.drawTmpConnection);
-  const _animateTmpConnection = useStore(state => state.animateTmpConnection);
+  const _onClick = useStore((state) => state.onClick);
+  const deleteMe = useStore((state) => state.onDeleteNode);
+  const _drawTmpConnection = useStore((state) => state.drawTmpConnection);
+  const _animateTmpConnection = useStore((state) => state.animateTmpConnection);
   const _deleteTmpConnection = useStore(
-    state => state.deleteEdgeFromConnection
+    (state) => state.deleteEdgeFromConnection
   );
   const [lastMessage, setLastMessage] = useState({});
   const [sessionCount, setSessionCount] = useState(0);
@@ -80,7 +80,7 @@ const ResponderNode = ({ id, data }) => {
               _drawTmpConnection(_replyQueue, id, true);
               toast.success('Message received! It is time to reply!');
             }
-            setSessionCount(state => state + 1);
+            setSessionCount((state) => state + 1);
           } catch (e) {
             console.log(e);
           }
@@ -90,10 +90,10 @@ const ResponderNode = ({ id, data }) => {
     }
   });
 
-  const changeName = e => {
+  const changeName = (e) => {
     setName(e.value);
   };
-  const changeResponseMessage = e => {
+  const changeResponseMessage = (e) => {
     setResponseMesasge(e.target.value);
   };
   const onSendResponse = () => {
@@ -101,7 +101,7 @@ const ResponderNode = ({ id, data }) => {
     let _responseMessage = responseMessage;
     adapter
       .dynPut(_responseMessage, 1, replyQueue, 'DYNREP', id)
-      .then(res => {
+      .then((res) => {
         // animate connection
         _deleteTmpConnection(replyQueue, id);
         setReplyQueue('');
@@ -109,7 +109,7 @@ const ResponderNode = ({ id, data }) => {
         setResponseMesasge('');
         toast.success('Your response has been sent!');
       })
-      .catch(err => {
+      .catch((err) => {
         toast.error('Error on sending your response.');
       });
   };
@@ -151,7 +151,7 @@ const ResponderNode = ({ id, data }) => {
           className="consumer-node-name-label"
           value={name}
           size="sm"
-          onChange={e => changeName(e)}
+          onChange={(e) => changeName(e)}
         />
         <div style={{ height: 10 }}>
           <Toggle
@@ -184,11 +184,11 @@ const ResponderNode = ({ id, data }) => {
         placeholder="Write here your message"
         value={responseMessage}
         size="sm"
-        onChange={e => changeResponseMessage(e)}
+        onChange={(e) => changeResponseMessage(e)}
       />
 
       <Button
-        renderIcon={props => <Send size={42} {...props} />}
+        renderIcon={(props) => <Send size={42} {...props} />}
         className="publisher-node-send-button"
         size="sm"
         onClick={() => {

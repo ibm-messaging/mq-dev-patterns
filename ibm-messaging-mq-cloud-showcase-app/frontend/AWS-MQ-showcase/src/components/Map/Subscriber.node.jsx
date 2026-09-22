@@ -25,12 +25,12 @@ import { toast } from 'react-toastify';
 const SubscriberNode = ({ id, data }) => {
   const adapter = new APIAdapter();
   const animateConnection = useStore(
-    state => state.changeEdgeAnimationFromNodeId
+    (state) => state.changeEdgeAnimationFromNodeId
   );
   const [animationState, setAnimationState] = useState(false);
-  const _deleteMe = useStore(state => state.onDeleteNode);
+  const _deleteMe = useStore((state) => state.onDeleteNode);
   const _deleteEdgeDueToFailingSUb = useStore(
-    state => state.deleteEdgeFromNode
+    (state) => state.deleteEdgeFromNode
   );
   const [lastMessage, setLastMessage] = useState(undefined);
   const [sessionCount, setSessionCount] = useState(0);
@@ -66,7 +66,7 @@ const SubscriberNode = ({ id, data }) => {
                 setAnimationState(true);
                 animateConnection(id, true);
                 setLastMessage(_lastMessages);
-                setSessionCount(state => state + 1);
+                setSessionCount((state) => state + 1);
               }
             }
           }
@@ -106,7 +106,7 @@ const SubscriberNode = ({ id, data }) => {
     }
   }, [data.subscriptionState]);
 
-  const changeName = e => {
+  const changeName = (e) => {
     setName(e.value);
   };
 
@@ -118,7 +118,7 @@ const SubscriberNode = ({ id, data }) => {
           resolve();
           setIsSubscribed(false);
         })
-        .catch(err => {
+        .catch((err) => {
           reject();
           setIsSubscribed(false);
         });
@@ -139,7 +139,7 @@ const SubscriberNode = ({ id, data }) => {
           resolve();
           setIsSubscribed(true);
         })
-        .catch(err => {
+        .catch((err) => {
           reject();
           // Clean connection
           _deleteEdgeDueToFailingSUb(id);
@@ -184,7 +184,7 @@ const SubscriberNode = ({ id, data }) => {
         className="consumer-node-name-label"
         value={name}
         size="sm"
-        onChange={e => changeName(e)}
+        onChange={(e) => changeName(e)}
       />
 
       <Column md={16} lg={16} sm={16}>

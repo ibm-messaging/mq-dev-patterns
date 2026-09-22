@@ -26,13 +26,13 @@ import Cookies from 'js-cookie';
 const RequestorNode = ({ id, data }) => {
   const adapter = new APIAdapter();
   const animateConnection = useStore(
-    state => state.changeEdgeAnimationFromNodeId
+    (state) => state.changeEdgeAnimationFromNodeId
   );
-  const deleteMe = useStore(state => state.onDeleteNode);
-  const _drawTmpQueue = useStore(state => state.creteTmpQueue);
-  const _drawTmpConnection = useStore(state => state.drawTmpConnection);
+  const deleteMe = useStore((state) => state.onDeleteNode);
+  const _drawTmpQueue = useStore((state) => state.creteTmpQueue);
+  const _drawTmpConnection = useStore((state) => state.drawTmpConnection);
   const _deleteTmpQueue = useStore(
-    state => state.deleteTmpQueueFromTmpQueueName
+    (state) => state.deleteTmpQueueFromTmpQueueName
   );
   const [quantity, setQuantity] = useState(1);
   const [animationState, setAnimationState] = useState(false);
@@ -58,7 +58,7 @@ const RequestorNode = ({ id, data }) => {
     if (isWaitingForReply) {
       const interval = setInterval(async () => {
         try {
-          adapter.getDyn(1, tmpQueueName, id, 'DYNPUT').then(message => {
+          adapter.getDyn(1, tmpQueueName, id, 'DYNPUT').then((message) => {
             if (message) {
               setResponseMessage(message);
               setIsWaitingForReply(false);
@@ -76,7 +76,7 @@ const RequestorNode = ({ id, data }) => {
     }
   });
 
-  const _onClick = id => {
+  const _onClick = (id) => {
     setAnimationState(true);
     animateConnection(id, true);
     try {
@@ -84,7 +84,7 @@ const RequestorNode = ({ id, data }) => {
       // Adapter DYNPUT
       adapter
         .dynPut(message, 1, data.connectedQueue, 'DYNPUT', id, sessionID)
-        .then(res => {
+        .then((res) => {
           //Drow the TMP queue && starting pulling the TMP queue waiting for the response
           if (res !== -1) {
             toast.success('The request has been sent!');
@@ -106,7 +106,7 @@ const RequestorNode = ({ id, data }) => {
     setQuantity(quantity + delta);
   };
 
-  const changeName = e => {
+  const changeName = (e) => {
     setName(e.value);
   };
 
@@ -143,7 +143,7 @@ const RequestorNode = ({ id, data }) => {
         className="producer-node-name-label"
         labelText="Name of your application"
         value={name}
-        onChange={e => changeName(e)}
+        onChange={(e) => changeName(e)}
       />
 
       <NumberInput

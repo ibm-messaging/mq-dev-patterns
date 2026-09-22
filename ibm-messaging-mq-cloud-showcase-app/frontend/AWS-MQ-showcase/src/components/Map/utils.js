@@ -26,8 +26,8 @@ class MapUtils {
   ) {
     let srcId = connection['source'];
     let trgtId = connection['target'];
-    let trgtNode = get().nodes.find(e => e.id === trgtId);
-    let srcNode = get().nodes.find(e => e.id === srcId);
+    let trgtNode = get().nodes.find((e) => e.id === trgtId);
+    let srcNode = get().nodes.find((e) => e.id === srcId);
     let trgtIsAQueue = trgtNode.data.role === 'q';
     let srcIsAQueue = srcNode.data.role === 'q';
 
@@ -38,7 +38,7 @@ class MapUtils {
       queueName = trgtNode.data.queueName;
       if (queueName) {
         set({
-          nodes: get().nodes.map(node => {
+          nodes: get().nodes.map((node) => {
             if (node.id === srcId) {
               node = {
                 ...node,
@@ -58,7 +58,7 @@ class MapUtils {
       queueName = srcNode.data.queueName;
       if (queueName) {
         set({
-          nodes: get().nodes.map(node => {
+          nodes: get().nodes.map((node) => {
             if (node.id === trgtId) {
               node = {
                 ...node,
@@ -90,7 +90,7 @@ class MapUtils {
     let isToAQueue = false;
 
     set({
-      nodes: get().nodes.map(node => {
+      nodes: get().nodes.map((node) => {
         if (node.id === nodeIdChanged) {
           node = {
             ...node,
@@ -112,7 +112,7 @@ class MapUtils {
 
     if (!isToAQueue) {
       set({
-        edges: get().edges.map(edge => {
+        edges: get().edges.map((edge) => {
           if (
             edge.source === nodeIdConnected ||
             edge.target === nodeIdConnected
@@ -137,7 +137,7 @@ class MapUtils {
 
   animateEdgeFromNodeIds(set, get, nodeId) {
     set({
-      edges: get().edges.map(edge => {
+      edges: get().edges.map((edge) => {
         if (edge.source === nodeId || edge.target === nodeId) {
           edge = {
             ...edge,
@@ -155,7 +155,7 @@ class MapUtils {
 
   animateEdgeFromProducer(set, get, nodeId, state, isFromEdge = false) {
     set({
-      edges: get().edges.map(edge => {
+      edges: get().edges.map((edge) => {
         if (edge.source === nodeId || (isFromEdge && edge.id === nodeId)) {
           edge = {
             ...edge,
@@ -173,7 +173,7 @@ class MapUtils {
 
   animateEdgeFromConnection(set, get, source, target) {
     set({
-      edges: get().edges.map(edge => {
+      edges: get().edges.map((edge) => {
         if (
           (edge.source === source && edge.target === target) ||
           (edge.target === source && edge.source === target)
@@ -194,7 +194,7 @@ class MapUtils {
 
   setActiveNodeAndAnimateFromNodeId(set, get, nodeId) {
     set({
-      nodes: get().nodes.map(node => {
+      nodes: get().nodes.map((node) => {
         if (node.id === nodeId) {
           node = {
             ...node,
@@ -233,7 +233,7 @@ class MapUtils {
     let targetId = split[1];
 
     set({
-      nodes: get().nodes.map(node => {
+      nodes: get().nodes.map((node) => {
         if (
           (node.id === srcId || node.id === targetId) &&
           (node.type === 'producer' || node.type === 'consumer')
@@ -255,7 +255,7 @@ class MapUtils {
 
   getEdgesFromNode(set, get, nodeId) {
     let edges = get().edges.filter(
-      edge => edge.source === nodeId || edge.target === nodeId
+      (edge) => edge.source === nodeId || edge.target === nodeId
     );
 
     return edges;

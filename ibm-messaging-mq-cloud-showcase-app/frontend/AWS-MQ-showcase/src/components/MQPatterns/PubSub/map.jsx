@@ -46,13 +46,13 @@ const getId = () => `${id++}`;
 function Flow() {
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = useStore();
 
-  const _addNode = useStore(state => state.addNode);
+  const _addNode = useStore((state) => state.addNode);
 
   const reactFlowWrapper = useRef(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
 
   const onDrop = useCallback(
-    event => {
+    (event) => {
       event.preventDefault();
       const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
       const type = event.dataTransfer.getData('application/reactflow');
@@ -116,7 +116,7 @@ function Flow() {
     },
     [reactFlowInstance]
   );
-  const onDragOver = useCallback(event => {
+  const onDragOver = useCallback((event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
   }, []);

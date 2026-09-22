@@ -32,14 +32,14 @@ import './map.css';
 
 const ConsumerNode = ({ id, data }) => {
   const adapter = new APIAdapter();
-  const _onClick = useStore(state => state.onClick);
-  const deleteMe = useStore(state => state.onDeleteNode);
+  const _onClick = useStore((state) => state.onClick);
+  const deleteMe = useStore((state) => state.onDeleteNode);
   const [lastMessage, setLastMessage] = useState();
   const [sessionCount, setSessionCount] = useState(0);
 
   const [name, setName] = useState(data.label);
   const animateConnection = useStore(
-    state => state.changeEdgeAnimationFromNodeId
+    (state) => state.changeEdgeAnimationFromNodeId
   );
 
   const isForTheCodingChallange =
@@ -72,7 +72,7 @@ const ConsumerNode = ({ id, data }) => {
           }
           setLastMessage(_lastMessages);
           if (_lastMessages) {
-            setSessionCount(state => state + 1);
+            setSessionCount((state) => state + 1);
           }
         } catch (e) {
           console.log(e);
@@ -82,7 +82,7 @@ const ConsumerNode = ({ id, data }) => {
     }
   });
 
-  const changeName = e => {
+  const changeName = (e) => {
     setName(e.value);
   };
 
@@ -119,7 +119,7 @@ const ConsumerNode = ({ id, data }) => {
                   className="consumer-node-name-label"
                   value={name}
                   size="sm"
-                  onChange={e => changeName(e)}
+                  onChange={(e) => changeName(e)}
                 />
               </Column>
               <Column md={4} lg={4} sm={4}>
@@ -142,7 +142,7 @@ const ConsumerNode = ({ id, data }) => {
                     { id: '2', text: 'USD' },
                     { id: '3', text: 'GBP' },
                   ]}
-                  itemToElement={item =>
+                  itemToElement={(item) =>
                     item ? (
                       <span className="test" style={{ color: 'red' }}>
                         {item.text}
@@ -233,7 +233,7 @@ const ConsumerNode = ({ id, data }) => {
             className="consumer-node-name-label"
             value={name}
             size="sm"
-            onChange={e => changeName(e)}
+            onChange={(e) => changeName(e)}
           />
 
           <Toggle

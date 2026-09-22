@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
- 
- .mq--progress-bar--progress {
+
+.mq--progress-bar--progress {
   color: 'red';
 }
 .queue-image {
@@ -165,7 +165,6 @@
   font-weight: bold;
 }
 
-
 .producer-node-send-button {
   height: 30px;
   text-align: center;
@@ -174,14 +173,14 @@
   width: 100%;
 }
 
-.publisher-node-send-button {  
+.publisher-node-send-button {
   height: 35px;
   text-align: center;
-  padding-top: 5px;  
-  text-align: center;  
-  width: 100%;    
+  padding-top: 5px;
+  text-align: center;
+  width: 100%;
   margin-left: 7%;
-  text-align: center;  
+  text-align: center;
   font-size: 1.2em;
 }
 

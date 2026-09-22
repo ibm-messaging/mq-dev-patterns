@@ -47,7 +47,7 @@ const DEFAULTOPTION = {
   height: '400px',
 };
 
-const Chart2 = props => {
+const Chart2 = (props) => {
   const [options, setOption] = useState(DEFAULTOPTION);
 
   if (!props.data || !props.data.length) return null;

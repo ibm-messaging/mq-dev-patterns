@@ -1,5 +1,5 @@
 /**
- * Copyright 2022, 2023 IBM Corp.
+ * Copyright 2022, 2026 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  **/
 
-const initialNodes = [  
+const initialNodes = [
   {
     id: '15',
     type: 'producer',
@@ -55,8 +55,7 @@ const initialNodes = [
     position: { x: 650, y: 20 },
     sourcePosition: 'right',
     targetPosition: 'left',
-    draggable: true,    
+    draggable: true,
   },
-
 ];
 export default initialNodes;

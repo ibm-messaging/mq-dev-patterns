@@ -45,7 +45,7 @@ const DEFAULTOPTION = {
   height: '400px',
 };
 
-const Chart1 = props => {
+const Chart1 = (props) => {
   if (!props.data || !props.data.length) return null;
   return <LineChart data={props.data} options={DEFAULTOPTION} />;
 };

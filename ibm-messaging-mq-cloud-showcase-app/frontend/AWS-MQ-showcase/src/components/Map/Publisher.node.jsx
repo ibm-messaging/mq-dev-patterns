@@ -26,9 +26,9 @@ import { toast } from 'react-toastify';
 const PublisherNode = ({ id, data }) => {
   const adapter = new APIAdapter();
   const animateConnection = useStore(
-    state => state.changeEdgeAnimationFromNodeId
+    (state) => state.changeEdgeAnimationFromNodeId
   );
-  const deleteMe = useStore(state => state.onDeleteNode);
+  const deleteMe = useStore((state) => state.onDeleteNode);
   const [animationState, setAnimationState] = useState(false);
   const [isToggleOn] = useState(false);
   const [message, setMessage] = useState();
@@ -62,11 +62,11 @@ const PublisherNode = ({ id, data }) => {
         let promise = new Promise((resolve, reject) => {
           adapter
             .publish(messageToSend, 1, data.connectedQueue, id)
-            .then(res => {
+            .then((res) => {
               setCandSend(true);
               resolve();
             })
-            .catch(err => {
+            .catch((err) => {
               setCandSend(true);
               reject();
             });
@@ -120,7 +120,7 @@ const PublisherNode = ({ id, data }) => {
         labelText="Title of your notification"
         value={title}
         placeholder="Waitlist reminder"
-        onChange={e => setTitle(e.value)}
+        onChange={(e) => setTitle(e.value)}
       />
       <br />
       <TextArea
@@ -129,12 +129,12 @@ const PublisherNode = ({ id, data }) => {
         labelText="Content of your notification"
         placeholder={"Don't forget about our WAITLIST! " + data.connectedQueue}
         value={message}
-        onChange={e => setMessage(e.value)}
+        onChange={(e) => setMessage(e.value)}
       />
       <br />
 
       <Button
-        renderIcon={props => <Send size={42} {...props} />}
+        renderIcon={(props) => <Send size={42} {...props} />}
         className="publisher-node-send-button"
         size="sm"
         disabled={!data.connectedQueue || animationState}

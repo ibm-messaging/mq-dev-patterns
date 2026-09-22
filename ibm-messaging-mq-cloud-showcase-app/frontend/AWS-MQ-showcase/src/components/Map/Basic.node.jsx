@@ -19,7 +19,7 @@ import { Button } from '@carbon/react';
 import { Handle } from '@xyflow/react';
 
 const BasicNode = ({ data, isConnectable }) => {
-  const _onClick = useCallback(evt => {
+  const _onClick = useCallback((evt) => {
     data.onClick();
   }, []);
 
@@ -29,7 +29,7 @@ const BasicNode = ({ data, isConnectable }) => {
         type={data.role.indexOf('P') > -1 ? 'source' : 'target'}
         position={data.role.indexOf('P') > -1 ? 'right' : 'left'}
         style={{ background: '#555' }}
-        onConnect={params => console.log('handle onConnect', params)}
+        onConnect={(params) => console.log('handle onConnect', params)}
         isConnectable={isConnectable}
       />
 

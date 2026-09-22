@@ -42,7 +42,7 @@ const LandingPage = () => {
           light
           selectedIndex={selectedTab}
           size={'sm'}
-          onChange={e => {
+          onChange={(e) => {
             let { index } = e;
             setSelectedTab(index);
           }}>

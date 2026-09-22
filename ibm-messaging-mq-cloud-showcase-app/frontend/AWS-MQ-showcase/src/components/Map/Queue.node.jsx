@@ -27,8 +27,8 @@ const QueueNode = ({ id, data, isConnectable }) => {
   const adapter = new APIAdapter();
 
   const [currentDepth, setCurrentDepth] = useState(0);
-  const _updateQueuedata = useStore(state => state.updateQueueData);
-  const deleteMe = useStore(state => state.onDeleteNode);
+  const _updateQueuedata = useStore((state) => state.updateQueueData);
+  const deleteMe = useStore((state) => state.onDeleteNode);
 
   const [isTmpQueue, setIsTmpQueue] = useState(false);
   const [canSend, setCandSend] = useState(true);
@@ -47,7 +47,7 @@ const QueueNode = ({ id, data, isConnectable }) => {
           let result = await adapter.getAllDepths(false);
           setCandSend(true);
           if (!Number.isInteger(result)) {
-            let _lastDepth = result.find(q => q.name === data.queueName)[
+            let _lastDepth = result.find((q) => q.name === data.queueName)[
               'depth'
             ];
             _updateQueuedata(result);
@@ -88,14 +88,14 @@ const QueueNode = ({ id, data, isConnectable }) => {
             style={{
               background: '#0050e6',
             }}
-            onConnect={params => console.log('handle onConnect', params)}
+            onConnect={(params) => console.log('handle onConnect', params)}
             isConnectable={isConnectable}
           />
           <Handle
             type="source"
             position="right"
             style={{ background: 'orange' }}
-            onConnect={params => console.log('handle onConnect', params)}
+            onConnect={(params) => console.log('handle onConnect', params)}
             isConnectable={isConnectable}
           />
         </>
@@ -109,7 +109,7 @@ const QueueNode = ({ id, data, isConnectable }) => {
             type={'target'}
             position={'right'}
             style={{ background: 'orange' }}
-            onConnect={params => console.log('handle onConnect', params)}
+            onConnect={(params) => console.log('handle onConnect', params)}
             isConnectable={isConnectable}
           />
 
@@ -117,7 +117,7 @@ const QueueNode = ({ id, data, isConnectable }) => {
             type={'source'}
             position={'left'}
             style={{ background: 'orange' }}
-            onConnect={params => console.log('handle onConnect', params)}
+            onConnect={(params) => console.log('handle onConnect', params)}
             isConnectable={isConnectable}
           />
         </>
