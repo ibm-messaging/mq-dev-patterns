@@ -26,12 +26,37 @@
   },
   "scripts": {
     "start": "node server.js",
-    "debug": "DEBUG=mqapp* node server.js"
+    "debug": "DEBUG=mqapp* node server.js",
+    "format": "prettier --write \"**/*.js\"",
+    "format:diff": "prettier --check \"**/*.js\"",
+    "prepare": "cd ../../.. && (husky ibm-messaging-mq-cloud-showcase-app/.husky || true)"
   },
   "engines": {
     "node": ">=22.12.0"
   },
+  "devDependencies": {
+    "@commitlint/cli": "^21",
+    "@commitlint/config-conventional": "^21",
+    "husky": "^9",
+    "lint-staged": "^17",
+    "prettier": "^3"
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "lint-staged": {
+    "*.js": "prettier --write"
+  },
+  "prettier": {
+    "bracketSameLine": true,
+    "printWidth": 80,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
   "allowScripts": {
+    "husky": true,
     "ibmmq": true
   },
   "type": "commonjs"

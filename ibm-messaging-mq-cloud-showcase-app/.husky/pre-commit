@@ -1,0 +1,36 @@
+APP="ibm-messaging-mq-cloud-showcase-app"
+FE="$APP/frontend/AWS-MQ-showcase"
+BE="$APP/backend/AWS-showcase-backend"
+
+# Capture staged paths once to avoid running git twice.
+staged=$(git diff --cached --name-only)
+
+has_staged_files() {
+  printf '%s\n' "$staged" | grep -q "^$1/"
+}
+
+run_lint_staged() {
+  dir="$1"
+  label="$2"
+
+  if ! has_staged_files "$dir"; then
+    return 0
+  fi
+
+  bin="$dir/node_modules/.bin/lint-staged"
+
+  if [ ! -x "$bin" ]; then
+    printf '%s\n' \
+      "error: staged $label files detected but tools are not installed." \
+      "       Run: cd $dir && npm install" >&2
+    return 1
+  fi
+
+  (
+    cd "$dir" &&
+    ./node_modules/.bin/lint-staged
+  )
+}
+
+run_lint_staged "$FE" "frontend" || exit 1
+run_lint_staged "$BE" "backend" || exit 1
