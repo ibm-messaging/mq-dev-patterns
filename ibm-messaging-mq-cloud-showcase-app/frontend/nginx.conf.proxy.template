@@ -13,7 +13,6 @@
 
 server {
     listen       8080;
-    listen  [::]:8080;
     server_name  _;
 
     location / {
@@ -24,12 +23,7 @@ server {
 
     #Set up redirect for requests to backend
     location /api/ {
-        # Store the upstream in a variable so nginx defers DNS resolution to
-        # request time rather than resolving at startup. This allows the
-        # container to start even when the backend hostname (e.g. 'be') is
-        # only resolvable on the Docker Compose network, not on the host.
-        set $upstream ${HTTP_PROTOCOL}://${REACT_APP_BE_HOST}:${REACT_APP_BE_PORT};
-        proxy_pass $upstream/api/;
+        proxy_pass ${HTTP_PROTOCOL}://${REACT_APP_BE_HOST}:${REACT_APP_BE_PORT}/api/;
     }
 
     # redirect server error pages to the static page /50x.html
