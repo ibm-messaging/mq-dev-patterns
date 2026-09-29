@@ -1,0 +1,8 @@
+{
+  "app": "python3 app.py",
+  "watch": {
+    "include": ["**"],
+    "exclude": ["README.md", "cdk*.json", "requirements*.txt", "**/.*"]
+  },
+  "context": {}
+}

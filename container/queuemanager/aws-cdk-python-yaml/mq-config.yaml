@@ -1,0 +1,33 @@
+#
+# Copyright 2026 IBM Corp.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# mq-config.yaml - IBM MQ on AWS ECS Fargate Configuration
+
+queueManager:
+  name: "QM1"
+  image: "icr.io/ibm-messaging/mq:latest"
+  cpu: 1024        # 1 vCPU (1024 CPU units)
+  memoryLimit: 4096 # 4 GB RAM (4096 MiB)
+
+# Security credentials can be configured below or injected securely at deployment time:
+# cdk deploy -c app_password="YourAppPassword" -c admin_password="YourAdminPassword"
+security:
+  appPassword: ""
+  adminPassword: ""
+
+ports:
+  messaging: 1414  # Raw TCP for MQ client applications
+  console: 9443    # HTTPS for Web Console & REST Messaging API
