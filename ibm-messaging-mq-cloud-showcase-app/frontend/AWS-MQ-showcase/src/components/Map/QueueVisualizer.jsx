@@ -35,7 +35,11 @@ const QueueVisualizer = ({
   const uid = useId();
   const clipId = `qv-clip-${uid.replace(/:/g, '')}`;
 
-  const [filled, setFilled] = useState(() => Math.min(depth, MAX_SLOTS));
+  const initCount = Math.min(depth, MAX_SLOTS);
+  const [queue, setQueue] = useState(() =>
+    Array.from({ length: initCount }, (_, i) => i)
+  );
+  const nextSlotRef = useRef(initCount % MAX_SLOTS);
 
   const prevLandRef = useRef(landCount);
   const prevDrainRef = useRef(drainCount);
@@ -44,17 +48,30 @@ const QueueVisualizer = ({
     const delta = landCount - prevLandRef.current;
     if (delta <= 0) return;
     prevLandRef.current = landCount;
-    setFilled(cur => Math.min(cur + delta, MAX_SLOTS));
+    setQueue(cur => {
+      let next = [...cur];
+      let slot = nextSlotRef.current;
+      for (let d = 0; d < delta; d++) {
+        if (next.length >= MAX_SLOTS) break;
+        next.push(slot);
+        slot = (slot + 1) % MAX_SLOTS;
+      }
+      nextSlotRef.current = slot;
+      return next;
+    });
   }, [landCount]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const delta = drainCount - prevDrainRef.current;
     if (delta <= 0) return;
     prevDrainRef.current = drainCount;
-    setFilled(cur => Math.max(cur - delta, 0));
+    setQueue(cur => cur.slice(delta));
   }, [drainCount]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const slots = Array.from({ length: MAX_SLOTS }, (_, i) => i < filled);
+  const rankMap = {};
+  queue.forEach((slotIndex, position) => {
+    rankMap[slotIndex] = position;
+  });
 
   return (
     <svg
@@ -79,28 +96,38 @@ const QueueVisualizer = ({
       />
 
       <g clipPath={`url(#${clipId})`}>
-        {slots.map((isFilled, i) => {
-          const y = slotY(i);
+        {Array.from({ length: MAX_SLOTS }, (_, i) => {
+          const isFilled = i in rankMap;
+          const rank = isFilled ? rankMap[i] : 0;
+          const homeY = slotY(0);
+          const translateY = slotY(rank) - homeY;
+
           const cx = INNER_X + INNER_W / 2;
-          const cy = y + PLATE_H / 2;
+          const cy = homeY + PLATE_H / 2;
+
           return (
             <g
               key={i}
               className={`queue-visualizer__slot ${
                 isFilled ? 'queue-visualizer__slot--filled' : ''
               }`}
-              style={{ transformOrigin: `${cx}px ${cy}px` }}>
+              style={{
+                transformOrigin: `${cx}px ${cy}px`,
+                transform: isFilled
+                  ? `translateY(${translateY}px) scale(1)`
+                  : `translateY(${translateY}px) scale(0)`,
+              }}>
               <rect
                 x={INNER_X}
-                y={y}
+                y={homeY}
                 width={INNER_W}
                 height={PLATE_H}
                 rx={PLATE_RX}
                 fill="#3D6BCE"
               />
               <polyline
-                points={`${INNER_X},${y} ${cx},${y + PLATE_H * 0.55} ${INNER_X +
-                  INNER_W},${y}`}
+                points={`${INNER_X},${homeY} ${cx},${homeY +
+                  PLATE_H * 0.55} ${INNER_X + INNER_W},${homeY}`}
                 stroke="white"
                 strokeWidth="0.75"
                 strokeLinecap="round"

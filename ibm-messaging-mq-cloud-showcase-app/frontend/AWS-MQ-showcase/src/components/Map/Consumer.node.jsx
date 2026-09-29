@@ -230,6 +230,10 @@ const ConsumerNode = ({ id, data }) => {
       <p className="node-card__stat-line">
         Counter: <strong>{lastMessage?.Count ?? 0}</strong>
       </p>
+
+      {!data.isActive && (
+        <p className="node-card__toggle-hint">Toggle on to start receiving</p>
+      )}
     </NodeCard>
   );
 };

@@ -40,10 +40,24 @@ const ITEMS = [
   },
 ];
 
+const HOW_IT_WORKS = {
+  patternName: 'publish-subscribe',
+  tags: ['MQTT', 'REST', 'AMQP', 'JMS', 'Jakarta Msg 3.0'],
+  description:
+    'Publish-subscribe messaging is a one-to-many distribution pattern. Unlike point-to-point messaging, a copy of the message is delivered to every consumer (subscriber) that has registered interest in a topic. This pattern forms the basic framework of event distribution and Event Driven Architectures (EDAs).',
+  steps: [
+    'Message consumers subscribe to a topic relating to events they are interested in',
+    'Messages producer publishes message to a topic',
+    'Message broker matches subscribers for topic where new events has been published',
+    'A copy of the event message is delivered to all matching subscribers of the topic',
+  ],
+};
+
 const Sidebar = () => (
   <PatternSidebar
     items={ITEMS}
     instruction="Drag onto canvas. Connect publisher to topic, topic to subscribers. Toggle subscriber on to receive."
+    howItWorks={HOW_IT_WORKS}
   />
 );
 

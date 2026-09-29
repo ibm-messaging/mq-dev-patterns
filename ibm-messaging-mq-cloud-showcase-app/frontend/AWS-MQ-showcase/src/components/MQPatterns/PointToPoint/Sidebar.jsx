@@ -40,6 +40,21 @@ const ITEMS = [
   },
 ];
 
-const Sidebar = () => <PatternSidebar items={ITEMS} />;
+const HOW_IT_WORKS = {
+  patternName: 'point-to-point',
+  tags: ['REST', 'AMQP', 'JMS', 'Jakarta Msg 3.0'],
+  description:
+    'Point-to-point messaging allows applications to communicate asynchronously. Producers and consumers only need to know about the queue — they have no knowledge of each other and can run at different speeds or at different times.',
+  steps: [
+    'Messages are put to queue by a producer application',
+    'Messages are stored on the queue awaiting consumption',
+    'Consumer applications connect to the queue and get (remove) messages in FIFO order',
+    'Optionally, applications may browse messages, leaving them on the queue',
+  ],
+};
+
+const Sidebar = () => (
+  <PatternSidebar items={ITEMS} howItWorks={HOW_IT_WORKS} />
+);
 
 export default Sidebar;

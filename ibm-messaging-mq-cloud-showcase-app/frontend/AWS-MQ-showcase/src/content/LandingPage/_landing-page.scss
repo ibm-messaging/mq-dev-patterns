@@ -30,6 +30,13 @@
   color: $text-primary;
 }
 
+.landing-page__description {
+  @include type-style('body-long-01');
+  color: $text-primary;
+  margin-top: $spacing-03;
+  max-width: 48rem;
+}
+
 .landing-page__tabs {
   padding: 0;
 }
