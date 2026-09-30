@@ -61,6 +61,7 @@ services:
           memory: 4Gb  
   mq:
     image: "icr.io/ibm-messaging/mq:latest"
+    platform: linux/amd64
     ports:
       - 9443:9443
       - 1414:1414

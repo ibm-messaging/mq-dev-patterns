@@ -63,11 +63,16 @@ if (MQDetails['MQ_QMGR_PORT_MQI']) {
   MQDetails['MQ_QMGR_PORT_MQI'] = DEFAULT_MQI_PORT;
 }
 
+if (!process.env.APP_PASSWORD || !process.env.ADMIN_PASSWORD) {
+  console.error('FATAL: APP_PASSWORD and ADMIN_PASSWORD environment variables must be set.');
+  process.exit(1);
+}
+
 let credentials = {
   USER: process.env.APP_USER || env.MQ_ENDPOINTS[0].APP_USER || DEFAULT_APP_USER,
-  APP_PASSWORD: process.env.APP_PASSWORD || env.MQ_ENDPOINTS[0].APP_PASSWORD,
+  APP_PASSWORD: process.env.APP_PASSWORD,
   ADMIN_USER: process.env.ADMIN_USER || env.MQ_ENDPOINTS[0].ADMIN_USER || DEFAULT_ADMIN_USER,
-  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || env.MQ_ENDPOINTS[0].ADMIN_PASSWORD
+  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD
 };
 
 const mutexMQClientPerformSub = new Mutex();

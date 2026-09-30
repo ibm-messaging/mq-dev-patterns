@@ -19,8 +19,12 @@
 
 ###########################################################
 # This starts the BUILD phase
+# BUILDPLATFORM = the machine running the build (e.g. linux/arm64 on Apple Silicon)
+# Using BUILDPLATFORM here avoids QEMU emulation during the npm build step,
+# which prevents a segfault when running vite build under emulation.
+# The runtime stage below is pinned to linux/amd64 for AWS Fargate compatibility.
 ###########################################################
-FROM node:20-slim AS builder
+FROM --platform=$BUILDPLATFORM node:20-slim AS builder
 ENV APP_DIR=/usr/local/
 WORKDIR ${APP_DIR}
 RUN apt-get update \
@@ -38,10 +42,10 @@ RUN npm run build
 
 ###########################################################
 # This starts the RUNTIME phase
+# Pinned to linux/amd64 — required for AWS Fargate (x86).
+# Only the compiled static files are copied here so no native code is run.
 ###########################################################
-# Now that there is a container with the compiled program we can have a smaller
-# runtime image.
-FROM nginx:stable-alpine3.17 AS frontendimage
+FROM --platform=linux/amd64 nginx:stable-alpine3.17 AS frontendimage
 
 #Set nginx configuration as per application requirements
 COPY nginx.conf.template /etc/nginx/conf.d/
