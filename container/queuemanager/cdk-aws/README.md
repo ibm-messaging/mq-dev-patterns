@@ -13,6 +13,23 @@ We have tested this configuration with an AWS identity that has `AdministratorAc
 - **Python 3.9+ & pip**
 - **AWS CLI** — authenticated to your target account: `aws sts get-caller-identity`
 
+## IAM Permissions
+
+We have tested with `AdministratorAccess`. The following AWS managed policies cover the minimum set of permissions required by this stack:
+
+| Policy | Why needed |
+|---|---|
+| `AmazonECS_FullAccess` | Create ECS cluster, task definition, and Fargate service |
+| `AmazonEC2FullAccess` | Look up default VPC and create security groups |
+| `AmazonElasticFileSystemFullAccess` | Create EFS file system and access point |
+| `ElasticLoadBalancingFullAccess` | Create Network Load Balancer, target groups, and listeners |
+| `SecretsManagerReadWrite` | Create and manage the MQ credentials secret |
+| `IAMFullAccess` | Create ECS task role and execution role |
+| `CloudWatchLogsFullAccess` | Create log group for container logs |
+| `AWSCloudFormationFullAccess` | CDK deploys infrastructure via CloudFormation |
+
+> **Note:** You may wish to restrict these policies further to suit your security requirements.
+
 ## Files
 
 ```text
@@ -28,13 +45,21 @@ aws-cdk-python-yaml/
 
 ## mq-config.yaml
 
-The `mq-config.yaml` file is the only file you need to edit. It controls the queue manager name, container image, CPU, memory, and ports.
+The `mq-config.yaml` file controls the queue manager name, container image, CPU, memory, and ports.
 
-Passwords can be left blank in the YAML and passed securely at deploy time via CDK context flags (recommended), or set directly in the file if you are sure the file will not be committed to source control.
+Passwords can be set in the `security` section of this file, or passed at deploy time via CDK context flags. **CDK context flags always take priority over values in the YAML file.** If neither is provided, the deployment will abort with an error.
+
+We recommend passing passwords via context flags so they are never stored in any file:
+
+```
+cdk deploy \
+  -c app_password="YourSecureAppPassword" \
+  -c admin_password="YourSecureAdminPassword"
+```
 
 ## AWS CLI
 
-The CDK CLI makes use of your AWS CLI configuration. If you have run `aws configure`, the CDK commands will be able to access AWS without further configuration.
+The CDK CLI makes use of your AWS CLI configuration. No separate AWS login is required — if you have already run `aws configure` or set up AWS SSO, the CDK commands will use that configuration automatically.
 
 ## Bootstrap (one-time per account/region)
 
@@ -53,8 +78,6 @@ pip install -r requirements.txt
 ```
 
 ## Deploy
-
-Pass your passwords as CDK context flags. This ensures they are transmitted over TLS to AWS Secrets Manager and never stored in any file.
 
 ```
 cdk deploy \
@@ -94,10 +117,10 @@ curl -k -u "app:<APP_PASSWORD>" \
 
 ### Native MQ client (port 1414)
 
-Use the Python samples from the `mq-dev-patterns` repository. See the `Python/README.md` for instructions on installing the IBM MQ C client libraries for your platform, then:
+Use the Python samples from the `mq-dev-patterns` repository. See `../../../Python/README.md` for instructions on installing the IBM MQ C client libraries for your platform, then:
 
 ```
-cd Python
+cd ../../../Python
 export JSON_CONFIG=./env.json
 python basicput.py
 python basicget.py
