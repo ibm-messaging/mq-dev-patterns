@@ -33,7 +33,7 @@ We have tested with `AdministratorAccess`. The following AWS managed policies co
 ## Files
 
 ```text
-aws-cdk-python-yaml/
+cdk-aws/
 ├── mq-config.yaml          # Declarative configuration (image, CPU, memory, ports)
 ├── app.py                  # CDK app entry point — reads mq-config.yaml
 ├── mq_ecs_cdk/
