@@ -50,7 +50,7 @@ const _initialNodes = [
       connectedQueue: 'DEV.QUEUE.3',
       isActive: false,
     },
-    position: { x: 200, y: 62 },
+    position: { x: 100, y: 200 },
     sourcePosition: 'right',
     targetPosition: 'right',
     draggable: true,
@@ -64,7 +64,7 @@ const _initialNodes = [
       connectedQueue: 'DEV.QUEUE.3',
       isActive: false,
     },
-    position: { x: 1150, y: 50 },
+    position: { x: 1150, y: 200 },
     targetPosition: 'left',
     sourcePosition: 'left',
     draggable: true,
@@ -78,7 +78,7 @@ const _initialNodes = [
       depth: 0,
       queueName: 'DEV.QUEUE.3',
     },
-    position: { x: 650, y: 20 },
+    position: { x: 650, y: 165 },
     sourcePosition: 'right',
     targetPosition: 'left',
     draggable: true,
@@ -88,6 +88,7 @@ const _initialNodes = [
 const useStore = create((set, get) => ({
   nodes: _initialNodes,
   nodeDepths: {},
+  localDepths: {},
   edges: [
     {
       id: '17-' + sessionID,
@@ -144,6 +145,15 @@ const useStore = create((set, get) => ({
     const outEdge = edges.find(e => e.source === nodeId);
     if (!outEdge) return;
     const queueNodeId = outEdge.target;
+    set(state => ({
+      localDepths: {
+        ...state.localDepths,
+        [queueNodeId]:
+          (state.localDepths[queueNodeId] ??
+            state.nodeDepths[queueNodeId] ??
+            0) + count,
+      },
+    }));
     for (let i = 0; i < count; i++) {
       setTimeout(() => {
         emitMessageFlow(outEdge.id);
@@ -171,8 +181,16 @@ const useStore = create((set, get) => ({
     const inboundEdge = edges.find(e => e.target === responderNodeId);
     if (!inboundEdge) return;
     const queueNodeId = inboundEdge.source;
-    set({
-      nodes: get().nodes.map(node => {
+    const queueNode = get().nodes.find(n => n.id === queueNodeId);
+    const nodeLandCount = queueNode?.data?.landCount || 0;
+    const prevLocal =
+      get().localDepths[queueNodeId] ??
+      get().nodeDepths[queueNodeId] ??
+      nodeLandCount;
+    const newLocal = Math.max(prevLocal - 1, 0);
+    set(state => ({
+      localDepths: { ...state.localDepths, [queueNodeId]: newLocal },
+      nodes: state.nodes.map(node => {
         if (node.id === queueNodeId) {
           return {
             ...node,
@@ -184,7 +202,7 @@ const useStore = create((set, get) => ({
         }
         return node;
       }),
-    });
+    }));
   },
   onDeleteEdge: edgeId => {
     utils.updateQueueOnDeletingEdge(set, get, edgeId);
@@ -214,6 +232,7 @@ const useStore = create((set, get) => ({
   setNodeDepth: (nodeId, depth) => {
     set(state => ({
       nodeDepths: { ...state.nodeDepths, [nodeId]: depth },
+      localDepths: { ...state.localDepths, [nodeId]: depth },
     }));
   },
   updateQueueData: data => {

@@ -68,8 +68,16 @@ const useStore = create((set, get) => ({
     const edges = get().edges;
     const outEdge = edges.find(e => e.source === nodeId);
     if (!outEdge) return;
-    // Find the target queue node id from the edge
     const queueNodeId = outEdge.target;
+    set(state => ({
+      localDepths: {
+        ...state.localDepths,
+        [queueNodeId]:
+          (state.localDepths[queueNodeId] ??
+            state.nodeDepths[queueNodeId] ??
+            0) + count,
+      },
+    }));
     for (let i = 0; i < count; i++) {
       setTimeout(() => {
         emitMessageFlow(outEdge.id);
@@ -94,32 +102,20 @@ const useStore = create((set, get) => ({
   },
 
   consumeMessageFromQueue: consumerNodeId => {
-    const MAX_SLOTS = 5;
     const edges = get().edges;
     const inboundEdge = edges.find(e => e.target === consumerNodeId);
     if (!inboundEdge) return;
     const queueNodeId = inboundEdge.source;
     emitMessageFlow(inboundEdge.id);
+    const queueNode = get().nodes.find(n => n.id === queueNodeId);
+    const nodeLandCount = queueNode?.data?.landCount || 0;
     const prevLocal =
-      get().localDepths[queueNodeId] ?? get().nodeDepths[queueNodeId] ?? 0;
+      get().localDepths[queueNodeId] ??
+      get().nodeDepths[queueNodeId] ??
+      nodeLandCount;
     const newLocal = Math.max(prevLocal - 1, 0);
     set(state => ({
       localDepths: { ...state.localDepths, [queueNodeId]: newLocal },
-      nodes: state.nodes.map(node => {
-        if (node.id === queueNodeId) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              drainCount:
-                prevLocal <= MAX_SLOTS
-                  ? (node.data?.drainCount || 0) + 1
-                  : node.data?.drainCount || 0,
-            },
-          };
-        }
-        return node;
-      }),
     }));
   },
   onDeleteEdge: edgeId => {
@@ -130,7 +126,6 @@ const useStore = create((set, get) => ({
   },
   onDeleteNode: (nodeId, isAQueue = false) => {
     if (isAQueue) {
-      // if we are deleting a queue we have to update the connections
       let edges = get().edges.filter(
         (edge) => edge.target === nodeId || edge.source === nodeId
       );

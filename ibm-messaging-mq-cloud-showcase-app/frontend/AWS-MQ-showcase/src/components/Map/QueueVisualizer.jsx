@@ -16,33 +16,29 @@
 
 import React, { useEffect, useId, useRef, useState } from 'react';
 import './QueueVisualizer.scss';
-const MAX_SLOTS = 5;
+
+const MAX_SLOTS = 10;
 const INNER_X = 12.8;
 const INNER_W = 27.2 - 12.8;
 const INNER_BOT = 33.8;
-const PLATE_H = 3.2;
-const PLATE_GAP = 1.2;
+const PLATE_H = 2.0;
+const PLATE_GAP = 0.8;
 const PLATE_RX = 0.4;
 
 const slotY = i => INNER_BOT - (i + 1) * PLATE_H - i * PLATE_GAP;
 
-const QueueVisualizer = ({
-  depth = 0,
-  size = 64,
-  landCount = 0,
-  drainCount = 0,
-}) => {
+const QueueVisualizer = ({ depth = 0, vizDepth, size = 64, landCount = 0 }) => {
   const uid = useId();
   const clipId = `qv-clip-${uid.replace(/:/g, '')}`;
 
-  const initCount = Math.min(depth, MAX_SLOTS);
+  const drainDepth = vizDepth ?? depth;
+  const cappedDepth = Math.min(depth, MAX_SLOTS);
   const [queue, setQueue] = useState(() =>
-    Array.from({ length: initCount }, (_, i) => i)
+    Array.from({ length: cappedDepth }, (_, i) => i)
   );
-  const nextSlotRef = useRef(initCount % MAX_SLOTS);
-
+  const nextSlotRef = useRef(cappedDepth % MAX_SLOTS);
+  const prevVizDepthRef = useRef(drainDepth);
   const prevLandRef = useRef(landCount);
-  const prevDrainRef = useRef(drainCount);
 
   useEffect(() => {
     const delta = landCount - prevLandRef.current;
@@ -59,14 +55,17 @@ const QueueVisualizer = ({
       nextSlotRef.current = slot;
       return next;
     });
-  }, [landCount]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [landCount]);
 
   useEffect(() => {
-    const delta = drainCount - prevDrainRef.current;
+    const prev = prevVizDepthRef.current;
+    prevVizDepthRef.current = drainDepth;
+    const prevCapped = Math.min(prev, MAX_SLOTS);
+    const newCapped = Math.min(drainDepth, MAX_SLOTS);
+    const delta = prevCapped - newCapped;
     if (delta <= 0) return;
-    prevDrainRef.current = drainCount;
     setQueue(cur => cur.slice(delta));
-  }, [drainCount]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [drainDepth]);
 
   const rankMap = {};
   queue.forEach((slotIndex, position) => {
@@ -84,7 +83,7 @@ const QueueVisualizer = ({
       focusable="false">
       <defs>
         <clipPath id={clipId}>
-          <path d="M29 8.40002H11V33.8H29V8.40002Z" />
+          <path d="M29 6.4H11V33.8H29V6.4Z" />
         </clipPath>
       </defs>
 
@@ -101,7 +100,6 @@ const QueueVisualizer = ({
           const rank = isFilled ? rankMap[i] : 0;
           const homeY = slotY(0);
           const translateY = slotY(rank) - homeY;
-
           const cx = INNER_X + INNER_W / 2;
           const cy = homeY + PLATE_H / 2;
 
@@ -124,15 +122,6 @@ const QueueVisualizer = ({
                 height={PLATE_H}
                 rx={PLATE_RX}
                 fill="#3D6BCE"
-              />
-              <polyline
-                points={`${INNER_X},${homeY} ${cx},${homeY +
-                  PLATE_H * 0.55} ${INNER_X + INNER_W},${homeY}`}
-                stroke="white"
-                strokeWidth="0.75"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
               />
             </g>
           );

@@ -97,11 +97,6 @@ const ProducerNode = ({ id, data }) => {
     }
   };
 
-  const handleOnChange = (e, value) => {
-    var delta = value.direction === 'up' ? 1 : -1;
-    setQuantity(quantity + delta);
-  };
-
   useEffect(() => {
     if (!data.connectedQueue) {
       adapter.closeProducer();
@@ -151,7 +146,7 @@ const ProducerNode = ({ id, data }) => {
               min={1}
               step={1}
               value={quantity}
-              onChange={handleOnChange}
+              onChange={(_e, { value }) => setQuantity(value)}
             />
           </Column>
           <Column lg={7}>
@@ -214,7 +209,7 @@ const ProducerNode = ({ id, data }) => {
         min={1}
         step={1}
         value={quantity}
-        onChange={handleOnChange}
+        onChange={(_e, { value }) => setQuantity(value)}
       />
 
       <Button
