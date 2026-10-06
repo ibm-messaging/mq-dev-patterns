@@ -141,7 +141,6 @@ exit $finalrc
 #   dotnet
 #   Go-K8s
 #   ibm-messaging-mq-cloud-showcase-app
-#   JMS
 #   Node.js-OTel
 #   OpenLiberty-MDB
 #   reactive-amqp

@@ -34,7 +34,10 @@ public class BasicSampleDriver {
   private static final String MODE_SUBSCRIBE = "sub";
 
   private static final String MODE_REQUEST = "req";
+  private static final String MODE_REQUEST_LONG = "request";
+
   private static final String MODE_RESPONSE = "rsp";
+  private static final String MODE_RESPONSE_LONG = "response";
 
   private static final String MODE_DEFAULT = MODE_PUT;
 
@@ -56,9 +59,9 @@ public class BasicSampleDriver {
   }
 
   static void printUsage() {
-    System.out.println("Usage: BasicSampleDriver [mode] [msgCount]");
+    System.out.println("Usage: BasicSampleDriver <mode> [msgCount]");
     System.out.println("Mode can be one of put, get, pub, sub");
-    System.out.println("                   req, rsp");
+    System.out.println("                   req (or request), rsp (or response)");
     System.out.println("The msgCount is only used in the pub/put modes");
     System.exit(1);
   }
@@ -103,9 +106,11 @@ public class BasicSampleDriver {
       doSubscribe();
       break;
     case MODE_REQUEST:
+    case MODE_REQUEST_LONG:
       doRequest();
       break;
     case MODE_RESPONSE:
+    case MODE_RESPONSE_LONG:
       doResponse();
       break;
     default:

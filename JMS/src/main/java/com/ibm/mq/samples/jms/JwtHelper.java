@@ -86,7 +86,7 @@ public class JwtHelper {
       in production deployments.
      */
 
-    if (tokenClientSecret.isEmpty()) {
+    if (isNullOrEmpty(tokenClientSecret)) {
       postBuild = String.format("client_id=%s&username=%s&password=%s&grant_type=password",tokenClientId, tokenUsername, tokenPassword);
     } else {
       postBuild = String.format("client_id=%s&client_secret=%s&grant_type=password",tokenClientId, tokenClientSecret);

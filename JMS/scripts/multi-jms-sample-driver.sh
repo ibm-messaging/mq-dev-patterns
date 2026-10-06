@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# (c) Copyright IBM Corporation 2023
+# (c) Copyright IBM Corporation 2023, 2026
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,52 +22,60 @@ function stopTail() {
       echo $eyeCatcher"No longer tailing logs, <ctrl-c> again to stop applications if they are still running."
     else
       kill -5 $(jobs -p) > /dev/null 2>&1
-      exit 130 #SIGNINT
+      exit 130 #SIGINT
   fi
 }
 
 alreadyTrapped=false
 eyeCatcher="#### " # Make it easier to spot script messages in terminal
 numInstances=6 # Default number of applications to start (should be > 0)
-appClassName=com.ibm.mq.samples.jms.JmsGet # Default jms application for demo (JMS consumers)
+appClassName=com.ibm.mq.samples.jms.BasicSampleDriver # Default jms application for demo (JMS consumers)
+operation="put"
 logFileName="log" # Log file name prefix for application instance logs
 maxLogsToTail=6 # Attempt to tail the first $maxLogsToTail for readbility (should be > 0)
 
 # if you want your logs to be overwritten, set 'overwriteLogs' to true
 overwriteLogs=false # Won't overwrite existing logs by default
 
-envJsonPath=../../env.json
-classPath="../target/mq-dev-patterns-0.1.0.jar" # MAVEN classpath
-# classPath="../com.ibm.mq.allclient-9.3.3.0.jar:../javax.jms-api-2.0.1.jar:../json-20230227.jar" # default classpath for dev-patterns JMS application. See https://ibm.biz/learn-mq 
+envJsonPath=../../tests/env_test.json
+classPath="../target/mq-dev-patterns-jakarta-0.1.0.jar" # MAVEN classpath
 
 # Check if CCDT is set
 if test -z "$MQCCDTURL"
-  then
-    echo $eyeCatcher "ERROR: MQCCDTURL not set."
+then
+    echo $eyeCatcher "WARNING: MQCCDTURL not set."
     echo $eyeCatcher "export MQCCDTURL=file:///<your_CCDT_file>"
-    exit 1
+    MQCCDTURL="N/A"
+else
+    ccdtArg="-DMQCCDTURL=$MQCCDTURL"
 fi
- 
+
+# Check if the config file has been set. If not, use the default
+if [ ! -z "$EnvFile" ]
+then
+  envJsonPath=$EnvFile
+fi
+
 # Check to see how many arguments were passed
 if [ "$#" -ne 2 ]
   then
     if [ "$#" -eq 0 ] # If no arguments are passed in, assume defaults
-      then 
+      then
         # Report proceeding with defaults
-        echo $eyeCatcher"Running with defaults: starting "$numInstances" instances of "$appClassName"."
+        echo $eyeCatcher"Running with defaults: starting "$numInstances" instances of "$operation"."
         echo $eyeCatcher"Using env.json file at $envJsonPath, CCDT at $MQCCDTURL and classpath $classPath"
         echo ""
         sleep 2 #sleep for 2 seconds for user to read console output
-      else 
+      else
         echo $eyeCatcher "Invalid arguments."
-        echo "Usage: $0 <jms_application_name> <number_of_instances>" # Display usage information for script
-        echo "Example: $0 " $appClassName $numInstances
+        echo "Usage: $0 <operation> <number_of_instances>" # Display usage information for script
+        echo "Example: $0 " $operation $numInstances
         echo ""
         exit 1 # Exit with error code
     fi
-  else 
-    # Two arguments provides, set appClassName and numInstances
-    appClassName=$1
+  else
+    # Two arguments provided. Set operation and numInstances
+    operation=$1
     numInstances=$2
 fi
 
@@ -96,7 +104,7 @@ for i in $(seq 1 $numInstances)
 
   do
     echo Starting instance $i
-    java -DMQCCDTURL=$MQCCDTURL -DEnvFile=$envJsonPath -cp $classPath:. $appClassName > $logFileName$i.txt 2>&1 &
+    java $ccdtArg -DEnvFile=$envJsonPath -cp $classPath:. $appClassName $operation > $logFileName$i.txt 2>&1 &
     if [ "$i" -le $maxLogsToTail ]
       then
         # Append lof to list to tail
@@ -107,10 +115,13 @@ for i in $(seq 1 $numInstances)
 echo ""
 echo $eyeCatcher "Ready to tail first "$maxLogsToTail" log files."
 sleep 0.5 #sleep for half a second
-# Start tailing the logs
+
+# Start tailing the logs. Will need to hit Ctrl-C to quite
 tail -f $logsToTail
-# Following SIGINT on tail 
+
+# Following SIGINT on tail
 echo $eyeCatcher "Waiting for jms applications to finish."
 # Wait for jms applications to complete before exit
 wait $jobs
+
 exit 0
