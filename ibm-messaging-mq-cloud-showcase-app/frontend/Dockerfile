@@ -21,7 +21,7 @@
 # This starts the BUILD phase
 ###########################################################
 # Node 22 Alpine — smallest image with no native binaries requiring glibc.
-FROM public.ecr.aws/docker/library/node:22-alpine AS builder
+FROM --platform=$BUILDPLATFORM public.ecr.aws/docker/library/node:22-alpine AS builder
 WORKDIR /app
 
 # Manifest files copied before source so the npm ci layer is cached
