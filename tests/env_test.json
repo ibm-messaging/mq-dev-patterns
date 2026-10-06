@@ -6,6 +6,7 @@
     "QMGR": "QM1",
     "APP_USER": "app",
     "APP_PASSWORD": "password",
+    "APP_NAME": "DevPatternTest",
     "QUEUE_NAME": "DEV.QUEUE.1",
     "BACKOUT_QUEUE": "DEV.QUEUE.2",
     "MODEL_QUEUE_NAME": "DEV.APP.MODEL.QUEUE",
