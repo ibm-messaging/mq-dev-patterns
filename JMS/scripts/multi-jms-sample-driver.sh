@@ -116,7 +116,7 @@ echo ""
 echo $eyeCatcher "Ready to tail first "$maxLogsToTail" log files."
 sleep 0.5 #sleep for half a second
 
-# Start tailing the logs. Will need to hit Ctrl-C to quite
+# Start tailing the logs. Will need to hit Ctrl-C to quit
 tail -f $logsToTail
 
 # Following SIGINT on tail
