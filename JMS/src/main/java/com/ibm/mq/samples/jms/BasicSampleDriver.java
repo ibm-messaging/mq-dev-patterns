@@ -1,5 +1,5 @@
 /*
- * (c) Copyright IBM Corporation 2020
+ * (c) Copyright IBM Corporation 2020, 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ */
+
+/*
+ * This is the main entrypoint to the jar file. It can invoke any of the 6 components to
+ * put and get messages in various styles.
+ *
+ * Invoke it with
+ *   java -cp target/mq-dev-patterns-jakarta-0.1.0.jar com.ibm.mq.samples.jms.BasicSampleDriver [operation]
  */
 
 package com.ibm.mq.samples.jms;
@@ -31,7 +39,7 @@ public class BasicSampleDriver {
   private static final String MODE_DEFAULT = MODE_PUT;
 
   private static final int DEFAULT_PUT_COUNT = 2;
-  private static final int TIMEOUT = 10000; // 10 Seconnds
+  private static final int TIMEOUT = 10 * 1000; // 10 seconds
 
   private static final Logger logger = LoggingHelper.getLogger(BasicSampleDriver.class.getName());
 
@@ -45,7 +53,14 @@ public class BasicSampleDriver {
     .runSample();
 
     System.exit(JmsExceptionHelper.getExitCode());
+  }
 
+  static void printUsage() {
+    System.out.println("Usage: BasicSampleDriver [mode] [msgCount]");
+    System.out.println("Mode can be one of put, get, pub, sub");
+    System.out.println("                   req, rsp");
+    System.out.println("The msgCount is only used in the pub/put modes");
+    System.exit(1);
   }
 
   private BasicSampleDriver determineMode(String[] args) {
@@ -94,7 +109,7 @@ public class BasicSampleDriver {
       doResponse();
       break;
     default:
-      JmsExceptionHelper.recordFailure(logger, new Exception("Unknown operation."));
+      printUsage();
       break;
     }
     return this;
@@ -108,8 +123,18 @@ public class BasicSampleDriver {
   }
 
   public void doGet() {
+    boolean useAllEndpoints = true;
+
     logger.info("Will be getting messages");
-    BasicConsumerWrapper.performGet();
+    if (useAllEndpoints) {
+      // This call demonstrates use of multiple endpoints
+      BasicConsumerWrapper.performGet();
+    } else {
+      // This variant goes direct to a single consumer, from the first configured endppoint only.
+      BasicConsumer bc = new BasicConsumer(BasicConsumer.CONSUMER_GET, ConnectionHelper.USE_CONNECTION_STRING);
+      bc.receive(TIMEOUT);
+      bc.close();
+    }
   }
 
   public void doSubscribe() {

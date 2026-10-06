@@ -1,5 +1,5 @@
 /*
- * (c) Copyright IBM Corporation 2019, 2023
+ * (c) Copyright IBM Corporation 2019, 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
+/*
+ * This class is the common component underlying PUBLISH and PUT operations.
+ *
+ */
+
 package com.ibm.mq.samples.jms;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,22 +36,21 @@ public class BasicProducer {
 
   public static final String PRODUCER_PUT = "queue";
   public static final String PRODUCER_PUB = "topic";
-  public static final String PRODUCER_REQ = "requester";
 
   private JMSContext context = null;
   private Destination destination = null;
   private JMSProducer producer = null;
   private ConnectionHelper ch = null;
 
+  /*
+   * The constructor creates a JMS Producer that can then be used to send messages.
+   */
   public BasicProducer(String type) {
     String id = null;
 
     switch(type){
     case PRODUCER_PUT :
       id = "Basic put";
-      break;
-    case PRODUCER_REQ:
-      id = "Basic requester";
       break;
     case PRODUCER_PUB :
       id = "Basic pub";
@@ -58,11 +64,10 @@ public class BasicProducer {
 
     switch(type){
     case PRODUCER_PUB:
-      destination = ch.getTopicDestination();
+      destination = ch.getTopic();
       break;
     case PRODUCER_PUT:
-    case PRODUCER_REQ:
-      destination = ch.getDestination();
+      destination = ch.getQueue();
       break;
     }
 
@@ -74,16 +79,16 @@ public class BasicProducer {
     producer = context.createProducer();
   }
 
-  public JMSProducer getProducer() {
-    return producer;
-  }
-
+  /*
+   * Send a number of identical messages with a preceding timestamp
+   */
   public void send(String message, int n_messages) {
     for (int i = 0; i < n_messages; i++) {
       logger.info("Sending messages.");
 
       try {
-        producer.send(destination, message);
+        String timestamp = new SimpleDateFormat("HH:mm:ss : ").format(new Date());
+        producer.send(destination, timestamp + message);
         logger.info("Message was sent");
         Thread.sleep(2000);
       } catch (JMSRuntimeException jmsex) {

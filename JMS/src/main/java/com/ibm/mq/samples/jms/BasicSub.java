@@ -1,5 +1,5 @@
 /*
- * (c) Copyright IBM Corporation 2019
+ * (c) Copyright IBM Corporation 2019, 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
+/*
+ * This is the main entrypoint for an application that will subscribe to a topic and then receive published messages.
+ */
 package com.ibm.mq.samples.jms;
 
 public class BasicSub {
-  private static final int TIMEOUT = 10000; // 10 Seconnds
+  private static final int TIMEOUT = 5000; // 5 Seconds
 
   public static void main(String[] args) {
     BasicConsumer bc = new BasicConsumer(BasicConsumer.CONSUMER_SUB, ConnectionHelper.USE_CONNECTION_STRING);

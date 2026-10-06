@@ -1,5 +1,5 @@
 /*
- * (c) Copyright IBM Corporation 2019, 2023
+ * (c) Copyright IBM Corporation 2019, 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,11 @@ import java.util.logging.Logger;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+/*
+ * This class is used to build and parse JSON messages that are created as part of the
+ * Request/Response pair of applications.
+ */
 
 public class RequestResponseHelper {
 

@@ -1,5 +1,5 @@
 /*
- * (c) Copyright IBM Corporation 2019, 2023
+ * (c) Copyright IBM Corporation 2019, 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,18 @@ import com.ibm.msg.client.jakarta.jms.JmsConnectionFactory;
 import com.ibm.msg.client.jakarta.jms.JmsFactoryFactory;
 import com.ibm.msg.client.jakarta.wmq.WMQConstants;
 
-// Use these imports for building with Jakarta Messaging
 import jakarta.jms.Destination;
 import jakarta.jms.JMSContext;
 import jakarta.jms.JMSException;
+
+/*
+ * This is the common class to create the connection to a queue manager. It uses
+ * configuration read by the EnvSetter class and sets appropriate ConnectionFactory
+ * properties.
+ *
+ * It also has methods to work with various types of destinations available from the
+ * connection: the different queues and topics.
+ */
 
 public class ConnectionHelper {
 
@@ -38,7 +46,7 @@ public class ConnectionHelper {
   // Create variables for the connection to MQ
   private String ConnectionString = null; //= "localhost(1414),localhost(1416)"
   private String HOST = null; // Host name or IP address
-  private int PORT = 0; // Listener port for your queue manager
+  private int PORT = 0; // Listener port for the queue manager
   private String CHANNEL = null; // Channel name
   private String QMGR = null; // Queue manager name
   private String APP_USER = null; // User name that application uses to connect to MQ
@@ -49,23 +57,28 @@ public class ConnectionHelper {
   private String TOPIC_NAME = null; // Topic that the application publishes to
   private String BACKOUT_QUEUE_NAME = null; // Where to send messages if there's been a transaction backout
   private String CIPHER_SUITE = null;
-  private String CCDTURL;
+  private String CCDTURL = null;
   private Boolean BINDINGS = false;
 
   private String accessToken = null;
 
-  JMSContext context;
+  // The JMSContext object is the root of much of the work that's then going to be done
+  private JMSContext context;
 
   public ConnectionHelper (String id, int index) {
     this(id, index, JMSContext.AUTO_ACKNOWLEDGE);
   }
 
+  // Create the JMS Connection and Context.
+  // The index allows us to select one of a list of endpoints from the JSON configuration if desired.
+  // Note that this is not the same as the JSON CCDT file, which can instead be referred to by the
+  // configuration.
   public ConnectionHelper (String id, int index, int transactional) {
 
     mqConnectionVariables(id, index);
 
     JmsConnectionFactory connectionFactory = createJMSConnectionFactory();
-    setJMSProperties(connectionFactory, id, index);
+    setConnectionProperties(connectionFactory, id, index);
     logger.info("Created connection factory");
 
     context = connectionFactory.createContext(transactional);
@@ -78,11 +91,13 @@ public class ConnectionHelper {
   }
 
   public void closeContext () {
-    context.close();
+    if (context != null) {
+      context.close();
+    }
     context = null;
   }
 
-  public Destination getDestination () {
+  public Destination getQueue () {
     return context.createQueue("queue:///" + QUEUE_NAME);
   }
 
@@ -94,20 +109,25 @@ public class ConnectionHelper {
     return context.createQueue("queue:///" + BACKOUT_QUEUE_NAME);
   }
 
-  public Destination getTopicDestination () {
+  public Destination getTopic() {
     return context.createTopic("topic://" + TOPIC_NAME);
-
   }
 
+  // By default, messages are sent with JMS properties, that will normally
+  // appear to MQI applications as starting with an MQRFH2 structure. Setting
+  // the target client to NONJMS means that those properties are not sent, making
+  // it easier for non-JMS programs to process the message.
   public void setTargetClient(Destination destination) {
     try {
+      // We have to use the implementation class, not the generic interface
       MQDestination mqDestination = (MQDestination) destination;
       mqDestination.setTargetClient(WMQConstants.WMQ_CLIENT_NONJMS_MQ);
     } catch (JMSException jmsex) {
-      logger.warning("Unable to set target destination to non JMS");
+      logger.warning("Unable to set target destination to non-JMS");
     }
   }
 
+  // Get the configuration options we need
   private void mqConnectionVariables(String default_app_name, int index) {
     EnvSetter env = new EnvSetter();
 
@@ -149,6 +169,7 @@ public class ConnectionHelper {
     }
   }
 
+  // Create the JMS Connection Factory
   private JmsConnectionFactory createJMSConnectionFactory() {
     JmsFactoryFactory ff;
     JmsConnectionFactory cf;
@@ -162,7 +183,10 @@ public class ConnectionHelper {
     return cf;
   }
 
-  private void setJMSProperties(JmsConnectionFactory cf, String id, int index) {
+
+  // Set the specific properties needed on the CF to enable the connection to be
+  // made. This includes any authentication options - userid/password or token
+  private void setConnectionProperties(JmsConnectionFactory cf, String id, int index) {
     try {
       if (null == CCDTURL) {
         if (USE_CONNECTION_STRING == index) {

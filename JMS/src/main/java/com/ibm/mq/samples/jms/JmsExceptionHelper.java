@@ -1,5 +1,5 @@
 /*
- * (c) Copyright IBM Corporation 2019, 2023
+ * (c) Copyright IBM Corporation 2019, 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import jakarta.jms.JMSRuntimeException;
  * A helper class to report JMS exceptions in a common way
  */
 public class JmsExceptionHelper {
+  // The final exit code of the application. Set to non-zero when there's an error.
   private static int exitCode = 0;
 
   public static int getExitCode() {
@@ -46,6 +47,10 @@ public class JmsExceptionHelper {
     return;
   }
 
+  /*
+   * JMS Exceptions will often have a linked exception with more details. Walk through the
+   * exceptions until we've processed them all.
+   */
   private static void processJMSException(Logger logger, Exception jmsex) {
     Throwable innerException = null;
 

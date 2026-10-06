@@ -1,5 +1,5 @@
 /*
- * (c) Copyright IBM Corporation 2020, 2023
+ * (c) Copyright IBM Corporation 2020, 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
+/*
+ * This class implements GET operations for when there are multiple potential endpoints.
+ * It tries all of them in turn, unless there's a severe failure to cause an immediate exit.
+ */
+
 package com.ibm.mq.samples.jms;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// Use these imports for building with Jakarta Messaging
-import jakarta.jms.JMSRuntimeException;
+import com.ibm.mq.MQException;
+import com.ibm.mq.constants.MQConstants;
 
+import jakarta.jms.JMSRuntimeException;
 
 public class BasicConsumerWrapper {
   private static final Logger logger = LoggingHelper.getLogger(BasicConsumerWrapper.class.getName());
@@ -43,10 +49,28 @@ public class BasicConsumerWrapper {
         bc.receive(TIMEOUT);
         bc.close();
       } catch (JMSRuntimeException ex) {
-        if (! StatusChecker.getCanContinue(ex)) {
+        if (!canContinue(ex)) {
           break;
         }
       }
     }
+  }
+
+  // Most errors will cause the receive loop to exit, but we will
+  // allow "host not available" to continue round the loop as other
+  // queue managers from the set of configured endpoints might still
+  // be accessible.
+  private static boolean canContinue(JMSRuntimeException ex) {
+    if (null != ex.getCause() && ex.getCause() instanceof MQException) {
+      MQException innerException = (MQException) ex.getCause();
+
+      if (MQConstants.MQRC_HOST_NOT_AVAILABLE == innerException.getReason()) {
+        logger.info("Host not available, skipping message gets from this host");
+        return true;
+      }
+    }
+
+    JmsExceptionHelper.recordFailure(logger, ex);
+    return false;
   }
 }

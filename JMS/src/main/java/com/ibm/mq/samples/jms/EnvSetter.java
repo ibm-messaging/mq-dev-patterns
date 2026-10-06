@@ -1,5 +1,5 @@
 /*
- * (c) Copyright IBM Corporation 2019, 2024
+ * (c) Copyright IBM Corporation 2019, 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/*
+ * This class reads a JSON configuration file containing information about how to connect to
+ * one or more queue managers. It also contains other information used by the programs such as
+ * the queue to use when putting/getting messages.
+ */
+
 public class EnvSetter {
 
   private static final Logger logger = LoggingHelper.getLogger(EnvSetter.class.getName());
@@ -50,7 +56,7 @@ public class EnvSetter {
     File file = getEnvFile();
 
     if (null == file) {
-      logger.warning("No environment settings file found");
+      logger.warning("No configuration settings file found");
       return;
     }
 
@@ -70,17 +76,17 @@ public class EnvSetter {
       }
 
       if (mqEndPoints == null || mqEndPoints.isEmpty()) {
-        logger.warning("No endpoints found in .json file");
+        logger.warning("No endpoints found in the configuration file");
       } else {
-        logger.info("There is at least one MQ endpoint in the .json file");
+        logger.info("There is at least one MQ endpoint in the configuration file");
       }
 
       if (jwtEndPoints != null) {
-        logger.info("JWT endpoints found, will be using JWT to Authenticate");
+        logger.info("JWT endpoints found. Will use JWT to Authenticate");
       }
 
     } catch (IOException | JSONException e) {
-      logger.log(Level.WARNING, "Error processing env.json file: {0}",e.getMessage());
+      logger.log(Level.WARNING, "Error processing configuration file: {0}",e.getMessage());
     }
   }
 
@@ -107,11 +113,11 @@ public class EnvSetter {
       }
     }
 
-    logger.log(Level.INFO, "Looking for environment file {0}", valueEnvFile);
+    logger.log(Level.INFO, "Looking for configuration file {0}", valueEnvFile);
 
     file = new File(valueEnvFile);
     if (! file.exists()){
-      logger.log(Level.WARNING, "Environment settings file {0} not found",valueEnvFile);
+      logger.log(Level.WARNING, "Configuration settings file {0} not found",valueEnvFile);
       file = null;
     }
     return file;
@@ -153,7 +159,7 @@ public class EnvSetter {
     try {
       value = Integer.parseInt(this.getEnvValue(key, index));
     } catch (NumberFormatException e) {
-      logger.log(Level.WARNING, "Unable to parse port value: {0}",e);
+      logger.log(Level.WARNING, "Unable to parse port value: {0}",e.getMessage());
       logger.log(Level.WARNING, "Setting port to default value: {0}", DEFAULT_MQI_PORT);
     }
     return value;
@@ -176,7 +182,6 @@ public class EnvSetter {
     } catch (JSONException e) {
       logger.log(Level.WARNING, "Error looking for json key {0}: {1}", new Object[] {key,e.getMessage()});
     }
-
     logger.log(Level.FINE, "Returning key {0}: {1}", new Object[] { key, value});
 
     return value;
@@ -195,7 +200,6 @@ public class EnvSetter {
     } catch (JSONException e) {
       logger.log(Level.WARNING, "Error looking for json key {0}: {1}", new Object[] {key,e.getMessage()});
     }
-
     logger.log(Level.FINE, "Returning key {0}: {1}", new Object[] { key, value});
 
     return value;
@@ -241,6 +245,7 @@ public class EnvSetter {
     return (null == mqEndPoints) ? 1 : mqEndPoints.length();
   }
 
+  // Return the section of the configuration file that has JWT configuration
   public String getJwtEnv(String key) {
     String value = System.getProperty(key);
     try {

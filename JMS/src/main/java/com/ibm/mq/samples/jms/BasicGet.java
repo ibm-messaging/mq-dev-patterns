@@ -1,5 +1,5 @@
 /*
- * (c) Copyright IBM Corporation 2019
+ * (c) Copyright IBM Corporation 2019, 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,19 @@
  * limitations under the License.
  */
 
+/*
+ * This is the main entrypoint for an application that will receive messages from a queue.
+ */
 package com.ibm.mq.samples.jms;
 
 public class BasicGet {
+  private static final int TIMEOUT = 5000; // 5 Seconds
+
   public static void main(String[] args) {
-    BasicConsumerWrapper.performGet();
+    // BasicConsumerWrapper.performGet();
+    BasicConsumer bc = new BasicConsumer(BasicConsumer.CONSUMER_GET, ConnectionHelper.USE_CONNECTION_STRING);
+    bc.receive(TIMEOUT);
+    bc.close();
     System.exit(JmsExceptionHelper.getExitCode());
   }
 }

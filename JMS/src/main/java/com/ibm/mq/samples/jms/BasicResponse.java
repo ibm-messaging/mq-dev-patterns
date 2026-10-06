@@ -1,5 +1,5 @@
 /*
- * (c) Copyright IBM Corporation 2019, 2024
+ * (c) Copyright IBM Corporation 2019, 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,13 +31,19 @@ import jakarta.jms.JMSRuntimeException;
 import jakarta.jms.Message;
 import jakarta.jms.TextMessage;
 
+/*
+ * This program is half the implemention of a request/response pattern.
+ * This piece waits for a message, and then sends a response with the same
+ * CorrelationId
+ *
+ * See BasicRequest for the partner program.
+ */
+
 public class BasicResponse {
   private static final Logger logger = LoggingHelper.getLogger(BasicResponse.class.getName());
 
   private static ConnectionHelper ch;
-  private static Long SECOND = 1000L;
-  private static Long HOUR = 60 * 60 * SECOND;
-  private static Long RESPONDER_INACTIVITY_TIMEOUT = 3000L;
+  private static Long TIMEOUT = 3 * 1000L;
 
   public static void main(String[] args) {
 
@@ -57,18 +63,20 @@ public class BasicResponse {
     ch = new ConnectionHelper("Responder", ConnectionHelper.USE_CONNECTION_STRING, JMSContext.SESSION_TRANSACTED);
     JMSContext context = ch.getContext();
 
-    Destination destination = ch.getDestination();
+    Destination destination = ch.getQueue();
     logger.info("Created destination");
 
     consumer = context.createConsumer(destination);
     logger.log(Level.INFO, "Created consumer for destination {0}", destination);
 
+    // Loop on receiving messages until there are no more.
     while (true) {
       try {
         Message receivedMessage = null;
+
         // getting the message from the requestor
-        logger.log(Level.INFO, "Responder waiting for {0} milliseconds for next request",RESPONDER_INACTIVITY_TIMEOUT);
-        receivedMessage = consumer.receive(RESPONDER_INACTIVITY_TIMEOUT);
+        logger.log(Level.INFO, "Responder waiting for {0} milliseconds for next request",TIMEOUT);
+        receivedMessage = consumer.receive(TIMEOUT);
         if (null == receivedMessage) {
           logger.info("Timed out with no requests received");
           logger.info("Terminating responder");
@@ -77,8 +85,8 @@ public class BasicResponse {
 
         logger.info("Checking message type");
 
-        getAndDisplayMessageBody(receivedMessage);
-        replyToMessage(context, receivedMessage);
+        processMessage(receivedMessage);
+        sendReplyMessage(context, receivedMessage);
       } catch (JMSRuntimeException jmsex) {
 
         jmsex.printStackTrace();
@@ -90,7 +98,7 @@ public class BasicResponse {
     }
   }
 
-  private static void replyToMessage(JMSContext context, Message receivedMessage) {
+  private static void sendReplyMessage(JMSContext context, Message receivedMessage) {
     logger.info("Preparing reply message");
     boolean ok=true;
     try {
@@ -105,17 +113,22 @@ public class BasicResponse {
         Destination destination = receivedMessage.getJMSReplyTo();
         String correlationID = receivedMessage.getJMSCorrelationID();
 
+        // Create the body of the message
         TextMessage message = context.createTextMessage(RequestResponseHelper.buildStringForResponse(requestObject));
+        // Set the CorrelationId to be the same as the inbound messages. That allows the requester to wait
+        // for the specific response.
         message.setJMSCorrelationID(correlationID);
 
-        // Make sure message put on a reply queue is non-persistent so non XMS/JMS apps
-        // can get the message off the temp reply queue
-        // Reply will expire in an hour if not retrieved by the requester
-
+        // Make sure message put on a reply queue is non-persistent as that is all that is
+        // accepted on temporary dynamic queues.
+        // Reply will expire if not retrieved by the requester
         context.createProducer()
         .setDeliveryMode(DeliveryMode.NON_PERSISTENT)
-        .setTimeToLive(HOUR)
+        .setTimeToLive(2 * TIMEOUT)
         .send(destination, message);
+
+        // The context is transacted, so we need to explicitly commit the message. This will also complete
+        // the removal of the inbound message, received in the same transaction.
         context.commit();
 
       }
@@ -124,28 +137,29 @@ public class BasicResponse {
       JmsExceptionHelper.recordFailure(logger, jmsex);
       ok = false;
 
-      // Get this exception when the reply to queue is no longer valid.
-      // eg. When app that posted the message is no longer running.
+      // This exception is generated when the reply queue is no longer valid.
+      // For example, when the app that posted the message is no longer running, its dynamic reply queue
+      // gets deleted.
       if (null != jmsex.getCause() && jmsex.getCause() instanceof DetailedInvalidDestinationException) {
         logger.info("ReplyTo destination is invalid");
-        ok = false;
       }
     } catch (Exception e) {
       JmsExceptionHelper.recordFailure(logger, e);
       ok = false;
     }
 
+    // If there's been an error, try to rollback the operations and try again after
+    // a short delay in case the error was transient.
     if (!ok) {
       rollbackOrPause(context,receivedMessage);
     }
-
   }
 
   // The MQ JMS client will automatically try to move messages that have been backed out too many times to
   // an alternative queue. That requires the BOTHRESH and BOQNAME attributes to have been set on the
-  // target queue. This code attempts to do the same thing manually.
+  // target queue. This code attempts to do the same thing explicitly.
   //
-  // There is no check here on the real queue's configuration is; we're going to assume that it is either not
+  // There is no check here on the real queue's configuration. We're going to assume that it is either not
   // set, or the BOTHRESH is larger than the threshold in this method.
   private static void rollbackOrPause(JMSContext context, Message message) {
     int backoutCounter = -1;
@@ -153,7 +167,7 @@ public class BasicResponse {
 
     try {
       backoutCounter = Integer.parseInt(message.getStringProperty("JMSXDeliveryCount"));
-      logger.log(Level.INFO, "Current counter: {0}", String.valueOf(backoutCounter));
+      logger.log(Level.INFO, "Current backout counter: {0}", String.valueOf(backoutCounter));
     } catch (Exception e) {
       logger.info("Error on getting the backout counter");
       return;
@@ -179,13 +193,13 @@ public class BasicResponse {
     context.commit();
   }
 
-  private static void getAndDisplayMessageBody(Message receivedMessage) {
+  private static void processMessage(Message receivedMessage){
     if (receivedMessage instanceof TextMessage) {
       TextMessage textMessage = (TextMessage) receivedMessage;
       try {
-        logger.log(Level.INFO, "Received request message: {0} ", textMessage.getText());
+        logger.log(Level.INFO, "Received message: {0}", textMessage.getText());
       } catch (JMSException jmsex) {
-        JmsExceptionHelper.recordFailure(logger,jmsex);
+        JmsExceptionHelper.recordFailure(logger, jmsex);
       }
     } else if (receivedMessage instanceof Message) {
       logger.info("Received message was not of type TextMessage");

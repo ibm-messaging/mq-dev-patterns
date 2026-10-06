@@ -1,5 +1,5 @@
 /*
- * (c) Copyright IBM Corporation 2019
+ * (c) Copyright IBM Corporation 2019, 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,13 @@
 
 package com.ibm.mq.samples.jms;
 
+/*
+ * This is the main entrypoint for an application that will publish messages to a topic
+ */
 public class BasicPub {
   public static void main(String[] args) {
     BasicProducer bp = new BasicProducer(BasicProducer.PRODUCER_PUB);
-    bp.send("This is a published message from JMS Basic Pub", 2);
+    bp.send("This is a published message from JMS Basic Pub", 2); // Publish two messages
     bp.close();
     System.exit(JmsExceptionHelper.getExitCode());
 
