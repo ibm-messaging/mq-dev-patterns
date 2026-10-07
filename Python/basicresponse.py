@@ -284,30 +284,37 @@ def build_mq_details():
         MQDetails[key] = EnvStore.getenv_value(key)
 
 
-# Application Logic starts here
-logger.info('Application "BasicResponse" is starting')
+def main():
+    global MQDetails, conn_info, qmgr, queue
 
-envStore = EnvStore()
-envStore.set_env()
+    # Application Logic starts here
+    logger.info('Application "BasicResponse" is starting')
 
-MQDetails = {}
-build_mq_details()
+    envStore = EnvStore()
+    envStore.set_env()
 
-conn_info = EnvStore.get_connection(EnvStore.HOST, EnvStore.PORT)
+    MQDetails = {}
+    build_mq_details()
 
-qmgr = None
-queue = None
+    conn_info = EnvStore.get_connection(EnvStore.HOST, EnvStore.PORT)
 
-qmgr = connect()
-if qmgr is not None:
-    queue = get_queue(MQDetails[EnvStore.QUEUE_NAME])
+    qmgr = None
+    queue = None
 
-if queue is not None:
-    get_messages(qmgr)
+    qmgr = connect()
+    if qmgr is not None:
+        queue = get_queue(MQDetails[EnvStore.QUEUE_NAME])
 
-    queue.close()
+    if queue is not None:
+        get_messages(qmgr)
 
-if qmgr is not None:
-    qmgr.disconnect()
+        queue.close()
 
-logger.info('Application is ending')
+    if qmgr is not None:
+        qmgr.disconnect()
+
+    logger.info('Application is ending')
+
+
+if __name__ == '__main__':
+    main()

@@ -205,54 +205,59 @@ def build_mq_details():
         MQDetails[key] = EnvStore.getenv_value(key)
 
 
-# Application Logic starts here
-logger.info('Application "BasicRequest" is starting')
+def main():
+    global MQDetails, conn_info, msg_object, qmgr, queue, dynamic
 
-envStore = EnvStore()
-envStore.set_env()
+    # Application Logic starts here
+    logger.info('Application "BasicRequest" is starting')
 
-MQDetails = {}
+    envStore = EnvStore()
+    envStore.set_env()
 
-build_mq_details()
+    MQDetails = {}
 
-conn_info = EnvStore.get_connection(EnvStore.HOST, EnvStore.PORT)
+    build_mq_details()
 
-msg_object = {
-    'Greeting': 'Hello from Python! ' + str(datetime.datetime.now()),
-    'value': random.randint(1, 101)
-}
+    conn_info = EnvStore.get_connection(EnvStore.HOST, EnvStore.PORT)
 
-qmgr = None
-queue = None
-tdq = None
-dynamic = {
-    'queue': None,
-    'name': None
-}
-msgid = None
-correlid = None
+    msg_object = {
+        'Greeting': 'Hello from Python! ' + str(datetime.datetime.now()),
+        'value': random.randint(1, 101)
+    }
 
-qmgr = connect()
-if qmgr is not None:
-    queue = get_queue()
+    qmgr = None
+    queue = None
+    dynamic = {
+        'queue': None,
+        'name': None
+    }
 
-if queue is not None:
-    reply_queue = get_dynamic_queue()
+    qmgr = connect()
+    if qmgr is not None:
+        queue = get_queue()
+
+    reply_queue = None
+    if queue is not None:
+        reply_queue = get_dynamic_queue()
+        if reply_queue is not None:
+            dynamic['queue'] = reply_queue[0]
+            dynamic['name'] = reply_queue[1]
+
     if reply_queue is not None:
-        dynamic['queue'] = reply_queue[0]
-        dynamic['name'] = reply_queue[1]
+        msgid = put_message()
+        if msgid is not None:
+            await_response(msgid)
 
-if reply_queue is not None:
-    msgid = put_message()
-    if msgid is not None:
-        await_response(msgid)
+        dynamic['queue'].close()
 
-    dynamic['queue'].close()
+    if queue is not None:
+        queue.close()
 
-if queue is not None:
-    queue.close()
+    if qmgr is not None:
+        qmgr.disconnect()
 
-if qmgr is not None:
-    qmgr.disconnect()
+    logger.info('Application is ending')
 
-logger.info('Application is ending')
+
+if __name__ == '__main__':
+    main()

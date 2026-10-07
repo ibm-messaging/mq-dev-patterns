@@ -1,0 +1,25 @@
+[project]
+name = "mq-python-samples"
+version = "1.0.0"
+description = "IBM MQ Python sample applications demonstrating core messaging patterns"
+requires-python = ">=3.9"
+
+# Runtime dependency — the ibmmq C extension that wraps the MQI.
+# No version pin here — uv.lock records the last-resolved version (currently 2.1.1).
+# To install exactly that version:  uv sync
+# To upgrade to the current latest:  uv sync --upgrade
+dependencies = [
+    "ibmmq",
+]
+
+[project.scripts]
+basicput       = "basicput:main"
+basicget       = "basicget:main"
+basicpublish   = "basicpublish:main"
+basicsubscribe = "basicsubscribe:main"
+basicrequest   = "basicrequest:main"
+basicresponse  = "basicresponse:main"
+
+[tool.uv]
+# uv generates uv.lock alongside this file; commit it for reproducible installs.
+# To regenerate: uv lock
