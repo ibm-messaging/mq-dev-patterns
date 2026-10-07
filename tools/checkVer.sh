@@ -402,20 +402,6 @@ do
 done
 echo
 
-# Look at the downloads site HTML. The regexp and report will need updating at some point. It
-# might be fine - in context - to have some older references but they should all be checked
-if false
-then
-devDownloads="developer.ibm.com/articles/mq-downloads"
-echo "$devDownloads ..."
-
-# No longer seems to work - the text in the html, but not getting converted
-dlCnt=`myCurl $devDownloads | LANG=C html2text --decode-errors=ignore | grep "9\.[0-4]" | wc -l `
-echo "   Apparent references to version 9.x: $dlCnt"
-echo
-
-fi
-
 # READMEs and yaml
 # Looking for any string matching 9.[0-4] which might be an MQ version but it might not be. Use your judgement.
 echo "Other files that might be out of date ..."
