@@ -20,7 +20,7 @@ import {
   applyEdgeChanges,
   reconnectEdge,
 } from '@xyflow/react';
-import MapUtils from '../../Map/utils';
+import MapUtils, { emitMessageFlow } from '../../Map/utils';
 import Cookies from 'js-cookie';
 //import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
@@ -50,7 +50,7 @@ const _initialNodes = [
       connectedQueue: 'DEV.QUEUE.3',
       isActive: false,
     },
-    position: { x: 200, y: 62 },
+    position: { x: 100, y: 200 },
     sourcePosition: 'right',
     targetPosition: 'right',
     draggable: true,
@@ -64,7 +64,7 @@ const _initialNodes = [
       connectedQueue: 'DEV.QUEUE.3',
       isActive: false,
     },
-    position: { x: 1350, y: 50 },
+    position: { x: 1150, y: 200 },
     targetPosition: 'left',
     sourcePosition: 'left',
     draggable: true,
@@ -78,41 +78,35 @@ const _initialNodes = [
       depth: 0,
       queueName: 'DEV.QUEUE.3',
     },
-    position: { x: 650, y: 20 },
+    position: { x: 650, y: 165 },
     sourcePosition: 'right',
     targetPosition: 'left',
     draggable: true,
   },
 ];
 
-const _initialEdges = [
-  {
-    id: '17-' + sessionID,
-    source: '17',
-    target: sessionID,
-    type: 'custom',
-    animated: false,
-    style: {
-      stroke: '#0050e6',
-      strokeWidth: 1,
-    },
-  },
-  {
-    id: requestorSessionID + '-17',
-    source: requestorSessionID,
-    target: '17',
-    type: 'custom',
-    animated: false,
-    style: {
-      stroke: '#0050e6',
-      strokeWidth: 1,
-    },
-  },
-];
-
 const useStore = create((set, get) => ({
   nodes: _initialNodes,
-  edges: _initialEdges,
+  nodeDepths: {},
+  localDepths: {},
+  edges: [
+    {
+      id: '17-' + sessionID,
+      source: '17',
+      target: sessionID,
+      type: 'custom',
+      animated: false,
+      style: { stroke: '#0050e6', strokeWidth: 1 },
+    },
+    {
+      id: requestorSessionID + '-17',
+      source: requestorSessionID,
+      target: '17',
+      type: 'custom',
+      animated: false,
+      style: { stroke: '#0050e6', strokeWidth: 1 },
+    },
+  ],
   queueData: [],
   onNodesChange: (changes) => {
     set({
@@ -146,7 +140,71 @@ const useStore = create((set, get) => ({
   changeEdgeAnimationFromNodeId: (nodeId, state) => {
     utils.animateEdgeFromProducer(set, get, nodeId, state);
   },
-  onDeleteEdge: (edgeId) => {
+  sendMessages: (nodeId, count) => {
+    const edges = get().edges;
+    const outEdge = edges.find(e => e.source === nodeId);
+    if (!outEdge) return;
+    const queueNodeId = outEdge.target;
+    set(state => ({
+      localDepths: {
+        ...state.localDepths,
+        [queueNodeId]:
+          (state.localDepths[queueNodeId] ??
+            state.nodeDepths[queueNodeId] ??
+            0) + count,
+      },
+    }));
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        emitMessageFlow(outEdge.id);
+        setTimeout(() => {
+          set({
+            nodes: get().nodes.map(node => {
+              if (node.id === queueNodeId) {
+                return {
+                  ...node,
+                  data: {
+                    ...node.data,
+                    landCount: (node.data?.landCount || 0) + 1,
+                  },
+                };
+              }
+              return node;
+            }),
+          });
+        }, 950);
+      }, i * 1000);
+    }
+  },
+  drainMessageFromQueue: responderNodeId => {
+    const edges = get().edges;
+    const inboundEdge = edges.find(e => e.target === responderNodeId);
+    if (!inboundEdge) return;
+    const queueNodeId = inboundEdge.source;
+    const queueNode = get().nodes.find(n => n.id === queueNodeId);
+    const nodeLandCount = queueNode?.data?.landCount || 0;
+    const prevLocal =
+      get().localDepths[queueNodeId] ??
+      get().nodeDepths[queueNodeId] ??
+      nodeLandCount;
+    const newLocal = Math.max(prevLocal - 1, 0);
+    set(state => ({
+      localDepths: { ...state.localDepths, [queueNodeId]: newLocal },
+      nodes: state.nodes.map(node => {
+        if (node.id === queueNodeId) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              drainCount: (node.data?.drainCount || 0) + 1,
+            },
+          };
+        }
+        return node;
+      }),
+    }));
+  },
+  onDeleteEdge: edgeId => {
     utils.updateQueueOnDeletingEdge(set, get, edgeId);
     set({
       edges: get().edges.filter((edge) => edge.id !== edgeId),
@@ -171,8 +229,14 @@ const useStore = create((set, get) => ({
       nodes: get().nodes.concat(node),
     });
   },
-  updateQueueData: (data) => {
-    set((state) => ({
+  setNodeDepth: (nodeId, depth) => {
+    set(state => ({
+      nodeDepths: { ...state.nodeDepths, [nodeId]: depth },
+      localDepths: { ...state.localDepths, [nodeId]: depth },
+    }));
+  },
+  updateQueueData: data => {
+    set(state => ({
       queueData: data,
     }));
   },
@@ -188,8 +252,9 @@ const useStore = create((set, get) => ({
         role: 'q',
         depth: 0,
         queueName: tmpQueueName,
+        isReplyQueue: true,
       },
-      position: { x: 650, y: 170 },
+      position: { x: 650, y: 370 },
       sourcePosition: 'right',
       targetPosition: 'left',
       draggable: true,
@@ -223,20 +288,36 @@ const useStore = create((set, get) => ({
   },
 
   animateTmpConnection: (tmpQueueName, responderId) => {
-    let node = get().nodes.filter(
-      (node) => node.data.role === 'q' && node.data.queueName === tmpQueueName
+    const replyQueueNode = get().nodes.find(
+      node => node.data.role === 'q' && node.data.queueName === tmpQueueName
     );
-    let connection = {
-      source: node[0].id,
-      target: responderId,
-    };
+    if (!replyQueueNode) return;
+    const replyQueueNodeId = replyQueueNode.id;
 
-    utils.animateEdgeFromConnection(
-      set,
-      get,
-      connection.source,
-      connection.target
+    const edge = get().edges.find(
+      e => e.source === responderId && e.target === replyQueueNodeId
     );
+    if (edge) {
+      emitMessageFlow(edge.id);
+      setTimeout(() => {
+        set({
+          nodes: get().nodes.map(node => {
+            if (node.id === replyQueueNodeId) {
+              return {
+                ...node,
+                data: {
+                  ...node.data,
+                  landCount: (node.data?.landCount || 0) + 1,
+                },
+              };
+            }
+            return node;
+          }),
+        });
+      }, 950);
+    }
+
+    utils.animateEdgeFromConnection(set, get, responderId, replyQueueNodeId);
   },
   deleteEdgeFromConnection: (tmpQueueName, responderId) => {
     let node = get().nodes.filter(

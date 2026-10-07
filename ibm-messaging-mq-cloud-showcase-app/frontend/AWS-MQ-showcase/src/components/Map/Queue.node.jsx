@@ -14,135 +14,311 @@
  * limitations under the License.
  **/
 
-import React, { useEffect, useState, memo } from 'react';
+import React, { useCallback, useEffect, useRef, useState, memo } from 'react';
 import { Handle } from '@xyflow/react';
-import { ProgressBar } from '@carbon/react';
-import './map.css';
+import { Popover, PopoverContent } from '@carbon/react';
+import {
+  CheckmarkFilled,
+  Close,
+  IbmMq,
+  Information,
+} from '@carbon/react/icons';
 import APIAdapter from '../../adapters/API.adapter';
-import useStore from '../MQPatterns/PointToPoint/store';
+import useP2PStore from '../MQPatterns/PointToPoint/store';
+import useRRStore from '../MQPatterns/RequestResponse/store';
+import NodeCard from './NodeCard';
+import QueueVisualizer from './QueueVisualizer';
 import { toast } from 'react-toastify';
 
-const MAX_QUEUE_DEPTH = 500;
+const FALLBACK_MAX_DEPTH = 5000;
+const HEADER_BG = '#161616';
+const HEADER_BORDER = '#161616';
+
+function useQueueStore(id) {
+  const p2pHasNode = useP2PStore(state => state.nodes.some(n => n.id === id));
+
+  const p2pUpdateQueueData = useP2PStore(state => state.updateQueueData);
+  const p2pSetNodeDepth = useP2PStore(state => state.setNodeDepth);
+  const p2pDeleteMe = useP2PStore(state => state.onDeleteNode);
+  const p2pAnimateEdge = useP2PStore(
+    state => state.changeEdgeAnimationFromNodeId
+  );
+  const p2pEdges = useP2PStore(state => state.edges);
+  const p2pLocalDepth = useP2PStore(state => state.localDepths?.[id]);
+
+  const rrUpdateQueueData = useRRStore(state => state.updateQueueData);
+  const rrSetNodeDepth = useRRStore(state => state.setNodeDepth);
+  const rrDeleteMe = useRRStore(state => state.onDeleteNode);
+  const rrAnimateEdge = useRRStore(
+    state => state.changeEdgeAnimationFromNodeId
+  );
+  const rrEdges = useRRStore(state => state.edges);
+  const rrLocalDepth = useRRStore(state => state.localDepths?.[id]);
+
+  return p2pHasNode
+    ? {
+        updateQueueData: p2pUpdateQueueData,
+        setNodeDepth: p2pSetNodeDepth,
+        deleteMe: p2pDeleteMe,
+        animateEdge: p2pAnimateEdge,
+        edges: p2pEdges,
+        localDepth: p2pLocalDepth,
+      }
+    : {
+        updateQueueData: rrUpdateQueueData,
+        setNodeDepth: rrSetNodeDepth,
+        deleteMe: rrDeleteMe,
+        animateEdge: rrAnimateEdge,
+        edges: rrEdges,
+        localDepth: rrLocalDepth,
+      };
+}
+
 const QueueNode = ({ id, data, isConnectable }) => {
-  const adapter = new APIAdapter();
+  const adapter = useRef(new APIAdapter()).current;
+
+  const {
+    updateQueueData,
+    setNodeDepth,
+    deleteMe,
+    animateEdge,
+    edges,
+    localDepth,
+  } = useQueueStore(id);
 
   const [currentDepth, setCurrentDepth] = useState(0);
-  const _updateQueuedata = useStore((state) => state.updateQueueData);
-  const deleteMe = useStore((state) => state.onDeleteNode);
+  const [maxDepth, setMaxDepth] = useState(FALLBACK_MAX_DEPTH);
+  const displayDepth = localDepth !== undefined ? localDepth : currentDepth;
+  const prevDepthRef = useRef(0);
+  const [landCount, setLandCount] = useState(0);
+  const [drainCount, setDrainCount] = useState(0);
+  const seenLandRef = useRef(0);
+  const seenDrainRef = useRef(0);
 
-  const [isTmpQueue, setIsTmpQueue] = useState(false);
-  const [canSend, setCandSend] = useState(true);
+  const storeRef = useRef({});
+  storeRef.current.updateQueueData = updateQueueData;
+  storeRef.current.setNodeDepth = setNodeDepth;
+  storeRef.current.animateEdge = animateEdge;
+  storeRef.current.edges = edges;
+
+  const [everLanded, setEverLanded] = useState(() => (data.landCount || 0) > 0);
+  const [infoOpen, setInfoOpen] = useState(false);
+  const userDismissedRef = useRef(false);
 
   useEffect(() => {
-    if (data.queueName.indexOf('APP.REPLIES') > -1) {
-      setIsTmpQueue(true);
+    const delta = (data.landCount || 0) - seenLandRef.current;
+    if (delta > 0) {
+      seenLandRef.current += delta;
+      setLandCount(prev => prev + delta);
+      setEverLanded(true);
+      if (!userDismissedRef.current) {
+        setInfoOpen(true);
+      }
     }
+  }, [data.landCount]);
+
+  useEffect(() => {
+    const delta = (data.drainCount || 0) - seenDrainRef.current;
+    if (delta > 0) {
+      seenDrainRef.current += delta;
+      setDrainCount(prev => prev + delta);
+      setInfoOpen(false);
+      setEverLanded(false);
+      userDismissedRef.current = false;
+    }
+  }, [data.drainCount]);
+
+  const isTmpQueue =
+    !!data.isReplyQueue || data.queueName.includes('APP.REPLIES');
+
+  useEffect(() => {
+    if (displayDepth === 0 && everLanded) {
+      setInfoOpen(false);
+      setEverLanded(false);
+      userDismissedRef.current = false;
+    }
+  }, [displayDepth, everLanded]);
+
+  const handleInfoToggle = useCallback(() => {
+    setInfoOpen(prev => {
+      if (prev) userDismissedRef.current = true;
+      else userDismissedRef.current = false;
+      return !prev;
+    });
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(async () => {
+    let cancelled = false;
+
+    const poll = async () => {
+      if (cancelled) return;
       try {
-        if (canSend) {
-          setCandSend(false);
-          let result = await adapter.getAllDepths(false);
-          setCandSend(true);
+        const result = await adapter.getAllDepths(false);
+        if (!cancelled) {
           if (!Number.isInteger(result)) {
-            let _lastDepth = result.find((q) => q.name === data.queueName)[
-              'depth'
-            ];
-            _updateQueuedata(result);
+            const queueEntry = result.find(q => q.name === data.queueName);
+            const _lastDepth = queueEntry['depth'];
+            if (queueEntry['maxDepth'] != null) {
+              setMaxDepth(queueEntry['maxDepth']);
+            }
+            storeRef.current.updateQueueData(result);
+            storeRef.current.setNodeDepth(id, _lastDepth);
+            if (_lastDepth < prevDepthRef.current) {
+              const outEdge = storeRef.current.edges.find(e => e.source === id);
+              if (outEdge) {
+                storeRef.current.animateEdge(outEdge.source, true);
+                setTimeout(
+                  () => storeRef.current.animateEdge(outEdge.source, false),
+                  1000
+                );
+              }
+            }
+            prevDepthRef.current = _lastDepth;
             setCurrentDepth(_lastDepth);
           } else if (result === 525) {
-            // MQ manager not reachable
             toast.error('The queue manager is not reachable.');
           } else if (result === 505) {
-            // Error on getting qdepth
             toast.error('The backend server is not reachable.');
           }
         }
       } catch (e) {
         console.log(e);
       }
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+      if (!cancelled) setTimeout(poll, 3000);
+    };
+
+    setTimeout(poll, 3000);
+    return () => {
+      cancelled = true;
+    };
+  }, [adapter, id, data.queueName]);
+
+  const handles = isTmpQueue ? (
+    <>
+      <Handle
+        type="target"
+        position="right"
+        style={{ background: 'orange' }}
+        isConnectable={isConnectable}
+      />
+      <Handle
+        type="source"
+        position="left"
+        style={{ background: 'orange' }}
+        isConnectable={isConnectable}
+      />
+    </>
+  ) : (
+    <>
+      <Handle
+        type="target"
+        position="left"
+        style={{ background: '#0050e6' }}
+        isConnectable={isConnectable}
+      />
+      <Handle
+        type="source"
+        position="right"
+        style={{ background: 'orange' }}
+        isConnectable={isConnectable}
+      />
+    </>
+  );
+
+  const fillPct = Math.min((displayDepth / maxDepth) * 100, 100);
+  const label = isTmpQueue ? 'Reply Queue' : 'Queue';
+  const hasMessages = everLanded || displayDepth > 0;
+
+  const infoAction = hasMessages ? (
+    <Popover
+      open={infoOpen}
+      align="top"
+      highContrast
+      onRequestClose={() => {
+        userDismissedRef.current = true;
+        setInfoOpen(false);
+      }}
+      className="queue-node__info-popover">
+      <button
+        className="queue-node__info-btn"
+        aria-label="Messages waiting in queue"
+        aria-expanded={infoOpen}
+        onClick={handleInfoToggle}>
+        <Information size={18} />
+      </button>
+      <PopoverContent className="queue-node__info-popover-content">
+        <div className="queue-node__info-popover-header">
+          <p className="queue-node__info-title">Messages waiting in queue</p>
+          <button
+            className="queue-node__info-close"
+            aria-label="Close"
+            onClick={() => {
+              userDismissedRef.current = true;
+              setInfoOpen(false);
+            }}>
+            <Close size={16} />
+          </button>
+        </div>
+        <p className="queue-node__info-body">
+          There {(displayDepth || landCount) !== 1 ? 'are' : 'is'}{' '}
+          <strong>{displayDepth || landCount}</strong> message
+          {(displayDepth || landCount) !== 1 ? 's' : ''} waiting in{' '}
+          <strong>{data.queueName}</strong>. Messages persist on the queue
+          manager until a consuming application receives them — you can browse
+          them in the IBM MQ Console if you are logged in.
+        </p>
+      </PopoverContent>
+    </Popover>
+  ) : null;
 
   return (
-    <div
-      className={
-        !isTmpQueue ? `queue-node-container` : `queue-node-container blob`
-      }>
-      <button
-        style={{ right: '50%' }}
-        className="edgebutton node"
-        onClick={() => {
-          deleteMe(id, true);
-        }}>
-        X
-      </button>
-      {!isTmpQueue ? (
-        <>
-          <Handle
-            type="target"
-            position="left"
-            style={{
-              background: '#0050e6',
-            }}
-            onConnect={(params) => console.log('handle onConnect', params)}
-            isConnectable={isConnectable}
-          />
-          <Handle
-            type="source"
-            position="right"
-            style={{ background: 'orange' }}
-            onConnect={(params) => console.log('handle onConnect', params)}
-            isConnectable={isConnectable}
-          />
-        </>
-      ) : (
-        <></>
-      )}
+    <NodeCard
+      headerBg={HEADER_BG}
+      headerBorderColor={HEADER_BORDER}
+      icon={<IbmMq size={20} />}
+      iconColor="#ffffff"
+      title={label}
+      titleColor="#ffffff"
+      headerAction={infoAction}
+      onDelete={() => deleteMe(id, true)}
+      className={isTmpQueue ? 'blob' : 'queue-node'}>
+      {handles}
+      <div className="queue-node__body">
+        <QueueVisualizer
+          depth={currentDepth}
+          vizDepth={displayDepth}
+          size={64}
+          landCount={landCount}
+        />
 
-      {isTmpQueue ? (
-        <>
-          <Handle
-            type={'target'}
-            position={'right'}
-            style={{ background: 'orange' }}
-            onConnect={(params) => console.log('handle onConnect', params)}
-            isConnectable={isConnectable}
-          />
-
-          <Handle
-            type={'source'}
-            position={'left'}
-            style={{ background: 'orange' }}
-            onConnect={(params) => console.log('handle onConnect', params)}
-            isConnectable={isConnectable}
-          />
-        </>
-      ) : (
-        <></>
-      )}
-
-      <div className="queue-image" />
-
-      <ProgressBar
-        className="mq--progress-bar--progress"
-        label={
-          currentDepth +
-          ' ' +
-          (isTmpQueue ? 'Responses' : 'Requests') +
-          ' (' +
-          ((currentDepth / MAX_QUEUE_DEPTH) * 100).toFixed(0) +
-          '%)'
-        }
-        max={MAX_QUEUE_DEPTH}
-        size="big"
-        value={currentDepth}
-        helperText={data.queueName + '   | Max depth: ' + MAX_QUEUE_DEPTH}
-      />
-    </div>
+        <div className="queue-node__stats">
+          <p className="queue-node__type-label">{label.toUpperCase()}</p>
+          <p className="queue-node__name">{data.queueName}</p>
+          <div className="queue-node__bar-wrap">
+            <div className="queue-node__bar-track">
+              <div
+                className="queue-node__bar-fill"
+                style={{ width: `${fillPct}%` }}
+              />
+            </div>
+            <p className="queue-node__depth">
+              {displayDepth} / {maxDepth} msgs
+            </p>
+          </div>
+        </div>
+      </div>
+      <div
+        className="node-card__count-footer"
+        style={{ margin: '0 -12px -12px', justifyContent: 'space-between' }}>
+        <span>
+          Max depth:&nbsp;<strong>{maxDepth}</strong>
+        </span>
+        <span className="queue-node__footer-status">
+          <CheckmarkFilled size={14} className="queue-node__status-icon" />
+          Active
+        </span>
+      </div>
+    </NodeCard>
   );
 };
 

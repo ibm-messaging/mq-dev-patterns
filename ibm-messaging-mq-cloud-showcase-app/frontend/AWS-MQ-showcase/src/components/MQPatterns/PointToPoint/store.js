@@ -22,7 +22,7 @@ import {
 } from '@xyflow/react';
 import initialNodes from './nodes';
 import initialEdges from './edges';
-import MapUtils from '../../Map/utils';
+import MapUtils, { emitMessageFlow } from '../../Map/utils';
 //import { persist } from 'zustand/middleware';
 const utils = new MapUtils();
 
@@ -30,7 +30,9 @@ const useStore = create((set, get) => ({
   nodes: initialNodes,
   edges: initialEdges,
   queueData: [],
-  onNodesChange: (changes) => {
+  nodeDepths: {},
+  localDepths: {},
+  onNodesChange: changes => {
     set({
       nodes: applyNodeChanges(changes, get().nodes),
     });
@@ -62,7 +64,61 @@ const useStore = create((set, get) => ({
   changeEdgeAnimationFromNodeId: (nodeId, state, isFromEdge = false) => {
     utils.animateEdgeFromProducer(set, get, nodeId, state, isFromEdge);
   },
-  onDeleteEdge: (edgeId) => {
+  sendMessages: (nodeId, count) => {
+    const edges = get().edges;
+    const outEdge = edges.find(e => e.source === nodeId);
+    if (!outEdge) return;
+    const queueNodeId = outEdge.target;
+    set(state => ({
+      localDepths: {
+        ...state.localDepths,
+        [queueNodeId]:
+          (state.localDepths[queueNodeId] ??
+            state.nodeDepths[queueNodeId] ??
+            0) + count,
+      },
+    }));
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        emitMessageFlow(outEdge.id);
+        setTimeout(() => {
+          set({
+            nodes: get().nodes.map(node => {
+              if (node.id === queueNodeId) {
+                return {
+                  ...node,
+                  data: {
+                    ...node.data,
+                    landCount: (node.data?.landCount || 0) + 1,
+                  },
+                };
+              }
+              return node;
+            }),
+          });
+        }, 950);
+      }, i * 1000);
+    }
+  },
+
+  consumeMessageFromQueue: consumerNodeId => {
+    const edges = get().edges;
+    const inboundEdge = edges.find(e => e.target === consumerNodeId);
+    if (!inboundEdge) return;
+    const queueNodeId = inboundEdge.source;
+    emitMessageFlow(inboundEdge.id);
+    const queueNode = get().nodes.find(n => n.id === queueNodeId);
+    const nodeLandCount = queueNode?.data?.landCount || 0;
+    const prevLocal =
+      get().localDepths[queueNodeId] ??
+      get().nodeDepths[queueNodeId] ??
+      nodeLandCount;
+    const newLocal = Math.max(prevLocal - 1, 0);
+    set(state => ({
+      localDepths: { ...state.localDepths, [queueNodeId]: newLocal },
+    }));
+  },
+  onDeleteEdge: edgeId => {
     utils.updateQueueOnDeletingEdge(set, get, edgeId);
     set({
       edges: get().edges.filter((edge) => edge.id !== edgeId),
@@ -70,7 +126,6 @@ const useStore = create((set, get) => ({
   },
   onDeleteNode: (nodeId, isAQueue = false) => {
     if (isAQueue) {
-      // if we are deleting a queue we have to update the connections
       let edges = get().edges.filter(
         (edge) => edge.target === nodeId || edge.source === nodeId
       );
@@ -87,8 +142,14 @@ const useStore = create((set, get) => ({
       nodes: get().nodes.concat(node),
     });
   },
-  updateQueueData: (data) => {
-    set((state) => ({
+  setNodeDepth: (nodeId, depth) => {
+    set(state => ({
+      nodeDepths: { ...state.nodeDepths, [nodeId]: depth },
+      localDepths: { ...state.localDepths, [nodeId]: depth },
+    }));
+  },
+  updateQueueData: data => {
+    set(state => ({
       queueData: data,
     }));
   },

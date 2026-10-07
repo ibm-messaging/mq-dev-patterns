@@ -14,29 +14,24 @@
  * limitations under the License.
  **/
 
-@use '@carbon/react/scss/spacing' as *;
-@use '@carbon/react/scss/type' as *;
-@use '@carbon/react/scss/theme' as *;
-@use './overrides.scss';
+import React from 'react';
 
-.landing-page__heading-section {
-  padding-top: $spacing-05;
-  padding-bottom: $spacing-05;
-  padding-left: $spacing-05;
-}
+const QueueIcon = ({ size = 40 }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 40 40"
+    fill="none"
+    aria-hidden="true"
+    focusable="false">
+    <path
+      d="M2.79999 4.80005H8.79999V32.8C8.79999 34.9334 9.86665 36 12 36H28C30.1333 36 31.2 34.9334 31.2 32.8V4.80005H37.2"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+  </svg>
+);
 
-.landing-page__heading {
-  @include type-style('productive-heading-05');
-  color: $text-primary;
-}
-
-.landing-page__description {
-  @include type-style('body-long-01');
-  color: $text-primary;
-  margin-top: $spacing-03;
-  max-width: 48rem;
-}
-
-.landing-page__tabs {
-  padding: 0;
-}
+export default QueueIcon;

@@ -14,29 +14,11 @@
  * limitations under the License.
  **/
 
-@use '@carbon/react/scss/spacing' as *;
-@use '@carbon/react/scss/type' as *;
-@use '@carbon/react/scss/theme' as *;
-@use './overrides.scss';
+.queue-visualizer__slot {
+  transition: transform 320ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    opacity 200ms ease;
 
-.landing-page__heading-section {
-  padding-top: $spacing-05;
-  padding-bottom: $spacing-05;
-  padding-left: $spacing-05;
-}
-
-.landing-page__heading {
-  @include type-style('productive-heading-05');
-  color: $text-primary;
-}
-
-.landing-page__description {
-  @include type-style('body-long-01');
-  color: $text-primary;
-  margin-top: $spacing-03;
-  max-width: 48rem;
-}
-
-.landing-page__tabs {
-  padding: 0;
+  &--filled {
+    opacity: 1;
+  }
 }
