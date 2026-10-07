@@ -53,13 +53,13 @@ ENTRYPOINT ["/docker-entrypoint.sh"]
 # Copy only the built static assets from the builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# nginx-unprivileged binds to 8080 (non-root processes cannot bind to port 80).
-EXPOSE 8080
+# nginx listens on port 3000
+EXPOSE 3000
 
 # Alpine-based image ships wget, enabling this loopback health check.
 # Docker / Podman polls every 30s and marks the container unhealthy after 3 failures.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget -qO- http://localhost:8080/ || exit 1
+    CMD wget -qO- http://localhost:3000/ || exit 1
 
 # daemon off keeps nginx in the foreground so Docker can track the process.
 CMD ["nginx", "-g", "daemon off;"]

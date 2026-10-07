@@ -32,7 +32,7 @@ frontend:
   image: null          # built from the local Dockerfile, set to an ECR URI to use a pre-built image
   cpu: 1024
   memoryMiB: 2048
-  port: 80
+  port: 3000
 
 task:
   cpu: 4096

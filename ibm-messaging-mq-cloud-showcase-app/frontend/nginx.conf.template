@@ -12,7 +12,7 @@
 #  limitations under the License.
 
 server {
-    listen       8080;
+    listen       3000;
     server_name  _;
 
     location / {

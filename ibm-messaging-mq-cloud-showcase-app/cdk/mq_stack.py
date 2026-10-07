@@ -18,6 +18,7 @@ from aws_cdk import (
     aws_logs            as logs,
     aws_ecr_assets      as ecr_assets,
     aws_secretsmanager  as secretsmanager,
+    aws_elasticloadbalancingv2      as elbv2,
 )
 from constructs import Construct
 
@@ -38,16 +39,19 @@ class MqShowcaseStack(cdk.Stack):
         self._cfg             = mq_config
         secrets               = self._create_secrets(app_password, admin_password)
         vpc                   = self._lookup_vpc()
-        cluster, sg           = self._create_cluster_and_sg(vpc)
-        file_system           = self._create_efs(vpc, sg)
+        cluster, task_sg, \
+        nlb_sg                = self._create_cluster_and_sg(vpc)
+        file_system           = self._create_efs(vpc, task_sg)
         log_group             = self._create_log_group()
         frontend_image, \
         backend_image         = self._build_images()
         task_def              = self._create_task_definition(secrets, file_system, log_group,
                                                              frontend_image, backend_image)
-        service               = self._create_service(cluster, task_def, sg, vpc)
+        nlb                   = self._create_nlb(vpc, nlb_sg)
+        service               = self._create_service(cluster, task_def, task_sg)
+        self._attach_nlb(nlb, service, vpc)
         self._wait_for_efs_mounts(service, file_system)
-        self._add_outputs()
+        self._add_outputs(nlb)
 
     #Secrets Manager
     def _create_secrets(self, app_password: str, admin_password: str) -> dict:
@@ -75,27 +79,49 @@ class MqShowcaseStack(cdk.Stack):
         """Use the default VPC — no VPC creation required."""
         return ec2.Vpc.from_lookup(self, 'DefaultVpc', is_default=True)
 
-    #ECS Cluster + Security Group
+    #ECS Cluster + Security Groups
     def _create_cluster_and_sg(self, vpc: ec2.IVpc):
-        """Create the ECS cluster and a shared security group for the Fargate
-        task and EFS mount targets."""
+        """Create the ECS cluster, a task security group (locked to NLB), and
+        an NLB security group (open to world on app ports)."""
         cluster = ecs.Cluster(
             self, 'MqCluster',
             cluster_name=self._cfg['cluster']['name'],
             vpc=vpc,
         )
-        sg = ec2.SecurityGroup(
-            self, 'MqSecurityGroup',
+        #NLB SG — accepts inbound traffic from the internet on app ports
+        nlb_sg = ec2.SecurityGroup(
+            self, 'MqNlbSg',
             vpc=vpc,
-            security_group_name='mqonaws-sg',
-            description='MQ on AWS - allow app ports and EFS',
+            security_group_name='mqonaws-nlb-sg',
+            description='MQ on AWS NLB - inbound from internet',
             allow_all_outbound=True,
         )
-        sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(80),   'Frontend')
-        sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(9443), 'MQ Console')
-        sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(1414), 'MQ MQI')
-        sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(2049), 'EFS NFS')
-        return cluster, sg
+        nlb_sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(80),   'Frontend HTTP')
+        nlb_sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(9443), 'MQ Console HTTPS')
+        task_sg = ec2.SecurityGroup(
+            self, 'MqTaskSg',
+            vpc=vpc,
+            security_group_name='mqonaws-task-sg',
+            description='MQ on AWS task - accept only from NLB and EFS',
+            allow_all_outbound=False,
+        )
+        # Inbound: only from NLB SG
+        task_sg.add_ingress_rule(ec2.Peer.security_group_id(nlb_sg.security_group_id),
+                                 ec2.Port.tcp(3000), 'Frontend from NLB')
+        task_sg.add_ingress_rule(ec2.Peer.security_group_id(nlb_sg.security_group_id),
+                                 ec2.Port.tcp(9443), 'MQ Console from NLB')
+        task_sg.add_ingress_rule(ec2.Peer.security_group_id(nlb_sg.security_group_id),
+                                 ec2.Port.tcp(1414), 'MQ MQI from NLB')
+        task_sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(2049), 'EFS NFS')
+        # Outbound: HTTPS for Secrets Manager + ECR, HTTP for ECR auth token,
+        # NFS for EFS, and DNS
+        task_sg.add_egress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(443),  'HTTPS outbound (Secrets Manager, ECR)')
+        task_sg.add_egress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(80),   'HTTP outbound (ECR auth)')
+        task_sg.add_egress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(2049), 'EFS NFS outbound')
+        task_sg.add_egress_rule(ec2.Peer.any_ipv4(), ec2.Port.udp(53),   'DNS outbound')
+        task_sg.add_egress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(53),   'DNS outbound TCP')
+
+        return cluster, task_sg, nlb_sg
 
     #EFS Filesystem
     def _create_efs(self, vpc: ec2.IVpc, sg: ec2.SecurityGroup) -> efs.FileSystem:
@@ -289,9 +315,14 @@ class MqShowcaseStack(cdk.Stack):
             memory_limit_mib=fe_cfg['memoryMiB'],
             essential=True,
             environment={
+                # In ECS Fargate (awsvpc mode) all containers in a task share
+                # the same network namespace — the backend is reachable at localhost.
                 'REACT_APP_BE_HOST':                 'localhost',
                 'REACT_APP_BE_PORT':                 str(be_cfg['port']),
                 'REACT_APP_BE_TLS':                  'false',
+                # FE_AS_PROXY=true makes nginx proxy /api/* requests to the backend
+                # rather than issuing a client-side redirect — required in ECS because
+                # the browser cannot reach the backend directly.
                 'REACT_APP_FE_AS_PROXY':             'true',
                 'REACT_APP_IS_FOR_CODING_CHALLENGE': 'false',
             },
@@ -307,15 +338,65 @@ class MqShowcaseStack(cdk.Stack):
             )
         )
 
+    #NLB
+    def _create_nlb(self, vpc: ec2.IVpc, nlb_sg: ec2.SecurityGroup) -> elbv2.NetworkLoadBalancer:
+        """Internet-facing NLB. TCP passthrough preserves MQ's own TLS on 9443."""
+        return elbv2.NetworkLoadBalancer(
+            self, 'MqNlb',
+            vpc=vpc,
+            internet_facing=True,
+            security_groups=[nlb_sg],
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+        )
+
+    def _attach_nlb(
+        self,
+        nlb: elbv2.NetworkLoadBalancer,
+        service: ecs.FargateService,
+        vpc: ec2.IVpc,
+    ) -> None:
+        """Wire NLB listeners to the Fargate service on ports 80 and 9443."""
+        fe_cfg  = self._cfg['frontend']
+        mq_cfg  = self._cfg['mq']
+
+        # NLB port 80 → frontend container port 3000
+        fe_tg = elbv2.NetworkTargetGroup(
+            self, 'FeTg',
+            vpc=vpc,
+            port=fe_cfg['port'],          # target group port = container port (3000)
+            protocol=elbv2.Protocol.TCP,
+            targets=[service.load_balancer_target(
+                container_name='fe',
+                container_port=fe_cfg['port'],
+            )],
+            health_check=elbv2.HealthCheck(protocol=elbv2.Protocol.TCP),
+        )
+        nlb.add_listener('FeListener', port=80, protocol=elbv2.Protocol.TCP,
+                         default_target_groups=[fe_tg])
+
+        mq_tg = elbv2.NetworkTargetGroup(
+            self, 'MqConsoleTg',
+            vpc=vpc,
+            port=mq_cfg['ports']['console'],
+            protocol=elbv2.Protocol.TCP,
+            targets=[service.load_balancer_target(
+                container_name='mq',
+                container_port=mq_cfg['ports']['console'],
+            )],
+            health_check=elbv2.HealthCheck(protocol=elbv2.Protocol.TCP),
+        )
+        nlb.add_listener('MqConsoleListener', port=9443, protocol=elbv2.Protocol.TCP,
+                         default_target_groups=[mq_tg])
+
     #Fargate Service
     def _create_service(
         self,
         cluster: ecs.Cluster,
         task_def: ecs.FargateTaskDefinition,
-        sg: ec2.SecurityGroup,
-        vpc: ec2.IVpc,
+        task_sg: ec2.SecurityGroup,
     ) -> ecs.FargateService:
-        """Single Fargate service with a public IP — no load balancer needed."""
+        """Single Fargate service. Public IP needed for outbound AWS API access
+        (Secrets Manager, ECR). Inbound traffic locked to the NLB SG."""
         service = ecs.FargateService(
             self, 'MqService',
             service_name=self._cfg['service']['name'],
@@ -323,12 +404,18 @@ class MqShowcaseStack(cdk.Stack):
             task_definition=task_def,
             desired_count=1,
             assign_public_ip=True,
-            security_groups=[sg],
+            security_groups=[task_sg],
             vpc_subnets=ec2.SubnetSelection(
                 subnet_type=ec2.SubnetType.PUBLIC
             ),
+            # circuit_breaker stops a bad deployment within minutes instead of
+            # waiting up to 3 hours for ECS to time out.
+            circuit_breaker=ecs.DeploymentCircuitBreaker(rollback=True),
+            # min_healthy_percent=0 allows the old task to stop before the new
+            # one starts — required because MQ places an exclusive lock on EFS.
+            min_healthy_percent=0,
+            max_healthy_percent=100,
         )
-        service.connections.allow_to(sg, ec2.Port.tcp(2049), 'EFS NFS')
         return service
 
     #EFS mount target dependency
@@ -346,27 +433,20 @@ class MqShowcaseStack(cdk.Stack):
                 cfn_service.add_resource_dependency(child)
 
     #Stack Outputs
-    def _add_outputs(self) -> None:
-        """Print useful URLs and the command to retrieve the task public IP."""
+    def _add_outputs(self, nlb: elbv2.NetworkLoadBalancer) -> None:
+        """Print the stable NLB DNS name for both app endpoints."""
         cdk.CfnOutput(
             self, 'AppUrl',
             description='Messaging playground - open in your browser',
-            value='Check the ECS task public IP: http://<task-public-ip>:80',
+            value=f'http://{nlb.load_balancer_dns_name}',
         )
         cdk.CfnOutput(
             self, 'MqConsoleUrl',
             description='IBM MQ Web Console',
-            value='https://<task-public-ip>:9443/ibmmq/console',
+            value=f'https://{nlb.load_balancer_dns_name}:9443/ibmmq/console',
         )
         cdk.CfnOutput(
-            self, 'GetPublicIp',
-            description='Run this command to get the task public IP',
-            value=(
-                'TASK=$(aws ecs list-tasks --cluster mqonaws --query taskArns[0] --output text); '
-                'ENI=$(aws ecs describe-tasks --cluster mqonaws --tasks $TASK '
-                '--query "tasks[0].attachments[0].details[?name==`networkInterfaceId`].value" '
-                '--output text); '
-                'aws ec2 describe-network-interfaces --network-interface-ids $ENI '
-                '--query "NetworkInterfaces[0].Association.PublicIp" --output text'
-            ),
+            self, 'NlbDnsName',
+            description='NLB DNS name',
+            value=nlb.load_balancer_dns_name,
         )

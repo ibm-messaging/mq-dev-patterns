@@ -19,7 +19,7 @@ services:
         - com.ibm.mq.app=mqapp
     image: frontend:0.1
     ports:
-      - 3000:8080
+      - 3000:3000
     networks:
       - app-public-network
     depends_on:
