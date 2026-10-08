@@ -22,6 +22,9 @@ const mq = require('ibmmq');
 const StringDecoder = require('string_decoder').StringDecoder;
 const decoder = new StringDecoder('utf8');
 
+// Load passwords from .env file if present.
+require('dotenv').config({ path: require('path').resolve(__dirname, '../../../..', '.env'), override: false });
+
 // Load up missing envrionment variables from the env.json file
 const env = require('../env.json');
 const Mutex = require('async-mutex').Mutex;
@@ -72,16 +75,19 @@ if (MQDetails['MQ_QMGR_PORT_MQI']) {
   MQDetails['MQ_QMGR_PORT_MQI'] = DEFAULT_MQI_PORT;
 }
 
+const APP_PASSWORD   = process.env.APP_PASSWORD;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+if (!APP_PASSWORD || !ADMIN_PASSWORD) {
+  console.error('FATAL: APP_PASSWORD and ADMIN_PASSWORD must be set — either in the .env file or as environment variables.');
+  process.exit(1);
+}
+
 let credentials = {
-  USER:
-    process.env.APP_USER || env.MQ_ENDPOINTS[0].APP_USER || DEFAULT_APP_USER,
-  APP_PASSWORD: process.env.APP_PASSWORD || env.MQ_ENDPOINTS[0].APP_PASSWORD,
-  ADMIN_USER:
-    process.env.ADMIN_USER ||
-    env.MQ_ENDPOINTS[0].ADMIN_USER ||
-    DEFAULT_ADMIN_USER,
-  ADMIN_PASSWORD:
-    process.env.ADMIN_PASSWORD || env.MQ_ENDPOINTS[0].ADMIN_PASSWORD,
+  USER:           process.env.APP_USER   || env.MQ_ENDPOINTS[0].APP_USER   || DEFAULT_APP_USER,
+  APP_PASSWORD:   APP_PASSWORD,
+  ADMIN_USER:     process.env.ADMIN_USER || env.MQ_ENDPOINTS[0].ADMIN_USER || DEFAULT_ADMIN_USER,
+  ADMIN_PASSWORD: ADMIN_PASSWORD,
 };
 
 const mutexMQClientPerformSub = new Mutex();

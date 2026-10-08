@@ -6,44 +6,98 @@ A detailed usage of this IBM MQ Messaging Playground Application is provided in 
 
 Before deploying the containers, configure the following variables in the `.env` file:
 
-- `APP_PASSWORD`: [the password you want to set for the mq app]
-- `ADMIN_PASSWORD`: [the password you want to set for the mq admin]
-- `IMAGE_ECS_REGISTRY_URI`: [the URI of your AWS ECS registry OR just a random letter if you are not using the AWS ECS registry]
-- `CLUSTER_NAME`: [the AWS ECS cluster name OR just a random letter if you are not using the AWS ECS cluster]
+- `APP_PASSWORD`: the password you want to set for the MQ app user
+- `ADMIN_PASSWORD`: the password you want to set for the MQ admin user
 
 ## Environment
 
-There are three different yaml files for deploying the application, depending on the environment.
+### Local Machine (Podman)
 
-### AWS Cloud
+> **Note:** All commands use `podman-compose`. Install [Podman Desktop](https://podman.io/) and `podman-compose` (`pip install podman-compose` or `brew install podman-compose`) if you don't have them yet.
 
-To deploy the containers on AWS ECS, follow the instructions in the [AWS-TUTORIAL-URL](https://developer.ibm.com/tutorials/mq-build-deploy-ibm-mq-app-to-aws-cloud/).
+1. Fill in your passwords in `.env`:
 
-### Local Machine
+       APP_PASSWORD=<your-app-password>
+       ADMIN_PASSWORD=<your-admin-password>
 
-To deploy the containers on your local machine (requires docker and docker-compose), run the following commands in your terminal:
+2. Build the images:
 
-    cd mq-dev-patterns/ibm-messaging-mq-cloud-showcase-app/
-    docker-compose -f docker-compose.yaml build
-    docker-compose -f docker-compose.yaml up
-    
-After starting the three containers, you can now access:
-    - the playground app on the following URL: http://\<your-local-machine-IP>:3000
-    - the MQ web console on the following URL: http://\<your-local-machine-IP>:9443/ibmmq/console
+       cd mq-dev-patterns/ibm-messaging-mq-cloud-showcase-app/
+       podman-compose -f docker-compose.yaml build
+
+3. Start all three containers:
+
+       podman-compose -f docker-compose.yaml up
+
+4. After all three containers are running:
+   - Playground app → http://localhost:3000
+   - MQ web console → https://localhost:9443/ibmmq/console
 
 #### Running on Apple Silicon (ARM64)
 
-A prebuilt queue manager container for ARM64 isn't available in a container image repository so needs to be built. Follow [this link](https://community.ibm.com/community/user/integration/blogs/richard-coppen/2023/06/30/ibm-mq-9330-container-image-now-available-for-appl) for simplified instructions for building an ARM64 image, which in turn refers to the instructions in the [MQ Container GitHub repo.](https://github.com/ibm-messaging/mq-container/blob/master/docs/building.md)
+The IBM MQ image (`icr.io/ibm-messaging/mq:latest`) is `linux/amd64` only. Podman on Apple Silicon will transparently run it under emulation thanks to the `platform: linux/amd64` directive already set in `docker-compose.yaml`.
 
-After building the image you will end up with an image name resembling `ibm-mqadvanced-server-dev:9.4.1.0-arm64` 
-To use this image, edit `docker-compose.yaml` and change
+If you prefer a native ARM64 image, follow [this guide](https://community.ibm.com/community/user/integration/blogs/richard-coppen/2023/06/30/ibm-mq-9330-container-image-now-available-for-appl) to build one from the [MQ Container GitHub repo](https://github.com/ibm-messaging/mq-container/blob/master/docs/building.md), then edit `docker-compose.yaml` and replace:
 
-````
+```yaml
 image: "icr.io/ibm-messaging/mq:latest"
-````
+```
 
-to the name of ARM64 image you built. 
+with the name of the ARM64 image you built, e.g.:
 
-````
+```yaml
 image: "ibm-mqadvanced-server-dev:9.4.1.0-arm64"
-````
+```
+
+### AWS Cloud (CDK)
+
+The `cdk/` directory contains a Python AWS CDK stack that deploys the full three-tier application to AWS ECS Fargate with an EFS-backed queue manager.
+
+#### Prerequisites
+
+- Python 3.11+
+- Node.js 18+ (for the CDK CLI via `npx`)
+- AWS CLI configured (`aws configure`)
+
+#### First-time setup
+
+```bash
+cd cdk
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+#### Bootstrap your AWS account (once per account/region)
+
+```bash
+npx cdk bootstrap
+```
+
+#### Configure
+
+Edit `cdk/mq-config.yaml` to set the MQ image, CPU/memory limits, and port numbers.
+
+MQ passwords are stored in **AWS Secrets Manager** — the CDK stack creates the secret automatically. After deploying, update the secret value in the AWS console or with the CLI:
+
+```bash
+aws secretsmanager put-secret-value \
+  --secret-id mq/passwords \
+  --secret-string '{"APP_PASSWORD":"<your-app-password>","ADMIN_PASSWORD":"<your-admin-password>"}'
+```
+
+#### Deploy
+
+```bash
+cd cdk
+source .venv/bin/activate
+npx cdk deploy
+```
+
+> **Optional:** run `npx cdk synth` first to print the generated CloudFormation template without deploying.
+
+#### Tear down
+
+```bash
+npx cdk destroy
+```
