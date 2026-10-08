@@ -20,7 +20,14 @@
 ###########################################################
 # This starts the BUILD phase
 ###########################################################
-# Node 22 Alpine — smallest image with no native binaries requiring glibc.
+# The final runtime image is constrained to linux/amd64 (ECS Fargate requirement).
+# $BUILDPLATFORM is a Docker BuildKit built-in variable — no declaration needed.
+# It is set to the platform of the machine running the build (e.g. linux/arm64
+# on Apple Silicon). We set it here so the Node build step runs natively on the
+# host architecture rather than under QEMU emulation — without it, building on
+# Apple Silicon would emulate linux/amd64 to match the runtime stage, causing
+# a QEMU segfault during npm install. The compiled output (HTML/JS/CSS) is
+# platform-agnostic and is safely copied into the linux/amd64 runtime stage below.
 FROM --platform=$BUILDPLATFORM public.ecr.aws/docker/library/node:22-alpine AS builder
 WORKDIR /app
 
