@@ -1,0 +1,29 @@
+version = 1
+revision = 3
+requires-python = ">=3.9"
+resolution-markers = [
+    "python_full_version >= '3.10'",
+    "python_full_version < '3.10'",
+]
+
+[[package]]
+name = "ibmmq"
+version = "2.1.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/1c/34/062ed9dcb9a2f4e97d80eeb6107e8e5646394086265f2b6af1c15fd23cd1/ibmmq-2.1.1.tar.gz", hash = "sha256:77de66a2dbe398cf332790f05d31573f940c00c5967a7183b2344f84ebfbbee3", size = 438072, upload-time = "2026-09-03T09:38:43.236Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7d/4c/9bf1544d1f6577fa29250b8ee451893a1d63459c348a01f49b850d63b548/ibmmq-2.1.1-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:acb2d19d16e532ad55738a94c45f97e06181bca4b9dc2cf097970f4a67cf2714", size = 396449, upload-time = "2026-09-03T09:38:36.893Z" },
+    { url = "https://files.pythonhosted.org/packages/fb/e6/2738fba658a89ff4f12ef87141cafcb9489c7ccb56f14cde976d8b1974e3/ibmmq-2.1.1-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:979a014333bfd51878155b29b41ebc51e02ec779efa5ba702f110b08f636b980", size = 438393, upload-time = "2026-09-03T09:38:38.927Z" },
+    { url = "https://files.pythonhosted.org/packages/17/09/c1f756becce639a92d8d6d087147538d24e19c1301380079b40eae04baaa/ibmmq-2.1.1-cp39-abi3-win_amd64.whl", hash = "sha256:db877ab40d4f93d8afdef972ed8fad314acb89817fdbaa8367390604adb33cc6", size = 401239, upload-time = "2026-09-03T09:38:40.985Z" },
+]
+
+[[package]]
+name = "mq-python-samples"
+version = "1.0.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "ibmmq" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "ibmmq" }]

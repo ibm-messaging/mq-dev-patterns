@@ -26,6 +26,11 @@ WAIT_INTERVAL = 5  # seconds
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('Sub')
 
+MQDetails = {}
+conn_info = None
+qmgr = None
+subscription = None
+
 def connect():
     """Establish connection to the queue manager"""
     logger.info('Establishing connection with MQ Server')
@@ -145,28 +150,36 @@ def build_mq_details():
         MQDetails[key] = EnvStore.getenv_value(key)
 
 
-# Application Logic starts here
-logger.info('Application "BasicSubscribe" is starting')
+def main():
+    """Main function for BasicSubscribe application"""
+    global MQDetails, conn_info, qmgr, subscription
 
-envStore = EnvStore()
-envStore.set_env()
+    # Application Logic starts here
+    logger.info('Application "BasicSubscribe" is starting')
 
-MQDetails = {}
-build_mq_details()
+    env_store = EnvStore()
+    env_store.set_env()
 
-conn_info = EnvStore.get_connection(EnvStore.HOST, EnvStore.PORT)
+    MQDetails = {}
+    build_mq_details()
 
-qmgr = None
-subscription = None
+    conn_info = EnvStore.get_connection(EnvStore.HOST, EnvStore.PORT)
 
-qmgr = connect()
-if qmgr is not None:
-    subscription = get_subscription()
-if subscription is not None:
-    get_messages()
-    subscription.close(close_sub_queue=True)
+    qmgr = None
+    subscription = None
 
-if qmgr is not None:
-    qmgr.disconnect()
+    qmgr = connect()
+    if qmgr is not None:
+        subscription = get_subscription()
+    if subscription is not None:
+        get_messages()
+        subscription.close(close_sub_queue=True)
 
-logger.info('Application is ending')
+    if qmgr is not None:
+        qmgr.disconnect()
+
+    logger.info('Application is ending')
+
+
+if __name__ == '__main__':
+    main()

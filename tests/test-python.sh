@@ -16,9 +16,9 @@ curdir=`pwd`
 logFile=$curdir/logs/testpython.log
 
 venv=$curdir/venv
-if [ ! -d $venv ]
+if [ ! -d "$venv" ]
 then
-  python -m venv venv
+  python -m venv "$venv"
   if [ $? -ne 0 ]
   then
     echo "ERROR: Cannot create Python virtual env at $venv"
@@ -26,7 +26,19 @@ then
   fi
 fi
 
-. $venv/bin/activate
+# Activate venv — path differs between Unix and Windows (Git Bash)
+if [ -f "$venv/bin/activate" ]
+then
+  activate_script="$venv/bin/activate"
+elif [ -f "$venv/Scripts/activate" ]
+then
+  activate_script="$venv/Scripts/activate"
+else
+  echo "ERROR: Cannot find activate script in $venv"
+  exit 1
+fi
+
+. "$activate_script"
 if [ $? -ne 0 ]
 then
   echo "ERROR: Cannot activate Python virtual env at $venv"
@@ -37,6 +49,11 @@ fi
 pip uninstall -y ibmmq 2>/dev/null
 pip install --upgrade pip >/dev/null 2>&1
 pip install ibmmq
+if [ $? -ne 0 ]
+then
+  echo "ERROR: Cannot install ibmmq package"
+  exit 1
+fi
 
 # Can now get round to running the tests
 
@@ -51,21 +68,25 @@ checkRc $? "PUT"
 python basicget.py
 checkRc $? "GET"
 
-(python basicsubscribe.py; echo $? > /tmp/rc) &
+rc_file=$(mktemp)
+(python basicsubscribe.py; echo $? > "$rc_file") &
 pid=$!
 sleep 1
 python basicpublish.py
 checkRc $? "PUB"
 wait $pid
-checkRc `cat /tmp/rc` "SUB"
+checkRc $(cat "$rc_file") "SUB"
+rm -f "$rc_file"
 
-(python basicresponse.py; echo $? > /tmp/rc) &
+rc_file=$(mktemp)
+(python basicresponse.py; echo $? > "$rc_file") &
 pid=$!
 sleep 1
 python basicrequest.py
 checkRc $? "REQ"
 wait $pid
-checkRc `cat /tmp/rc` "RES"
+checkRc $(cat "$rc_file") "RES"
+rm -f "$rc_file"
 
 ) 2>&1 | tee $logFile
 cnt=`grep "ended OK" $logFile | wc -l `

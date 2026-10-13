@@ -26,6 +26,11 @@ logger = logging.getLogger('Get')
 
 WAIT_INTERVAL = 5  # Seconds
 
+MQDetails = {}
+conn_info = None
+qmgr = None
+queue = None
+
 def connect(index):
     """ Establish connection to MQ Queue Manager """
     logger.info('Establishing connection with MQ Server')
@@ -147,37 +152,45 @@ def build_mq_details(index):
                 EnvStore.PORT, EnvStore.KEY_REPOSITORY, EnvStore.CIPHER]:
         MQDetails[key] = EnvStore.getenv_value(key, index)
 
-# Application logic starts here
-logger.info('Application "BasicGet" is starting')
+def main():
+    """Main function for BasicGet application"""
+    global MQDetails, conn_info, qmgr, queue
 
-envStore = EnvStore()
-envStore.set_env()
+    # Application logic starts here
+    logger.info('Application "BasicGet" is starting')
 
-MQDetails = {}
+    env_store = EnvStore()
+    env_store.set_env()
 
-qmgr = None
-queue = None
+    MQDetails = {}
 
-numEndPoints = envStore.get_endpoint_count()
-logger.info('There are %d connections', numEndPoints)
+    qmgr = None
+    queue = None
 
-# Loop through the connection options. If one succeeds, do the
-# work and then quit.
-for index, conn_info in envStore.get_next_connection_string():
-    logger.info('Trying connection: %s', conn_info)
+    num_endpoints = env_store.get_endpoint_count()
+    logger.info('There are %d connections', num_endpoints)
 
-    build_mq_details(index)
+    # Loop through the connection options. If one succeeds, do the
+    # work and then quit.
+    for index, conn_info in env_store.get_next_connection_string():
+        logger.info('Trying connection: %s', conn_info)
 
-    qmgr = connect(index)
-    if qmgr is not None:
-        queue = get_queue()
-        if queue is not None:
-            get_messages()
-            queue.close()
+        build_mq_details(index)
 
-        qmgr.disconnect()
-        break
+        qmgr = connect(index)
+        if qmgr is not None:
+            queue = get_queue()
+            if queue is not None:
+                get_messages()
+                queue.close()
 
-MQDetails.clear()
+            qmgr.disconnect()
+            break
 
-logger.info('Application is ending')
+    MQDetails.clear()
+
+    logger.info('Application is ending')
+
+
+if __name__ == '__main__':
+    main()
