@@ -86,9 +86,17 @@ class EnvStore():
             logger.info('Have file, so ready to set environment variables for configuration')
 
             for e in EnvStore.env[EnvStore.MQ_ENDPOINTS][0]:
-                os.environ[e] = EnvStore.env[EnvStore.MQ_ENDPOINTS][0][e]
                 if EnvStore.PASSWORD not in e:
+                    # Report the value of the attribute, unless it's a sensitive item
                     logger.debug('Checking %s value is %s ', e, EnvStore.env[EnvStore.MQ_ENDPOINTS][0][e])
+                try:
+                    os.environ[e] = EnvStore.env[EnvStore.MQ_ENDPOINTS][0][e]
+                except TypeError:
+                    # Some of the common env.json attributes might be lists, needed by other samples. But which we
+                    # don't need in these Python samples, so we will ignore the conversion error. Just report
+                    # the problem if we are logging at debug levels.
+                    logger.debug('Cannot convert %s value for an environment variable', e)
+
             # Check if there are multiple endpoints defined. If so, build a string containing all of them.
             if len(EnvStore.env[EnvStore.MQ_ENDPOINTS]) > 0:
                 os.environ[EnvStore.CONNECTION_STRING] = self.build_connection_string(EnvStore.env[EnvStore.MQ_ENDPOINTS])
