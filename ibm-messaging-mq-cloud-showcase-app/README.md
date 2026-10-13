@@ -4,10 +4,15 @@
 
 A detailed usage of this IBM MQ Messaging Playground Application is provided in the following tutorial: [AWS-TUTORIAL-URL](https://developer.ibm.com/tutorials/mq-build-deploy-ibm-mq-app-to-aws-cloud/). The application is underpinned by three containers (frontend, backend, MQ).
 
-Before deploying the containers, configure the following variables in the `.env` file:
+Before deploying the containers, create your `.env` file from the template and configure the following variables:
+
+    cp .env.example .env
 
 - `APP_PASSWORD`: the password you want to set for the MQ app user
 - `ADMIN_PASSWORD`: the password you want to set for the MQ admin user
+- `REACT_APP_IS_FOR_CODING_CHALLENGE`: optional, `false` by default. See [Coding challenge mode](#coding-challenge-mode).
+
+`.env` is git-ignored. Do not commit it.
 
 ## Environment
 
@@ -15,7 +20,7 @@ Before deploying the containers, configure the following variables in the `.env`
 
 > **Note:** All commands use `podman-compose`. Install [Podman Desktop](https://podman.io/) and `podman-compose` (`pip install podman-compose` or `brew install podman-compose`) if you don't have them yet.
 
-1. Fill in your passwords in `.env`:
+1. Fill in your passwords in `.env` (created from `.env.example`):
 
        APP_PASSWORD=<your-app-password>
        ADMIN_PASSWORD=<your-admin-password>
@@ -49,6 +54,14 @@ with the name of the ARM64 image you built, e.g.:
 image: "ibm-mqadvanced-server-dev:9.4.1.0-arm64"
 ```
 
+### Coding challenge mode
+
+The coding challenge turns the application into the University Donations app. To enable it, set the following in your `.env` file:
+
+    REACT_APP_IS_FOR_CODING_CHALLENGE=true
+
+The setting applies to the local dev server, containers and AWS. It is built into the frontend, so rebuild or restart after changing it. Any value other than `true` shows the standard ticket-booking demo.
+
 ### AWS Cloud (CDK)
 
 The `cdk/` directory contains a Python AWS CDK stack that deploys the full three-tier application to AWS ECS Fargate with an EFS-backed queue manager.
@@ -77,6 +90,8 @@ npx cdk bootstrap
 #### Configure
 
 Edit `cdk/mq-config.yaml` to set the MQ image, CPU/memory limits, and port numbers.
+
+To deploy in [coding challenge mode](#coding-challenge-mode), set `REACT_APP_IS_FOR_CODING_CHALLENGE=true` in the root `.env` before `npx cdk deploy`.
 
 MQ passwords are stored in **AWS Secrets Manager** — the CDK stack creates the secret automatically. After deploying, update the secret value in the AWS console or with the CLI:
 

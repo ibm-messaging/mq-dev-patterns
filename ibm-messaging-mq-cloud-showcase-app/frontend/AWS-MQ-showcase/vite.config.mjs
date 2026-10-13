@@ -14,11 +14,25 @@
  * limitations under the License.
  **/
 
+import path from 'node:path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
+  // Coding challenge flag: the process env (Docker build arg) wins, then the
+  // root .env. Anything other than "true" means off.
+  const rootEnv = loadEnv(mode, path.resolve(process.cwd(), '../..'), '');
+  const codingChallenge =
+    String(
+      process.env.REACT_APP_IS_FOR_CODING_CHALLENGE ??
+        rootEnv.REACT_APP_IS_FOR_CODING_CHALLENGE ??
+        ''
+    )
+      .trim()
+      .toLowerCase() === 'true'
+      ? 'true'
+      : 'false';
 
   const be = env.VITE_BE_HOST;
   const be_port = env.VITE_BE_PORT;
@@ -47,9 +61,12 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    // Some Carbon internals and older transitive deps still reference process.env
+    // process.env shim for Carbon/legacy deps; coding challenge flag listed
+    // explicitly so Vite inlines the real build-time value.
     define: {
       'process.env': {},
+      'process.env.REACT_APP_IS_FOR_CODING_CHALLENGE':
+        JSON.stringify(codingChallenge),
     },
   };
 });
