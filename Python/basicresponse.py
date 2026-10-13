@@ -31,6 +31,11 @@ logger = logging.getLogger('Rsp')
 
 WAIT_INTERVAL = 5  # seconds
 
+MQDetails = {}
+conn_info = None
+qmgr = None
+queue = None
+
 def connect():
     """ Establish connection to MQ Queue Manager """
 
@@ -285,13 +290,14 @@ def build_mq_details():
 
 
 def main():
+    """Main function for BasicResponse application"""
     global MQDetails, conn_info, qmgr, queue
 
     # Application Logic starts here
     logger.info('Application "BasicResponse" is starting')
 
-    envStore = EnvStore()
-    envStore.set_env()
+    env_store = EnvStore()
+    env_store.set_env()
 
     MQDetails = {}
     build_mq_details()

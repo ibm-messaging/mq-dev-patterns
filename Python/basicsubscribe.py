@@ -26,6 +26,11 @@ WAIT_INTERVAL = 5  # seconds
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('Sub')
 
+MQDetails = {}
+conn_info = None
+qmgr = None
+subscription = None
+
 def connect():
     """Establish connection to the queue manager"""
     logger.info('Establishing connection with MQ Server')
@@ -146,13 +151,14 @@ def build_mq_details():
 
 
 def main():
+    """Main function for BasicSubscribe application"""
     global MQDetails, conn_info, qmgr, subscription
 
     # Application Logic starts here
     logger.info('Application "BasicSubscribe" is starting')
 
-    envStore = EnvStore()
-    envStore.set_env()
+    env_store = EnvStore()
+    env_store.set_env()
 
     MQDetails = {}
     build_mq_details()

@@ -26,6 +26,11 @@ logger = logging.getLogger('Get')
 
 WAIT_INTERVAL = 5  # Seconds
 
+MQDetails = {}
+conn_info = None
+qmgr = None
+queue = None
+
 def connect(index):
     """ Establish connection to MQ Queue Manager """
     logger.info('Establishing connection with MQ Server')
@@ -148,25 +153,26 @@ def build_mq_details(index):
         MQDetails[key] = EnvStore.getenv_value(key, index)
 
 def main():
-    global MQDetails, qmgr, queue
+    """Main function for BasicGet application"""
+    global MQDetails, conn_info, qmgr, queue
 
     # Application logic starts here
     logger.info('Application "BasicGet" is starting')
 
-    envStore = EnvStore()
-    envStore.set_env()
+    env_store = EnvStore()
+    env_store.set_env()
 
     MQDetails = {}
 
     qmgr = None
     queue = None
 
-    numEndPoints = envStore.get_endpoint_count()
-    logger.info('There are %d connections', numEndPoints)
+    num_endpoints = env_store.get_endpoint_count()
+    logger.info('There are %d connections', num_endpoints)
 
     # Loop through the connection options. If one succeeds, do the
     # work and then quit.
-    for index, conn_info in envStore.get_next_connection_string():
+    for index, conn_info in env_store.get_next_connection_string():
         logger.info('Trying connection: %s', conn_info)
 
         build_mq_details(index)

@@ -26,6 +26,12 @@ from utils.env import EnvStore
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('Pub')
 
+MQDetails = {}
+conn_info = None
+msg_object = None
+qmgr = None
+topic = None
+
 def connect():
     """ Establish connection to MQ Queue Manager """
     logger.info('Establishing connection with MQ Server')
@@ -104,13 +110,14 @@ def build_mq_details():
         MQDetails[key] = EnvStore.getenv_value(key)
 
 def main():
+    """Main function for BasicPublish application"""
     global MQDetails, conn_info, msg_object, qmgr, topic
 
     # Application Logic starts here
     logger.info('Application "BasicPublish" is starting')
 
-    envStore = EnvStore()
-    envStore.set_env()
+    env_store = EnvStore()
+    env_store.set_env()
 
     MQDetails = {}
 

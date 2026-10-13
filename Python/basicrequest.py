@@ -30,6 +30,13 @@ logger = logging.getLogger('Req')
 
 WAIT_INTERVAL = 5  # seconds
 
+MQDetails = {}
+conn_info = None
+msg_object = None
+qmgr = None
+queue = None
+dynamic = None
+
 def connect():
     """ Establish connection to MQ Queue Manager """
 
@@ -206,13 +213,14 @@ def build_mq_details():
 
 
 def main():
+    """Main function for BasicRequest application"""
     global MQDetails, conn_info, msg_object, qmgr, queue, dynamic
 
     # Application Logic starts here
     logger.info('Application "BasicRequest" is starting')
 
-    envStore = EnvStore()
-    envStore.set_env()
+    env_store = EnvStore()
+    env_store.set_env()
 
     MQDetails = {}
 
