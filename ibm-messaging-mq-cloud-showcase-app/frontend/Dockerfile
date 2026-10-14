@@ -42,6 +42,11 @@ RUN npm ci
 
 # Source copied after install to preserve the cached dependency layer.
 COPY ./AWS-MQ-showcase/ ./
+
+# Coding challenge flag, passed as a build arg and read by Vite at build time.
+ARG REACT_APP_IS_FOR_CODING_CHALLENGE=false
+ENV REACT_APP_IS_FOR_CODING_CHALLENGE=${REACT_APP_IS_FOR_CODING_CHALLENGE}
+
 RUN npm run build
 
 ###########################################################

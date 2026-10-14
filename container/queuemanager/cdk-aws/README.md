@@ -95,6 +95,18 @@ MqEcsCdkStack.MqHost = MqEcsC-MqNLB-XXXXXXXX.elb.<region>.amazonaws.com
 MqEcsCdkStack.MqConsoleUrl = https://MqEcsC-MqNLB-XXXXXXXX.elb.<region>.amazonaws.com:9443/ibmmq/console/
 ```
 
+
+## ECS deployment configuration
+
+The ECS service is configured with `minimum_healthy_percent=0` and `maximum_healthy_percent=100`.
+
+With the ECS default settings (min 50%, max 200%), a rolling deploy starts the new task before the old one stops. The new task cannot access the EFS volume and logs `AMQ8355E` — the deploy then hangs.
+
+Setting min 0 / max 100 ensures the old task is stopped before the new one starts.
+
+> **Note:** Running with `minimum_healthy_percent=0` means the queue manager will be briefly unavailable during a redeploy. This is expected for a single-instance development queue manager.
+
+
 ## Testing
 
 ### REST API (port 9443)

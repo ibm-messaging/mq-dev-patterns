@@ -20,7 +20,8 @@ mvn=/usr/bin/mvn
 # Resolves problem with using Java 25 deprecated methods.
 # mvn=/opt/maven/apache-maven-3.9.16/bin/mvn
 
-for dir in jms-2-mdb jakarta-3-mdb
+# Run the different server variants.
+for dir in  jakarta-3-mdb jms-2-mdb
 do
   clearQ
 
@@ -37,10 +38,9 @@ do
 
   rm -rf target
 
-  mvn clean
+  $mvn clean
   # Try to filter out the error generated when we kill Liberty
-  (mvn -DskipTests=1 liberty:dev 2>&1| grep -v CWWKM2002E | tee -a $logFile )&
-  pid=$!
+  ($mvn -DskipTests=1 liberty:dev 2>&1| grep -v CWWKM2002E | tee -a $logFile )&
   echo "Waiting for Liberty to start "
   while true
   do
@@ -55,6 +55,7 @@ do
     fi
     sleep 3
   done
+  sleep 2
 
   # Build and run the producer program
   unset MAVEN_SKIP_RC
@@ -69,12 +70,14 @@ do
     java -cp target/ibm-mq-liberty-producer-0.1.0.jar: com.ibm.mq.samples.jms.JmsPut
     rc=$?
   fi
-  sleep 5
+  sleep 2
 
   # All done ... end the liberty server
-  kill $!
-  wait $!
+  cd $basedir/$dir
+  $mvn liberty:stop
   sleep 5
+
+  cd $basedir/producer
 
   rm -rf mqjms.log* FFDC
   if [ $rc -ne 0 ]
@@ -83,11 +86,12 @@ do
   fi
 done
 
-# Run the different server variants. Did we get the expected output?
+# Did we get the expected output?
 # Cleanup and exit.
 echo
 endLiberty
 
+sleep 10
 cnt=`grep "Messaging MDB received" $logFile | wc -l`
 if [ $cnt -ne 2 ]
 then

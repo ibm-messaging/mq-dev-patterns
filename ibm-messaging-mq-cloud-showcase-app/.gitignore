@@ -24,3 +24,6 @@ Thumbs.db
 *.swo
 .idea/
 .vscode/
+
+# Local secrets and settings - copy .env.example to .env
+.env
