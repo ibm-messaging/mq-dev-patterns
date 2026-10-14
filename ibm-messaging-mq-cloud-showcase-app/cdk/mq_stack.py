@@ -169,6 +169,12 @@ class MqShowcaseStack(cdk.Stack):
             self, 'FrontendImage',
             directory=os.path.join(root_dir, 'frontend'),
             platform=ecr_assets.Platform.LINUX_AMD64,
+            # Set REACT_APP_IS_FOR_CODING_CHALLENGE=true in the root .env before
+            # cdk deploy to enable the coding challenge UI.
+            build_args={
+                'REACT_APP_IS_FOR_CODING_CHALLENGE':
+                    os.environ.get('REACT_APP_IS_FOR_CODING_CHALLENGE', 'false'),
+            },
         )
         backend_image = ecr_assets.DockerImageAsset(
             self, 'BackendImage',
