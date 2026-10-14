@@ -17,6 +17,7 @@
 # limitations under the License.
 
 import logging
+import sys
 
 import ibmmq as mq
 from utils.env import EnvStore
@@ -190,6 +191,9 @@ def main():
     MQDetails.clear()
 
     logger.info('Application is ending')
+
+    if qmgr is None:
+        sys.exit(1)
 
 
 if __name__ == '__main__':

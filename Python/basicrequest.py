@@ -20,6 +20,7 @@ import json
 import datetime
 import random
 import logging
+import sys
 
 import ibmmq as mq
 
@@ -265,6 +266,9 @@ def main():
         qmgr.disconnect()
 
     logger.info('Application is ending')
+
+    if qmgr is None:
+        sys.exit(1)
 
 
 if __name__ == '__main__':
