@@ -9,7 +9,7 @@
 
     <variable name="ibmmq.port" defaultValue="1414" />
 
-    <resourceAdapter id="wmqjmsra" location="https://repo.maven.apache.org/maven2/com/ibm/mq/wmq.jakarta.jmsra/9.3.2.0/wmq.jakarta.jmsra-9.3.2.0.rar" />
+    <resourceAdapter id="wmqjmsra" location="https://repo.maven.apache.org/maven2/com/ibm/mq/wmq.jakarta.jmsra/10.0.1.0/wmq.jakarta.jmsra-10.0.1.0.rar" />
 
     <jmsConnectionFactory jndiName="jms/jmsCF" connectionManagerRef="QM1Dev" containerAuthDataRef="mqauthid">
         <properties.wmqjmsra

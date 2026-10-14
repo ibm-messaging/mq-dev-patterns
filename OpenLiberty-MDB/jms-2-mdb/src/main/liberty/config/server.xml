@@ -12,7 +12,7 @@
     <!-- <variable name="ibmmq.username" value="app"/>
     <variable name="ibmmq.password" value="yourUsernamePassword"/> -->
 
-    <resourceAdapter id="wmqjmsra" location="https://repo.maven.apache.org/maven2/com/ibm/mq/wmq.jmsra/9.3.2.0/wmq.jmsra-9.3.2.0.rar" />
+    <resourceAdapter id="wmqjmsra" location="https://repo.maven.apache.org/maven2/com/ibm/mq/wmq.jmsra/10.0.1.0/wmq.jmsra-10.0.1.0.rar" />
 
     <jmsConnectionFactory jndiName="jms/jmsCF" connectionManagerRef="QM1Dev">
         <properties.wmqjmsra
@@ -37,13 +37,13 @@
             password="${server-ibmmq-password}"
             queueManager="QM1"
             transportType="CLIENT"
-            destinationRef="jms/dev.queue.2"
+            destinationRef="jms/dev.queue.1"
             destinationType="javax.jms.Queue"
         />
     </jmsActivationSpec>
 
-    <jmsQueue id="jms/dev.queue.2" jndiName="jms/dev.queue.2">
-        <properties.wmqjmsra baseQueueName="DEV.QUEUE.2" />
+    <jmsQueue id="jms/dev.queue.1" jndiName="jms/dev.queue.1">
+        <properties.wmqjmsra baseQueueName="DEV.QUEUE.1" />
     </jmsQueue>
 
     <!-- This template enables security. To get the full use of all the capabilities, a keystore and user registry are required. -->
