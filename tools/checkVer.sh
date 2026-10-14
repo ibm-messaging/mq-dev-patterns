@@ -307,7 +307,7 @@ do
 
   major=`major $l`
 
-  find . -type f -name pom*.xml | grep -v target/classes | while read f
+  find . -type f -name pom*.xml | grep -v target/classes | grep -v bin/ | while read f
   do
     # YQ is a better processor than awk for XML files, but may not be available everywhere.
     # Use it if we can; otherwise fallback to awk.
@@ -357,6 +357,36 @@ do
   done
   echo
 done
+
+# Look for the Liberty config files that name the MQ RA
+# This will select both the Jakarta and JMS2 variants
+echo "Java component \"jmsra\" to update to $jmsLatest ..."
+find . -name server*xml | grep -v target | grep -v bin | while read f
+do
+  if $useYQ
+  then
+    ra=`cat $f | yq -p xml -o json | jq -r '.server.resourceAdapter | select (."+@id" == "wmqjmsra") | ."+@location"'`
+  else
+    # Another one where we're very dependent on the file format, if we can't use yq
+    ra=`cat $f | dos2unix | awk '
+                  /wmqjmsra.*location/  {print $3}
+                  ' |\
+                  sed "s/\"/ /g;s/https://g" | cut -f2 -d" " `
+  fi
+  if [ ! -z "$ra" ] && [ "$ra" != "null" ]
+  then
+    v=`dirname $ra`
+    v=`basename $v`
+
+    if [ "$v" !=  "$jmsLatest" ]
+    then
+      echo "  $f from $v"
+    else
+      : echo "  $f from $v is not needed"
+    fi
+  fi
+done
+echo
 
 # .Net
 # csproj

@@ -436,7 +436,8 @@ disable=raw-checker-failed,
         redefined-outer-name,
         c-extension-no-member,
         protected-access,
-        not-callable
+        not-callable,
+        global-statement
 
 
 # Enable the message, report, category or checker with the given id(s). You can

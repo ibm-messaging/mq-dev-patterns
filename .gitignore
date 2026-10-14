@@ -18,6 +18,7 @@ terraform.tfstate
 
 mqjms.log.*
 FFDC/
+bin/
 
 **/dist/
 **/build/
