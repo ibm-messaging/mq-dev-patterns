@@ -1,0 +1,6 @@
+{
+  "app": "python app.py",
+  "context": {
+    "@aws-cdk/aws-ecs:recommendedContainerMemoryResources": true
+  }
+}

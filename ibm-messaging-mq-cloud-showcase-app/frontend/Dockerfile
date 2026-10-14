@@ -20,8 +20,15 @@
 ###########################################################
 # This starts the BUILD phase
 ###########################################################
-# Node 22 Alpine — smallest image with no native binaries requiring glibc.
-FROM public.ecr.aws/docker/library/node:22-alpine AS builder
+# The final runtime image is constrained to linux/amd64 (ECS Fargate requirement).
+# $BUILDPLATFORM is a Docker BuildKit built-in variable — no declaration needed.
+# It is set to the platform of the machine running the build (e.g. linux/arm64
+# on Apple Silicon). We set it here so the Node build step runs natively on the
+# host architecture rather than under QEMU emulation — without it, building on
+# Apple Silicon would emulate linux/amd64 to match the runtime stage, causing
+# a QEMU segfault during npm install. The compiled output (HTML/JS/CSS) is
+# platform-agnostic and is safely copied into the linux/amd64 runtime stage below.
+FROM --platform=$BUILDPLATFORM public.ecr.aws/docker/library/node:22-alpine AS builder
 WORKDIR /app
 
 # Manifest files copied before source so the npm ci layer is cached
@@ -53,13 +60,13 @@ ENTRYPOINT ["/docker-entrypoint.sh"]
 # Copy only the built static assets from the builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# nginx-unprivileged binds to 8080 (non-root processes cannot bind to port 80).
-EXPOSE 8080
+# nginx listens on port 3000
+EXPOSE 3000
 
 # Alpine-based image ships wget, enabling this loopback health check.
 # Docker / Podman polls every 30s and marks the container unhealthy after 3 failures.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget -qO- http://localhost:8080/ || exit 1
+    CMD wget -qO- http://localhost:3000/ || exit 1
 
 # daemon off keeps nginx in the foreground so Docker can track the process.
 CMD ["nginx", "-g", "daemon off;"]
