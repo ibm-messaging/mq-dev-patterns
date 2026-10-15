@@ -1,0 +1,11 @@
+com/ibm/mq/samples/java/BasicPub.class
+com/ibm/mq/samples/java/BasicGet.class
+com/ibm/mq/samples/java/BasicProducer.class
+com/ibm/mq/samples/java/BasicResponse.class
+com/ibm/mq/samples/java/BasicSub.class
+com/ibm/mq/samples/java/SampleEnvSetter.class
+com/ibm/mq/samples/java/BasicRequest.class
+com/ibm/mq/samples/java/BasicConsumer.class
+com/ibm/mq/samples/java/BasicMQFunctions.class
+com/ibm/mq/samples/java/BasicPut.class
+com/ibm/mq/samples/java/MQDetails.class
