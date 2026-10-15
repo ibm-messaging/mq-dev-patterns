@@ -27,13 +27,14 @@ from utils.env import EnvStore
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('Pub')
 
-MQDetails = {}
-conn_info = None
-msg_object = None
-qmgr = None
-topic = None
 
-def connect():
+class Global:
+    """A simple class rather than using a global statement """
+    MQDetails = {}
+    exit_code = 0
+
+
+def connect(conn_info):
     """ Establish connection to MQ Queue Manager """
     logger.info('Establishing connection with MQ Server')
     try:
@@ -42,23 +43,23 @@ def connect():
             logger.info('CCDT URL export is not set, will be using json environment client connections settings')
 
             cd = mq.CD(Version=mq.CMQXC.MQCD_VERSION_11)
-            cd.ChannelName = MQDetails[EnvStore.CHANNEL]
+            cd.ChannelName = Global.MQDetails[EnvStore.CHANNEL]
             cd.ConnectionName = conn_info
             cd.ChannelType = mq.CMQXC.MQCHT_CLNTCONN
             cd.TransportType = mq.CMQXC.MQXPT_TCP
 
             logger.info('Checking cipher details')
             # If a cipher is set then set the TLS settings
-            if MQDetails[EnvStore.CIPHER]:
+            if Global.MQDetails[EnvStore.CIPHER]:
                 logger.info('Making use of cipher details')
-                cd.SSLCipherSpec = MQDetails[EnvStore.CIPHER]
+                cd.SSLCipherSpec = Global.MQDetails[EnvStore.CIPHER]
 
         # Key repository is not specified in CCDT so look in environment settings
         # Create an empty SCO object
         sco = mq.SCO()
-        if MQDetails[EnvStore.KEY_REPOSITORY]:
+        if Global.MQDetails[EnvStore.KEY_REPOSITORY]:
             logger.info('Setting Key repository')
-            sco.KeyRepository = MQDetails[EnvStore.KEY_REPOSITORY]
+            sco.KeyRepository = Global.MQDetails[EnvStore.KEY_REPOSITORY]
 
         qmgr = mq.QueueManager(None)
 
@@ -69,27 +70,29 @@ def connect():
         if csp.CSPUserId is None:
             csp = None
 
-        qmgr.connect_with_options(MQDetails[EnvStore.QMGR],
+        qmgr.connect_with_options(Global.MQDetails[EnvStore.QMGR],
                                   csp=csp,
                                   cd=cd, sco=sco)
         return qmgr
 
     except mq.MQMIError as e:
         logger.error('Error connecting: %s', e)
+        Global.exit_code = 1
         return None
 
-def get_topic():
+def get_topic(qmgr):
     """Establish access to a Topic"""
     logger.info('Opening a topic')
     try:
-        t = mq.Topic(qmgr, topic_string=MQDetails[EnvStore.TOPIC_NAME])
+        t = mq.Topic(qmgr, topic_string=Global.MQDetails[EnvStore.TOPIC_NAME])
         t.open(open_opts=mq.CMQC.MQOO_OUTPUT)
         return t
     except mq.MQMIError as e:
         logger.error('Error opening topic: %s', e)
+        Global.exit_code = 1
         return None
 
-def publish_message():
+def publish_message(topic, msg_object):
     """Publish a message"""
     logger.info('Attempting publish to topic')
     try:
@@ -103,16 +106,16 @@ def publish_message():
         logger.info('Publish message successful: %s', msg)
     except mq.MQMIError as e:
         logger.error('Error in publish to topic: %s', e)
+        Global.exit_code = 1
 
 def build_mq_details():
     """Create the connection details for the queue manager"""
     for key in [EnvStore.QMGR, EnvStore.CHANNEL, EnvStore.HOST,
                 EnvStore.PORT, EnvStore.KEY_REPOSITORY, EnvStore.CIPHER, EnvStore.TOPIC_NAME]:
-        MQDetails[key] = EnvStore.getenv_value(key)
+        Global.MQDetails[key] = EnvStore.getenv_value(key)
 
 def main():
     """Main function for BasicPublish application"""
-    global MQDetails, conn_info, msg_object, qmgr, topic
 
     # Application Logic starts here
     logger.info('Application "BasicPublish" is starting')
@@ -120,7 +123,7 @@ def main():
     env_store = EnvStore()
     env_store.set_env()
 
-    MQDetails = {}
+    Global.MQDetails = {}
 
     build_mq_details()
 
@@ -133,11 +136,11 @@ def main():
     qmgr = None
     topic = None
 
-    qmgr = connect()
+    qmgr = connect(conn_info)
     if qmgr is not None:
-        topic = get_topic()
+        topic = get_topic(qmgr)
     if topic is not None:
-        publish_message()
+        publish_message(topic, msg_object)
         topic.close()
 
     if qmgr is not None:
@@ -145,8 +148,7 @@ def main():
 
     logger.info('Application is ending')
 
-    if qmgr is None:
-        sys.exit(1)
+    sys.exit(Global.exit_code)
 
 
 if __name__ == '__main__':

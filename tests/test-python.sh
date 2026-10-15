@@ -55,8 +55,10 @@ then
   exit 1
 fi
 
-# Can now get round to running the tests
+# Force the connection to be as a client
+export MQ_CONNECT_TYPE=CLIENT
 
+# Can now get round to running the tests
 cd ../Python
 
 (

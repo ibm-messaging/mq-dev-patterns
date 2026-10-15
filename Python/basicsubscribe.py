@@ -27,12 +27,14 @@ WAIT_INTERVAL = 5  # seconds
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('Sub')
 
-MQDetails = {}
-conn_info = None
-qmgr = None
-subscription = None
 
-def connect():
+class Global:
+    """A simple class rather than using a global statement """
+    MQDetails = {}
+    exit_code = 0
+
+
+def connect(conn_info):
     """Establish connection to the queue manager"""
     logger.info('Establishing connection with MQ Server')
     try:
@@ -41,23 +43,23 @@ def connect():
             logger.info('CCDT URL export is not set, will be using json environment client connections settings')
 
             cd = mq.CD(Version=mq.CMQXC.MQCD_VERSION_11)
-            cd.ChannelName = MQDetails[EnvStore.CHANNEL]
+            cd.ChannelName = Global.MQDetails[EnvStore.CHANNEL]
             cd.ConnectionName = conn_info
             cd.ChannelType = mq.CMQXC.MQCHT_CLNTCONN
             cd.TransportType = mq.CMQXC.MQXPT_TCP
 
             logger.info('Checking cipher details')
             # If a cipher is set then set the TLS settings
-            if MQDetails[EnvStore.CIPHER]:
+            if Global.MQDetails[EnvStore.CIPHER]:
                 logger.info('Making use of cipher details')
-                cd.SSLCipherSpec = MQDetails[EnvStore.CIPHER]
+                cd.SSLCipherSpec = Global.MQDetails[EnvStore.CIPHER]
 
         # Key repository is not specified in CCDT so look in environment settings
         # Create an empty SCO object
         sco = mq.SCO()
-        if MQDetails[EnvStore.KEY_REPOSITORY]:
+        if Global.MQDetails[EnvStore.KEY_REPOSITORY]:
             logger.info('Setting Key repository')
-            sco.KeyRepository = MQDetails[EnvStore.KEY_REPOSITORY]
+            sco.KeyRepository = Global.MQDetails[EnvStore.KEY_REPOSITORY]
 
         # Set credentials
         csp = mq.CSP()
@@ -67,15 +69,16 @@ def connect():
             csp = None
 
         qmgr = mq.QueueManager(None)
-        qmgr.connect_with_options(MQDetails[EnvStore.QMGR],
+        qmgr.connect_with_options(Global.MQDetails[EnvStore.QMGR],
                                   csp=csp,
                                   cd=cd, sco=sco)
         return qmgr
     except mq.MQMIError as e:
         logger.error('Error connecting: %s', e)
+        Global.exit_code = 1
         return None
 
-def get_subscription():
+def get_subscription(qmgr):
     """Get access to the topic via a subscription.
     Using a MANAGED subscription means that the queue manager will create and
     return the queue to which publications are delivered.
@@ -87,16 +90,17 @@ def get_subscription():
             mq.CMQC.MQSO_MANAGED | \
             mq.CMQC.MQSO_NON_DURABLE | \
             mq.CMQC.MQSO_FAIL_IF_QUIESCING
-        sub_desc.set_vs('ObjectString', MQDetails[EnvStore.TOPIC_NAME])
+        sub_desc.set_vs('ObjectString', Global.MQDetails[EnvStore.TOPIC_NAME])
 
         sub = mq.Subscription(qmgr)
         sub.sub(sub_desc=sub_desc)
         return sub
     except mq.MQMIError as e:
         logger.error('Error opening queue: %s', e)
+        Global.exit_code = 1
         return None
 
-def get_messages():
+def get_messages(subscription):
     """Get publications from the subscription queue"""
     logger.info('Attempting gets from subscription queue')
 
@@ -131,6 +135,7 @@ def get_messages():
                 keep_running = False
             else:
                 # Some other error condition.
+                Global.exit_code = 1
                 raise
 
         except (UnicodeDecodeError, ValueError) as e:
@@ -148,12 +153,11 @@ def build_mq_details():
     """Create the connection details for the queue manager"""
     for key in [EnvStore.QMGR, EnvStore.TOPIC_NAME, EnvStore.CHANNEL, EnvStore.HOST,
                 EnvStore.PORT, EnvStore.KEY_REPOSITORY, EnvStore.CIPHER]:
-        MQDetails[key] = EnvStore.getenv_value(key)
+        Global.MQDetails[key] = EnvStore.getenv_value(key)
 
 
 def main():
     """Main function for BasicSubscribe application"""
-    global MQDetails, conn_info, qmgr, subscription
 
     # Application Logic starts here
     logger.info('Application "BasicSubscribe" is starting')
@@ -161,7 +165,7 @@ def main():
     env_store = EnvStore()
     env_store.set_env()
 
-    MQDetails = {}
+    Global.MQDetails = {}
     build_mq_details()
 
     conn_info = EnvStore.get_connection(EnvStore.HOST, EnvStore.PORT)
@@ -169,11 +173,11 @@ def main():
     qmgr = None
     subscription = None
 
-    qmgr = connect()
+    qmgr = connect(conn_info)
     if qmgr is not None:
-        subscription = get_subscription()
+        subscription = get_subscription(qmgr)
     if subscription is not None:
-        get_messages()
+        get_messages(subscription)
         subscription.close(close_sub_queue=True)
 
     if qmgr is not None:
@@ -181,8 +185,7 @@ def main():
 
     logger.info('Application is ending')
 
-    if qmgr is None:
-        sys.exit(1)
+    sys.exit(Global.exit_code)
 
 
 if __name__ == '__main__':

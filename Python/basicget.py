@@ -27,12 +27,13 @@ logger = logging.getLogger('Get')
 
 WAIT_INTERVAL = 5  # Seconds
 
-MQDetails = {}
-conn_info = None
-qmgr = None
-queue = None
 
-def connect(index):
+class Global:
+    """A simple class rather than using a global statement """
+    MQDetails = {}
+    exit_code = 0
+
+def connect(index, conn_info):
     """ Establish connection to MQ Queue Manager """
     logger.info('Establishing connection with MQ Server')
 
@@ -49,41 +50,42 @@ def connect(index):
             logger.info('CCDT URL export is not set, will be using json environment client connections settings')
 
             cd = mq.CD(Version=mq.CMQXC.MQCD_VERSION_11)
-            cd.ChannelName = MQDetails[EnvStore.CHANNEL]
+            cd.ChannelName = Global.MQDetails[EnvStore.CHANNEL]
             cd.ConnectionName = conn_info
             cd.ChannelType = mq.CMQXC.MQCHT_CLNTCONN
             cd.TransportType = mq.CMQXC.MQXPT_TCP
 
             logger.info('Checking cipher details')
             # If a cipher is set then set the TLS settings
-            if MQDetails[EnvStore.CIPHER]:
+            if Global.MQDetails[EnvStore.CIPHER]:
                 logger.info('Making use of cipher details')
-                cd.SSLCipherSpec = MQDetails[EnvStore.CIPHER]
+                cd.SSLCipherSpec = Global.MQDetails[EnvStore.CIPHER]
 
         # Key repository is not specified in CCDT so look in environment settings
         # Create an empty SCO object
         sco = mq.SCO()
-        if MQDetails[EnvStore.KEY_REPOSITORY]:
+        if Global.MQDetails[EnvStore.KEY_REPOSITORY]:
             logger.info('Setting Key repository')
-            sco.KeyRepository = MQDetails[EnvStore.KEY_REPOSITORY]
+            sco.KeyRepository = Global.MQDetails[EnvStore.KEY_REPOSITORY]
 
         qmgr = mq.QueueManager(None)
-        qmgr.connect_with_options(MQDetails[EnvStore.QMGR],
+        qmgr.connect_with_options(Global.MQDetails[EnvStore.QMGR],
                                   csp=csp,
                                   cd=cd, sco=sco)
         return qmgr
     except mq.MQMIError as e:
         logger.error('Error connecting: %s', e)
+        Global.exit_code = 1
         return None
 
-def get_queue():
+def get_queue(qmgr):
     """Establish access to a Queue"""
     logger.info('Opening a Queue')
     try:
         q = mq.Queue(qmgr)
 
         od = mq.OD()
-        od.ObjectName = MQDetails[EnvStore.QUEUE_NAME]
+        od.ObjectName = Global.MQDetails[EnvStore.QUEUE_NAME]
 
         open_options = mq.CMQC.MQOO_INPUT_AS_Q_DEF
         q.open(od, open_options)
@@ -91,9 +93,10 @@ def get_queue():
         return q
     except mq.MQMIError as e:
         logger.error('Error opening queue: %s', e)
+        Global.exit_code = 1
         return None
 
-def get_messages():
+def get_messages(queue):
     """Get messages from the queue"""
     logger.info('Attempting gets from Queue')
 
@@ -135,6 +138,7 @@ def get_messages():
                 keep_running = False
             else:
                 # Some other error condition.
+                Global.exit_code = 1
                 raise
 
         except (UnicodeDecodeError, ValueError) as e:
@@ -151,11 +155,10 @@ def build_mq_details(index):
     """Create the connection details for the queue manager"""
     for key in [EnvStore.QMGR, EnvStore.QUEUE_NAME, EnvStore.CHANNEL, EnvStore.HOST,
                 EnvStore.PORT, EnvStore.KEY_REPOSITORY, EnvStore.CIPHER]:
-        MQDetails[key] = EnvStore.getenv_value(key, index)
+        Global.MQDetails[key] = EnvStore.getenv_value(key, index)
 
 def main():
     """Main function for BasicGet application"""
-    global MQDetails, conn_info, qmgr, queue
 
     # Application logic starts here
     logger.info('Application "BasicGet" is starting')
@@ -163,10 +166,9 @@ def main():
     env_store = EnvStore()
     env_store.set_env()
 
-    MQDetails = {}
+    Global.MQDetails = {}
 
     qmgr = None
-    queue = None
 
     num_endpoints = env_store.get_endpoint_count()
     logger.info('There are %d connections', num_endpoints)
@@ -178,22 +180,21 @@ def main():
 
         build_mq_details(index)
 
-        qmgr = connect(index)
+        qmgr = connect(index, conn_info)
         if qmgr is not None:
-            queue = get_queue()
+            queue = get_queue(qmgr)
             if queue is not None:
-                get_messages()
+                get_messages(queue)
                 queue.close()
 
             qmgr.disconnect()
             break
 
-    MQDetails.clear()
+    Global.MQDetails.clear()
 
     logger.info('Application is ending')
 
-    if qmgr is None:
-        sys.exit(1)
+    sys.exit(Global.exit_code)
 
 
 if __name__ == '__main__':

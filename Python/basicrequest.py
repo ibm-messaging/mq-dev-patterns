@@ -31,14 +31,14 @@ logger = logging.getLogger('Req')
 
 WAIT_INTERVAL = 5  # seconds
 
-MQDetails = {}
-conn_info = None
-msg_object = None
-qmgr = None
-queue = None
-dynamic = None
 
-def connect():
+class Global:
+    """A simple class rather than using a global statement """
+    MQDetails = {}
+    exit_code = 0
+
+
+def connect(conn_info):
     """ Establish connection to MQ Queue Manager """
 
     logger.info('Establishing connection with MQ Server')
@@ -48,23 +48,23 @@ def connect():
             logger.info('CCDT URL export is not set, will be using json environment client connections settings')
 
             cd = mq.CD(Version=mq.CMQXC.MQCD_VERSION_11)
-            cd.ChannelName = MQDetails[EnvStore.CHANNEL]
+            cd.ChannelName = Global.MQDetails[EnvStore.CHANNEL]
             cd.ConnectionName = conn_info
             cd.ChannelType = mq.CMQXC.MQCHT_CLNTCONN
             cd.TransportType = mq.CMQXC.MQXPT_TCP
 
             logger.info('Checking cipher details')
             # If a cipher is set then set the TLS settings
-            if MQDetails[EnvStore.CIPHER]:
+            if Global.MQDetails[EnvStore.CIPHER]:
                 logger.info('Making use of cipher details')
-                cd.SSLCipherSpec = MQDetails[EnvStore.CIPHER]
+                cd.SSLCipherSpec = Global.MQDetails[EnvStore.CIPHER]
 
         # Key repository is not specified in CCDT so look in environment settings
         # Create an empty SCO object
         sco = mq.SCO()
-        if MQDetails[EnvStore.KEY_REPOSITORY]:
+        if Global.MQDetails[EnvStore.KEY_REPOSITORY]:
             logger.info('Setting Key repository')
-            sco.KeyRepository = MQDetails[EnvStore.KEY_REPOSITORY]
+            sco.KeyRepository = Global.MQDetails[EnvStore.KEY_REPOSITORY]
 
         # Set credentials
         csp = mq.CSP()
@@ -74,14 +74,15 @@ def connect():
             csp = None
 
         qmgr = mq.QueueManager(None)
-        qmgr.connect_with_options(MQDetails[EnvStore.QMGR], csp=csp,
+        qmgr.connect_with_options(Global.MQDetails[EnvStore.QMGR], csp=csp,
                                   cd=cd, sco=sco)
         return qmgr
     except mq.MQMIError as e:
         logger.error('Error connecting: %s', e)
+        Global.exit_code = 1
         return None
 
-def get_queue():
+def get_queue(qmgr):
     """Establish access to a Queue"""
 
     logger.info('Opening queue')
@@ -89,23 +90,24 @@ def get_queue():
         q = mq.Queue(qmgr)
 
         od = mq.OD()
-        od.ObjectName = MQDetails[EnvStore.QUEUE_NAME]
+        od.ObjectName = Global.MQDetails[EnvStore.QUEUE_NAME]
         q.open(od, mq.CMQC.MQOO_OUTPUT)
-        logger.info('Opened queue %s', str(MQDetails[EnvStore.QUEUE_NAME]))
+        logger.info('Opened queue %s', str(Global.MQDetails[EnvStore.QUEUE_NAME]))
         return q
 
     except mq.MQMIError as e:
         logger.error('Error opening queue: %s', e)
+        Global.exit_code = 1
         return None
 
-def get_dynamic_queue():
+def get_dynamic_queue(qmgr):
     """create a Dynamic queue, used for replies, by opening a Model queue"""
     logger.info('Opening model queue')
     try:
         # Model queue's object descriptor.
         od = mq.OD()
-        od.ObjectName = MQDetails[EnvStore.MODEL_QUEUE_NAME]
-        od.DynamicQName = MQDetails[EnvStore.DYNAMIC_QUEUE_PREFIX]
+        od.ObjectName = Global.MQDetails[EnvStore.MODEL_QUEUE_NAME]
+        od.DynamicQName = Global.MQDetails[EnvStore.DYNAMIC_QUEUE_PREFIX]
 
         # Open the dynamic queue.
         open_options = mq.CMQC.MQOO_INPUT_EXCLUSIVE
@@ -119,9 +121,10 @@ def get_dynamic_queue():
 
     except mq.MQMIError as e:
         logger.error('Error opening queue: %s', e)
+        Global.exit_code = 1
         return None
 
-def put_message():
+def put_message(queue, reply_queue, msg_object):
     """Put message onto queue"""
 
     logger.info('Attempting put to queue')
@@ -129,7 +132,7 @@ def put_message():
         # Prepare a Message Descriptor for the request message.
         # Set the ReplyToQ as the dynamic queue we just created
         md = mq.MD()
-        md.ReplyToQ = dynamic['name']
+        md.ReplyToQ = reply_queue['name']
         md.MsgType = mq.CMQC.MQMT_REQUEST
         md.Format = mq.CMQC.MQFMT_STRING
 
@@ -149,10 +152,11 @@ def put_message():
 
     except mq.MQMIError as e:
         logger.error('Error in put to queue: %s', e)
+        Global.exit_code = 1
 
     return None
 
-def await_response(msgid):
+def await_response(dynamic, msgid):
     """Wait for a response on the replyToQ.
     Use the CorrelId to ensure it corresponds to the original request.
     """
@@ -192,6 +196,7 @@ def await_response(msgid):
                 keep_running = False
             else:
                 # Some other error condition.
+                Global.exit_code = 1
                 raise
 
         except (UnicodeDecodeError, ValueError) as e:
@@ -210,12 +215,11 @@ def build_mq_details():
     for key in [EnvStore.QMGR, EnvStore.QUEUE_NAME, EnvStore.CHANNEL, EnvStore.HOST,
                 EnvStore.PORT, EnvStore.MODEL_QUEUE_NAME, EnvStore.DYNAMIC_QUEUE_PREFIX,
                 EnvStore.KEY_REPOSITORY, EnvStore.CIPHER]:
-        MQDetails[key] = EnvStore.getenv_value(key)
+        Global.MQDetails[key] = EnvStore.getenv_value(key)
 
 
 def main():
     """Main function for BasicRequest application"""
-    global MQDetails, conn_info, msg_object, qmgr, queue, dynamic
 
     # Application Logic starts here
     logger.info('Application "BasicRequest" is starting')
@@ -223,7 +227,7 @@ def main():
     env_store = EnvStore()
     env_store.set_env()
 
-    MQDetails = {}
+    Global.MQDetails = {}
 
     build_mq_details()
 
@@ -236,28 +240,28 @@ def main():
 
     qmgr = None
     queue = None
-    dynamic = {
+    reply_queue = {
         'queue': None,
         'name': None
     }
 
-    qmgr = connect()
+    qmgr = connect(conn_info)
     if qmgr is not None:
-        queue = get_queue()
+        queue = get_queue(qmgr)
 
-    reply_queue = None
+    reply_queue_info = None
     if queue is not None:
-        reply_queue = get_dynamic_queue()
-        if reply_queue is not None:
-            dynamic['queue'] = reply_queue[0]
-            dynamic['name'] = reply_queue[1]
+        reply_queue_info = get_dynamic_queue(qmgr)
+        if reply_queue_info is not None:
+            reply_queue['queue'] = reply_queue_info[0]
+            reply_queue['name'] = reply_queue_info[1]
 
-    if reply_queue is not None:
-        msgid = put_message()
+    if reply_queue['queue'] is not None:
+        msgid = put_message(queue, reply_queue, msg_object)
         if msgid is not None:
-            await_response(msgid)
+            await_response(reply_queue, msgid)
 
-        dynamic['queue'].close()
+        reply_queue['queue'].close()
 
     if queue is not None:
         queue.close()
@@ -267,8 +271,7 @@ def main():
 
     logger.info('Application is ending')
 
-    if qmgr is None:
-        sys.exit(1)
+    sys.exit(Global.exit_code)
 
 
 if __name__ == '__main__':

@@ -25,7 +25,7 @@ The MQ Redistributable Client for Windows can be downloaded from
 The MQ Redistributed Client for Linux x64 can be downloaded from
 [here](https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/messaging/mqdev/redist/)
 
-For other platforms, you can use the regular MQ iamges to install, at minimum, the MQ Client and SDK components.
+For other platforms, you can use the regular MQ images to install, at minimum, the MQ Client and SDK components.
 
 ## IBM MQ Python package installation
 

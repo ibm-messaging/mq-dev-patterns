@@ -32,12 +32,14 @@ logger = logging.getLogger('Rsp')
 
 WAIT_INTERVAL = 5  # seconds
 
-MQDetails = {}
-conn_info = None
-qmgr = None
-queue = None
 
-def connect():
+class Global:
+    """A simple class rather than using a global statement """
+    MQDetails = {}
+    exit_code = 0
+
+
+def connect(conn_info):
     """ Establish connection to MQ Queue Manager """
 
     logger.info('Establishing connection with MQ Server')
@@ -47,23 +49,23 @@ def connect():
             logger.info('CCDT URL export is not set, will be using json environment client connections settings')
 
             cd = mq.CD(Version=mq.CMQXC.MQCD_VERSION_11)
-            cd.ChannelName = MQDetails[EnvStore.CHANNEL]
+            cd.ChannelName = Global.MQDetails[EnvStore.CHANNEL]
             cd.ConnectionName = conn_info
             cd.ChannelType = mq.CMQXC.MQCHT_CLNTCONN
             cd.TransportType = mq.CMQXC.MQXPT_TCP
 
             logger.info('Checking cipher details')
             # If a cipher is set then set the TLS settings
-            if MQDetails[EnvStore.CIPHER]:
+            if Global.MQDetails[EnvStore.CIPHER]:
                 logger.info('Making use of cipher details')
-                cd.SSLCipherSpec = MQDetails[EnvStore.CIPHER]
+                cd.SSLCipherSpec = Global.MQDetails[EnvStore.CIPHER]
 
         # Key repository is not specified in CCDT so look in environment settings
         # Create an empty SCO object
         sco = mq.SCO()
-        if MQDetails[EnvStore.KEY_REPOSITORY]:
+        if Global.MQDetails[EnvStore.KEY_REPOSITORY]:
             logger.info('Setting Key repository')
-            sco.KeyRepository = MQDetails[EnvStore.KEY_REPOSITORY]
+            sco.KeyRepository = Global.MQDetails[EnvStore.KEY_REPOSITORY]
 
         # Set credentials
         csp = mq.CSP()
@@ -73,15 +75,16 @@ def connect():
             csp = None
 
         qmgr = mq.QueueManager(None)
-        qmgr.connect_with_options(MQDetails[EnvStore.QMGR],
+        qmgr.connect_with_options(Global.MQDetails[EnvStore.QMGR],
                                   csp=csp,
                                   cd=cd, sco=sco)
         return qmgr
     except mq.MQMIError as e:
         logger.error('Error connecting: %s', e)
+        Global.exit_code = 1
         return None
 
-def get_queue(queue_name):
+def get_queue(qmgr, queue_name):
     """Access the input queue"""
 
     logger.info('Opening queue')
@@ -96,9 +99,10 @@ def get_queue(queue_name):
 
     except mq.MQMIError as e:
         logger.error('Error opening queue: %s', e)
+        Global.exit_code = 1
         return None
 
-def get_messages(qmgr):
+def get_messages(qmgr, queue):
     """Get messages from the input queue"""
     logger.info('Attempting gets from queue')
 
@@ -133,7 +137,7 @@ def get_messages(qmgr):
             # Process the message here..
             msg_object = json.loads(message.decode())
             logger.info('Have message from input queue: %s', message.decode())
-            ok = respond_to_request(md, msg_object)
+            ok = respond_to_request(qmgr, md, msg_object)
 
         except mq.MQMIError as e:
             if e.comp == mq.CMQC.MQCC_FAILED and e.reason == mq.CMQC.MQRC_NO_MSG_AVAILABLE:
@@ -144,6 +148,7 @@ def get_messages(qmgr):
                 ok = False
             else:
                 # Some other error condition.
+                Global.exit_code = 1
                 ok = False
 
         except (UnicodeDecodeError, ValueError) as e:
@@ -171,7 +176,7 @@ def rollback(qmgr, md, msg, backout_counter):
     # system, you would probably find the backout queue from the BOQNAME attribute
     # of the input queue. But for simplicity here, we're reading it from an external
     # configuration.
-    backout_queue = MQDetails[EnvStore.BACKOUT_QUEUE]
+    backout_queue = Global.MQDetails[EnvStore.BACKOUT_QUEUE]
 
     ok = False
     pmo = mq.PMO()
@@ -191,6 +196,7 @@ def rollback(qmgr, md, msg, backout_counter):
             logger.info('Message sent to the backout queue: %s', str(backout_queue))
         except mq.MQMIError as e:
             logger.info('Error on redirecting the message : %s', e)
+            Global.exit_code = 1
             ok = False
 
     else:
@@ -199,11 +205,12 @@ def rollback(qmgr, md, msg, backout_counter):
             ok = True
         except mq.MQMIError as e:
             logger.error('Error on rollback: %s', e)
+            Global.exit_code = 1
             ok = False
 
     return ok
 
-def respond_to_request(in_md, msg_object):
+def respond_to_request(qmgr, in_md, msg_object):
     """Repond to the request.
     Set correlators based on the inbound request's report options
     """
@@ -265,6 +272,7 @@ def respond_to_request(in_md, msg_object):
     except mq.MQMIError as e:
         # Returning False will cause the calling function to backout the operation
         logger.error('Error putting message to reply queue: %s', e)
+        Global.exit_code = 1
         return False
 
 def perform_calc(n):
@@ -287,12 +295,11 @@ def build_mq_details():
     """Create the connection details for the queue manager"""
     for key in [EnvStore.QMGR, EnvStore.QUEUE_NAME, EnvStore.CHANNEL, EnvStore.HOST,
                 EnvStore.PORT, EnvStore.KEY_REPOSITORY, EnvStore.CIPHER, EnvStore.BACKOUT_QUEUE]:
-        MQDetails[key] = EnvStore.getenv_value(key)
+        Global.MQDetails[key] = EnvStore.getenv_value(key)
 
 
 def main():
     """Main function for BasicResponse application"""
-    global MQDetails, conn_info, qmgr, queue
 
     # Application Logic starts here
     logger.info('Application "BasicResponse" is starting')
@@ -300,7 +307,7 @@ def main():
     env_store = EnvStore()
     env_store.set_env()
 
-    MQDetails = {}
+    Global.MQDetails = {}
     build_mq_details()
 
     conn_info = EnvStore.get_connection(EnvStore.HOST, EnvStore.PORT)
@@ -308,12 +315,12 @@ def main():
     qmgr = None
     queue = None
 
-    qmgr = connect()
+    qmgr = connect(conn_info)
     if qmgr is not None:
-        queue = get_queue(MQDetails[EnvStore.QUEUE_NAME])
+        queue = get_queue(qmgr, Global.MQDetails[EnvStore.QUEUE_NAME])
 
     if queue is not None:
-        get_messages(qmgr)
+        get_messages(qmgr, queue)
 
         queue.close()
 
@@ -322,8 +329,7 @@ def main():
 
     logger.info('Application is ending')
 
-    if qmgr is None:
-        sys.exit(1)
+    sys.exit(Global.exit_code)
 
 
 if __name__ == '__main__':
