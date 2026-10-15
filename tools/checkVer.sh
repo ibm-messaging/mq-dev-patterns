@@ -267,16 +267,35 @@ do
 done
 echo
 
-# for Python, this is only looking at files like requirements.txt for now.
+# For Python, this is only looking at files like requirements.txt and uv.lock for now.
 # And the parsing of the line is simplistic: it could be perfectly valid to
-# have "ibmmq>=2.0". But the dev-patterns repo doesn't actually have any
-# explicit version requirements for Python anyway. Just putting this in here
-# for completeness.
+# have "ibmmq>=2.0".
 echo "Python projects to update to $pythonLatest ..."
 major=`major $pythonLatest`
 find . -type f -name "requirement*.txt" | xargs grep -l ibmmq | while read f
 do
   v=`cat $f | grep ibmmq | awk -F= '{print $NF}'`
+  vMajor=`major $v`
+  if [ ! -z "$v" ] && [ "$v" !=  "$pythonLatest" ] && [ "$vMajor" == "$major" ]
+  then
+    echo "  $f from $v"
+  fi
+done
+
+# The uv.lock file is TOML format, but we can do a simple check without needing
+# a real TOML parser program. We will look for blocks such as
+#   [[package]]
+#   name = "ibmmq"
+#   version = "2.1.1"
+find . -type f -name "uv.lock" | xargs grep -l ibmmq | while read f
+do
+  v=`cat $f | awk ' BEGIN {p=0}
+                 /^name.*=.*ibmmq/ {p=1}
+                 /^version.*=/ { if (p) {
+                                   print $3
+                                   p=0
+                                }
+                              }' | sed "s/\"//g"`
   vMajor=`major $v`
   if [ ! -z "$v" ] && [ "$v" !=  "$pythonLatest" ] && [ "$vMajor" == "$major" ]
   then
