@@ -14,7 +14,7 @@
  * limitations under the License.
  **/
 
-export const makeId = (length) => {
+export const makeId = (length: number): string => {
   var result = '';
   var characters =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
