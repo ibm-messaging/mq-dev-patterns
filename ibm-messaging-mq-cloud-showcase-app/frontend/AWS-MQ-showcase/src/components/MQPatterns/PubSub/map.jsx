@@ -27,7 +27,7 @@ import PublisherNode from '../../Map/Publisher.node';
 import SubscriberNode from '../../Map/Subscriber.node';
 import TopicNode from '../../Map/Topic.node';
 import CustomEdge from '../../Map/Custom-pubsub.edge';
-import '../../Map/map.css';
+import '../../Map/map.scss';
 import useStore from './store';
 import Sidebar from './Sidebar';
 

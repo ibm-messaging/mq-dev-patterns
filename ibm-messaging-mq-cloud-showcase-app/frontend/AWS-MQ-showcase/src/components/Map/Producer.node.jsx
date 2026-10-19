@@ -17,9 +17,7 @@
 import React, { useEffect, memo, useState } from 'react';
 import {
   Button,
-  Column,
   Dropdown,
-  Grid,
   Toggle,
   NumberInput,
   TextInput,
@@ -32,6 +30,23 @@ import NodeCard from './NodeCard';
 import AppIcon from './AppIcon';
 
 const PRODUCTION_QUANTITY = 5;
+const RANDOM_SENDER_NAMES = [
+  'Alice Johnson',
+  'Bob Martinez',
+  'Carol Smith',
+  'David Lee',
+  'Emma Wilson',
+  'Frank Brown',
+  'Grace Taylor',
+  'Henry Davis',
+];
+const randomSenderName = () =>
+  RANDOM_SENDER_NAMES[Math.floor(Math.random() * RANDOM_SENDER_NAMES.length)];
+const CURRENCY_ITEMS = [
+  { id: '1', text: 'EUR' },
+  { id: '2', text: 'USD' },
+  { id: '3', text: 'GBP' },
+];
 const HEADER_BG = '#e8f3ff';
 const HEADER_BORDER = '#0f62fe';
 
@@ -40,12 +55,16 @@ const ProducerNode = ({ id, data }) => {
   const animateConnection = useStore(
     (state) => state.changeEdgeAnimationFromNodeId
   );
-  const sendMessages = useStore(state => state.sendMessages);
-  const deleteMe = useStore(state => state.onDeleteNode);
+  const sendMessages = useStore((state) => state.sendMessages);
+  const deleteMe = useStore((state) => state.onDeleteNode);
 
   const [quantity, setQuantity] = useState(PRODUCTION_QUANTITY);
   const [animationState, setAnimationState] = useState(false);
-  const [name, setName] = useState(data.label);
+  const [name, setName] = useState(
+    process.env.REACT_APP_IS_FOR_CODING_CHALLENGE === 'true'
+      ? randomSenderName()
+      : data.label
+  );
   const [isToggle, setIsToggle] = useState(false);
   const [totalSent, setTotalSent] = useState(0);
 
@@ -55,12 +74,13 @@ const ProducerNode = ({ id, data }) => {
 
   useEffect(() => {
     if (animationState) {
-      setTimeout(() => {
+      const t = setTimeout(() => {
         animateConnection(id, false);
         setAnimationState(false);
       }, 1800);
+      return () => clearTimeout(t);
     }
-  });
+  }, [animationState]);
 
   useEffect(() => {
     if (data.connectedQueue && isToggle) {
@@ -69,7 +89,7 @@ const ProducerNode = ({ id, data }) => {
       }, 10000);
       return () => clearInterval(interval);
     }
-  });
+  }, [data.connectedQueue, isToggle]);
 
   const _onClick = (id) => {
     setAnimationState(true);
@@ -79,15 +99,14 @@ const ProducerNode = ({ id, data }) => {
         adapter
           .put(quantity, 1, data.connectedQueue, selectedCurrency)
           .then(() => {
-            sendMessages(id, quantity);
-            setTotalSent(prev => prev + quantity);
+            setTotalSent((prev) => prev + 1);
             if (isToggle) adapter.closeProducer();
           });
       } else {
         let message = 'You bought a new ticket!';
         adapter.put(message, quantity, data.connectedQueue).then(() => {
           sendMessages(id, quantity);
-          setTotalSent(prev => prev + quantity);
+          setTotalSent((prev) => prev + quantity);
           if (isToggle) adapter.closeProducer();
         });
       }
@@ -133,45 +152,44 @@ const ProducerNode = ({ id, data }) => {
           size="sm"
           labelText="Name of your sender"
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
         />
 
-        <Grid>
-          <Column lg={9}>
+        <div className="producer-node__amount-row">
+          <div className="producer-node__amount-row__amount">
             <NumberInput
               id={`producer-quantity-${id}`}
               invalidText="Number is not valid"
               helperText="Amount"
-              max={100}
               min={1}
               step={1}
               value={quantity}
               onChange={(_e, { value }) => setQuantity(value)}
             />
-          </Column>
-          <Column lg={7}>
+          </div>
+          <div className="producer-node__amount-row__currency">
             <Dropdown
               id={`producer-currency-${id}`}
-              items={[
-                { id: '1', text: 'EUR' },
-                { id: '2', text: 'USD' },
-                { id: '3', text: 'GBP' },
-              ]}
-              itemToString={item => (item ? item.text : '')}
-              selectedItem={{ text: selectedCurrency }}
+              className="nodrag"
+              items={CURRENCY_ITEMS}
+              itemToString={(item) => (item ? item.text : '')}
+              selectedItem={
+                CURRENCY_ITEMS.find((c) => c.text === selectedCurrency) ?? null
+              }
               onChange={({ selectedItem }) =>
                 setSelectedCurrency(selectedItem.text)
               }
               helperText="Currency"
             />
-          </Column>
-        </Grid>
+          </div>
+        </div>
 
         <Button
-          renderIcon={props => <Send size={20} {...props} />}
-          size="sm"
+          className="producer-node__send-button"
+          renderIcon={(props) => <Send size={20} {...props} />}
+          size="lg"
           kind="primary"
-          style={{ width: '100%' }}
+          isExpressive
           disabled={!data.connectedQueue || animationState || quantity <= 0}
           onClick={() => _onClick(id)}>
           Send cash
@@ -198,7 +216,7 @@ const ProducerNode = ({ id, data }) => {
         size="sm"
         labelText="Application name"
         value={name}
-        onChange={e => setName(e.target.value)}
+        onChange={(e) => setName(e.target.value)}
       />
 
       <NumberInput
@@ -213,7 +231,7 @@ const ProducerNode = ({ id, data }) => {
       />
 
       <Button
-        size="sm"
+        size="lg"
         kind="primary"
         style={{ width: '100%' }}
         disabled={!data.connectedQueue || animationState || quantity <= 0}

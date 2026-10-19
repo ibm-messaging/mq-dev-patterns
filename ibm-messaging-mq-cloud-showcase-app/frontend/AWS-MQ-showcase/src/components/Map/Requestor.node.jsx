@@ -33,10 +33,10 @@ const RequestorNode = ({ id, data }) => {
   const animateConnection = useStore(
     (state) => state.changeEdgeAnimationFromNodeId
   );
-  const sendMessages = useStore(state => state.sendMessages);
-  const deleteMe = useStore(state => state.onDeleteNode);
-  const _drawTmpQueue = useStore(state => state.creteTmpQueue);
-  const _drawTmpConnection = useStore(state => state.drawTmpConnection);
+  const sendMessages = useStore((state) => state.sendMessages);
+  const deleteMe = useStore((state) => state.onDeleteNode);
+  const _drawTmpQueue = useStore((state) => state.creteTmpQueue);
+  const _drawTmpConnection = useStore((state) => state.drawTmpConnection);
   const _deleteTmpQueue = useStore(
     (state) => state.deleteTmpQueueFromTmpQueueName
   );
@@ -143,7 +143,7 @@ const RequestorNode = ({ id, data }) => {
         size="sm"
         labelText="Name of your application"
         value={name}
-        onChange={e => setName(e.target.value)}
+        onChange={(e) => setName(e.target.value)}
       />
 
       <NumberInput
@@ -158,7 +158,7 @@ const RequestorNode = ({ id, data }) => {
       />
 
       <Button
-        size="sm"
+        size="lg"
         kind="primary"
         style={{ width: '100%' }}
         disabled={isWaitingForReply || !data.connectedQueue}

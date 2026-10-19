@@ -14,7 +14,7 @@
  * limitations under the License.
  **/
 import React from 'react';
-import './map.css';
+import './map.scss';
 
 const Container = ({ id, data }) => {
   return (

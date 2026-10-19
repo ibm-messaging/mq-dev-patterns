@@ -35,25 +35,28 @@ const HEADER_BG = '#161616';
 const HEADER_BORDER = '#161616';
 
 function useQueueStore(id) {
-  const p2pHasNode = useP2PStore(state => state.nodes.some(n => n.id === id));
+  const p2pHasNode = useP2PStore((state) =>
+    state.nodes.some((n) => n.id === id)
+  );
 
-  const p2pUpdateQueueData = useP2PStore(state => state.updateQueueData);
-  const p2pSetNodeDepth = useP2PStore(state => state.setNodeDepth);
-  const p2pDeleteMe = useP2PStore(state => state.onDeleteNode);
+  const p2pUpdateQueueData = useP2PStore((state) => state.updateQueueData);
+  const p2pSetNodeDepth = useP2PStore((state) => state.setNodeDepth);
+  const p2pDeleteMe = useP2PStore((state) => state.onDeleteNode);
   const p2pAnimateEdge = useP2PStore(
-    state => state.changeEdgeAnimationFromNodeId
+    (state) => state.changeEdgeAnimationFromNodeId
   );
-  const p2pEdges = useP2PStore(state => state.edges);
-  const p2pLocalDepth = useP2PStore(state => state.localDepths?.[id]);
+  const p2pEdges = useP2PStore((state) => state.edges);
+  const p2pLocalDepth = useP2PStore((state) => state.localDepths?.[id]);
+  const p2pBumpLandCount = useP2PStore((state) => state.bumpLandCount);
 
-  const rrUpdateQueueData = useRRStore(state => state.updateQueueData);
-  const rrSetNodeDepth = useRRStore(state => state.setNodeDepth);
-  const rrDeleteMe = useRRStore(state => state.onDeleteNode);
+  const rrUpdateQueueData = useRRStore((state) => state.updateQueueData);
+  const rrSetNodeDepth = useRRStore((state) => state.setNodeDepth);
+  const rrDeleteMe = useRRStore((state) => state.onDeleteNode);
   const rrAnimateEdge = useRRStore(
-    state => state.changeEdgeAnimationFromNodeId
+    (state) => state.changeEdgeAnimationFromNodeId
   );
-  const rrEdges = useRRStore(state => state.edges);
-  const rrLocalDepth = useRRStore(state => state.localDepths?.[id]);
+  const rrEdges = useRRStore((state) => state.edges);
+  const rrLocalDepth = useRRStore((state) => state.localDepths?.[id]);
 
   return p2pHasNode
     ? {
@@ -63,6 +66,7 @@ function useQueueStore(id) {
         animateEdge: p2pAnimateEdge,
         edges: p2pEdges,
         localDepth: p2pLocalDepth,
+        bumpLandCount: p2pBumpLandCount,
       }
     : {
         updateQueueData: rrUpdateQueueData,
@@ -71,8 +75,12 @@ function useQueueStore(id) {
         animateEdge: rrAnimateEdge,
         edges: rrEdges,
         localDepth: rrLocalDepth,
+        bumpLandCount: null,
       };
 }
+
+const isForTheCodingChallange =
+  process.env.REACT_APP_IS_FOR_CODING_CHALLENGE === 'true';
 
 const QueueNode = ({ id, data, isConnectable }) => {
   const adapter = useRef(new APIAdapter()).current;
@@ -84,6 +92,7 @@ const QueueNode = ({ id, data, isConnectable }) => {
     animateEdge,
     edges,
     localDepth,
+    bumpLandCount,
   } = useQueueStore(id);
 
   const [currentDepth, setCurrentDepth] = useState(0);
@@ -100,6 +109,7 @@ const QueueNode = ({ id, data, isConnectable }) => {
   storeRef.current.setNodeDepth = setNodeDepth;
   storeRef.current.animateEdge = animateEdge;
   storeRef.current.edges = edges;
+  storeRef.current.bumpLandCount = bumpLandCount;
 
   const [everLanded, setEverLanded] = useState(() => (data.landCount || 0) > 0);
   const [infoOpen, setInfoOpen] = useState(false);
@@ -109,7 +119,7 @@ const QueueNode = ({ id, data, isConnectable }) => {
     const delta = (data.landCount || 0) - seenLandRef.current;
     if (delta > 0) {
       seenLandRef.current += delta;
-      setLandCount(prev => prev + delta);
+      setLandCount((prev) => prev + delta);
       setEverLanded(true);
       if (!userDismissedRef.current) {
         setInfoOpen(true);
@@ -121,7 +131,7 @@ const QueueNode = ({ id, data, isConnectable }) => {
     const delta = (data.drainCount || 0) - seenDrainRef.current;
     if (delta > 0) {
       seenDrainRef.current += delta;
-      setDrainCount(prev => prev + delta);
+      setDrainCount((prev) => prev + delta);
       setInfoOpen(false);
       setEverLanded(false);
       userDismissedRef.current = false;
@@ -140,7 +150,7 @@ const QueueNode = ({ id, data, isConnectable }) => {
   }, [displayDepth, everLanded]);
 
   const handleInfoToggle = useCallback(() => {
-    setInfoOpen(prev => {
+    setInfoOpen((prev) => {
       if (prev) userDismissedRef.current = true;
       else userDismissedRef.current = false;
       return !prev;
@@ -156,15 +166,27 @@ const QueueNode = ({ id, data, isConnectable }) => {
         const result = await adapter.getAllDepths(false);
         if (!cancelled) {
           if (!Number.isInteger(result)) {
-            const queueEntry = result.find(q => q.name === data.queueName);
+            const queueEntry = result.find((q) => q.name === data.queueName);
             const _lastDepth = queueEntry['depth'];
             if (queueEntry['maxDepth'] != null) {
               setMaxDepth(queueEntry['maxDepth']);
             }
             storeRef.current.updateQueueData(result);
             storeRef.current.setNodeDepth(id, _lastDepth);
+            if (
+              isForTheCodingChallange &&
+              _lastDepth > prevDepthRef.current &&
+              storeRef.current.bumpLandCount
+            ) {
+              const increase = _lastDepth - prevDepthRef.current;
+              for (let i = 0; i < increase; i++) {
+                storeRef.current.bumpLandCount(id);
+              }
+            }
             if (_lastDepth < prevDepthRef.current) {
-              const outEdge = storeRef.current.edges.find(e => e.source === id);
+              const outEdge = storeRef.current.edges.find(
+                (e) => e.source === id
+              );
               if (outEdge) {
                 storeRef.current.animateEdge(outEdge.source, true);
                 setTimeout(

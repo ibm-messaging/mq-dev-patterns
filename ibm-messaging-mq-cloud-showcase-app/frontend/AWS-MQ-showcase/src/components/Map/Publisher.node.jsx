@@ -32,8 +32,8 @@ const PublisherNode = ({ id, data }) => {
   const animateConnection = useStore(
     (state) => state.changeEdgeAnimationFromNodeId
   );
-  const publisherSent = useStore(state => state.publisherSent);
-  const deleteMe = useStore(state => state.onDeleteNode);
+  const publisherSent = useStore((state) => state.publisherSent);
+  const deleteMe = useStore((state) => state.onDeleteNode);
   const [animationState, setAnimationState] = useState(false);
   const [isToggleOn] = useState(false);
   const [message, setMessage] = useState();
@@ -136,8 +136,8 @@ const PublisherNode = ({ id, data }) => {
       />
 
       <Button
-        renderIcon={props => <Send size={20} {...props} />}
-        size="sm"
+        renderIcon={(props) => <Send size={20} {...props} />}
+        size="lg"
         kind="primary"
         style={{ width: '100%' }}
         disabled={!data.connectedQueue || animationState}

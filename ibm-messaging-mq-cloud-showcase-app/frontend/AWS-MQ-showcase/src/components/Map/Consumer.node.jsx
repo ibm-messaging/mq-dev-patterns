@@ -23,6 +23,12 @@ import useStore from '../MQPatterns/PointToPoint/store';
 import NodeCard from './NodeCard';
 import AppIcon from './AppIcon';
 
+const CURRENCY_ITEMS = [
+  { id: '1', text: 'EUR' },
+  { id: '2', text: 'USD' },
+  { id: '3', text: 'GBP' },
+];
+
 const HEADER_BG_ACTIVE = '#defbe6';
 const HEADER_BORDER_ACTIVE = '#24a148';
 const HEADER_BG_IDLE = '#f4f4f4';
@@ -30,13 +36,13 @@ const HEADER_BORDER_IDLE = '#c6c6c6';
 
 const ConsumerNode = ({ id, data }) => {
   const adapter = new APIAdapter();
-  const _onClick = useStore(state => state.onClick);
-  const deleteMe = useStore(state => state.onDeleteNode);
+  const _onClick = useStore((state) => state.onClick);
+  const deleteMe = useStore((state) => state.onDeleteNode);
   const animateConnection = useStore(
     (state) => state.changeEdgeAnimationFromNodeId
   );
   const consumeMessageFromQueue = useStore(
-    state => state.consumeMessageFromQueue
+    (state) => state.consumeMessageFromQueue
   );
 
   const [lastMessage, setLastMessage] = useState();
@@ -73,7 +79,7 @@ const ConsumerNode = ({ id, data }) => {
           if (_lastMessages) {
             animateConnection(id, true);
             consumeMessageFromQueue(id);
-            setSessionCount(state => state + 1);
+            setSessionCount((state) => state + 1);
           }
         } catch (e) {
           console.log(e);
@@ -81,7 +87,7 @@ const ConsumerNode = ({ id, data }) => {
       }, 2000);
       return () => clearInterval(interval);
     }
-  });
+  }, [data.isActive, data.connectedQueue, selectedCurrency]);
 
   const handle = (
     <Handle
@@ -130,13 +136,12 @@ const ConsumerNode = ({ id, data }) => {
 
         <Dropdown
           id={`consumer-currency-${id}`}
-          items={[
-            { id: '1', text: 'EUR' },
-            { id: '2', text: 'USD' },
-            { id: '3', text: 'GBP' },
-          ]}
-          itemToString={item => (item ? item.text : '')}
-          selectedItem={{ text: selectedCurrency }}
+          className="nodrag"
+          items={CURRENCY_ITEMS}
+          itemToString={(item) => (item ? item.text : '')}
+          selectedItem={
+            CURRENCY_ITEMS.find((c) => c.text === selectedCurrency) ?? null
+          }
           onChange={({ selectedItem }) =>
             setSelectedCurrency(selectedItem.text)
           }

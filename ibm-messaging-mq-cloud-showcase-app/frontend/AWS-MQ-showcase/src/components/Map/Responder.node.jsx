@@ -32,11 +32,13 @@ const HEADER_BORDER_IDLE = '#c6c6c6';
 
 const ResponderNode = ({ id, data }) => {
   const adapter = new APIAdapter();
-  const _onClick = useStore(state => state.onClick);
-  const deleteMe = useStore(state => state.onDeleteNode);
-  const drainMessageFromQueue = useStore(state => state.drainMessageFromQueue);
-  const _drawTmpConnection = useStore(state => state.drawTmpConnection);
-  const _animateTmpConnection = useStore(state => state.animateTmpConnection);
+  const _onClick = useStore((state) => state.onClick);
+  const deleteMe = useStore((state) => state.onDeleteNode);
+  const drainMessageFromQueue = useStore(
+    (state) => state.drainMessageFromQueue
+  );
+  const _drawTmpConnection = useStore((state) => state.drawTmpConnection);
+  const _animateTmpConnection = useStore((state) => state.animateTmpConnection);
   const _deleteTmpConnection = useStore(
     (state) => state.deleteEdgeFromConnection
   );
@@ -79,7 +81,7 @@ const ResponderNode = ({ id, data }) => {
                 _drawTmpConnection(_replyQueue, id, true);
                 toast.success('Message received! It is time to reply!');
               }
-              setSessionCount(state => state + 1);
+              setSessionCount((state) => state + 1);
             }
           } catch (e) {
             console.log(e);
@@ -90,7 +92,7 @@ const ResponderNode = ({ id, data }) => {
     }
   });
 
-  const changeResponseMessage = e => {
+  const changeResponseMessage = (e) => {
     setResponseMesasge(e.target.value);
   };
 
@@ -99,7 +101,7 @@ const ResponderNode = ({ id, data }) => {
     let _responseMessage = responseMessage;
     adapter
       .dynPut(_responseMessage, 1, replyQueue, 'DYNREP', id)
-      .then(res => {
+      .then((res) => {
         _deleteTmpConnection(replyQueue, id);
         setReplyQueue('');
         setLastMessage('');
@@ -165,7 +167,7 @@ const ResponderNode = ({ id, data }) => {
         size="sm"
         labelText="Application name"
         value={name}
-        onChange={e => setName(e.target.value)}
+        onChange={(e) => setName(e.target.value)}
       />
 
       <div className="node-card__stats">
@@ -204,8 +206,8 @@ const ResponderNode = ({ id, data }) => {
       />
 
       <Button
-        renderIcon={props => <Send size={20} {...props} />}
-        size="sm"
+        renderIcon={(props) => <Send size={20} {...props} />}
+        size="lg"
         kind="primary"
         style={{ width: '100%' }}
         disabled={!replyQueue}
