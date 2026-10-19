@@ -39,7 +39,7 @@
     <dependency>
       <groupId>com.ibm.mq</groupId>
       <artifactId>com.ibm.mq.allclient</artifactId>
-      <version>10.0.0.0</version>
+      <version>10.0.1.0</version>
     </dependency>
 
     <!-- JSON library -->
