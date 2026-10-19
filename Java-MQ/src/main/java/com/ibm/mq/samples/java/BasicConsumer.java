@@ -24,31 +24,45 @@ import com.ibm.mq.MQGetMessageOptions;
 import com.ibm.mq.MQMessage;
 import com.ibm.mq.constants.MQConstants;
 
-
+/*
+ * A common class used to receive messages from a queue. Which might be
+ * associated with a subscription.
+ */
 public class BasicConsumer {
 
   private static final BasicLogger logger = new BasicLogger(BasicConsumer.class);
 
-  public static final String CONSUMER_GET = "queue";
-  public static final String CONSUMER_SUB = "topic";
-  public static final String CONSUMER_REQUEST = "model_queue";
+  public Boolean getMessage(MQDestination destination) {
+    return getMessage(destination, null);
+  }
 
-  public Boolean getMessage(MQDestination destination, String mode) {
+  /*
+   * Wait for up to the waitInterval for a message to arrive on the queue.
+   * Return true if there is a valid message; false otherwise
+   */
+  public Boolean getMessage(MQDestination destination, byte[] correlId) {
 
     MQMessage msg = new MQMessage();
     MQGetMessageOptions gmo = new MQGetMessageOptions();
-
 
     gmo.options = MQConstants.MQGMO_WAIT |
         MQConstants.MQGMO_CONVERT |
         MQConstants.MQGMO_NO_SYNCPOINT |
         MQConstants.MQGMO_FAIL_IF_QUIESCING;
-    gmo.waitInterval = 5000;
+    gmo.waitInterval = 5000; // 5 seconds
+
+    // If a correlation ID has been given, use that to match responses
+    if (correlId != null) {
+      gmo.matchOptions = MQConstants.MQMO_MATCH_CORREL_ID;
+      msg.correlationId = correlId;
+      logger.log(Level.INFO, "Waiting for messages with correlId {0}.",BasicMQFunctions.getHexString(correlId));
+    }
 
     try {
-      // Get message
+      // Get the message
       destination.get(msg, gmo);
 
+      // Can assume that it's a String message in these samples
       String str = msg.readStringOfByteLength(msg.getDataLength());
       logger.log(Level.INFO, "Received message: {0}", str);
     } catch (MQException mqe) {

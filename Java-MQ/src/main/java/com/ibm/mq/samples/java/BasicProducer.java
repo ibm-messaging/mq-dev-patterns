@@ -22,48 +22,30 @@ import com.ibm.mq.MQMessage;
 import com.ibm.mq.MQPutMessageOptions;
 import com.ibm.mq.constants.MQConstants;
 
+/*
+ * A common class used to put messages to a queue and to publish to a topic
+ */
 public class BasicProducer {
 
   private static final BasicLogger logger = new BasicLogger(BasicProducer.class);
 
-  public static final String PRODUCER_PUT = "queue";
-  public static final String PRODUCER_PUBLISH = "topic";
-  public static final String PRODUCER_RESPONSE = "model_queue";
-
-  public Boolean putMessage(MQDestination destination, String mode, String message, String replyToQueueName) {
+  public Boolean putMessage(MQDestination destination, String message, String replyToQueueName) {
 
     MQMessage mqMessage = new MQMessage();
     MQPutMessageOptions pmo = new MQPutMessageOptions();
 
     try {
-      // Write the payload
+      // Convert the payload to the mqMessage object. We know it will be a text string in these example.
       mqMessage.writeString(message);
 
       // Set common message properties
       mqMessage.format = MQConstants.MQFMT_STRING;
+      mqMessage.persistence = MQConstants.MQPER_NOT_PERSISTENT;
 
-      switch (mode) {
-      case PRODUCER_PUT:
-        mqMessage.persistence = MQConstants.MQPER_PERSISTENT;
-        break;
-      case PRODUCER_PUBLISH:
-        mqMessage.persistence = MQConstants.MQPER_PERSISTENT;
-        pmo.options = MQConstants.MQPMO_NO_SYNCPOINT |
-            MQConstants.MQPMO_NEW_MSG_ID |
-            MQConstants.MQPMO_NEW_CORREL_ID;
-        break;
-      case PRODUCER_RESPONSE:
-        mqMessage.persistence = MQConstants.MQPER_NOT_PERSISTENT;
-        if (replyToQueueName != null && !replyToQueueName.isEmpty()) {
-          mqMessage.replyToQueueName = replyToQueueName;
-        }
-        break;
-
-      default:
-        logger.logError("Invalid producer mode.");
-        return false;
-      }
-
+      // Set the PUT options. We are not going to use transactions for these messages
+      pmo.options = MQConstants.MQPMO_NO_SYNCPOINT |
+          MQConstants.MQPMO_NEW_MSG_ID |
+          MQConstants.MQPMO_NEW_CORREL_ID;
       // Send message
       destination.put(mqMessage, pmo);
 

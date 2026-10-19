@@ -19,6 +19,10 @@ import com.ibm.mq.MQTopic;
 import com.ibm.mq.constants.CMQC;
 import com.ibm.mq.constants.MQConstants;
 
+/*
+ * This application uses the MQ Base Java classes to subscribe to a topic and then receive one or more
+ * publications.
+ */
 public class BasicSub {
   private static final BasicLogger logger = new BasicLogger(BasicSub.class);
 
@@ -29,9 +33,10 @@ public class BasicSub {
     BasicMQFunctions mqFunctions = new BasicMQFunctions();
 
     try {
-
       mqFunctions.connect();
-      // Topic options
+
+      // Topic options: Create a new subscription that will not last beyond the lifetime
+      //   of this application.
       int topicOpenOptions = MQConstants.MQSO_CREATE | MQConstants.MQSO_NON_DURABLE;
       int openAs = CMQC.MQTOPIC_OPEN_AS_SUBSCRIPTION;
       topic = mqFunctions.accessTopic(topicOpenOptions, openAs);
@@ -39,7 +44,7 @@ public class BasicSub {
       BasicConsumer bc = new BasicConsumer();
       // Loop until there are no more publications to receive
       while(true) {
-        boolean msgReturned = bc.getMessage(topic, BasicConsumer.CONSUMER_SUB);
+        boolean msgReturned = bc.getMessage(topic);
         if (!msgReturned ) {
           break;
         }

@@ -22,6 +22,10 @@ import java.util.logging.Level;
 import com.ibm.mq.MQQueue;
 import com.ibm.mq.constants.MQConstants;
 
+/*
+ * This application uses the MQ Base Java classes to put one or more messages to a queue.
+ * The queue name comes from the configuration file.
+ */
 public class BasicPut {
   private static final BasicLogger logger = new BasicLogger(BasicPut.class);
 
@@ -42,13 +46,14 @@ public class BasicPut {
     try {
       mqFunctions.connect();
 
+      // Open the queue, saying that it will be use for PUT operations
       int openOptions = MQConstants.MQOO_OUTPUT | MQConstants.MQOO_FAIL_IF_QUIESCING;
       MQQueue queue = mqFunctions.accessQueue(openOptions);
 
-      // Put messages on the queue
+      // Put messages to the queue
       while (count > 0) {
         String timestamp = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")) + " : ";
-        basicProducer.putMessage(queue, BasicProducer.PRODUCER_PUT, timestamp + sampleMessage, null);
+        basicProducer.putMessage(queue, timestamp + sampleMessage, null);
         count--;
         try {
           Thread.sleep(1000);

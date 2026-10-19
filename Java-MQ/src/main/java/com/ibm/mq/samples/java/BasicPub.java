@@ -22,10 +22,11 @@ import com.ibm.mq.MQTopic;
 import com.ibm.mq.constants.CMQC;
 import com.ibm.mq.constants.MQConstants;
 
-/*
-    I think this needs to use a topic not a queue and thus needs looking at again
- */
 
+/*
+ * This application uses the MQ Base Java classes to publish a message to a topic.
+ * The topic name comes from the configuration file.
+ */
 public class BasicPub {
 
   private static final BasicLogger logger = new BasicLogger(BasicPub.class);
@@ -39,6 +40,7 @@ public class BasicPub {
 
     try {
       mqFunctions.connect();
+      // Say how we are going to use the topic
       int openOptions = MQConstants.MQOO_OUTPUT | MQConstants.MQOO_FAIL_IF_QUIESCING;
       int openAs = CMQC.MQTOPIC_OPEN_AS_PUBLICATION;
       topic = mqFunctions.accessTopic(openOptions, openAs);
@@ -46,7 +48,8 @@ public class BasicPub {
       String sampleMessage = "Message sent from BasicPub";
       String timestamp = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")) + " : ";
 
-      producer.putMessage(topic, BasicProducer.PRODUCER_PUBLISH, timestamp + sampleMessage, null);
+      // Use the common message send method to publish the text
+      producer.putMessage(topic, timestamp + sampleMessage, null);
     } catch (Exception e) {
       logger.logException(e);
     } finally {

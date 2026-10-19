@@ -17,6 +17,11 @@ package com.ibm.mq.samples.java;
 
 import org.json.JSONObject;
 
+/*
+ * This class is populated with the configuration. Either from a configuration file
+ * or environment variables.
+ */
+
 public class MQDetails {
 
   private final String QMGR;
@@ -31,7 +36,6 @@ public class MQDetails {
   private final String MODEL_QUEUE_NAME;
   private final String DYNAMIC_QUEUE_PREFIX;
   private final String TOPIC_NAME;
-  private final String TOPIC_OBJECT;
 
   private MQDetails(JSONObject endpoint) {
     this.QMGR = endpoint.getString("QMGR");
@@ -46,10 +50,8 @@ public class MQDetails {
     this.MODEL_QUEUE_NAME = endpoint.optString("MODEL_QUEUE_NAME", "");
     this.DYNAMIC_QUEUE_PREFIX = endpoint.optString("DYNAMIC_QUEUE_PREFIX", "");
     this.TOPIC_NAME = endpoint.optString("TOPIC_NAME", "dev/");
-    this.TOPIC_OBJECT = endpoint.optString("TOPIC_OBJECT", "DEV.BASE.TOPIC");
   }
 
-  /** Factory method — replaces the mutating buildMQDetails() approach. */
   public static MQDetails from(JSONObject endpoint) {
     return new MQDetails(endpoint);
   }
@@ -102,16 +104,12 @@ public class MQDetails {
     return TOPIC_NAME;
   }
 
-  public String getTOPIC_OBJECT() {
-    return TOPIC_OBJECT;
-  }
-
   @Override
   public String toString() {
     return "MQDetails [QMGR=" + QMGR + ", QUEUE_NAME=" + QUEUE_NAME + ", HOST=" + HOST + ", PORT=" + PORT
-        + ", CHANNEL=" + CHANNEL + ", USER=" + USER + ", PASSWORD=" + PASSWORD + ", KEY_REPOSITORY="
+        + ", CHANNEL=" + CHANNEL + ", USER=" + USER + ", KEY_REPOSITORY="
         + KEY_REPOSITORY + ", CIPHER=" + CIPHER + ", MODEL_QUEUE_NAME=" + MODEL_QUEUE_NAME
         + ", DYNAMIC_QUEUE_PREFIX=" + DYNAMIC_QUEUE_PREFIX + ", TOPIC_NAME=" + TOPIC_NAME
-        + ", TOPIC_OBJECT=" + TOPIC_OBJECT + "]";
+        + "]";
   }
 }

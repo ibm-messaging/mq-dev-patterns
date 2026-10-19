@@ -27,6 +27,11 @@ import org.json.JSONObject;
 
 import com.ibm.mq.constants.MQConstants;
 
+/*
+ * This class reads the supplied configuration file and uses it to build the MQDetails objects.
+ * The default config file is in ../env.json (shared with other samples in this repo) but it
+ * can be overridden with either an environment variable or system property named "EnvFile".
+ */
 public class EnvSetter {
   private static final BasicLogger logger = new BasicLogger(EnvSetter.class);
 
@@ -61,7 +66,6 @@ public class EnvSetter {
     loadEnv(valueEnvFile);
 
     for (int i = 0; i < endpoints.length(); i++) {
-      // logger.log(Level.INFO, "Processing endpoint {0}", i);
       JSONObject point = endpoints.getJSONObject(i);
       MQDetails mqdetails = MQDetails.from(point);
       this.details.add(mqdetails);

@@ -32,6 +32,9 @@ import com.ibm.mq.MQException;
  * such as a log4j properties file. It is intended for this standalone set of applications, not for
  * integration within other frameworks. So we can make assumptions about the root logger, and set its
  * formatting.
+ *
+ * A larger application would probably want to replace this with a real log4j/slf4j implementation and
+ * configuration.
  */
 public class BasicLogger extends Logger {
 
