@@ -48,6 +48,8 @@ if true
 then
 $j.BasicPut 5
 checkRc $? "PUT"
+$j.BasicGet 10 BROWSE
+checkRc $? "BRW"
 $j.BasicGet 10
 checkRc $? "GET"
 fi
@@ -80,8 +82,8 @@ cnt=`grep "ended OK" $logFile | wc -l`
 # Trace/Log files might have been created
 rm -f mqjms*
 
-# We should have successfully run 6 tests
-expect=6
+# We should have successfully run 7 tests
+expect=7
 if [ $cnt -ne $expect ]
 then
   echo "ERROR: Got $cnt successes, not the expected $expect"

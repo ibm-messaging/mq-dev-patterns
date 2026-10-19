@@ -32,7 +32,7 @@ classes shared between similar operations to reduce duplication further.
 The core classes will usually be used in pairs. They are:
 
 * **BasicPut.java** - Puts messages onto a queue
-* **BasicGet.java** - Gets messages from a queue
+* **BasicGet.java** - Gets or Browses messages from a queue
 * **BasicPub.java** - Publishes messages to a topic
 * **BasicSub.java** - Subscribes to messages from a topic
 * **BasicRequest.java** - Puts a request message and waits for a reply
@@ -101,6 +101,11 @@ The put/get programs can have a single parameter saying how many messages to sen
 For example, to put 6 messages run:
 ````
 java -cp target/base-mq-java-1.0.0.jar com.ibm.mq.samples.java.BasicPut 6
+````
+
+To get the messages non-destructively (browse the queue) run:
+````
+java -cp target/base-mq-java-1.0.0.jar com.ibm.mq.samples.java.BasicGet 6 BROWSE
 ````
 
 To get the messages run:
