@@ -18,7 +18,8 @@ newer capability provided in MQ may not be accessible through the Base Classes m
 JWT authentication mechanism.
 
 Most Java applications should use the JMS API. But there can be times when more direct control of the MQ operations are
-required, and therefore you might prefer to use the Base Classes.
+required, and therefore you might prefer to use the Base Classes. One example might be to use the MQI's version of message
+browsing which is very different from the JMS capability of the same name, and arguably much more useful.
 
 These samples are provided as a starting point for such applications.
 
