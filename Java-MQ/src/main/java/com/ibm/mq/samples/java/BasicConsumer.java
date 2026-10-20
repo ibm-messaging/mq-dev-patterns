@@ -33,28 +33,29 @@ public class BasicConsumer {
   private static final BasicLogger logger = new BasicLogger(BasicConsumer.class);
 
   /*
-   * Wait for up to the waitInterval for a message to arrive on the queue.
-   * Return true if there is a valid message; false otherwise
-   *
    * We have several similar public methods with slightly different signatures
-   * which set the correct values when calling the private internal function to 
+   * which set the correct values when calling the private internal function to
    * browse or destructively read from the queue
    */
   public Boolean getMessage(MQDestination destination) {
     return getMessageInternal(destination, null, false);
   }
   public Boolean getMessage(MQDestination destination, byte[] correlId) {
-     return getMessageInternal(destination, correlId, false);
+    return getMessageInternal(destination, correlId, false);
   }
   public Boolean browseMessage(MQDestination destination) {
-     return getMessageInternal(destination, null, true);
+    return getMessageInternal(destination, null, true);
   }
 
   /*
    * This is the real implementation of getting messages.
    * If a correlId is supplied, use that to match messages on the queue
    * If the browse value is "true" then use a BROWSE option for retrieval
-   */ 
+   *
+   * Wait for up to the waitInterval for a message to arrive on the queue.
+   * Return true if there is a valid message; false otherwise
+   *
+   */
   private Boolean getMessageInternal(MQDestination destination, byte[] correlId, boolean browse) {
 
     MQMessage msg = new MQMessage();
@@ -66,7 +67,7 @@ public class BasicConsumer {
         MQConstants.MQGMO_FAIL_IF_QUIESCING;
 
     // Add the BROWSE_NEXT if needed. The first time through, this is equivalent to BROWSE_FIRST
-    // so we don't need to keep track of the flag 
+    // so we don't need to keep track of the flag
     if (browse) {
       gmo.options |= MQConstants.MQGMO_BROWSE_NEXT;
     }

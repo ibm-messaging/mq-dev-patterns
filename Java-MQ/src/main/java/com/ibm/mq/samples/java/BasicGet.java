@@ -28,7 +28,6 @@ public class BasicGet {
   private static final BasicLogger logger = new BasicLogger(BasicGet.class);
 
   public static final int DEFAULT_GET_VALUE = 1;
-  public static final boolean DEFAULT_BROWSE_OPTION = false;
 
   public static void main(String[] args) {
 
@@ -37,6 +36,7 @@ public class BasicGet {
 
     // How many messages to get from queue, if not specified use default value
     int count = (args.length > 0) ? Integer.parseInt(args[0]) : DEFAULT_GET_VALUE;
+
     // If a 2nd parameter is supplied and it is "BROWSE", then use that option. Otherwise
     // retrieve messages destructively
     boolean browse = (args.length > 1) ? args[1].equalsIgnoreCase("BROWSE"): false;
@@ -65,6 +65,5 @@ public class BasicGet {
       mqFunctions.close();
     }
     System.exit(Globals.getExitCode());
-
   }
 }
