@@ -22,17 +22,15 @@ import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PointToPoint/store';
 import NodeCard from './NodeCard';
 import AppIcon from './AppIcon';
+import { SHOWCASE_APP_CONSTANTS } from './utils';
 
-const CURRENCY_ITEMS = [
-  { id: '1', text: 'EUR' },
-  { id: '2', text: 'USD' },
-  { id: '3', text: 'GBP' },
-];
-
-const HEADER_BG_ACTIVE = '#defbe6';
-const HEADER_BORDER_ACTIVE = '#24a148';
-const HEADER_BG_IDLE = '#f4f4f4';
-const HEADER_BORDER_IDLE = '#c6c6c6';
+const {
+  CURRENCY_ITEMS,
+  HEADER_BG_ACTIVE,
+  HEADER_BORDER_ACTIVE,
+  HEADER_BG_IDLE,
+  HEADER_BORDER_IDLE,
+} = SHOWCASE_APP_CONSTANTS;
 
 const ConsumerNode = ({ id, data }) => {
   const adapter = new APIAdapter();

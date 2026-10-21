@@ -23,9 +23,10 @@ import useStore from '../MQPatterns/PubSub/store';
 import NodeCard from './NodeCard';
 import AppIcon from './AppIcon';
 import { toast } from 'react-toastify';
+import { SHOWCASE_APP_CONSTANTS } from './utils';
 
-const HEADER_BG = '#e8f3ff';
-const HEADER_BORDER = '#0f62fe';
+const { HEADER_BG_BLUE: HEADER_BG, HEADER_BORDER_BLUE: HEADER_BORDER } =
+  SHOWCASE_APP_CONSTANTS;
 
 const PublisherNode = ({ id, data }) => {
   const adapter = new APIAdapter();

@@ -28,6 +28,13 @@ import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PointToPoint/store';
 import NodeCard from './NodeCard';
 import AppIcon from './AppIcon';
+import { SHOWCASE_APP_CONSTANTS } from './utils';
+
+const {
+  CURRENCY_ITEMS,
+  HEADER_BG_BLUE: HEADER_BG,
+  HEADER_BORDER_BLUE: HEADER_BORDER,
+} = SHOWCASE_APP_CONSTANTS;
 
 const PRODUCTION_QUANTITY = 5;
 const RANDOM_SENDER_NAMES = [
@@ -42,14 +49,6 @@ const RANDOM_SENDER_NAMES = [
 ];
 const randomSenderName = () =>
   RANDOM_SENDER_NAMES[Math.floor(Math.random() * RANDOM_SENDER_NAMES.length)];
-const CURRENCY_ITEMS = [
-  { id: '1', text: 'EUR' },
-  { id: '2', text: 'USD' },
-  { id: '3', text: 'GBP' },
-];
-const HEADER_BG = '#e8f3ff';
-const HEADER_BORDER = '#0f62fe';
-
 const ProducerNode = ({ id, data }) => {
   const adapter = new APIAdapter();
   const animateConnection = useStore(
@@ -99,6 +98,7 @@ const ProducerNode = ({ id, data }) => {
         adapter
           .put(quantity, 1, data.connectedQueue, selectedCurrency)
           .then(() => {
+            sendMessages(id, 1);
             setTotalSent((prev) => prev + 1);
             if (isToggle) adapter.closeProducer();
           });
@@ -231,6 +231,7 @@ const ProducerNode = ({ id, data }) => {
       />
 
       <Button
+        renderIcon={(props) => <Send size={20} {...props} />}
         size="lg"
         kind="primary"
         style={{ width: '100%' }}

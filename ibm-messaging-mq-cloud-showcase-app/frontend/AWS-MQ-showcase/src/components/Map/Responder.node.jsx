@@ -24,11 +24,14 @@ import NodeCard from './NodeCard';
 import AppIcon from './AppIcon';
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
+import { SHOWCASE_APP_CONSTANTS } from './utils';
 
-const HEADER_BG_ACTIVE = '#defbe6';
-const HEADER_BORDER_ACTIVE = '#24a148';
-const HEADER_BG_IDLE = '#f4f4f4';
-const HEADER_BORDER_IDLE = '#c6c6c6';
+const {
+  HEADER_BG_ACTIVE,
+  HEADER_BORDER_ACTIVE,
+  HEADER_BG_IDLE,
+  HEADER_BORDER_IDLE,
+} = SHOWCASE_APP_CONSTANTS;
 
 const ResponderNode = ({ id, data }) => {
   const adapter = new APIAdapter();
