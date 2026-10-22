@@ -86,7 +86,7 @@ const RequestorNode = ({ id, data }) => {
   const _onClick = (id) => {
     setAnimationState(true);
     animateConnection(id, true);
-    sendMessages(id, quantity);
+    sendMessages(id, 1);
     try {
       let message = 'Request';
       adapter

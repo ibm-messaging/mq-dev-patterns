@@ -47,7 +47,6 @@ function useQueueStore(id) {
   );
   const p2pEdges = useP2PStore((state) => state.edges);
   const p2pLocalDepth = useP2PStore((state) => state.localDepths?.[id]);
-  const p2pBumpLandCount = useP2PStore((state) => state.bumpLandCount);
 
   const rrUpdateQueueData = useRRStore((state) => state.updateQueueData);
   const rrSetNodeDepth = useRRStore((state) => state.setNodeDepth);
@@ -66,7 +65,6 @@ function useQueueStore(id) {
         animateEdge: p2pAnimateEdge,
         edges: p2pEdges,
         localDepth: p2pLocalDepth,
-        bumpLandCount: p2pBumpLandCount,
       }
     : {
         updateQueueData: rrUpdateQueueData,
@@ -75,12 +73,8 @@ function useQueueStore(id) {
         animateEdge: rrAnimateEdge,
         edges: rrEdges,
         localDepth: rrLocalDepth,
-        bumpLandCount: null,
       };
 }
-
-const isForTheCodingChallange =
-  process.env.REACT_APP_IS_FOR_CODING_CHALLENGE === 'true';
 
 const QueueNode = ({ id, data, isConnectable }) => {
   const adapter = useRef(new APIAdapter()).current;
@@ -92,7 +86,6 @@ const QueueNode = ({ id, data, isConnectable }) => {
     animateEdge,
     edges,
     localDepth,
-    bumpLandCount,
   } = useQueueStore(id);
 
   const [currentDepth, setCurrentDepth] = useState(0);
@@ -109,7 +102,6 @@ const QueueNode = ({ id, data, isConnectable }) => {
   storeRef.current.setNodeDepth = setNodeDepth;
   storeRef.current.animateEdge = animateEdge;
   storeRef.current.edges = edges;
-  storeRef.current.bumpLandCount = bumpLandCount;
 
   const [everLanded, setEverLanded] = useState(() => (data.landCount || 0) > 0);
   const [infoOpen, setInfoOpen] = useState(false);
@@ -173,16 +165,6 @@ const QueueNode = ({ id, data, isConnectable }) => {
             }
             storeRef.current.updateQueueData(result);
             storeRef.current.setNodeDepth(id, _lastDepth);
-            if (
-              isForTheCodingChallange &&
-              _lastDepth > prevDepthRef.current &&
-              storeRef.current.bumpLandCount
-            ) {
-              const increase = _lastDepth - prevDepthRef.current;
-              for (let i = 0; i < increase; i++) {
-                storeRef.current.bumpLandCount(id);
-              }
-            }
             if (_lastDepth < prevDepthRef.current) {
               const outEdge = storeRef.current.edges.find(
                 (e) => e.source === id
