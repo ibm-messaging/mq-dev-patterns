@@ -28,36 +28,50 @@ interface StoreSlice {
   edges: MQFlowEdge[];
 }
 
-export function emitMessageFlow(edgeId: string): void {
+const EDGE_STYLE = { stroke: '#0050e6', strokeWidth: 1.5 };
+
+function dispatchMessageFlow(edgeId: string, reverse?: boolean): void {
   window.dispatchEvent(
     new CustomEvent('mq-message-flow', {
       detail: {
         edgeId,
         id: Math.random().toString(36).slice(2),
+        ...(reverse && { reverse }),
       },
     })
   );
 }
 
+export function emitMessageFlow(edgeId: string): void {
+  dispatchMessageFlow(edgeId);
+}
+
 export function emitMessageFlowReverse(edgeId: string): void {
-  window.dispatchEvent(
-    new CustomEvent('mq-message-flow', {
-      detail: {
-        edgeId,
-        id: Math.random().toString(36).slice(2),
-        reverse: true,
-      },
-    })
+  dispatchMessageFlow(edgeId, true);
+}
+
+/** Returns a copy of `nodes` with `patch` merged into the data of node `id`. */
+function patchNodeData(
+  nodes: MQFlowNode[],
+  id: string,
+  patch: Record<string, unknown>
+): MQFlowNode[] {
+  return nodes.map((node) =>
+    node.id === id
+      ? ({ ...node, data: { ...node.data, ...patch } } as MQFlowNode)
+      : node
   );
+}
+
+function withEdgeState(edge: MQFlowEdge, animated: boolean): MQFlowEdge {
+  return { ...edge, animated, style: EDGE_STYLE };
 }
 
 class MapUtils {
   updateConnectionNodeToQueue(
     set: ZustandSet<StoreSlice>,
     get: ZustandGet<StoreSlice>,
-    connection: Connection,
-    isSub = false,
-    isToUpdateSub = false
+    connection: Connection
   ): boolean {
     const srcId = connection['source'];
     const trgtId = connection['target'];
@@ -66,51 +80,27 @@ class MapUtils {
     const trgtIsAQueue = trgtNode?.data.role === 'q';
     const srcIsAQueue = srcNode?.data.role === 'q';
 
-    let setConnection = false;
+    let nodeIdToConnect: string | undefined;
     let queueName = '';
 
     if (trgtIsAQueue && !srcIsAQueue) {
-      queueName = (trgtNode!.data as { queueName: string }).queueName;
-      if (queueName) {
-        set({
-          nodes: get().nodes.map((node) => {
-            if (node.id === srcId) {
-              node = {
-                ...node,
-                data: {
-                  ...node.data,
-                  connectedQueue: queueName,
-                  subscriptionState: 0,
-                },
-              } as typeof node;
-            }
-            return node;
-          }) as MQFlowNode[],
-        });
-        setConnection = true;
-      }
+      queueName = (trgtNode.data as { queueName: string }).queueName;
+      nodeIdToConnect = srcId;
     } else if (srcIsAQueue && !trgtIsAQueue) {
-      queueName = (srcNode!.data as { queueName: string }).queueName;
-      if (queueName) {
-        set({
-          nodes: get().nodes.map((node) => {
-            if (node.id === trgtId) {
-              node = {
-                ...node,
-                data: {
-                  ...node.data,
-                  connectedQueue: queueName,
-                  subscriptionState: 0,
-                },
-              } as typeof node;
-            }
-            return node;
-          }) as MQFlowNode[],
-        });
-        setConnection = true;
-      }
+      queueName = (srcNode.data as { queueName: string }).queueName;
+      nodeIdToConnect = trgtId;
     }
-    return setConnection;
+
+    if (!queueName || !nodeIdToConnect) {
+      return false;
+    }
+    set({
+      nodes: patchNodeData(get().nodes, nodeIdToConnect, {
+        connectedQueue: queueName,
+        subscriptionState: 0,
+      }),
+    });
+    return true;
   }
 
   disabledNonConnetedQueue(
@@ -126,58 +116,26 @@ class MapUtils {
         ? connection.target
         : connection.source;
 
-    let isActiveNode = false;
-    let isToAQueue = false;
-
-    set({
-      nodes: get().nodes.map((node) => {
-        if (node.id === nodeIdChanged) {
-          node = {
-            ...node,
-            data: {
-              ...node.data,
-              isActive: false,
-              connectedQueue: '',
-            },
-          } as typeof node;
-        }
-        if (node.id === nodeIdConnected && node.type === 'queue') {
-          isToAQueue = true;
-        } else if (node.id === nodeIdConnected && node.type !== 'queue') {
-          isActiveNode = (node.data as { isActive: boolean }).isActive;
-        }
-        return node;
-      }) as MQFlowNode[],
+    const nodes = patchNodeData(get().nodes, nodeIdChanged, {
+      isActive: false,
+      connectedQueue: '',
     });
+    set({ nodes });
 
-    if (!isToAQueue) {
-      set({
-        edges: get().edges.map((edge) => {
-          if (
-            edge.source === nodeIdConnected ||
-            edge.target === nodeIdConnected
-          ) {
-            edge = {
-              ...edge,
-              animated: isActiveNode,
-              style: {
-                stroke: '#0050e6',
-                strokeWidth: 1.5,
-              },
-            };
-          }
-          return edge;
-        }),
-      });
+    const connectedNode = nodes.find((node) => node.id === nodeIdConnected);
+    if (connectedNode?.type === 'queue') {
+      return;
     }
+    const isActiveNode = (connectedNode?.data as { isActive?: boolean })
+      ?.isActive;
+    set({
+      edges: get().edges.map((edge) =>
+        edge.source === nodeIdConnected || edge.target === nodeIdConnected
+          ? withEdgeState(edge, Boolean(isActiveNode))
+          : edge
+      ),
+    });
   }
-
-  // Active nodes are either the consumer or the producer
-  refreshEdgeStateOnConnection(
-    _set: ZustandSet<StoreSlice>,
-    _get: ZustandGet<StoreSlice>,
-    _activeNode: MQFlowNode
-  ): void {}
 
   animateEdgeFromNodeIds(
     set: ZustandSet<StoreSlice>,
@@ -185,16 +143,11 @@ class MapUtils {
     nodeId: string
   ): void {
     set({
-      edges: get().edges.map((edge) => {
-        if (edge.source === nodeId || edge.target === nodeId) {
-          return {
-            ...edge,
-            animated: !edge.animated,
-            style: { stroke: '#0050e6', strokeWidth: 1.5 },
-          };
-        }
-        return edge;
-      }),
+      edges: get().edges.map((edge) =>
+        edge.source === nodeId || edge.target === nodeId
+          ? withEdgeState(edge, !edge.animated)
+          : edge
+      ),
     });
   }
 
@@ -206,16 +159,11 @@ class MapUtils {
     isFromEdge = false
   ): void {
     set({
-      edges: get().edges.map((edge) => {
-        if (edge.source === nodeId || (isFromEdge && edge.id === nodeId)) {
-          return {
-            ...edge,
-            animated: state,
-            style: { stroke: '#0050e6', strokeWidth: 1.5 },
-          };
-        }
-        return edge;
-      }),
+      edges: get().edges.map((edge) =>
+        edge.source === nodeId || (isFromEdge && edge.id === nodeId)
+          ? withEdgeState(edge, state)
+          : edge
+      ),
     });
   }
 
@@ -226,19 +174,12 @@ class MapUtils {
     target: string
   ): void {
     set({
-      edges: get().edges.map((edge) => {
-        if (
-          (edge.source === source && edge.target === target) ||
-          (edge.target === source && edge.source === target)
-        ) {
-          return {
-            ...edge,
-            animated: true,
-            style: { stroke: '#0050e6', strokeWidth: 1.5 },
-          };
-        }
-        return edge;
-      }),
+      edges: get().edges.map((edge) =>
+        (edge.source === source && edge.target === target) ||
+        (edge.target === source && edge.source === target)
+          ? withEdgeState(edge, true)
+          : edge
+      ),
     });
   }
 
@@ -253,28 +194,12 @@ class MapUtils {
       : false;
 
     set({
-      nodes: get().nodes.map((node) => {
-        if (node.id === nodeId) {
-          node = {
-            ...node,
-            data: {
-              ...node.data,
-              isActive: newIsActive,
-            },
-          } as typeof node;
-        }
-        return node;
-      }) as MQFlowNode[],
-      edges: get().edges.map((edge) => {
-        if (edge.source === nodeId || edge.target === nodeId) {
-          return {
-            ...edge,
-            animated: newIsActive,
-            style: { stroke: '#0050e6', strokeWidth: 1.5 },
-          };
-        }
-        return edge;
-      }),
+      nodes: patchNodeData(get().nodes, nodeId, { isActive: newIsActive }),
+      edges: get().edges.map((edge) =>
+        edge.source === nodeId || edge.target === nodeId
+          ? withEdgeState(edge, newIsActive)
+          : edge
+      ),
     });
   }
 
@@ -310,23 +235,16 @@ class MapUtils {
     const targetId = split[1];
 
     set({
-      nodes: get().nodes.map((node) => {
-        if (
-          (node.id === srcId || node.id === targetId) &&
-          (node.type === 'producer' || node.type === 'consumer')
-        ) {
-          node = {
-            ...node,
-            data: {
-              ...node.data,
+      nodes: get().nodes.map((node) =>
+        (node.id === srcId || node.id === targetId) &&
+        (node.type === 'producer' || node.type === 'consumer')
+          ? patchNodeData([node], node.id, {
               connectedQueue: '',
               isActive: false,
               subscriptionState: isSub ? 2 : undefined,
-            },
-          } as typeof node;
-        }
-        return node;
-      }) as MQFlowNode[],
+            })[0]
+          : node
+      ),
     });
   }
 

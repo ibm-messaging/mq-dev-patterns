@@ -21,7 +21,3 @@ interface ImportMetaEnv {
   readonly VITE_BE_PORT?: string;
   readonly VITE_BE_TLS?: string;
 }
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}

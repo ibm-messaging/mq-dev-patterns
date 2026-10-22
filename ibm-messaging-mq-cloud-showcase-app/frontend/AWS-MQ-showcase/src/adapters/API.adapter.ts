@@ -15,6 +15,7 @@
  **/
 
 import axios from 'axios';
+import type { AxiosResponse } from 'axios';
 import type {
   QueueDepth,
   MQMessage,
@@ -50,34 +51,33 @@ const END_POINT_CLOSE_CONSUMER_CONNECTION = be_host + '/api/closeConsumer';
 const END_POINT_CLOSE_PRODUCER_CONNECTION = be_host + '/api/closeProducer';
 
 class APIAdapter {
-  async closeProducer(): Promise<unknown> {
+  async closeProducer(): Promise<void> {
     try {
-      return await axios.get(END_POINT_CLOSE_PRODUCER_CONNECTION);
-    } catch (err) {
-      return err;
+      await axios.get(END_POINT_CLOSE_PRODUCER_CONNECTION);
+    } catch {
+      console.log('Error on closing producer connection');
     }
   }
 
-  async closeConsumer(consumerId: string): Promise<unknown> {
+  async closeConsumer(consumerId: string): Promise<void> {
     try {
       const URL =
         END_POINT_CLOSE_CONSUMER_CONNECTION + `?consumerId=${consumerId}`;
-      return await axios.get(URL);
-    } catch (err) {
-      return err;
+      await axios.get(URL);
+    } catch {
+      console.log('Error on closing consumer connection');
     }
   }
 
-  async getAllDepths(isForSubs: boolean): Promise<QueueDepth[] | number> {
+  async getAllDepths(isForSubs: boolean): Promise<QueueDepth[] | 505 | 525> {
     try {
       const _endPoint =
         END_POINT_GET_DEPTHS + (isForSubs ? '?isForSubs=' + isForSubs : '');
       const _result = await axios.get<QueueDepth[]>(_endPoint);
       return _result.data;
-    } catch (e: unknown) {
+    } catch (e) {
       console.log(e);
-      const err = e as { response?: { status: number } };
-      if (err.response?.status === 525) {
+      if (axios.isAxiosError(e) && e.response?.status === 525) {
         return 525;
       }
       return 505;
@@ -89,7 +89,7 @@ class APIAdapter {
     quantity: number,
     queueName: string,
     currency: string | null = null
-  ): Promise<unknown> {
+  ): Promise<AxiosResponse> {
     return axios({
       method: 'post',
       url: END_POINT_PUT,
@@ -194,24 +194,16 @@ class APIAdapter {
     }
   }
 
-  subscribe(appId: string, topic: string): Promise<unknown> | undefined {
-    try {
-      return axios({
-        method: 'post',
-        url: END_POINT_SUB,
-        data: { appId, topic },
-      });
-    } catch (e) {
-      console.log('Error on updating subscrisber ');
-    }
+  subscribe(appId: string, topic: string): Promise<AxiosResponse> {
+    return axios({
+      method: 'post',
+      url: END_POINT_SUB,
+      data: { appId, topic },
+    });
   }
 
-  unsubscribe(appId: string): Promise<unknown> | undefined {
-    try {
-      return axios.get(END_POINT_UNSUB + '?appId=' + appId);
-    } catch (e) {
-      console.log('Error on updating subscribers ');
-    }
+  unsubscribe(appId: string): Promise<AxiosResponse> {
+    return axios.get(END_POINT_UNSUB + '?appId=' + appId);
   }
 
   async publish(
@@ -219,7 +211,7 @@ class APIAdapter {
     quantity: number,
     topic: string,
     appId: string
-  ): Promise<unknown> {
+  ): Promise<AxiosResponse> {
     return axios({
       method: 'post',
       url: END_POINT_PUB,
@@ -261,25 +253,14 @@ class APIAdapter {
       const URL =
         END_POINT_GETDYN +
         `limit=${limit}&queueName=${queueName}&appId=${appId}&type=${type}`;
-      const _result = await axios.get<
-        Array<{ msgObject: string; replyToMsg: string }> & {
-          msgObject: string;
-        }
-      >(URL);
-      if (type !== 'DYNPUT') {
-        const msg = JSON.parse(
-          (_result.data as Array<{ msgObject: string }>)[0].msgObject
-        ) as MQMessage;
-        const replyQueue = (_result.data as Array<{ replyToMsg: string }>)[0]
-          .replyToMsg;
-        return { message: msg, replyQueue };
-      } else {
-        return (
-          JSON.parse(
-            (_result.data as { msgObject: string }).msgObject
-          ) as MQMessage
-        ).Message;
+      if (type === 'DYNPUT') {
+        const _result = await axios.get<{ msgObject: string }>(URL);
+        return (JSON.parse(_result.data.msgObject) as MQMessage).Message;
       }
+      const _result =
+        await axios.get<Array<{ msgObject: string; replyToMsg: string }>>(URL);
+      const msg = JSON.parse(_result.data[0].msgObject) as MQMessage;
+      return { message: msg, replyQueue: _result.data[0].replyToMsg };
     } catch {
       return undefined;
     }
