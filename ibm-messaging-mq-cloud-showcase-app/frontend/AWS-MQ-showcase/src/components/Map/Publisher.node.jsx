@@ -23,17 +23,18 @@ import useStore from '../MQPatterns/PubSub/store';
 import NodeCard from './NodeCard';
 import AppIcon from './AppIcon';
 import { toast } from 'react-toastify';
+import { SHOWCASE_APP_CONSTANTS } from './utils';
 
-const HEADER_BG = '#e8f3ff';
-const HEADER_BORDER = '#0f62fe';
+const { HEADER_BG_BLUE: HEADER_BG, HEADER_BORDER_BLUE: HEADER_BORDER } =
+  SHOWCASE_APP_CONSTANTS;
 
 const PublisherNode = ({ id, data }) => {
   const adapter = new APIAdapter();
   const animateConnection = useStore(
     (state) => state.changeEdgeAnimationFromNodeId
   );
-  const publisherSent = useStore(state => state.publisherSent);
-  const deleteMe = useStore(state => state.onDeleteNode);
+  const publisherSent = useStore((state) => state.publisherSent);
+  const deleteMe = useStore((state) => state.onDeleteNode);
   const [animationState, setAnimationState] = useState(false);
   const [isToggleOn] = useState(false);
   const [message, setMessage] = useState();
@@ -136,8 +137,8 @@ const PublisherNode = ({ id, data }) => {
       />
 
       <Button
-        renderIcon={props => <Send size={20} {...props} />}
-        size="sm"
+        renderIcon={(props) => <Send size={20} {...props} />}
+        size="lg"
         kind="primary"
         style={{ width: '100%' }}
         disabled={!data.connectedQueue || animationState}

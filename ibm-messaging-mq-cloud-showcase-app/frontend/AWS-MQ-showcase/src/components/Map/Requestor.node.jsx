@@ -16,6 +16,7 @@
 
 import React, { useEffect, memo, useState } from 'react';
 import { Button, NumberInput, TextInput } from '@carbon/react';
+import { Send } from '@carbon/react/icons';
 import { Handle } from '@xyflow/react';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/RequestResponse/store';
@@ -23,20 +24,20 @@ import NodeCard from './NodeCard';
 import AppIcon from './AppIcon';
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
+import { SHOWCASE_APP_CONSTANTS } from './utils';
 
-// Figma spec: blue accent header — same as Producer
-const HEADER_BG = '#e8f3ff';
-const HEADER_BORDER = '#0f62fe';
+const { HEADER_BG_BLUE: HEADER_BG, HEADER_BORDER_BLUE: HEADER_BORDER } =
+  SHOWCASE_APP_CONSTANTS;
 
 const RequestorNode = ({ id, data }) => {
   const adapter = new APIAdapter();
   const animateConnection = useStore(
     (state) => state.changeEdgeAnimationFromNodeId
   );
-  const sendMessages = useStore(state => state.sendMessages);
-  const deleteMe = useStore(state => state.onDeleteNode);
-  const _drawTmpQueue = useStore(state => state.creteTmpQueue);
-  const _drawTmpConnection = useStore(state => state.drawTmpConnection);
+  const sendMessages = useStore((state) => state.sendMessages);
+  const deleteMe = useStore((state) => state.onDeleteNode);
+  const _drawTmpQueue = useStore((state) => state.creteTmpQueue);
+  const _drawTmpConnection = useStore((state) => state.drawTmpConnection);
   const _deleteTmpQueue = useStore(
     (state) => state.deleteTmpQueueFromTmpQueueName
   );
@@ -85,7 +86,7 @@ const RequestorNode = ({ id, data }) => {
   const _onClick = (id) => {
     setAnimationState(true);
     animateConnection(id, true);
-    sendMessages(id, quantity);
+    sendMessages(id, 1);
     try {
       let message = 'Request';
       adapter
@@ -143,7 +144,7 @@ const RequestorNode = ({ id, data }) => {
         size="sm"
         labelText="Name of your application"
         value={name}
-        onChange={e => setName(e.target.value)}
+        onChange={(e) => setName(e.target.value)}
       />
 
       <NumberInput
@@ -158,7 +159,8 @@ const RequestorNode = ({ id, data }) => {
       />
 
       <Button
-        size="sm"
+        renderIcon={(props) => <Send size={20} {...props} />}
+        size="lg"
         kind="primary"
         style={{ width: '100%' }}
         disabled={isWaitingForReply || !data.connectedQueue}

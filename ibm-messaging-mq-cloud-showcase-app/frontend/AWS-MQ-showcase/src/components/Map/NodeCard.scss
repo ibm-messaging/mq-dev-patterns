@@ -183,6 +183,27 @@
   border-top: 1px solid $border-disabled;
 }
 
+// Carbon's expressive Button caps its width (inline-size / max-inline-size);
+// override so the Send cash button fills the card.
+.producer-node__send-button.cds--btn {
+  inline-size: 100%;
+  max-inline-size: unset;
+}
+
+.producer-node__amount-row {
+  display: flex;
+  gap: $spacing-03;
+  align-items: flex-start;
+
+  &__amount {
+    flex: 1 1 55%;
+  }
+
+  &__currency {
+    flex: 1 1 45%;
+  }
+}
+
 .queue-node {
   min-width: 230px;
 }

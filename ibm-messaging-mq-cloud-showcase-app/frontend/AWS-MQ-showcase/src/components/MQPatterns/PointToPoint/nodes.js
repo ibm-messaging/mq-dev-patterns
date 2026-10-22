@@ -14,6 +14,12 @@
  * limitations under the License.
  **/
 
+const isForTheCodingChallange =
+  process.env.REACT_APP_IS_FOR_CODING_CHALLENGE === 'true';
+
+const DEFAULT_QUEUE_POSITION = { x: 650, y: 220 };
+const CODING_CHALLENGE_QUEUE_POSITION = { x: 750, y: 250 };
+
 const initialNodes = [
   {
     id: '1',
@@ -50,7 +56,9 @@ const initialNodes = [
       depth: 0,
       queueName: 'DEV.QUEUE.1',
     },
-    position: { x: 650, y: 220 },
+    position: isForTheCodingChallange
+      ? CODING_CHALLENGE_QUEUE_POSITION
+      : DEFAULT_QUEUE_POSITION,
     sourcePosition: 'right',
     targetPosition: 'left',
     draggable: true,

@@ -15,15 +15,34 @@
  **/
 
 import { addEdge } from '@xyflow/react';
+import { green10, blue10 } from '@carbon/colors';
+import {
+  layer01,
+  borderSubtle01,
+  supportSuccess,
+  interactive,
+} from '@carbon/themes';
+
+export const SHOWCASE_APP_CONSTANTS = {
+  CURRENCY_ITEMS: [
+    { id: '1', text: 'EUR' },
+    { id: '2', text: 'USD' },
+    { id: '3', text: 'GBP' },
+  ],
+  HEADER_BG_ACTIVE: green10,
+  HEADER_BORDER_ACTIVE: supportSuccess,
+  HEADER_BG_IDLE: layer01,
+  HEADER_BORDER_IDLE: borderSubtle01,
+  HEADER_BG_BLUE: blue10,
+  HEADER_BORDER_BLUE: interactive,
+};
 
 export function emitMessageFlow(edgeId) {
   window.dispatchEvent(
     new CustomEvent('mq-message-flow', {
       detail: {
         edgeId,
-        id: Math.random()
-          .toString(36)
-          .slice(2),
+        id: Math.random().toString(36).slice(2),
       },
     })
   );
@@ -34,9 +53,7 @@ export function emitMessageFlowReverse(edgeId) {
     new CustomEvent('mq-message-flow', {
       detail: {
         edgeId,
-        id: Math.random()
-          .toString(36)
-          .slice(2),
+        id: Math.random().toString(36).slice(2),
         reverse: true,
       },
     })
@@ -211,7 +228,7 @@ class MapUtils {
   }
 
   setActiveNodeAndAnimateFromNodeId(set, get, nodeId) {
-    const currentNode = get().nodes.find(n => n.id === nodeId);
+    const currentNode = get().nodes.find((n) => n.id === nodeId);
     const newIsActive = currentNode ? !currentNode.data.isActive : false;
 
     set({
@@ -227,7 +244,7 @@ class MapUtils {
         }
         return node;
       }),
-      edges: get().edges.map(edge => {
+      edges: get().edges.map((edge) => {
         if (edge.source === nodeId || edge.target === nodeId) {
           return {
             ...edge,

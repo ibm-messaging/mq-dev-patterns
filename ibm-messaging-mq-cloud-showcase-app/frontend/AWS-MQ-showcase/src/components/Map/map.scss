@@ -1,0 +1,136 @@
+/**
+ * Copyright 2022, 2026 IBM Corp.
+ *
+ * Licensed under the Apache License, Version 2.0 (the 'License');
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **/
+
+@use '@carbon/react/scss/spacing' as *;
+@use '@carbon/react/scss/theme' as *;
+@use '@carbon/react/scss/type' as *;
+
+.react-flow,
+.react-flow__background {
+  background-color: $layer-01;
+}
+
+.react-flow__controls {
+  background-color: $layer-02;
+  border: 1px solid $border-subtle-00;
+  box-shadow: 0 1px 4px
+    color-mix(in srgb, #{$background-inverse} 10%, transparent);
+}
+
+.react-flow__controls-button {
+  background-color: $layer-02;
+  border-bottom: 1px solid $border-subtle-00;
+  color: $icon-primary;
+
+  &:hover {
+    background-color: $layer-hover-02;
+  }
+}
+
+.touchdevice-flow .react-flow__handle {
+  width: $spacing-03;
+  height: $spacing-07;
+  border-radius: $spacing-01;
+  background-color: $support-success;
+
+  &.connecting {
+    animation: bounce 1600ms infinite ease-out;
+  }
+}
+
+@keyframes bounce {
+  0% {
+    transform: translate(0, -50%) scale(1);
+  }
+  50% {
+    transform: translate(0, -50%) scale(1.1);
+  }
+}
+
+.edgebutton {
+  width: $spacing-06;
+  height: $spacing-06;
+  background: $border-strong-01;
+  border: 1px solid $background;
+  color: $text-on-color;
+  cursor: pointer;
+  border-radius: 50%;
+  @include type-style('label-01');
+  padding: 0;
+  line-height: 1;
+
+  &:hover {
+    box-shadow: 0 0 6px 2px
+      color-mix(in srgb, #{$background-inverse} 8%, transparent);
+  }
+}
+
+.container-node-container {
+  width: 750px;
+  height: 250px;
+  border-radius: 5%;
+}
+
+.container-node-container-name {
+  position: absolute;
+  right: $spacing-03;
+  bottom: $spacing-03;
+  color: $support-caution-major;
+  font-weight: bold;
+}
+
+.dndflow {
+  flex-direction: column;
+  display: flex;
+  flex-grow: 1;
+  height: 100%;
+  background-color: $layer-01;
+
+  .reactflow-wrapper {
+    flex-grow: 1;
+    height: 100%;
+    background-color: $layer-01;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .dndflow {
+    flex-direction: row;
+  }
+}
+
+.blob {
+  box-shadow: 0 0 0 0 $interactive;
+  transform: scale(1);
+  animation: pulse-black 2s infinite;
+}
+
+@keyframes pulse-black {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 color-mix(in srgb, #{$interactive} 70%, transparent);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 $spacing-03 transparent;
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
