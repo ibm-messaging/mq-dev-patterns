@@ -32,7 +32,7 @@ const useStore = create((set, get) => ({
   queueData: [],
   nodeDepths: {},
   localDepths: {},
-  onNodesChange: changes => {
+  onNodesChange: (changes) => {
     set({
       nodes: applyNodeChanges(changes, get().nodes),
     });
@@ -66,10 +66,10 @@ const useStore = create((set, get) => ({
   },
   sendMessages: (nodeId, count) => {
     const edges = get().edges;
-    const outEdge = edges.find(e => e.source === nodeId);
+    const outEdge = edges.find((e) => e.source === nodeId);
     if (!outEdge) return;
     const queueNodeId = outEdge.target;
-    set(state => ({
+    set((state) => ({
       localDepths: {
         ...state.localDepths,
         [queueNodeId]:
@@ -83,7 +83,7 @@ const useStore = create((set, get) => ({
         emitMessageFlow(outEdge.id);
         setTimeout(() => {
           set({
-            nodes: get().nodes.map(node => {
+            nodes: get().nodes.map((node) => {
               if (node.id === queueNodeId) {
                 return {
                   ...node,
@@ -100,25 +100,41 @@ const useStore = create((set, get) => ({
       }, i * 1000);
     }
   },
+  bumpLandCount: (queueNodeId) => {
+    set({
+      nodes: get().nodes.map((node) => {
+        if (node.id === queueNodeId) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              landCount: (node.data?.landCount || 0) + 1,
+            },
+          };
+        }
+        return node;
+      }),
+    });
+  },
 
-  consumeMessageFromQueue: consumerNodeId => {
+  consumeMessageFromQueue: (consumerNodeId) => {
     const edges = get().edges;
-    const inboundEdge = edges.find(e => e.target === consumerNodeId);
+    const inboundEdge = edges.find((e) => e.target === consumerNodeId);
     if (!inboundEdge) return;
     const queueNodeId = inboundEdge.source;
     emitMessageFlow(inboundEdge.id);
-    const queueNode = get().nodes.find(n => n.id === queueNodeId);
+    const queueNode = get().nodes.find((n) => n.id === queueNodeId);
     const nodeLandCount = queueNode?.data?.landCount || 0;
     const prevLocal =
       get().localDepths[queueNodeId] ??
       get().nodeDepths[queueNodeId] ??
       nodeLandCount;
     const newLocal = Math.max(prevLocal - 1, 0);
-    set(state => ({
+    set((state) => ({
       localDepths: { ...state.localDepths, [queueNodeId]: newLocal },
     }));
   },
-  onDeleteEdge: edgeId => {
+  onDeleteEdge: (edgeId) => {
     utils.updateQueueOnDeletingEdge(set, get, edgeId);
     set({
       edges: get().edges.filter((edge) => edge.id !== edgeId),
@@ -143,13 +159,13 @@ const useStore = create((set, get) => ({
     });
   },
   setNodeDepth: (nodeId, depth) => {
-    set(state => ({
+    set((state) => ({
       nodeDepths: { ...state.nodeDepths, [nodeId]: depth },
       localDepths: { ...state.localDepths, [nodeId]: depth },
     }));
   },
-  updateQueueData: data => {
-    set(state => ({
+  updateQueueData: (data) => {
+    set((state) => ({
       queueData: data,
     }));
   },

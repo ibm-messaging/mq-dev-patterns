@@ -17,7 +17,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { getBezierPath } from '@xyflow/react';
 import useStore from '../MQPatterns/PointToPoint/store';
-import './map.css';
+import './map.scss';
 
 const foreignObjectSize = 40;
 const DURATION = 950;
@@ -51,7 +51,7 @@ function AnimatedParticle({ pathRef, reverse, color }) {
       const el = gRef.current;
       const start = performance.now();
 
-      const tick = now => {
+      const tick = (now) => {
         const t = Math.min((now - start) / DURATION, 1);
 
         const ease = t < 0.5 ? 16 * t ** 5 : 1 - Math.pow(-2 * t + 2, 5) / 2;
@@ -107,14 +107,14 @@ export default function CustomEdge({
     targetPosition,
   });
 
-  const _deleteOnClick = useStore(state => state.onDeleteEdge);
+  const _deleteOnClick = useStore((state) => state.onDeleteEdge);
 
   const pathRef = useRef(null);
 
   const [particles, setParticles] = useState([]);
 
   useEffect(() => {
-    const handler = e => {
+    const handler = (e) => {
       const detail = e.detail;
       if (detail.edgeId !== id) return; // ignore other edges
 
@@ -122,11 +122,11 @@ export default function CustomEdge({
       const rev = !!detail.reverse;
       const col = randomColor();
 
-      setParticles(prev => [...prev, { id: pid, reverse: rev, color: col }]);
+      setParticles((prev) => [...prev, { id: pid, reverse: rev, color: col }]);
 
       // Auto-remove after animation completes
       setTimeout(() => {
-        setParticles(prev => prev.filter(p => p.id !== pid));
+        setParticles((prev) => prev.filter((p) => p.id !== pid));
       }, REMOVE_AFTER);
     };
 
@@ -166,7 +166,7 @@ export default function CustomEdge({
         </div>
       </foreignObject>
 
-      {particles.map(p => (
+      {particles.map((p) => (
         <AnimatedParticle
           key={p.id}
           pathRef={pathRef}

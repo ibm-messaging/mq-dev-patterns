@@ -18,6 +18,11 @@
 # Run some linting processes against the Python modules
 # We'll use both flake8 and pylint which show different things.
 
+# Notes: You may
+# 1. create Python Virtual Environment (venv) by uncomment lines 39-41
+#    and install packages: flake8, pylint, ibmmq, ddt, pytest, pytest-cov
+# 2. execute this script, eg. cd tools && ./linter.sh
+
 curdir=`pwd`
 root=$curdir/..
 

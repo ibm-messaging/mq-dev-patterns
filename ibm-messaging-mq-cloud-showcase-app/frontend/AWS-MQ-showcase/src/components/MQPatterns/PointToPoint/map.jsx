@@ -28,7 +28,7 @@ import ConsumerNode from '../../Map/Consumer.node';
 import QueueNode from '../../Map/Queue.node';
 import CustomEdge from '../../Map/Custom.edge';
 import Container from '../../Map/Container.node';
-import '../../Map/map.css';
+import '../../Map/map.scss';
 import useStore from './store';
 import Sidebar from './Sidebar';
 

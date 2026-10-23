@@ -41,6 +41,12 @@
 #
 # Prereqs: jq, curl, dos2unix, html2text [dnf install python3-html2text].
 #          yq is a soft prereq
+#
+# For MacOS: You may
+#   1. install packages via homebrew, eg. brew install dos2unix html2text yq
+#   2. update path (bash), eg. export PATH="/opt/homebrew/bin:$PATH"
+#   3. execute Version Checker, eg. ./tools/checkVer.sh
+#      
 
 function myCurl {
     # Run curl looking for bad return codes and bad http status codes.
