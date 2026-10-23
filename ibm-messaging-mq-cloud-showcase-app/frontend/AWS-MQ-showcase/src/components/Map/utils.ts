@@ -20,6 +20,7 @@ import type { Connection } from '@xyflow/react';
 import type {
   MQFlowNode,
   MQFlowEdge,
+  QueueFlowNode,
   ZustandSet,
   ZustandGet,
 } from '../../types';
@@ -50,6 +51,10 @@ interface StoreSlice {
 
 const EDGE_STYLE = { stroke: blue60Hover, strokeWidth: 1.5 };
 
+function isQueueNode(node?: MQFlowNode): node is QueueFlowNode {
+  return node?.data.role === 'q';
+}
+
 function dispatchMessageFlow(edgeId: string, reverse?: boolean): void {
   window.dispatchEvent(
     new CustomEvent('mq-message-flow', {
@@ -78,7 +83,7 @@ function patchNodeData(
 ): MQFlowNode[] {
   return nodes.map((node) =>
     node.id === id
-      ? ({ ...node, data: { ...node.data, ...patch } } as MQFlowNode)
+      ? ({ ...node, data: { ...node.data, ...patch } } as MQFlowNode) // cast: spread of a union member plus a partial patch widens past MQFlowNode
       : node
   );
 }
@@ -97,17 +102,17 @@ class MapUtils {
     const trgtId = connection['target'];
     const trgtNode = get().nodes.find((e) => e.id === trgtId);
     const srcNode = get().nodes.find((e) => e.id === srcId);
-    const trgtIsAQueue = trgtNode?.data.role === 'q';
-    const srcIsAQueue = srcNode?.data.role === 'q';
+    const trgtIsAQueue = isQueueNode(trgtNode);
+    const srcIsAQueue = isQueueNode(srcNode);
 
     let nodeIdToConnect: string | undefined;
     let queueName = '';
 
     if (trgtIsAQueue && !srcIsAQueue) {
-      queueName = (trgtNode.data as { queueName: string }).queueName;
+      queueName = trgtNode.data.queueName;
       nodeIdToConnect = srcId;
     } else if (srcIsAQueue && !trgtIsAQueue) {
-      queueName = (srcNode.data as { queueName: string }).queueName;
+      queueName = srcNode.data.queueName;
       nodeIdToConnect = trgtId;
     }
 
@@ -146,8 +151,7 @@ class MapUtils {
     if (connectedNode?.type === 'queue') {
       return;
     }
-    const isActiveNode = (connectedNode?.data as { isActive?: boolean })
-      ?.isActive;
+    const isActiveNode = connectedNode?.data.isActive;
     set({
       edges: get().edges.map((edge) =>
         edge.source === nodeIdConnected || edge.target === nodeIdConnected
@@ -209,9 +213,7 @@ class MapUtils {
     nodeId: string
   ): void {
     const currentNode = get().nodes.find((n) => n.id === nodeId);
-    const newIsActive = currentNode
-      ? !(currentNode.data as { isActive: boolean }).isActive
-      : false;
+    const newIsActive = currentNode ? !currentNode.data.isActive : false;
 
     set({
       nodes: patchNodeData(get().nodes, nodeId, { isActive: newIsActive }),

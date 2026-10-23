@@ -50,6 +50,24 @@ const END_POINT_GET_CODING_CHALLENGE =
 const END_POINT_CLOSE_CONSUMER_CONNECTION = be_host + '/api/closeConsumer';
 const END_POINT_CLOSE_PRODUCER_CONNECTION = be_host + '/api/closeProducer';
 
+/** Response body of the getLastMessage endpoint. */
+interface LastMessageResponse {
+  _lastMessage?: Array<{ msgObject: string }>;
+}
+
+/** Decoded `msgObject` of a subscription message. */
+interface SubMessageBody {
+  Message: string;
+  id: string;
+  Count: number;
+  Sent: string;
+}
+
+/** Parses the JSON string the backend returns in `msgObject`. */
+function parseMsgObject<T>(raw: string): T {
+  return JSON.parse(raw) as T; // cast: JSON.parse returns any; shape is the backend contract
+}
+
 class APIAdapter {
   async closeProducer(): Promise<void> {
     try {
@@ -109,7 +127,7 @@ class APIAdapter {
     try {
       const URL = END_POINT_GET + limit + '&queueName=' + queueName;
       const _result = await axios.get<Array<{ msgObject: string }>>(URL);
-      return JSON.parse(_result.data[0].msgObject) as MQMessage;
+      return parseMsgObject<MQMessage>(_result.data[0].msgObject);
     } catch {
       // no message available
       return undefined;
@@ -136,7 +154,7 @@ class APIAdapter {
         await axios.get<
           Array<{ msgObject: string; properties: { currency: string } }>
         >(URL);
-      const message = JSON.parse(_result.data[0].msgObject) as MQMessage;
+      const message = parseMsgObject<MQMessage>(_result.data[0].msgObject);
       const currency = _result.data[0].properties.currency;
       return {
         message: {
@@ -156,7 +174,7 @@ class APIAdapter {
     topic: string | null = null
   ): Promise<SubMessage | -1 | undefined> {
     try {
-      const _result = await axios({
+      const _result = await axios<LastMessageResponse>({
         method: 'post',
         url: END_POINT_GETLASTMESSAGEFORSUB,
         data: { appId, topic },
@@ -166,17 +184,12 @@ class APIAdapter {
         return -1;
       }
 
-      const data = _result.data as {
-        _lastMessage?: Array<{ msgObject: string }>;
-      };
+      const data = _result.data;
 
       if (data?._lastMessage?.length) {
-        const body = JSON.parse(data._lastMessage[0].msgObject) as {
-          Message: string;
-          id: string;
-          Count: number;
-          Sent: string;
-        };
+        const body = parseMsgObject<SubMessageBody>(
+          data._lastMessage[0].msgObject
+        );
         const messageValues = body.Message.split('|@|');
         const title = messageValues[0];
         const message = messageValues[1];
@@ -228,14 +241,14 @@ class APIAdapter {
     sessionID: string | null = null
   ): Promise<DynPutResult | -1 | undefined> {
     try {
-      const _result = await axios({
+      const _result = await axios<DynPutResult>({
         method: 'post',
         url: END_POINT_DYNPUT,
         data: { message: msg, quantity, queueName, type, appId, sessionID },
       });
 
       if (parseInt(String(_result.status)) === 200) {
-        return _result.data as DynPutResult;
+        return _result.data;
       }
       return -1;
     } catch {
@@ -255,11 +268,11 @@ class APIAdapter {
         `limit=${limit}&queueName=${queueName}&appId=${appId}&type=${type}`;
       if (type === 'DYNPUT') {
         const _result = await axios.get<{ msgObject: string }>(URL);
-        return (JSON.parse(_result.data.msgObject) as MQMessage).Message;
+        return parseMsgObject<MQMessage>(_result.data.msgObject).Message;
       }
       const _result =
         await axios.get<Array<{ msgObject: string; replyToMsg: string }>>(URL);
-      const msg = JSON.parse(_result.data[0].msgObject) as MQMessage;
+      const msg = parseMsgObject<MQMessage>(_result.data[0].msgObject);
       return { message: msg, replyQueue: _result.data[0].replyToMsg };
     } catch {
       return undefined;
