@@ -37,3 +37,6 @@ Python/tmp/
 .vscode
 
 
+
+# Bob (local AI assistant skills and artifacts)
+.bob/
