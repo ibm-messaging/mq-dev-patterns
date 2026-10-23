@@ -67,7 +67,7 @@ export interface BasicNodeData extends Record<string, unknown> {
 
 export type ProducerFlowNode = Node<ProducerNodeData, 'producer'>;
 export type ConsumerFlowNode = Node<ConsumerNodeData, 'consumer'>;
-export type QueueFlowNode = Node<QueueNodeData, 'queue'>;
+export type QueueFlowNode = Node<QueueNodeData, 'queue'> & { isAqueue?: 1 };
 export type MQFlowNode = ProducerFlowNode | ConsumerFlowNode | QueueFlowNode;
 export type MQFlowEdge = Edge;
 
