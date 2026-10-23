@@ -14,17 +14,19 @@
  * limitations under the License.
  **/
 
-const initialEdges = [
+import { blue60Hover } from '@carbon/colors';
+import type { MQFlowEdge } from '../../../types';
+
+const EDGE_STYLE = { stroke: blue60Hover, strokeWidth: 1 };
+
+const initialEdges: MQFlowEdge[] = [
   {
     id: '1-2',
     source: '1',
     target: '2',
     type: 'custom',
     animated: false,
-    style: {
-      stroke: '#0050e6',
-      strokeWidth: 1,
-    },
+    style: EDGE_STYLE,
   },
   {
     id: '2-3',
@@ -32,10 +34,7 @@ const initialEdges = [
     target: '3',
     type: 'custom',
     animated: false,
-    style: {
-      stroke: '#0050e6',
-      strokeWidth: 1,
-    },
+    style: EDGE_STYLE,
   },
   {
     id: '2-4',
@@ -43,10 +42,7 @@ const initialEdges = [
     target: '4',
     type: 'custom',
     animated: false,
-    style: {
-      stroke: '#0050e6',
-      strokeWidth: 1,
-    },
+    style: EDGE_STYLE,
   },
   {
     id: '7-5',
@@ -54,10 +50,7 @@ const initialEdges = [
     target: '5',
     type: 'custom',
     animated: false,
-    style: {
-      stroke: '#0050e6',
-      strokeWidth: 1,
-    },
+    style: EDGE_STYLE,
   },
   {
     id: '6-7',
@@ -65,10 +58,7 @@ const initialEdges = [
     target: '7',
     type: 'custom',
     animated: false,
-    style: {
-      stroke: '#0050e6',
-      strokeWidth: 1,
-    },
+    style: EDGE_STYLE,
   },
   {
     id: '8-9',
@@ -76,10 +66,7 @@ const initialEdges = [
     target: '9',
     type: 'custom',
     animated: false,
-    style: {
-      stroke: '#0050e6',
-      strokeWidth: 1,
-    },
+    style: EDGE_STYLE,
   },
 ];
 

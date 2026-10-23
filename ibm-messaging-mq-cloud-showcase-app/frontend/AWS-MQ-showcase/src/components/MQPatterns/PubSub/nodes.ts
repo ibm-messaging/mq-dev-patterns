@@ -14,7 +14,10 @@
  * limitations under the License.
  **/
 
-const initialNodes = [
+import { Position } from '@xyflow/react';
+import type { MQFlowNode } from '../../../types';
+
+const initialNodes: MQFlowNode[] = [
   {
     id: '1',
     type: 'producer',
@@ -25,7 +28,7 @@ const initialNodes = [
       isActive: false,
     },
     position: { x: 50, y: 40 },
-    sourcePosition: 'right',
+    sourcePosition: Position.Right,
     draggable: true,
   },
   {
@@ -38,8 +41,8 @@ const initialNodes = [
       queueName: 'tickets/classic',
     },
     position: { x: 550, y: 110 },
-    sourcePosition: 'right',
-    targetPosition: 'left',
+    sourcePosition: Position.Right,
+    targetPosition: Position.Left,
     draggable: true,
   },
   {
@@ -52,7 +55,7 @@ const initialNodes = [
       subscriptionState: 0,
     },
     position: { x: 1050, y: -10 },
-    targetPosition: 'left',
+    targetPosition: Position.Left,
     draggable: true,
   },
   {
@@ -60,12 +63,12 @@ const initialNodes = [
     type: 'consumer',
     data: {
       role: 'Consumer',
-      label: 'Clsasic consumer 2',
+      label: 'Classic consumer 2',
       connectedQueue: 'tickets/classic',
       subscriptionState: 0,
     },
     position: { x: 1050, y: 275 },
-    targetPosition: 'left',
+    targetPosition: Position.Left,
     draggable: true,
   },
   {
@@ -78,7 +81,7 @@ const initialNodes = [
       subscriptionState: 0,
     },
     position: { x: 1050, y: 560 },
-    targetPosition: 'left',
+    targetPosition: Position.Left,
     draggable: true,
   },
   {
@@ -91,10 +94,9 @@ const initialNodes = [
       isActive: false,
     },
     position: { x: 50, y: 450 },
-    sourcePosition: 'right',
+    sourcePosition: Position.Right,
     draggable: true,
   },
-
   {
     id: '7',
     type: 'queue',
@@ -105,11 +107,10 @@ const initialNodes = [
       queueName: 'tickets/VIP',
     },
     position: { x: 550, y: 500 },
-    sourcePosition: 'right',
-    targetPosition: 'left',
+    sourcePosition: Position.Right,
+    targetPosition: Position.Left,
     draggable: true,
   },
-
   {
     id: '8',
     type: 'queue',
@@ -120,8 +121,8 @@ const initialNodes = [
       queueName: 'tickets/#',
     },
     position: { x: 550, y: 880 },
-    sourcePosition: 'right',
-    targetPosition: 'left',
+    sourcePosition: Position.Right,
+    targetPosition: Position.Left,
     draggable: true,
   },
   {
@@ -134,8 +135,9 @@ const initialNodes = [
       subscriptionState: 0,
     },
     position: { x: 1050, y: 845 },
-    targetPosition: 'left',
+    targetPosition: Position.Left,
     draggable: true,
   },
 ];
+
 export default initialNodes;

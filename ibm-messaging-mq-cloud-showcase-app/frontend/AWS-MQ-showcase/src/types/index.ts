@@ -35,7 +35,8 @@ export interface ConsumerNodeData extends Record<string, unknown> {
   role: 'Consumer';
   label: string;
   connectedQueue: string;
-  isActive: boolean;
+  /** Omitted by PubSub subscribers, which track `subscriptionState` instead */
+  isActive?: boolean;
   /** 0 = unsubscribed, 1 = subscribed, 2 = unsubscribing */
   subscriptionState?: 0 | 1 | 2;
 }
