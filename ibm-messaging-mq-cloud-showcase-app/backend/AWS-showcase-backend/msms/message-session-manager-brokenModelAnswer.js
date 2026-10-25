@@ -664,6 +664,7 @@ class MQClient {
   }
 
   //================== CODING CHALLENGE CODE ==============================
+  // 4 deliberate errors
   performPutWithProperites(message, quantity) {
     console.log('entering performPutWithProperties');
 
@@ -875,6 +876,7 @@ class MQClient {
   }
 
   //================== CODING CHALLENGE CODE ==============================
+  // 1 deliberate error
   getSingleMessageWithProperties() {
     return new Promise((resolve, reject) => {
       var buf = Buffer.alloc(1024);
