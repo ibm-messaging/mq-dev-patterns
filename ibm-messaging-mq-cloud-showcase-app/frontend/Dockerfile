@@ -71,7 +71,7 @@ EXPOSE 3000
 # Alpine-based image ships wget, enabling this loopback health check.
 # Docker / Podman polls every 30s and marks the container unhealthy after 3 failures.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget -qO- http://localhost:3000/ || exit 1
+    CMD wget -qO- http://127.0.0.1:3000/ || exit 1
 
 # daemon off keeps nginx in the foreground so Docker can track the process.
 CMD ["nginx", "-g", "daemon off;"]

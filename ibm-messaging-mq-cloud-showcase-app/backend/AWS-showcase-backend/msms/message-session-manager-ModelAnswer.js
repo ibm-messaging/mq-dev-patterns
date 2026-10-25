@@ -34,6 +34,11 @@ const MQC = mq.MQC;
 let debug_info = require('debug')('mqapp-mqclient:info');
 let debug_warn = require('debug')('mqapp-mqclient:warn');
 
+// Formats an MQ error for logging
+function formatErr(err) {
+  return 'MQ call failed in ' + err.message;
+}
+
 const _HCONNKEY = Symbol('hconn');
 const _HOBJKEY = Symbol('hObj');
 const _HOBJDYN = Symbol('hDyn');
@@ -100,10 +105,62 @@ class MQClient {
     this[_HOBJKEY] = null;
     this[_HOBJDYN] = null;
     this.currency = null;
+    this.sessionID = null;
     this._TOPIC = undefined;
     this._DYNAMIC = undefined;
     this._HEALTHY = true;
     this.myID = uuidv4();
+  }
+
+  /**
+   * Checks if a particular queue definition exists or not.
+   * @param {Object} queueName Name of the queue whose definition is to be checked of whether it exists or not.
+   * @returns {Promise<any>} Returns a promise resolving to true if the queue definition exists, else resolves with a false.
+   */
+  checkQueueExists(queueName) {
+    // If the HCONN doesn't exist, that means a connection to the Queue Manager was not performed.
+    if (this[_HCONNKEY] === null) {
+      let qmgr = MQDetails.QMGR;
+      return new Promise((resolve, reject) => {
+        this.buildCNO()
+          .then((cno) => {
+            return mq.ConnxPromise(qmgr, cno);
+          })
+          .then((hConn) => {
+            debug_info('HCONN IS : ', hConn);
+            try {
+              let od = new mq.MQOD();
+              od.ObjectName = queueName;
+              od.ObjectType = MQC.MQOT_Q;
+              let openOptions = MQC.MQOO_OUTPUT;
+
+              mq.Open(hConn, od, openOptions, function (err, hObj) {
+                if (err) {
+                  if (err.mqrc === MQC.MQRC_UNKNOWN_OBJECT_NAME) {
+                    debug_warn('Queue does not exist');
+                    resolve(false);
+                  }
+                } else {
+                  mq.Close(hObj, 0, function (err) {
+                    if (err) {
+                      debug_warn('Error while closing connection : ', err);
+                    } else {
+                      debug_info('MQCLOSE successfull');
+                    }
+                  });
+
+                  resolve(true);
+                }
+              });
+            } catch (err) {
+              debug_warn('Some error has occured : ', err);
+              reject(null);
+            }
+          });
+      });
+    } else {
+      return Promise.resolve(true);
+    }
   }
 
   /**
@@ -124,7 +181,7 @@ class MQClient {
    *    creating a new tmp queue. (Usually used by Requestors) \
    * @returns {Promise}
    */
-  put(putRequest, DYNAMIC = null) {
+  put(putRequest, DYNAMIC = null, sessionID = null) {
     return new Promise((resolve, reject) => {
       let message = 'Message from app running in Cloud Engine';
 
@@ -156,15 +213,16 @@ class MQClient {
           this._DYNAMIC = DYNAMIC;
           // Dynamic put for Requestors
           if (this._DYNAMIC === 'DYNPUT') {
-            // Open Dynamic
+            let msgObject = {
+              Message: defaultRequestorMessage,
+              value: Math.floor(Math.random() * 100),
+            };
+            let msg = JSON.stringify(msgObject);
+
+            // Open Dynamic. This is the connection to the temporarily queue used for the reply
+            // The dynamic connection has been created and stored in this[_HOBJDYN]
             return this.performConnection(putRequest.queueName).then(() => {
-              // The dynamic connection has been created and stored in this[_HOBJDYN]
-              let msgObject = {
-                Message: defaultRequestorMessage,
-                value: Math.floor(Math.random() * 100),
-              };
-              let msg = JSON.stringify(msgObject);
-              return this.putRequest(msg);
+              this.performPutWithSessionID(msg, 1, sessionID);
             });
           } else if (this.currency) {
             debug_info(
@@ -190,7 +248,7 @@ class MQClient {
           this._DYNAMIC = undefined;
         })
         .catch((err) => {
-          debug_warn('Failed to connect to MQ');
+          debug_warn(err);
           //If there is only a partial connection / open then clean up.
           //and signal tht there was a problem
           releaseFunction();
@@ -198,6 +256,60 @@ class MQClient {
           // Cleaning the this._DYNAMIC flag for the next connection
           this._DYNAMIC = undefined;
         });
+    });
+  }
+
+  performPutWithSessionID(msg, quantity, sessionID) {
+    debug_info('Entering performPutWithSessionID');
+    var mqmd = new mq.MQMD(); // Defaults are fine.
+    var pmo = new mq.MQPMO();
+    var cmho = new mq.MQCMHO();
+
+    let hConn = this[_HCONNKEY];
+    let hObj = this[_HOBJKEY];
+
+    mqmd.ReplyToQ = this[_HOBJDYN]._name;
+    mqmd.MsgType = MQC.MQMT_REQUEST;
+
+    return mq.CrtMh(hConn, cmho, function (err, mh) {
+      debug_info('hConn : ' + hConn);
+      debug_info('hObj : ' + hObj);
+      if (err) {
+        debug_warn(err);
+      } else {
+        var smpo = new mq.MQSMPO();
+        var pd = new mq.MQPD();
+
+        var name = 'sessionID';
+        var value = sessionID;
+        debug_info('Setting properities');
+        mq.SetMp(hConn, mh, smpo, name, pd, value);
+      }
+
+      // Describe how the Put should behave and put the message
+      pmo.Options =
+        MQC.MQPMO_NO_SYNCPOINT | MQC.MQPMO_NEW_MSG_ID | MQC.MQPMO_NEW_CORREL_ID;
+
+      // Make sure the message handle is used during the Put
+      pmo.OriginalMsgHandle = mh;
+
+      return mq.PutPromise(hObj, mqmd, pmo, msg, function (err) {
+        // Delete the message handle after the put has completed
+        var dmho = new mq.MQDMHO();
+        mq.DltMh(hConn, mh, dmho, function (err) {
+          if (err) {
+            debug_warn(err);
+          } else {
+            debug_info('MQDLTMH successful');
+          }
+        });
+
+        if (err) {
+          debug_warn(err);
+        } else {
+          debug_info('MQPUT successful');
+        }
+      });
     });
   }
 
@@ -291,12 +403,21 @@ class MQClient {
    *  the just obtained messages.  
    * @returns {Promise}
    * */
-  get(_QUEUE_NAME, getLimit, currency = null, DYNAMIC = null) {
+  get(
+    _QUEUE_NAME,
+    getLimit,
+    currency = null,
+    DYNAMIC = null,
+    sessionID = null
+  ) {
     // The currency value should be used to filter messages
     this.currency = currency;
+    this.sessionID = sessionID;
+
     return new Promise((resolve, reject) => {
       this.performConnection(_QUEUE_NAME)
         .then(() => {
+          this.sessionID = null;
           this._DYNAMIC = DYNAMIC;
           debug_info('Connected to MQ');
           return this.performGet(getLimit);
@@ -348,9 +469,9 @@ class MQClient {
             );
             return Promise.reject('hcon error in performConnection');
           }
-          this[_HCONNKEY] = hconn;
           // if the connection is for a topic
           if (this._TOPIC) {
+            this[_HCONNKEY] = hconn;
             // open the connection for the specified _TOPIC
             debug_info(`mqclient ${this.myID} opening connection for Pub/Sub`);
             return this.performOpenForPubSub();
@@ -362,6 +483,7 @@ class MQClient {
             );
             return this.performOpenDynamicQueue(_QUEUE_NAME);
           } else {
+            this[_HCONNKEY] = hconn;
             // Open normal connection
             debug_info(`mqclient ${this.myID} opening normal connection`);
             return this.performOpen(_QUEUE_NAME);
@@ -416,9 +538,20 @@ class MQClient {
     let od = new mq.MQOD();
     od.ObjectName = _QUEUE_NAME || MQDetails.QUEUE_NAME;
     od.ObjectType = MQC.MQOT_Q;
+
+    if (this.sessionID !== null) {
+      let selectionString = `sessionID = '${this.sessionID}'`;
+      debug_info(
+        `The selection string for this responde request is ${selectionString}`
+      );
+      od.SelectionString = selectionString;
+    }
+
+    //This space sounds interesting
     if (this.currency) {
       od.SelectionString = "Currency = '" + this.currency + "'";
     }
+
     let openOptions;
 
     if (this._DYNAMIC) {
@@ -530,6 +663,7 @@ class MQClient {
     return mq.PutPromise(this[_HOBJKEY], mqmd, pmo, msg);
   }
 
+  //================== CODING CHALLENGE CODE ==============================
   performPutWithProperites(message, quantity) {
     console.log('entering performPutWithProperties');
 
@@ -590,6 +724,7 @@ class MQClient {
       });
     });
   }
+  //=======================================================================
 
   performPut(message, quantity) {
     debug_info(`mqclient ${this.myID} preparing ${quantity} messages`);
@@ -722,6 +857,7 @@ class MQClient {
     });
   }
 
+  //================== CODING CHALLENGE CODE ==============================
   getSingleMessageWithProperties() {
     return new Promise((resolve, reject) => {
       var buf = Buffer.alloc(1024);
@@ -829,6 +965,8 @@ class MQClient {
     });
   }
 
+  //=======================================================================
+
   getSingleMessage(hObj) {
     return new Promise((resolve, reject) => {
       if (!this._HEALTHY) {
@@ -881,10 +1019,12 @@ class MQClient {
           let msgObject = null;
           try {
             let parsedMsgObj = JSON.parse(buffString);
+            debug_info(`The message is ${JSON.stringify(parsedMsgObj)}`);
             msgObject['id'] = msgid; // getting the message Id
             let replytToMsg;
             // if the message contains a ReplyToQ value set
             if (_dyn) {
+              debug_info(`This message is for a Responder.`);
               replytToMsg = mqmd.ReplyToQ;
               // add the ReplyToQ as part of the msgObject
               msgObject = {
@@ -892,34 +1032,42 @@ class MQClient {
                 replyToMsg: replytToMsg,
               };
             } else {
+              debug_info(`This message is not a message for a Reponder.`);
               msgObject = parsedMsgObj;
             }
             debug_info(`mqclient ${this.myID} resolving message found`);
             resolve(msgObject);
           } catch (err) {
             // debug_info("Error parsing json ", err);
-            let msgObject = null;
-            // if the message contain a ReplyToQ value set
-            if (_dyn) {
-              // add the ReplyToQ as part of the msgObject
-              msgObject = {
-                msgObject: buffString,
-                replyToMsg: mqmd.ReplyToQ,
-              };
-            } else {
-              msgObject = {
-                msgObject: buffString,
-              };
-            }
+            let msgObject = this.parseGet(_dyn, buffString, mqmd.ReplyToQ);
             debug_info(`mqclient ${this.myID} resolving raw message`);
             resolve(msgObject);
           }
-        } else {
+        } else if (mqmd.Format === 'MQHRF2') {
           debug_info(`mqclient ${this.myID} resolving binary message`);
-          resolve({ binary_data: buf });
+          let message = '{' + decoder.write(buf.slice(0, len)).split('{')[1];
+          let msgObject = this.parseGet(_dyn, message, mqmd.ReplyToQ);
+          resolve(msgObject);
         }
       });
     });
+  }
+
+  parseGet(isDyn, message, replyToQ) {
+    let _dyn = isDyn;
+    let msgObject = null;
+    if (_dyn) {
+      // add the ReplyToQ as part of the msgObject
+      msgObject = {
+        msgObject: message,
+        replyToMsg: replyToQ,
+      };
+    } else {
+      msgObject = {
+        msgObject: message,
+      };
+    }
+    return msgObject;
   }
 
   performCleanUp() {
@@ -973,7 +1121,7 @@ class MQClient {
 
   getRESTConfiguration() {
     let RESTCredential = {
-      HOST: process.env['HOST'],
+      HOST: process.env['HOST'] || MQDetails.HOST,
       CREDENTIAL: credentials,
       MQ_QMGR_PORT_API:
         process.env['MQ_QMGR_PORT_API'] ||

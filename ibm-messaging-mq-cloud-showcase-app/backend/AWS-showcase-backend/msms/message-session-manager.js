@@ -34,6 +34,11 @@ const MQC = mq.MQC;
 let debug_info = require('debug')('mqapp-mqclient:info');
 let debug_warn = require('debug')('mqapp-mqclient:warn');
 
+// Formats an MQ error for logging
+function formatErr(err) {
+  return 'MQ call failed in ' + err.message;
+}
+
 const _HCONNKEY = Symbol('hconn');
 const _HOBJKEY = Symbol('hObj');
 const _HOBJDYN = Symbol('hDyn');

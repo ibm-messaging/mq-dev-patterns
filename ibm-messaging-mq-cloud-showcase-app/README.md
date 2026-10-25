@@ -18,7 +18,7 @@ Before deploying the containers, create your `.env` file from the template and c
 
 ### Local Machine (Podman)
 
-> **Note:** All commands use `podman-compose`. Install [Podman Desktop](https://podman.io/) and `podman-compose` (`pip install podman-compose` or `brew install podman-compose`) if you don't have them yet.
+> **Note:** All commands use `podman compose` (with a space), which runs `docker-compose` as its compose provider. Install [Podman Desktop](https://podman.io/) and [docker-compose](https://docs.docker.com/compose/install/) (`brew install podman docker-compose`) if you don't have them yet. It is a different tool from `podman-compose` (with a hyphen).
 
 1. Fill in your passwords in `.env` (created from `.env.example`):
 
@@ -28,11 +28,11 @@ Before deploying the containers, create your `.env` file from the template and c
 2. Build the images:
 
        cd mq-dev-patterns/ibm-messaging-mq-cloud-showcase-app/
-       podman-compose -f docker-compose.yaml build
+       podman compose -f docker-compose.yaml build
 
 3. Start all three containers:
 
-       podman-compose -f docker-compose.yaml up
+       podman compose -f docker-compose.yaml up
 
 4. After all three containers are running:
    - Playground app → http://localhost:3000
@@ -42,17 +42,40 @@ Before deploying the containers, create your `.env` file from the template and c
 
 The IBM MQ image (`icr.io/ibm-messaging/mq:latest`) is `linux/amd64` only. Podman on Apple Silicon will transparently run it under emulation thanks to the `platform: linux/amd64` directive already set in `docker-compose.yaml`.
 
-If you prefer a native ARM64 image, follow [this guide](https://community.ibm.com/community/user/integration/blogs/richard-coppen/2023/06/30/ibm-mq-9330-container-image-now-available-for-appl) to build one from the [MQ Container GitHub repo](https://github.com/ibm-messaging/mq-container/blob/master/docs/building.md), then edit `docker-compose.yaml` and replace:
+The backend image is built as `linux/amd64` as well. With Podman, the `platform: linux/amd64` line in `docker-compose.yaml` only sets the platform of the running container. It does not set the platform of the build, so `backend/Dockerfile` sets it on its `FROM` lines (the `BUILD_PLATFORM` build argument). This is needed because the `ibmmq` npm package has no `linux-arm64` prebuilt binary. Without it, `podman compose build` runs the build as arm64, and `npm ci` stops with `node-gyp: Could not find any Python installation to use`. Building the backend under emulation is slower, so allow several minutes for the first `build`.
 
-```yaml
-image: "icr.io/ibm-messaging/mq:latest"
-```
+##### Optional: run natively on ARM64
 
-with the name of the ARM64 image you built, e.g.:
+If you prefer to run natively and not under emulation, follow [this guide](https://community.ibm.com/community/user/integration/blogs/richard-coppen/2023/06/30/ibm-mq-9330-container-image-now-available-for-appl) to build an ARM64 queue manager image from the [MQ Container GitHub repo](https://github.com/ibm-messaging/mq-container/blob/master/docs/building.md). The backend also needs an ARM64 IBM MQ C client library and a compiler toolchain, because the `ibmmq` package only downloads the library automatically on Linux x64 and Windows.
 
-```yaml
-image: "ibm-mqadvanced-server-dev:9.4.1.0-arm64"
-```
+1. In `docker-compose.yaml`, replace the `mq` image with the ARM64 image you built, and delete the `platform: linux/amd64` line from **both** the `mq` and `be` services:
+
+   ```yaml
+   image: "localhost/ibm-mqadvanced-server-dev:10.0.0.0-arm64"
+   ```
+
+2. In `backend/Dockerfile`, install a compiler toolchain in the builder stage, replacing the `npm ci` line:
+
+   ```dockerfile
+   RUN apt-get update && apt-get install -y python3 make g++ --no-install-recommends && rm -rf /var/lib/apt/lists/* && npm ci --omit=dev
+   ```
+
+   In the runtime stage, after `COPY --from=builder ...`, copy the MQ C client library from the ARM64 image:
+
+   ```dockerfile
+   COPY --from=localhost/ibm-mqadvanced-server-dev:10.0.0.0-arm64 /opt/mqm/lib64 /opt/mqm/lib64
+   COPY --from=localhost/ibm-mqadvanced-server-dev:10.0.0.0-arm64 /opt/mqm/lib /opt/mqm/lib
+   COPY --from=localhost/ibm-mqadvanced-server-dev:10.0.0.0-arm64 /opt/mqm/msg /opt/mqm/msg
+   COPY --from=localhost/ibm-mqadvanced-server-dev:10.0.0.0-arm64 /opt/mqm/gskit9 /opt/mqm/gskit9
+   ```
+
+3. Build the backend for ARM64 and start:
+
+   ```bash
+   podman compose -f docker-compose.yaml down -v
+   podman compose -f docker-compose.yaml build --build-arg BUILD_PLATFORM=linux/arm64 be
+   podman compose -f docker-compose.yaml up -d
+   ```
 
 ### Coding challenge mode
 
