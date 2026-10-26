@@ -15,58 +15,47 @@
  **/
 
 import React, { useEffect, useState } from 'react';
-import { Handle } from '@xyflow/react';
+import { Handle, useUpdateNodeInternals } from '@xyflow/react';
 import { TextInput } from '@carbon/react';
 import { Close, MediaCast } from '@carbon/react/icons';
-import { toast } from 'react-toastify';
 import useStore from '../MQPatterns/PubSub/store';
 import './NodeCard.scss';
+
+const INVALID_CHARACTERS = /[!@$%^&*()_+\-=[\]{};':"\\|,.<>?]+/;
+const INVALID_TOPIC_NAME_TEXT = 'Invalid topic name';
+
+const validateTopicName = (text = '') => {
+  if (INVALID_CHARACTERS.test(text)) {
+    return { isValid: false, isWildcard: false };
+  }
+  const index = text.indexOf('#');
+  if (index === -1) {
+    return { isValid: true, isWildcard: false };
+  }
+  const isWildcard = index === text.length - 1 && text[index - 1] === '/';
+  return { isValid: isWildcard, isWildcard };
+};
 
 const TopicNode = ({ id, data, isConnectable }) => {
   const _updateTopicName = useStore((state) => state.updateTopicName);
   const deleteMe = useStore((state) => state.onDeleteNode);
-  const [isAWildcard, setIsWildCard] = useState(false);
+  const updateNodeInternals = useUpdateNodeInternals();
+  const [inputValue, setInputValue] = useState(data.queueName ?? '');
+  const [isInvalid, setIsInvalid] = useState(false);
+
+  const isAWildcard = validateTopicName(data.queueName).isWildcard;
 
   useEffect(() => {
-    isValidText(data.queueName);
-  }, [data.queueName]);
-
-  const isValidText = (text) => {
-    var format = /[!@$%^&*()_+\-=[\]{};':"\\|,.<>?]+/;
-    if (format.test(text)) {
-      toast.warning('Please use a valid topic name');
-      return false;
-    }
-    let index = text.indexOf('#');
-    let _isAWildcard = false;
-    let isInvalidName = false;
-    if (index > -1) {
-      let textLength = text.length;
-      if (index === textLength - 1) {
-        let previousChartIsASlash = text[index - 1] === '/';
-        if (previousChartIsASlash) {
-          _isAWildcard = true;
-        } else {
-          isInvalidName = true;
-        }
-      } else {
-        isInvalidName = true;
-        _isAWildcard = false;
-      }
-    }
-    if (isInvalidName) {
-      toast.warning('Please use a valid topic name');
-      return false;
-    }
-    setIsWildCard(_isAWildcard);
-    return true;
-  };
+    updateNodeInternals(id);
+  }, [isAWildcard, id, updateNodeInternals]);
 
   const onTextInputChange = (e) => {
-    let text = e.target.value;
-    let isValid = isValidText(text);
+    const text = e.target.value;
+    const { isValid } = validateTopicName(text);
+    setInputValue(text);
+    setIsInvalid(!isValid);
     if (isValid) {
-      _updateTopicName(id, e.target.value);
+      _updateTopicName(id, text);
     }
   };
 
@@ -103,10 +92,12 @@ const TopicNode = ({ id, data, isConnectable }) => {
             id={`topic-name-${id}`}
             labelText=""
             hideLabel
-            value={data.queueName}
+            value={inputValue}
             size="sm"
             placeholder="tickets/classic"
-            onChange={e => onTextInputChange(e)}
+            onChange={onTextInputChange}
+            invalid={isInvalid}
+            invalidText={INVALID_TOPIC_NAME_TEXT}
             className="topic-node__input"
           />
         </div>
