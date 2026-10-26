@@ -14,10 +14,8 @@
  * limitations under the License.
  **/
 
-import { blue60Hover } from '@carbon/colors';
+import { EDGE_STYLE_THIN } from '../../Map/utils';
 import type { MQFlowEdge } from '../../../types';
-
-const EDGE_STYLE = { stroke: blue60Hover, strokeWidth: 1 };
 
 const initialEdges: MQFlowEdge[] = [
   {
@@ -25,7 +23,7 @@ const initialEdges: MQFlowEdge[] = [
     source: '1',
     target: '3',
     animated: false,
-    style: EDGE_STYLE,
+    style: EDGE_STYLE_THIN,
     type: 'custom',
   },
   {
@@ -34,7 +32,7 @@ const initialEdges: MQFlowEdge[] = [
     target: '2',
     type: 'custom',
     animated: false,
-    style: EDGE_STYLE,
+    style: EDGE_STYLE_THIN,
   },
 ];
 

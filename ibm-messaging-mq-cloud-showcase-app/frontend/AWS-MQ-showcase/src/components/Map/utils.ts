@@ -18,6 +18,7 @@ import { addEdge } from '@xyflow/react';
 import { green10, blue10, blue60Hover } from '@carbon/colors';
 import type { Connection } from '@xyflow/react';
 import type {
+  DepthTrackingState,
   MQFlowNode,
   MQFlowEdge,
   QueueFlowNode,
@@ -49,9 +50,12 @@ interface StoreSlice {
   edges: MQFlowEdge[];
 }
 
+/** Default 1px edge style for connections between flow nodes. */
+export const EDGE_STYLE_THIN = { stroke: blue60Hover, strokeWidth: 1 };
+
 const EDGE_STYLE = { stroke: blue60Hover, strokeWidth: 1.5 };
 
-function isQueueNode(node?: MQFlowNode): node is QueueFlowNode {
+export function isQueueNode(node?: MQFlowNode): node is QueueFlowNode {
   return node?.data.role === 'q';
 }
 
@@ -86,6 +90,34 @@ function patchNodeData(
       ? ({ ...node, data: { ...node.data, ...patch } } as MQFlowNode) // cast: spread of a union member plus a partial patch widens past MQFlowNode
       : node
   );
+}
+
+/**
+ * Returns `nodes` with the optimistic `counter` of queue node `id` incremented.
+ * Returns `nodes` unchanged when `id` is not a queue node.
+ */
+export function bumpQueueCounter(
+  nodes: MQFlowNode[],
+  id: string,
+  counter: 'landCount' | 'drainCount'
+): MQFlowNode[] {
+  const target = nodes.find((node) => node.id === id);
+  if (!isQueueNode(target)) return nodes;
+  return patchNodeData(nodes, id, {
+    [counter]: (target.data[counter] ?? 0) + 1,
+  });
+}
+
+/** Current depth of queue `id`: local estimate, else API depth, else `fallback`. */
+export function getQueueDepth(
+  {
+    localDepths,
+    nodeDepths,
+  }: Pick<DepthTrackingState, 'localDepths' | 'nodeDepths'>,
+  id: string,
+  fallback = 0
+): number {
+  return localDepths[id] ?? nodeDepths[id] ?? fallback;
 }
 
 function withEdgeState(edge: MQFlowEdge, animated: boolean): MQFlowEdge {
@@ -235,10 +267,7 @@ class MapUtils {
       source: connection['source'],
       target: connection['target'],
       animated: false,
-      style: {
-        stroke: '#0050e6',
-        strokeWidth: 1,
-      },
+      style: EDGE_STYLE_THIN,
       type: 'custom',
     };
     set({

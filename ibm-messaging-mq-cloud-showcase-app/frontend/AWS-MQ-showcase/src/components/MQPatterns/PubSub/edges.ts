@@ -14,10 +14,8 @@
  * limitations under the License.
  **/
 
-import { blue60Hover } from '@carbon/colors';
+import { EDGE_STYLE_THIN } from '../../Map/utils';
 import type { MQFlowEdge } from '../../../types';
-
-const EDGE_STYLE = { stroke: blue60Hover, strokeWidth: 1 };
 
 const initialEdges: MQFlowEdge[] = [
   {
@@ -26,7 +24,7 @@ const initialEdges: MQFlowEdge[] = [
     target: '2',
     type: 'custom',
     animated: false,
-    style: EDGE_STYLE,
+    style: EDGE_STYLE_THIN,
   },
   {
     id: '2-3',
@@ -34,7 +32,7 @@ const initialEdges: MQFlowEdge[] = [
     target: '3',
     type: 'custom',
     animated: false,
-    style: EDGE_STYLE,
+    style: EDGE_STYLE_THIN,
   },
   {
     id: '2-4',
@@ -42,7 +40,7 @@ const initialEdges: MQFlowEdge[] = [
     target: '4',
     type: 'custom',
     animated: false,
-    style: EDGE_STYLE,
+    style: EDGE_STYLE_THIN,
   },
   {
     id: '7-5',
@@ -50,7 +48,7 @@ const initialEdges: MQFlowEdge[] = [
     target: '5',
     type: 'custom',
     animated: false,
-    style: EDGE_STYLE,
+    style: EDGE_STYLE_THIN,
   },
   {
     id: '6-7',
@@ -58,7 +56,7 @@ const initialEdges: MQFlowEdge[] = [
     target: '7',
     type: 'custom',
     animated: false,
-    style: EDGE_STYLE,
+    style: EDGE_STYLE_THIN,
   },
   {
     id: '8-9',
@@ -66,7 +64,7 @@ const initialEdges: MQFlowEdge[] = [
     target: '9',
     type: 'custom',
     animated: false,
-    style: EDGE_STYLE,
+    style: EDGE_STYLE_THIN,
   },
 ];
 
