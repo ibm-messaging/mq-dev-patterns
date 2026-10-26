@@ -80,7 +80,7 @@ export function emitMessageFlowReverse(edgeId: string): void {
 }
 
 /** Returns a copy of `nodes` with `patch` merged into the data of node `id`. */
-function patchNodeData(
+export function patchNodeData(
   nodes: MQFlowNode[],
   id: string,
   patch: Record<string, unknown>

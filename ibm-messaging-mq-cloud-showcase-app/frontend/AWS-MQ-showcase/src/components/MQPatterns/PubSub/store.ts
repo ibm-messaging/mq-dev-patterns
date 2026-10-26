@@ -22,11 +22,16 @@ import {
 } from '@xyflow/react';
 import initialNodes from './nodes';
 import initialEdges from './edges';
-import MapUtils, { emitMessageFlow } from '../../Map/utils';
-//import { persist } from 'zustand/middleware';
+import MapUtils, {
+  emitMessageFlow,
+  isQueueNode,
+  patchNodeData,
+} from '../../Map/utils';
+import type { PubSubStoreState } from '../../../types';
+
 const utils = new MapUtils();
 
-const useStore = create((set, get) => ({
+const useStore = create<PubSubStoreState>()((set, get) => ({
   nodes: initialNodes,
   edges: initialEdges,
   dataframe: [],
@@ -42,7 +47,7 @@ const useStore = create((set, get) => ({
     });
   },
   onReconnect: (oldEdge, connection) => {
-    utils.updateConnectionNodeToQueue(set, get, connection, true);
+    utils.updateConnectionNodeToQueue(set, get, connection);
     set({
       edges: reconnectEdge(oldEdge, connection, get().edges),
     });
@@ -57,11 +62,10 @@ const useStore = create((set, get) => ({
     });
   },
   onConnect: (connection) => {
-    var setConnection = utils.updateConnectionNodeToQueue(
+    const setConnection = utils.updateConnectionNodeToQueue(
       set,
       get,
-      connection,
-      true
+      connection
     );
 
     //change subcription
@@ -73,36 +77,21 @@ const useStore = create((set, get) => ({
   },
   onClick: (nodeId) => {
     utils.setActiveNodeAndAnimateFromNodeId(set, get, nodeId);
-    //activete nodes connected to the topic
-    /*let edge = get().edges.filter (
-      edge => edge.source === nodeId
-    );
-    let topicId = edge[0].target;
-    
-    let edgesToSubs = get().edges.filter(
-      edge  => edge.source === topicId 
-    )
-    //for each node connected to the topic connected 
-    // to the subs animated the connection
-    edgesToSubs.map(edge => {
-      let idSub = edge.target;
-      utils.setActiveNodeAndAnimateFromNodeId(set,get,idSub);
-    })*/
   },
-  changeEdgeAnimationFromNodeId: (nodeId, state) => {
+  changeEdgeAnimationFromNodeId: (nodeId) => {
     utils.animateEdgeFromNodeIds(set, get, nodeId);
   },
-  publisherSent: publisherNodeId => {
-    get().edges.forEach(edge => {
+  publisherSent: (publisherNodeId) => {
+    get().edges.forEach((edge) => {
       if (edge.source === publisherNodeId) emitMessageFlow(edge.id);
     });
   },
-  subscriberReceived: subscriberNodeId => {
-    get().edges.forEach(edge => {
+  subscriberReceived: (subscriberNodeId) => {
+    get().edges.forEach((edge) => {
       if (edge.target === subscriberNodeId) emitMessageFlow(edge.id);
     });
   },
-  onDeleteEdge: edgeId => {
+  onDeleteEdge: (edgeId) => {
     utils.updateQueueOnDeletingEdge(set, get, edgeId, true);
     set({
       edges: get().edges.filter((edge) => edge.id !== edgeId),
@@ -111,7 +100,7 @@ const useStore = create((set, get) => ({
   onDeleteNode: (nodeId, isAQueue = false) => {
     if (isAQueue) {
       // if we are deleting a queue we have to update the connections
-      let edges = get().edges.filter(
+      const edges = get().edges.filter(
         (edge) => edge.target === nodeId || edge.source === nodeId
       );
       edges.forEach((e) => {
@@ -132,72 +121,37 @@ const useStore = create((set, get) => ({
   },
   updateTopicName: (id, inputText) => {
     // delete edges
-
-    let edgesToDelete = utils.getEdgesFromNode(set, get, id);
+    const edgesToDelete = utils.getEdgesFromNode(set, get, id);
     edgesToDelete.forEach((edge) => {
       get().onDeleteEdge(edge.id);
     });
 
     set({
-      nodes: get().nodes.map((node) => {
-        if (node.id === id) {
-          node = {
-            ...node,
-            data: {
-              ...node.data,
-              queueName: inputText,
-            },
-          };
-        }
-        return node;
-      }),
+      nodes: patchNodeData(get().nodes, id, { queueName: inputText }),
     });
   },
   setDataframeForChart: () => {
-    // Each grup is a specific topic
-    let _dataframe = [];
-    let currentTopicNames = [];
-    get().nodes.forEach((node) => {
-      if (node.data.role === 'q') {
-        currentTopicNames.push(node.data.queueName);
-      }
-    });
-    currentTopicNames.forEach((topic) => {
-      let subsToThisTopic = get().nodes.filter(
+    // Each group is a specific topic
+    const { nodes } = get();
+    return nodes.filter(isQueueNode).map(({ data }) => ({
+      group: data.queueName,
+      value: nodes.filter(
         (node) =>
-          node.data.role === 'Consumer' && node.data.connectedQueue === topic
-      );
-      let numberOfSubsToTopic = subsToThisTopic.length;
-      _dataframe.push({
-        group: topic,
-        value: numberOfSubsToTopic,
-      });
-    });
-    return _dataframe;
+          node.data.role === 'Consumer' &&
+          node.data.connectedQueue === data.queueName
+      ).length,
+    }));
   },
   deleteEdgeFromNode: (nodeId) => {
-    // Get the edges connected to the node
-    let edges = utils.getEdgesFromNode(set, get, nodeId);
-    // if exists more than one edge connected to that nodeId
-    if (edges.length > 0) {
-      // delete all the edges
-      edges.forEach((edge) => {
-        get().onDeleteEdge(edge.id);
-      });
-    }
+    // Get the edges connected to the node and delete them all
+    utils.getEdgesFromNode(set, get, nodeId).forEach((edge) => {
+      get().onDeleteEdge(edge.id);
+    });
   },
   getAvailableTopic: () => {
-    let currentTopicNames = [];
-    get().nodes.forEach((node) => {
-      if (node.data.role === 'q') {
-        let _entry = {
-          id: node.id,
-          text: node.data.queueName,
-        };
-        currentTopicNames.push(_entry);
-      }
-    });
-    return currentTopicNames;
+    return get()
+      .nodes.filter(isQueueNode)
+      .map((node) => ({ id: node.id, text: node.data.queueName }));
   },
 }));
 

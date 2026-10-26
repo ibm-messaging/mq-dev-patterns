@@ -22,11 +22,17 @@ import {
 } from '@xyflow/react';
 import initialNodes from './nodes';
 import initialEdges from './edges';
-import MapUtils, { emitMessageFlow } from '../../Map/utils';
-//import { persist } from 'zustand/middleware';
+import MapUtils, {
+  bumpQueueCounter,
+  emitMessageFlow,
+  getQueueDepth,
+  isQueueNode,
+} from '../../Map/utils';
+import type { P2PStoreState } from '../../../types';
+
 const utils = new MapUtils();
 
-const useStore = create((set, get) => ({
+const useStore = create<P2PStoreState>()((set, get) => ({
   nodes: initialNodes,
   edges: initialEdges,
   queueData: [],
@@ -50,7 +56,11 @@ const useStore = create((set, get) => ({
     utils.disabledNonConnetedQueue(set, get, oldEdge, connection);
   },
   onConnect: (connection) => {
-    var setConnection = utils.updateConnectionNodeToQueue(set, get, connection);
+    const setConnection = utils.updateConnectionNodeToQueue(
+      set,
+      get,
+      connection
+    );
 
     if (setConnection) {
       utils.drawConnectionNodeToQueueFromConnection(set, get, connection);
@@ -65,17 +75,13 @@ const useStore = create((set, get) => ({
     utils.animateEdgeFromProducer(set, get, nodeId, state, isFromEdge);
   },
   sendMessages: (nodeId, count) => {
-    const edges = get().edges;
-    const outEdge = edges.find((e) => e.source === nodeId);
+    const outEdge = get().edges.find((e) => e.source === nodeId);
     if (!outEdge) return;
     const queueNodeId = outEdge.target;
     set((state) => ({
       localDepths: {
         ...state.localDepths,
-        [queueNodeId]:
-          (state.localDepths[queueNodeId] ??
-            state.nodeDepths[queueNodeId] ??
-            0) + count,
+        [queueNodeId]: getQueueDepth(state, queueNodeId) + count,
       },
     }));
     for (let i = 0; i < count; i++) {
@@ -83,52 +89,22 @@ const useStore = create((set, get) => ({
         emitMessageFlow(outEdge.id);
         setTimeout(() => {
           set({
-            nodes: get().nodes.map((node) => {
-              if (node.id === queueNodeId) {
-                return {
-                  ...node,
-                  data: {
-                    ...node.data,
-                    landCount: (node.data?.landCount || 0) + 1,
-                  },
-                };
-              }
-              return node;
-            }),
+            nodes: bumpQueueCounter(get().nodes, queueNodeId, 'landCount'),
           });
         }, 950);
       }, i * 1000);
     }
   },
-  bumpLandCount: (queueNodeId) => {
-    set({
-      nodes: get().nodes.map((node) => {
-        if (node.id === queueNodeId) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              landCount: (node.data?.landCount || 0) + 1,
-            },
-          };
-        }
-        return node;
-      }),
-    });
-  },
-
   consumeMessageFromQueue: (consumerNodeId) => {
-    const edges = get().edges;
-    const inboundEdge = edges.find((e) => e.target === consumerNodeId);
+    const inboundEdge = get().edges.find((e) => e.target === consumerNodeId);
     if (!inboundEdge) return;
     const queueNodeId = inboundEdge.source;
     emitMessageFlow(inboundEdge.id);
     const queueNode = get().nodes.find((n) => n.id === queueNodeId);
-    const nodeLandCount = queueNode?.data?.landCount || 0;
-    const prevLocal =
-      get().localDepths[queueNodeId] ??
-      get().nodeDepths[queueNodeId] ??
-      nodeLandCount;
+    const nodeLandCount = isQueueNode(queueNode)
+      ? (queueNode.data.landCount ?? 0)
+      : 0;
+    const prevLocal = getQueueDepth(get(), queueNodeId, nodeLandCount);
     const newLocal = Math.max(prevLocal - 1, 0);
     set((state) => ({
       localDepths: { ...state.localDepths, [queueNodeId]: newLocal },
@@ -142,7 +118,7 @@ const useStore = create((set, get) => ({
   },
   onDeleteNode: (nodeId, isAQueue = false) => {
     if (isAQueue) {
-      let edges = get().edges.filter(
+      const edges = get().edges.filter(
         (edge) => edge.target === nodeId || edge.source === nodeId
       );
       edges.forEach((e) => {
@@ -165,9 +141,7 @@ const useStore = create((set, get) => ({
     }));
   },
   updateQueueData: (data) => {
-    set((state) => ({
-      queueData: data,
-    }));
+    set({ queueData: data });
   },
   getQueuesNodes: () => {
     return get().nodes.filter((node) => node.type === 'queue');
