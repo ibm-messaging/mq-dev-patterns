@@ -85,7 +85,6 @@ const initialNodes: MQFlowNode[] = [
   {
     id: '17',
     type: 'queue',
-    isAqueue: 1,
     data: {
       role: 'q',
       depth: 0,
@@ -253,7 +252,6 @@ const useStore = create<RRStoreState>()((set, get) => ({
     const tmpQueue: MQFlowNode = {
       id: '10',
       type: 'queue',
-      isAqueue: 1,
       data: {
         role: 'q',
         depth: 0,
