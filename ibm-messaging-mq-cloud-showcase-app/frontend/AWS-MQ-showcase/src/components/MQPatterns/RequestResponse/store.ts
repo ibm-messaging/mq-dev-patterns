@@ -19,28 +19,41 @@ import {
   applyNodeChanges,
   applyEdgeChanges,
   reconnectEdge,
+  Position,
 } from '@xyflow/react';
-import MapUtils, { emitMessageFlow } from '../../Map/utils';
 import Cookies from 'js-cookie';
-//import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
+import MapUtils, {
+  bumpQueueCounter,
+  emitMessageFlow,
+  EDGE_STYLE_THIN,
+  getQueueDepth,
+  isQueueNode,
+} from '../../Map/utils';
+import type { MQFlowEdge, MQFlowNode, RRStoreState } from '../../../types';
+
 const utils = new MapUtils();
+
+// ── Session IDs (stable for the browser session via cookies) ─────────────────
 
 let sessionID = Cookies.get('sessionID');
 let requestorSessionID = Cookies.get('requestorSessionID');
 
-const setCookies = () => {
-  if (!sessionID) {
-    sessionID = uuidv4().replace(/-/g, '');
-    requestorSessionID = uuidv4().replace(/-/g, '');
-    Cookies.set('sessionID', sessionID);
-    Cookies.set('requestorSessionID', requestorSessionID);
-  }
-};
+if (!sessionID) {
+  sessionID = uuidv4().replace(/-/g, '');
+  requestorSessionID = uuidv4().replace(/-/g, '');
+  Cookies.set('sessionID', sessionID);
+  Cookies.set('requestorSessionID', requestorSessionID);
+}
 
-setCookies();
+// Both are guaranteed non-empty after the block above; throw to make it explicit.
+if (!sessionID || !requestorSessionID) {
+  throw new Error('Failed to initialise session cookies');
+}
 
-const _initialNodes = [
+// ── Initial graph ─────────────────────────────────────────────────────────────
+
+const initialNodes: MQFlowNode[] = [
   {
     id: requestorSessionID,
     type: 'producer',
@@ -51,8 +64,8 @@ const _initialNodes = [
       isActive: false,
     },
     position: { x: 100, y: 200 },
-    sourcePosition: 'right',
-    targetPosition: 'right',
+    sourcePosition: Position.Right,
+    targetPosition: Position.Right,
     draggable: true,
   },
   {
@@ -65,8 +78,8 @@ const _initialNodes = [
       isActive: false,
     },
     position: { x: 1150, y: 200 },
-    targetPosition: 'left',
-    sourcePosition: 'left',
+    targetPosition: Position.Left,
+    sourcePosition: Position.Left,
     draggable: true,
   },
   {
@@ -79,45 +92,52 @@ const _initialNodes = [
       queueName: 'DEV.QUEUE.3',
     },
     position: { x: 650, y: 165 },
-    sourcePosition: 'right',
-    targetPosition: 'left',
+    sourcePosition: Position.Right,
+    targetPosition: Position.Left,
     draggable: true,
   },
 ];
 
-const useStore = create((set, get) => ({
-  nodes: _initialNodes,
+const initialEdges: MQFlowEdge[] = [
+  {
+    id: '17-' + sessionID,
+    source: '17',
+    target: sessionID,
+    type: 'custom',
+    animated: false,
+    style: EDGE_STYLE_THIN,
+  },
+  {
+    id: requestorSessionID + '-17',
+    source: requestorSessionID,
+    target: '17',
+    type: 'custom',
+    animated: false,
+    style: EDGE_STYLE_THIN,
+  },
+];
+
+// ── Store ─────────────────────────────────────────────────────────────────────
+
+const useStore = create<RRStoreState>()((set, get) => ({
+  nodes: initialNodes,
+  edges: initialEdges,
+  queueData: [],
   nodeDepths: {},
   localDepths: {},
-  edges: [
-    {
-      id: '17-' + sessionID,
-      source: '17',
-      target: sessionID,
-      type: 'custom',
-      animated: false,
-      style: { stroke: '#0050e6', strokeWidth: 1 },
-    },
-    {
-      id: requestorSessionID + '-17',
-      source: requestorSessionID,
-      target: '17',
-      type: 'custom',
-      animated: false,
-      style: { stroke: '#0050e6', strokeWidth: 1 },
-    },
-  ],
-  queueData: [],
+
   onNodesChange: (changes) => {
     set({
       nodes: applyNodeChanges(changes, get().nodes),
     });
   },
+
   onEdgesChange: (changes) => {
     set({
       edges: applyEdgeChanges(changes, get().edges),
     });
   },
+
   onReconnect: (oldEdge, connection) => {
     utils.updateConnectionNodeToQueue(set, get, connection);
     set({
@@ -125,8 +145,13 @@ const useStore = create((set, get) => ({
     });
     utils.disabledNonConnetedQueue(set, get, oldEdge, connection);
   },
+
   onConnect: (connection) => {
-    var setConnection = utils.updateConnectionNodeToQueue(set, get, connection);
+    const setConnection = utils.updateConnectionNodeToQueue(
+      set,
+      get,
+      connection
+    );
 
     if (setConnection) {
       utils.drawConnectionNodeToQueueFromConnection(set, get, connection);
@@ -134,24 +159,23 @@ const useStore = create((set, get) => ({
       alert('Impossible setting the connection between these two components');
     }
   },
+
   onClick: (nodeId) => {
     utils.setActiveNodeAndAnimateFromNodeId(set, get, nodeId);
   },
-  changeEdgeAnimationFromNodeId: (nodeId, state) => {
-    utils.animateEdgeFromProducer(set, get, nodeId, state);
+
+  changeEdgeAnimationFromNodeId: (nodeId, state, isFromEdge = false) => {
+    utils.animateEdgeFromProducer(set, get, nodeId, state, isFromEdge);
   },
+
   sendMessages: (nodeId, count) => {
-    const edges = get().edges;
-    const outEdge = edges.find(e => e.source === nodeId);
+    const outEdge = get().edges.find((e) => e.source === nodeId);
     if (!outEdge) return;
     const queueNodeId = outEdge.target;
-    set(state => ({
+    set((state) => ({
       localDepths: {
         ...state.localDepths,
-        [queueNodeId]:
-          (state.localDepths[queueNodeId] ??
-            state.nodeDepths[queueNodeId] ??
-            0) + count,
+        [queueNodeId]: getQueueDepth(state, queueNodeId) + count,
       },
     }));
     for (let i = 0; i < count; i++) {
@@ -159,61 +183,40 @@ const useStore = create((set, get) => ({
         emitMessageFlow(outEdge.id);
         setTimeout(() => {
           set({
-            nodes: get().nodes.map(node => {
-              if (node.id === queueNodeId) {
-                return {
-                  ...node,
-                  data: {
-                    ...node.data,
-                    landCount: (node.data?.landCount || 0) + 1,
-                  },
-                };
-              }
-              return node;
-            }),
+            nodes: bumpQueueCounter(get().nodes, queueNodeId, 'landCount'),
           });
         }, 950);
       }, i * 1000);
     }
   },
-  drainMessageFromQueue: responderNodeId => {
-    const edges = get().edges;
-    const inboundEdge = edges.find(e => e.target === responderNodeId);
+
+  drainMessageFromQueue: (responderNodeId) => {
+    const inboundEdge = get().edges.find((e) => e.target === responderNodeId);
     if (!inboundEdge) return;
     const queueNodeId = inboundEdge.source;
-    const queueNode = get().nodes.find(n => n.id === queueNodeId);
-    const nodeLandCount = queueNode?.data?.landCount || 0;
-    const prevLocal =
-      get().localDepths[queueNodeId] ??
-      get().nodeDepths[queueNodeId] ??
-      nodeLandCount;
+    const queueNode = get().nodes.find((n) => n.id === queueNodeId);
+    const nodeLandCount = isQueueNode(queueNode)
+      ? (queueNode.data.landCount ?? 0)
+      : 0;
+    const prevLocal = getQueueDepth(get(), queueNodeId, nodeLandCount);
     const newLocal = Math.max(prevLocal - 1, 0);
-    set(state => ({
+    set((state) => ({
       localDepths: { ...state.localDepths, [queueNodeId]: newLocal },
-      nodes: state.nodes.map(node => {
-        if (node.id === queueNodeId) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              drainCount: (node.data?.drainCount || 0) + 1,
-            },
-          };
-        }
-        return node;
-      }),
+      nodes: bumpQueueCounter(state.nodes, queueNodeId, 'drainCount'),
     }));
   },
-  onDeleteEdge: edgeId => {
+
+  onDeleteEdge: (edgeId) => {
     utils.updateQueueOnDeletingEdge(set, get, edgeId);
     set({
       edges: get().edges.filter((edge) => edge.id !== edgeId),
     });
   },
+
   onDeleteNode: (nodeId, isAQueue = false) => {
     if (isAQueue) {
       // if we are deleting a queue we have to update the connections
-      let edges = get().edges.filter(
+      const edges = get().edges.filter(
         (edge) => edge.target === nodeId || edge.source === nodeId
       );
       edges.forEach((e) => {
@@ -224,27 +227,30 @@ const useStore = create((set, get) => ({
       nodes: get().nodes.filter((node) => node.id !== nodeId),
     });
   },
+
   addNode: (node) => {
     set({
       nodes: get().nodes.concat(node),
     });
   },
+
   setNodeDepth: (nodeId, depth) => {
-    set(state => ({
+    set((state) => ({
       nodeDepths: { ...state.nodeDepths, [nodeId]: depth },
       localDepths: { ...state.localDepths, [nodeId]: depth },
     }));
   },
-  updateQueueData: data => {
-    set(state => ({
-      queueData: data,
-    }));
+
+  updateQueueData: (data) => {
+    set({ queueData: data });
   },
+
   getQueuesNodes: () => {
     return get().nodes.filter((node) => node.type === 'queue');
   },
+
   creteTmpQueue: (tmpQueueName, requestNodeId) => {
-    let tmpQueue = {
+    const tmpQueue: MQFlowNode = {
       id: '10',
       type: 'queue',
       isAqueue: 1,
@@ -255,87 +261,68 @@ const useStore = create((set, get) => ({
         isReplyQueue: true,
       },
       position: { x: 650, y: 370 },
-      sourcePosition: 'right',
-      targetPosition: 'left',
+      sourcePosition: Position.Right,
+      targetPosition: Position.Left,
       draggable: true,
     };
 
     get().addNode(tmpQueue);
-    let connection = {
+    utils.drawConnectionNodeToQueueFromConnection(set, get, {
       target: requestNodeId,
       source: tmpQueue.id,
-    };
-    utils.drawConnectionNodeToQueueFromConnection(set, get, connection);
+    });
   },
+
   drawTmpConnection: (tmpQueueName, responderId, isResp) => {
-    let node = get().nodes.filter(
-      (node) => node.data.role === 'q' && node.data.queueName === tmpQueueName
+    const node = get().nodes.find(
+      (n) => n.data.role === 'q' && n.data.queueName === tmpQueueName
     );
-    let connection = {};
-    if (isResp) {
-      connection = {
-        source: responderId,
-        target: node[0].id,
-      };
-    } else {
-      connection = {
-        target: node[0].id,
-        source: responderId,
-      };
-    }
+    if (!node) return;
+    const connection = isResp
+      ? { source: responderId, target: node.id }
+      : { target: node.id, source: responderId };
 
     utils.drawConnectionNodeToQueueFromConnection(set, get, connection);
   },
 
   animateTmpConnection: (tmpQueueName, responderId) => {
     const replyQueueNode = get().nodes.find(
-      node => node.data.role === 'q' && node.data.queueName === tmpQueueName
+      (n) => n.data.role === 'q' && n.data.queueName === tmpQueueName
     );
     if (!replyQueueNode) return;
     const replyQueueNodeId = replyQueueNode.id;
 
     const edge = get().edges.find(
-      e => e.source === responderId && e.target === replyQueueNodeId
+      (e) => e.source === responderId && e.target === replyQueueNodeId
     );
     if (edge) {
       emitMessageFlow(edge.id);
       setTimeout(() => {
         set({
-          nodes: get().nodes.map(node => {
-            if (node.id === replyQueueNodeId) {
-              return {
-                ...node,
-                data: {
-                  ...node.data,
-                  landCount: (node.data?.landCount || 0) + 1,
-                },
-              };
-            }
-            return node;
-          }),
+          nodes: bumpQueueCounter(get().nodes, replyQueueNodeId, 'landCount'),
         });
       }, 950);
     }
 
     utils.animateEdgeFromConnection(set, get, responderId, replyQueueNodeId);
   },
+
   deleteEdgeFromConnection: (tmpQueueName, responderId) => {
-    let node = get().nodes.filter(
-      (node) => node.data.role === 'q' && node.data.queueName === tmpQueueName
+    const node = get().nodes.find(
+      (n) => n.data.role === 'q' && n.data.queueName === tmpQueueName
     );
-    let connection = {
-      source: responderId,
-      target: node[0].id,
-    };
-    let edgeId = connection.source + '-' + connection.target;
+    if (!node) return;
+    const edgeId = `${responderId}-${node.id}`;
     get().onDeleteEdge(edgeId);
   },
+
   deleteTmpQueueFromTmpQueueName: (tmpQueueName) => {
-    let tmpQueueNodeId = get().nodes.filter(
+    const tmpQueueNode = get().nodes.find(
       (node) => node.data.queueName === tmpQueueName
     );
+    if (!tmpQueueNode) return;
     set({
-      nodes: get().nodes.filter((node) => node.id !== tmpQueueNodeId[0].id),
+      nodes: get().nodes.filter((node) => node.id !== tmpQueueNode.id),
     });
   },
 }));
