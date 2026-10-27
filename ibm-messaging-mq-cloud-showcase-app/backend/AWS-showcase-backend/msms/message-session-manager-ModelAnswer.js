@@ -118,49 +118,36 @@ class MQClient {
    * @returns {Promise<any>} Returns a promise resolving to true if the queue definition exists, else resolves with a false.
    */
   checkQueueExists(queueName) {
-    // If the HCONN doesn't exist, that means a connection to the Queue Manager was not performed.
-    if (this[_HCONNKEY] === null) {
-      let qmgr = MQDetails.QMGR;
-      return new Promise((resolve, reject) => {
-        this.buildCNO()
-          .then((cno) => {
-            return mq.ConnxPromise(qmgr, cno);
-          })
-          .then((hConn) => {
-            debug_info('HCONN IS : ', hConn);
-            try {
-              let od = new mq.MQOD();
-              od.ObjectName = queueName;
-              od.ObjectType = MQC.MQOT_Q;
-              let openOptions = MQC.MQOO_OUTPUT;
-
-              mq.Open(hConn, od, openOptions, function (err, hObj) {
-                if (err) {
-                  if (err.mqrc === MQC.MQRC_UNKNOWN_OBJECT_NAME) {
-                    debug_warn('Queue does not exist');
-                    resolve(false);
-                  }
-                } else {
-                  mq.Close(hObj, 0, function (err) {
-                    if (err) {
-                      debug_warn('Error while closing connection : ', err);
-                    } else {
-                      debug_info('MQCLOSE successfull');
-                    }
-                  });
-
-                  resolve(true);
-                }
-              });
-            } catch (err) {
-              debug_warn('Some error has occured : ', err);
-              reject(null);
-            }
-          });
-      });
-    } else {
+    // This client already has a connection to the Queue Manager, so there is nothing to check.
+    if (this[_HCONNKEY] !== null) {
       return Promise.resolve(true);
     }
+
+    const originalDynamic = this._DYNAMIC;
+    const originalHealthy = this._HEALTHY;
+
+    // DYNREP makes performOpen open the queue for output only, which is all the check needs.
+    this._DYNAMIC = 'DYNREP';
+
+    return this.performConnection(queueName)
+      .then(() => true)
+      .catch((err) => {
+        if (err && err.mqrc === MQC.MQRC_UNKNOWN_OBJECT_NAME) {
+          debug_warn('Queue does not exist');
+
+          // Missing queue is not a client health issue.
+          this._HEALTHY = originalHealthy;
+
+          return false;
+        }
+
+        debug_warn('Some error has occured : ', err);
+        throw err;
+      })
+      .finally(() => {
+        this._DYNAMIC = originalDynamic;
+        return this.cleanUp();
+      });
   }
 
   /**
