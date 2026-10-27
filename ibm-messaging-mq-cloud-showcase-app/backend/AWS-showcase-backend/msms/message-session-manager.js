@@ -34,6 +34,11 @@ const MQC = mq.MQC;
 let debug_info = require('debug')('mqapp-mqclient:info');
 let debug_warn = require('debug')('mqapp-mqclient:warn');
 
+// Formats an MQ error for logging
+function formatErr(err) {
+  return 'MQ call failed in ' + err.message;
+}
+
 const _HCONNKEY = Symbol('hconn');
 const _HOBJKEY = Symbol('hObj');
 const _HOBJDYN = Symbol('hDyn');
@@ -113,49 +118,39 @@ class MQClient {
    * @returns {Promise<any>} Returns a promise resolving to true if the queue definition exists, else resolves with a false.
    */
   checkQueueExists(queueName) {
-    // If the HCONN doesn't exist, that means a connection to the Queue Manager was not performed.
-    if (this[_HCONNKEY] === null) {
-      let qmgr = MQDetails.QMGR;
-      return new Promise((resolve, reject) => {
-        this.buildCNO()
-          .then((cno) => {
-            return mq.ConnxPromise(qmgr, cno);
-          })
-          .then((hConn) => {
-            debug_info('HCONN IS : ', hConn);
-            try {
-              let od = new mq.MQOD();
-              od.ObjectName = queueName;
-              od.ObjectType = MQC.MQOT_Q;
-              let openOptions = MQC.MQOO_OUTPUT;
-
-              mq.Open(hConn, od, openOptions, function (err, hObj) {
-                if (err) {
-                  if (err.mqrc === MQC.MQRC_UNKNOWN_OBJECT_NAME) {
-                    debug_warn('Queue does not exist');
-                    resolve(false);
-                  }
-                } else {
-                  mq.Close(hObj, 0, function (err) {
-                    if (err) {
-                      debug_warn('Error while closing connection : ', err);
-                    } else {
-                      debug_info('MQCLOSE successfull');
-                    }
-                  });
-
-                  resolve(true);
-                }
-              });
-            } catch (err) {
-              debug_warn('Some error has occured : ', err);
-              reject(null);
-            }
-          });
-      });
-    } else {
+    // If the HCONN exists, this client is already connected to the Queue Manager.
+    // Skip the check and report the queue as available.
+    if (this[_HCONNKEY] !== null) {
       return Promise.resolve(true);
     }
+
+    const originalDynamic = this._DYNAMIC;
+    const originalHealthy = this._HEALTHY;
+
+    // With _DYNAMIC set, performOpen opens the queue for output only, which is all this check needs.
+    this._DYNAMIC = 'DYNREP';
+
+    return this.performConnection(queueName)
+      .then(() => true)
+      .catch((err) => {
+        if (err && err.mqrc === MQC.MQRC_UNKNOWN_OBJECT_NAME) {
+          debug_warn('Queue does not exist');
+
+          // performConnection marks the client unhealthy on any error.
+          // A missing queue is not a fault of the client, so put the flag back.
+          this._HEALTHY = originalHealthy;
+
+          return false;
+        }
+
+        debug_warn('Some error has occured : ', err);
+        throw err;
+      })
+      .finally(() => {
+        // Restore the flag and close the connection that was opened for this check.
+        this._DYNAMIC = originalDynamic;
+        return this.cleanUp();
+      });
   }
 
   /**
