@@ -118,7 +118,8 @@ class MQClient {
    * @returns {Promise<any>} Returns a promise resolving to true if the queue definition exists, else resolves with a false.
    */
   checkQueueExists(queueName) {
-    // This client already has a connection to the Queue Manager, so there is nothing to check.
+    // If the HCONN exists, this client is already connected to the Queue Manager.
+    // Skip the check and report the queue as available.
     if (this[_HCONNKEY] !== null) {
       return Promise.resolve(true);
     }
@@ -126,7 +127,7 @@ class MQClient {
     const originalDynamic = this._DYNAMIC;
     const originalHealthy = this._HEALTHY;
 
-    // DYNREP makes performOpen open the queue for output only, which is all the check needs.
+    // With _DYNAMIC set, performOpen opens the queue for output only, which is all this check needs.
     this._DYNAMIC = 'DYNREP';
 
     return this.performConnection(queueName)
@@ -135,7 +136,8 @@ class MQClient {
         if (err && err.mqrc === MQC.MQRC_UNKNOWN_OBJECT_NAME) {
           debug_warn('Queue does not exist');
 
-          // Missing queue is not a client health issue.
+          // performConnection marks the client unhealthy on any error.
+          // A missing queue is not a fault of the client, so put the flag back.
           this._HEALTHY = originalHealthy;
 
           return false;
@@ -145,6 +147,7 @@ class MQClient {
         throw err;
       })
       .finally(() => {
+        // Restore the flag and close the connection that was opened for this check.
         this._DYNAMIC = originalDynamic;
         return this.cleanUp();
       });
