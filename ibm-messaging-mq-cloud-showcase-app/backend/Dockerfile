@@ -20,7 +20,7 @@
 # This starts the BUILD phase
 ###########################################################
 ARG BUILD_PLATFORM=linux/amd64
-FROM --platform=${BUILD_PLATFORM} public.ecr.aws/docker/library/node:22-slim AS builder
+FROM --platform=${BUILD_PLATFORM} public.ecr.aws/docker/library/node:26-slim AS builder
 
 WORKDIR /app
 
@@ -36,7 +36,7 @@ COPY ./AWS-showcase-backend/ ./
 ###########################################################
 # This starts the RUNTIME phase
 ###########################################################
-FROM --platform=${BUILD_PLATFORM} public.ecr.aws/docker/library/node:22-slim AS backendimage
+FROM --platform=${BUILD_PLATFORM} public.ecr.aws/docker/library/node:26-slim AS backendimage
 
 WORKDIR /app
 

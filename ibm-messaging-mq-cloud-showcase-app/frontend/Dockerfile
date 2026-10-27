@@ -28,7 +28,7 @@
 # Apple Silicon would emulate linux/amd64 to match the runtime stage, causing
 # a QEMU segfault during npm install. The compiled output (HTML/JS/CSS) is
 # platform-agnostic and is safely copied into the linux/amd64 runtime stage below.
-FROM --platform=$BUILDPLATFORM public.ecr.aws/docker/library/node:22-alpine AS builder
+FROM --platform=$BUILDPLATFORM public.ecr.aws/docker/library/node:26-alpine AS builder
 WORKDIR /app
 
 # Manifest files copied before source so the npm ci layer is cached
