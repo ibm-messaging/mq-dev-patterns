@@ -14,13 +14,16 @@
  * limitations under the License.
  **/
 
-const isForTheCodingChallange =
+import { Position } from '@xyflow/react';
+import type { MQFlowNode } from '../../../types';
+
+const isForTheCodingChallenge =
   process.env.REACT_APP_IS_FOR_CODING_CHALLENGE === 'true';
 
 const DEFAULT_QUEUE_POSITION = { x: 650, y: 220 };
 const CODING_CHALLENGE_QUEUE_POSITION = { x: 750, y: 250 };
 
-const initialNodes = [
+const initialNodes: MQFlowNode[] = [
   {
     id: '1',
     type: 'producer',
@@ -31,7 +34,7 @@ const initialNodes = [
       isActive: false,
     },
     position: { x: 200, y: 150 },
-    sourcePosition: 'right',
+    sourcePosition: Position.Right,
     draggable: true,
   },
   {
@@ -44,7 +47,7 @@ const initialNodes = [
       isActive: false,
     },
     position: { x: 1150, y: 150 },
-    targetPosition: 'left',
+    targetPosition: Position.Left,
     draggable: true,
   },
   {
@@ -56,11 +59,11 @@ const initialNodes = [
       depth: 0,
       queueName: 'DEV.QUEUE.1',
     },
-    position: isForTheCodingChallange
+    position: isForTheCodingChallenge
       ? CODING_CHALLENGE_QUEUE_POSITION
       : DEFAULT_QUEUE_POSITION,
-    sourcePosition: 'right',
-    targetPosition: 'left',
+    sourcePosition: Position.Right,
+    targetPosition: Position.Left,
     draggable: true,
   },
 ];

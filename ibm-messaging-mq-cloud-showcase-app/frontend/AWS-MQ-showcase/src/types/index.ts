@@ -35,7 +35,8 @@ export interface ConsumerNodeData extends Record<string, unknown> {
   role: 'Consumer';
   label: string;
   connectedQueue: string;
-  isActive: boolean;
+  /** Omitted by PubSub subscribers, which track `subscriptionState` instead */
+  isActive?: boolean;
   /** 0 = unsubscribed, 1 = subscribed, 2 = unsubscribing */
   subscriptionState?: 0 | 1 | 2;
 }
@@ -67,7 +68,7 @@ export interface BasicNodeData extends Record<string, unknown> {
 
 export type ProducerFlowNode = Node<ProducerNodeData, 'producer'>;
 export type ConsumerFlowNode = Node<ConsumerNodeData, 'consumer'>;
-export type QueueFlowNode = Node<QueueNodeData, 'queue'>;
+export type QueueFlowNode = Node<QueueNodeData, 'queue'> & { isAqueue?: 1 };
 export type MQFlowNode = ProducerFlowNode | ConsumerFlowNode | QueueFlowNode;
 export type MQFlowEdge = Edge;
 
