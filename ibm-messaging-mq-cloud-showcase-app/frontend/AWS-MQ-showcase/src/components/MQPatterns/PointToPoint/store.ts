@@ -101,7 +101,6 @@ const useStore = create<P2PStoreState>()((set, get) => ({
       }, i * 1000);
     }
   },
-
   consumeMessageFromQueue: (consumerNodeId) => {
     const inboundEdge = get().edges.find((e) => e.target === consumerNodeId);
     if (!inboundEdge) return;

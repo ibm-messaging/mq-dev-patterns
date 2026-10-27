@@ -126,6 +126,7 @@ const useStore = create<PubSubStoreState>()((set, get) => ({
   },
 
   updateTopicName: (id, inputText) => {
+    // delete edges
     const edgesToDelete = utils.getEdgesFromNode(set, get, id);
     edgesToDelete.forEach((edge) => {
       get().onDeleteEdge(edge.id);
@@ -149,9 +150,16 @@ const useStore = create<PubSubStoreState>()((set, get) => ({
   },
 
   deleteEdgeFromNode: (nodeId) => {
+    // Get the edges connected to the node and delete them all
     utils.getEdgesFromNode(set, get, nodeId).forEach((edge) => {
       get().onDeleteEdge(edge.id);
     });
+  },
+
+  getAvailableTopic: () => {
+    return get()
+      .nodes.filter(isQueueNode)
+      .map((node) => ({ id: node.id, text: node.data.queueName }));
   },
 }));
 
