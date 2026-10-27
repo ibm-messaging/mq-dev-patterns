@@ -14,9 +14,9 @@
  * limitations under the License.
  **/
 
-import React from 'react';
+import type { IconProps } from '../../types';
 
-const QueueIcon = ({ size = 40 }) => (
+const QueueIcon = ({ size = 40 }: IconProps) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}

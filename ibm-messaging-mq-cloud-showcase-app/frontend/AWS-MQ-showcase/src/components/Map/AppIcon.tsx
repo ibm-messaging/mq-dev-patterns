@@ -14,9 +14,9 @@
  * limitations under the License.
  **/
 
-import React from 'react';
+import type { IconProps } from '../../types';
 
-const AppIcon = ({ size = 26 }) => (
+const AppIcon = ({ size = 26 }: IconProps) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}

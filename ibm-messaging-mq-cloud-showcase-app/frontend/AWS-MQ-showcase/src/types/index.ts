@@ -72,6 +72,13 @@ export type QueueFlowNode = Node<QueueNodeData, 'queue'>;
 export type MQFlowNode = ProducerFlowNode | ConsumerFlowNode | QueueFlowNode;
 export type MQFlowEdge = Edge;
 
+// ── Shared component props ──────────────────────────────────────────────────
+
+export interface IconProps {
+  /** Width and height of the SVG in px */
+  size?: number;
+}
+
 // ── API response shapes ─────────────────────────────────────────────────────
 
 export interface QueueDepth {
