@@ -16,9 +16,13 @@ Before deploying the containers, create your `.env` file from the template and c
 
 ## Environment
 
-### Local Machine (Podman)
+### Local Machine (Podman or Docker)
 
-> **Note:** All commands use `podman compose` (with a space), which runs `docker-compose` as its compose provider. Install [Podman Desktop](https://podman.io/) and [docker-compose](https://docs.docker.com/compose/install/) (`brew install podman docker-compose`) if you don't have them yet. It is a different tool from `podman-compose` (with a hyphen).
+The application runs locally with either Podman or Docker. The commands below use `podman compose`. If you use Docker, replace `podman compose` with `docker compose`. The `docker-compose.yaml` file and the Dockerfiles are the same for both.
+
+> **Note:** `podman compose` (with a space) runs `docker-compose` as its compose provider. Install [Podman Desktop](https://podman.io/) and [docker-compose](https://docs.docker.com/compose/install/) (`brew install podman docker-compose`) if you don't have them yet. It is a different tool from `podman-compose` (with a hyphen). If you use Docker instead, install Docker Engine with the Compose plugin.
+>
+> On a Mac where `docker` is a link to Podman, `docker compose` still uses Podman. Check with `docker version` that you are talking to a Docker engine.
 
 1. Fill in your passwords in `.env` (created from `.env.example`):
 
@@ -40,7 +44,7 @@ Before deploying the containers, create your `.env` file from the template and c
 
 #### Running on Apple Silicon (ARM64)
 
-The IBM MQ image (`icr.io/ibm-messaging/mq:latest`) is `linux/amd64` only. Podman on Apple Silicon will transparently run it under emulation thanks to the `platform: linux/amd64` directive already set in `docker-compose.yaml`.
+The IBM MQ image (`icr.io/ibm-messaging/mq:latest`) is `linux/amd64` only. Podman on Apple Silicon will transparently run it under emulation thanks to the `platform: linux/amd64` directive already set in `docker-compose.yaml`. Docker works the same way, provided its engine can run `linux/amd64` containers on Apple Silicon (for example, a Colima VM started with `--arch x86_64`).
 
 The backend image is built as `linux/amd64` as well. With Podman, the `platform: linux/amd64` line in `docker-compose.yaml` only sets the platform of the running container. It does not set the platform of the build, so `backend/Dockerfile` sets it on its `FROM` lines (the `BUILD_PLATFORM` build argument). This is needed because the `ibmmq` npm package has no `linux-arm64` prebuilt binary. Without it, `podman compose build` runs the build as arm64, and `npm ci` stops with `node-gyp: Could not find any Python installation to use`. Building the backend under emulation is slower, so allow several minutes for the first `build`.
 
