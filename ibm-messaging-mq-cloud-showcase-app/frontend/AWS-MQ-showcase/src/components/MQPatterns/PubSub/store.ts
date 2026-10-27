@@ -41,11 +41,13 @@ const useStore = create<PubSubStoreState>()((set, get) => ({
       nodes: applyNodeChanges(changes, get().nodes),
     });
   },
+
   onEdgesChange: (changes) => {
     set({
       edges: applyEdgeChanges(changes, get().edges),
     });
   },
+
   onReconnect: (oldEdge, connection) => {
     utils.updateConnectionNodeToQueue(set, get, connection);
     set({
@@ -53,14 +55,7 @@ const useStore = create<PubSubStoreState>()((set, get) => ({
     });
     utils.disabledNonConnetedQueue(set, get, oldEdge, connection);
   },
-  reset: () => {
-    set({
-      nodes: [],
-    });
-    set({
-      edges: [],
-    });
-  },
+
   onConnect: (connection) => {
     const setConnection = utils.updateConnectionNodeToQueue(
       set,
@@ -68,35 +63,43 @@ const useStore = create<PubSubStoreState>()((set, get) => ({
       connection
     );
 
-    //change subcription
+    // change subscription
     if (setConnection) {
       utils.drawConnectionNodeToQueueFromConnection(set, get, connection);
     } else {
       alert('Impossible setting the connection between these two components');
     }
   },
+
   onClick: (nodeId) => {
     utils.setActiveNodeAndAnimateFromNodeId(set, get, nodeId);
   },
-  changeEdgeAnimationFromNodeId: (nodeId) => {
+
+  changeEdgeAnimationFromNodeId: (nodeId, _state, _isFromEdge) => {
+    // PubSub toggles animation unconditionally; _state and _isFromEdge are
+    // unused here but required by the BaseStoreState interface.
     utils.animateEdgeFromNodeIds(set, get, nodeId);
   },
+
   publisherSent: (publisherNodeId) => {
     get().edges.forEach((edge) => {
       if (edge.source === publisherNodeId) emitMessageFlow(edge.id);
     });
   },
+
   subscriberReceived: (subscriberNodeId) => {
     get().edges.forEach((edge) => {
       if (edge.target === subscriberNodeId) emitMessageFlow(edge.id);
     });
   },
+
   onDeleteEdge: (edgeId) => {
     utils.updateQueueOnDeletingEdge(set, get, edgeId, true);
     set({
       edges: get().edges.filter((edge) => edge.id !== edgeId),
     });
   },
+
   onDeleteNode: (nodeId, isAQueue = false) => {
     if (isAQueue) {
       // if we are deleting a queue we have to update the connections
@@ -111,25 +114,27 @@ const useStore = create<PubSubStoreState>()((set, get) => ({
       nodes: get().nodes.filter((node) => node.id !== nodeId),
     });
   },
+
   addNode: (node) => {
     set({
       nodes: get().nodes.concat(node),
     });
   },
+
   getQueuesNodes: () => {
     return get().nodes.filter((node) => node.type === 'queue');
   },
+
   updateTopicName: (id, inputText) => {
-    // delete edges
     const edgesToDelete = utils.getEdgesFromNode(set, get, id);
     edgesToDelete.forEach((edge) => {
       get().onDeleteEdge(edge.id);
     });
-
     set({
       nodes: patchNodeData(get().nodes, id, { queueName: inputText }),
     });
   },
+
   setDataframeForChart: () => {
     // Each group is a specific topic
     const { nodes } = get();
@@ -142,16 +147,11 @@ const useStore = create<PubSubStoreState>()((set, get) => ({
       ).length,
     }));
   },
+
   deleteEdgeFromNode: (nodeId) => {
-    // Get the edges connected to the node and delete them all
     utils.getEdgesFromNode(set, get, nodeId).forEach((edge) => {
       get().onDeleteEdge(edge.id);
     });
-  },
-  getAvailableTopic: () => {
-    return get()
-      .nodes.filter(isQueueNode)
-      .map((node) => ({ id: node.id, text: node.data.queueName }));
   },
 }));
 

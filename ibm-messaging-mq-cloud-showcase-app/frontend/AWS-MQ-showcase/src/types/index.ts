@@ -157,11 +157,6 @@ export interface P2PStoreState extends BaseStoreState, DepthTrackingState {
 
 // ── PubSub store ─────────────────────────────────────────────────────────────
 
-export interface PubSubTopicEntry {
-  id: string;
-  text: string;
-}
-
 export interface DataframeEntry {
   group: string;
   value: number;
@@ -169,11 +164,9 @@ export interface DataframeEntry {
 
 export interface PubSubStoreState extends BaseStoreState {
   dataframe: DataframeEntry[];
-  reset: () => void;
   updateTopicName: (id: string, inputText: string) => void;
   setDataframeForChart: () => DataframeEntry[];
   deleteEdgeFromNode: (nodeId: string) => void;
-  getAvailableTopic: () => PubSubTopicEntry[];
   publisherSent: (publisherNodeId: string) => void;
   subscriberReceived: (subscriberNodeId: string) => void;
 }
