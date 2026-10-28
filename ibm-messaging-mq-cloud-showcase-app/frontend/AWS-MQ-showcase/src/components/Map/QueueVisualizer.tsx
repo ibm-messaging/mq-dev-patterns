@@ -14,7 +14,8 @@
  * limitations under the License.
  **/
 
-import React, { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
+import type { QueueVisualizerProps } from '../../types';
 import './QueueVisualizer.scss';
 
 const MAX_SLOTS = 10;
@@ -25,15 +26,20 @@ const PLATE_H = 2.0;
 const PLATE_GAP = 0.8;
 const PLATE_RX = 0.4;
 
-const slotY = i => INNER_BOT - (i + 1) * PLATE_H - i * PLATE_GAP;
+const slotY = (i: number) => INNER_BOT - (i + 1) * PLATE_H - i * PLATE_GAP;
 
-const QueueVisualizer = ({ depth = 0, vizDepth, size = 64, landCount = 0 }) => {
+const QueueVisualizer = ({
+  depth = 0,
+  vizDepth,
+  size = 64,
+  landCount = 0,
+}: QueueVisualizerProps) => {
   const uid = useId();
   const clipId = `qv-clip-${uid.replace(/:/g, '')}`;
 
   const drainDepth = vizDepth ?? depth;
   const cappedDepth = Math.min(depth, MAX_SLOTS);
-  const [queue, setQueue] = useState(() =>
+  const [queue, setQueue] = useState<number[]>(() =>
     Array.from({ length: cappedDepth }, (_, i) => i)
   );
   const nextSlotRef = useRef(cappedDepth % MAX_SLOTS);
@@ -44,8 +50,8 @@ const QueueVisualizer = ({ depth = 0, vizDepth, size = 64, landCount = 0 }) => {
     const delta = landCount - prevLandRef.current;
     if (delta <= 0) return;
     prevLandRef.current = landCount;
-    setQueue(cur => {
-      let next = [...cur];
+    setQueue((cur) => {
+      const next = [...cur];
       let slot = nextSlotRef.current;
       for (let d = 0; d < delta; d++) {
         if (next.length >= MAX_SLOTS) break;
@@ -64,10 +70,10 @@ const QueueVisualizer = ({ depth = 0, vizDepth, size = 64, landCount = 0 }) => {
     const newCapped = Math.min(drainDepth, MAX_SLOTS);
     const delta = prevCapped - newCapped;
     if (delta <= 0) return;
-    setQueue(cur => cur.slice(delta));
+    setQueue((cur) => cur.slice(delta));
   }, [drainDepth]);
 
-  const rankMap = {};
+  const rankMap: Record<number, number> = {};
   queue.forEach((slotIndex, position) => {
     rankMap[slotIndex] = position;
   });
