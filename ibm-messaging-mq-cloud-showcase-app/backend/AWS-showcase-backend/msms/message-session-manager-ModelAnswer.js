@@ -218,7 +218,7 @@ class MQClient {
             debug_info(
               'Connected to MQ for put with properties ' + this.currency
             );
-            return this.performPutWithProperites(message, quantity);
+            return this.performPutWithProperties(message, quantity);
           } else {
             debug_info('Connected to MQ for put no properties');
             return this.performPut(message, quantity);
@@ -272,7 +272,7 @@ class MQClient {
 
         var name = 'sessionID';
         var value = sessionID;
-        debug_info('Setting properities');
+        debug_info('Setting properties');
         mq.SetMp(hConn, mh, smpo, name, pd, value);
       }
 
@@ -654,7 +654,7 @@ class MQClient {
   }
 
   //================== CODING CHALLENGE CODE ==============================
-  performPutWithProperites(message, quantity) {
+  performPutWithProperties(message, quantity) {
     console.log('entering performPutWithProperties');
 
     var mqmd = new mq.MQMD(); // Defaults are fine.
@@ -684,7 +684,7 @@ class MQClient {
         // without needing to be explicitly stated.
         var name = 'Currency';
         var value = currency;
-        debug_info('Setting properities');
+        debug_info('Setting properties');
         mq.SetMp(hConn, mh, smpo, name, pd, value);
       }
 
