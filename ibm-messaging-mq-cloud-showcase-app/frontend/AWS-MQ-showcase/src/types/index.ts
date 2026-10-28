@@ -56,14 +56,6 @@ export interface QueueNodeData extends Record<string, unknown> {
 /** Topic nodes in PubSub reuse the queue data shape */
 export type TopicNodeData = QueueNodeData;
 
-/** BasicNode — legacy, used in Basic.node only */
-export interface BasicNodeData extends Record<string, unknown> {
-  role: string;
-  label: string;
-  isActive: boolean;
-  onClick: () => void;
-}
-
 // ── @xyflow/react typed node wrappers ───────────────────────────────────────
 
 export type ProducerFlowNode = Node<ProducerNodeData, 'producer'>;
