@@ -218,7 +218,7 @@ class MQClient {
             debug_info(
               'Connected to MQ for put with properties ' + this.currency
             );
-            return this.performPutWithProperites(message, quantity);
+            return this.performPutWithProperties(message, quantity);
           } else {
             debug_info('Connected to MQ for put no properties');
             return this.performPut(message, quantity);
@@ -272,7 +272,7 @@ class MQClient {
 
         var name = 'sessionID';
         var value = sessionID;
-        debug_info('Setting properities');
+        debug_info('Setting properties');
         mq.SetMp(hConn, mh, smpo, name, pd, value);
       }
 
@@ -651,7 +651,7 @@ class MQClient {
   }
 
   //================== CODING CHALLENGE CODE ==============================
-  performPutWithProperites(message, quantity) {
+  performPutWithProperties(message, quantity) {
     return new Promise((resolve, reject) => {
       resolve(
         'You should replace this promise with the PUT function that will set the currency as a message property'
