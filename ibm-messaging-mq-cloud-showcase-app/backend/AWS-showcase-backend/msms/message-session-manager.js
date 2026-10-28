@@ -272,7 +272,7 @@ class MQClient {
 
         var name = 'sessionID';
         var value = sessionID;
-        debug_info('Setting properities');
+        debug_info('Setting properties');
         mq.SetMp(hConn, mh, smpo, name, pd, value);
       }
 
