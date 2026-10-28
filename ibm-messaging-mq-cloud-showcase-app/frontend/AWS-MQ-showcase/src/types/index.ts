@@ -14,6 +14,7 @@
  * limitations under the License.
  **/
 
+import type { MouseEventHandler, ReactNode } from 'react';
 import type {
   Node,
   Edge,
@@ -69,6 +70,19 @@ export type MQFlowEdge = Edge;
 export interface IconProps {
   /** Width and height of the SVG in px */
   size?: number;
+}
+
+export interface NodeCardProps {
+  title: string;
+  icon?: ReactNode;
+  iconColor?: string;
+  headerBg?: string;
+  headerBorderColor?: string;
+  titleColor?: string;
+  headerAction?: ReactNode;
+  onDelete?: MouseEventHandler<HTMLButtonElement>;
+  children?: ReactNode;
+  className?: string;
 }
 
 // ── API response shapes ─────────────────────────────────────────────────────
