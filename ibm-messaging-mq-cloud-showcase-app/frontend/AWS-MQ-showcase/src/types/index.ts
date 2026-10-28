@@ -14,6 +14,7 @@
  * limitations under the License.
  **/
 
+import type { MouseEventHandler, ReactNode } from 'react';
 import type {
   Node,
   Edge,
@@ -56,21 +57,33 @@ export interface QueueNodeData extends Record<string, unknown> {
 /** Topic nodes in PubSub reuse the queue data shape */
 export type TopicNodeData = QueueNodeData;
 
-/** BasicNode — legacy, used in Basic.node only */
-export interface BasicNodeData extends Record<string, unknown> {
-  role: string;
-  label: string;
-  isActive: boolean;
-  onClick: () => void;
-}
-
 // ── @xyflow/react typed node wrappers ───────────────────────────────────────
 
 export type ProducerFlowNode = Node<ProducerNodeData, 'producer'>;
 export type ConsumerFlowNode = Node<ConsumerNodeData, 'consumer'>;
-export type QueueFlowNode = Node<QueueNodeData, 'queue'> & { isAqueue?: 1 };
+export type QueueFlowNode = Node<QueueNodeData, 'queue'>;
 export type MQFlowNode = ProducerFlowNode | ConsumerFlowNode | QueueFlowNode;
 export type MQFlowEdge = Edge;
+
+// ── Shared component props ──────────────────────────────────────────────────
+
+export interface IconProps {
+  /** Width and height of the SVG in px */
+  size?: number;
+}
+
+export interface NodeCardProps {
+  title: string;
+  icon?: ReactNode;
+  iconColor?: string;
+  headerBg?: string;
+  headerBorderColor?: string;
+  titleColor?: string;
+  headerAction?: ReactNode;
+  onDelete?: MouseEventHandler<HTMLButtonElement>;
+  children?: ReactNode;
+  className?: string;
+}
 
 // ── API response shapes ─────────────────────────────────────────────────────
 
@@ -157,11 +170,6 @@ export interface P2PStoreState extends BaseStoreState, DepthTrackingState {
 
 // ── PubSub store ─────────────────────────────────────────────────────────────
 
-export interface PubSubTopicEntry {
-  id: string;
-  text: string;
-}
-
 export interface DataframeEntry {
   group: string;
   value: number;
@@ -169,11 +177,9 @@ export interface DataframeEntry {
 
 export interface PubSubStoreState extends BaseStoreState {
   dataframe: DataframeEntry[];
-  reset: () => void;
   updateTopicName: (id: string, inputText: string) => void;
   setDataframeForChart: () => DataframeEntry[];
   deleteEdgeFromNode: (nodeId: string) => void;
-  getAvailableTopic: () => PubSubTopicEntry[];
   publisherSent: (publisherNodeId: string) => void;
   subscriberReceived: (subscriberNodeId: string) => void;
 }

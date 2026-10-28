@@ -14,22 +14,23 @@
  * limitations under the License.
  **/
 
-import React from 'react';
+import { white, gray30, gray100 } from '@carbon/colors';
 import { Close } from '@carbon/react/icons';
+import type { NodeCardProps } from '../../types';
 import './NodeCard.scss';
 
 const NodeCard = ({
-  headerBg = '#ffffff',
-  headerBorderColor = '#c6c6c6',
+  headerBg = white,
+  headerBorderColor = gray30,
   icon,
   iconColor,
   title,
-  titleColor = '#161616',
+  titleColor = gray100,
   headerAction,
   onDelete,
   children,
   className = '',
-}) => {
+}: NodeCardProps) => {
   return (
     <div className={`node-card ${className}`.trim()}>
       {onDelete && (

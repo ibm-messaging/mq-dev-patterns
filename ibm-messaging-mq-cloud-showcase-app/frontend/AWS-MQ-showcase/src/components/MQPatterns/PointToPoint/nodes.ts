@@ -53,7 +53,6 @@ const initialNodes: MQFlowNode[] = [
   {
     id: '3',
     type: 'queue',
-    isAqueue: 1,
     data: {
       role: 'q',
       depth: 0,

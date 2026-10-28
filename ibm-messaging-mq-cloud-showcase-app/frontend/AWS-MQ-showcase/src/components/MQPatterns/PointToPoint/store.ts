@@ -43,11 +43,13 @@ const useStore = create<P2PStoreState>()((set, get) => ({
       nodes: applyNodeChanges(changes, get().nodes),
     });
   },
+
   onEdgesChange: (changes) => {
     set({
       edges: applyEdgeChanges(changes, get().edges),
     });
   },
+
   onReconnect: (oldEdge, connection) => {
     utils.updateConnectionNodeToQueue(set, get, connection);
     set({
@@ -55,6 +57,7 @@ const useStore = create<P2PStoreState>()((set, get) => ({
     });
     utils.disabledNonConnetedQueue(set, get, oldEdge, connection);
   },
+
   onConnect: (connection) => {
     const setConnection = utils.updateConnectionNodeToQueue(
       set,
@@ -68,12 +71,15 @@ const useStore = create<P2PStoreState>()((set, get) => ({
       alert('Impossible setting the connection between these two components');
     }
   },
+
   onClick: (nodeId) => {
     utils.setActiveNodeAndAnimateFromNodeId(set, get, nodeId);
   },
+
   changeEdgeAnimationFromNodeId: (nodeId, state, isFromEdge = false) => {
     utils.animateEdgeFromProducer(set, get, nodeId, state, isFromEdge);
   },
+
   sendMessages: (nodeId, count) => {
     const outEdge = get().edges.find((e) => e.source === nodeId);
     if (!outEdge) return;
@@ -110,12 +116,14 @@ const useStore = create<P2PStoreState>()((set, get) => ({
       localDepths: { ...state.localDepths, [queueNodeId]: newLocal },
     }));
   },
+
   onDeleteEdge: (edgeId) => {
     utils.updateQueueOnDeletingEdge(set, get, edgeId);
     set({
       edges: get().edges.filter((edge) => edge.id !== edgeId),
     });
   },
+
   onDeleteNode: (nodeId, isAQueue = false) => {
     if (isAQueue) {
       const edges = get().edges.filter(
@@ -129,20 +137,24 @@ const useStore = create<P2PStoreState>()((set, get) => ({
       nodes: get().nodes.filter((node) => node.id !== nodeId),
     });
   },
+
   addNode: (node) => {
     set({
       nodes: get().nodes.concat(node),
     });
   },
+
   setNodeDepth: (nodeId, depth) => {
     set((state) => ({
       nodeDepths: { ...state.nodeDepths, [nodeId]: depth },
       localDepths: { ...state.localDepths, [nodeId]: depth },
     }));
   },
+
   updateQueueData: (data) => {
     set({ queueData: data });
   },
+
   getQueuesNodes: () => {
     return get().nodes.filter((node) => node.type === 'queue');
   },

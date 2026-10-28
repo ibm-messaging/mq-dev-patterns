@@ -27,7 +27,6 @@ import ProducerNode from '../../Map/Producer.node';
 import ConsumerNode from '../../Map/Consumer.node';
 import QueueNode from '../../Map/Queue.node';
 import CustomEdge from '../../Map/Custom.edge';
-import Container from '../../Map/Container.node';
 import '../../Map/map.scss';
 import useStore from './store';
 import Sidebar from './Sidebar';
@@ -36,7 +35,6 @@ const nodeTypes = {
   producer: ProducerNode,
   consumer: ConsumerNode,
   queue: QueueNode,
-  container: Container,
 };
 
 const edgeTypes = {

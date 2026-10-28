@@ -78,20 +78,6 @@
   }
 }
 
-.container-node-container {
-  width: 750px;
-  height: 250px;
-  border-radius: 5%;
-}
-
-.container-node-container-name {
-  position: absolute;
-  right: $spacing-03;
-  bottom: $spacing-03;
-  color: $support-caution-major;
-  font-weight: bold;
-}
-
 .dndflow {
   flex-direction: column;
   display: flex;

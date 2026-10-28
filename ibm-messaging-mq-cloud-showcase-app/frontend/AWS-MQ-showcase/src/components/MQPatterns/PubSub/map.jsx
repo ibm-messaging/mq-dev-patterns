@@ -99,7 +99,6 @@ function Flow() {
         node = {
           id: getId(),
           type: 'queue',
-          isAqueue: 1,
           data: {
             role: 'q',
             depth: 0,
