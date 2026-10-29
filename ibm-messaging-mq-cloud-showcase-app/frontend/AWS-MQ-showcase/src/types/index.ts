@@ -136,6 +136,13 @@ export interface CodingChallengeResult {
   currency: string;
 }
 
+/** Detail of the `mq-message-flow` window event that animates a particle along an edge. */
+export interface MessageFlowDetail {
+  edgeId: string;
+  id: string;
+  reverse?: boolean;
+}
+
 export interface SubMessage {
   Title: string;
   Message: string;
