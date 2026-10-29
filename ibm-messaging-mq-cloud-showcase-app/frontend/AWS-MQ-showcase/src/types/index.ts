@@ -85,6 +85,37 @@ export interface NodeCardProps {
   className?: string;
 }
 
+export interface QueueVisualizerProps {
+  /** Actual queue depth */
+  depth?: number;
+  /** Depth used for the drain animation; falls back to `depth` */
+  vizDepth?: number;
+  /** Width and height of the SVG in px */
+  size?: number;
+  /** Cumulative count of messages that have landed on the queue */
+  landCount?: number;
+}
+
+export interface PatternSidebarItem {
+  nodeType: 'producer' | 'queue' | 'consumer';
+  icon: ReactNode;
+  label: string;
+  description: string;
+}
+
+export interface HowItWorks {
+  patternName: string;
+  tags?: string[];
+  description?: string;
+  steps?: string[];
+}
+
+export interface PatternSidebarProps {
+  items?: PatternSidebarItem[];
+  instruction?: string;
+  howItWorks?: HowItWorks;
+}
+
 // ── API response shapes ─────────────────────────────────────────────────────
 
 export interface QueueDepth {
@@ -103,6 +134,13 @@ export interface MQMessage {
 export interface CodingChallengeResult {
   message: { Message: string; Sent?: string; count?: number };
   currency: string;
+}
+
+/** Detail of the `mq-message-flow` window event that animates a particle along an edge. */
+export interface MessageFlowDetail {
+  edgeId: string;
+  id: string;
+  reverse?: boolean;
 }
 
 export interface SubMessage {

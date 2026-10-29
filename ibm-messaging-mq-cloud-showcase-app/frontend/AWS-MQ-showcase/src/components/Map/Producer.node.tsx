@@ -14,7 +14,7 @@
  * limitations under the License.
  **/
 
-import React, { useEffect, memo, useState } from 'react';
+import { useEffect, memo, useState } from 'react';
 import {
   Button,
   Dropdown,
@@ -22,13 +22,16 @@ import {
   NumberInput,
   TextInput,
 } from '@carbon/react';
-import { Handle } from '@xyflow/react';
+import { Handle, Position } from '@xyflow/react';
+import type { NodeProps } from '@xyflow/react';
+import { blue60Hover, gray100, gray70 } from '@carbon/colors';
 import { Send } from '@carbon/react/icons';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PointToPoint/store';
 import NodeCard from './NodeCard';
 import AppIcon from './AppIcon';
 import { SHOWCASE_APP_CONSTANTS } from './utils';
+import type { ProducerFlowNode } from '../../types';
 
 const {
   CURRENCY_ITEMS,
@@ -49,7 +52,8 @@ const RANDOM_SENDER_NAMES = [
 ];
 const randomSenderName = () =>
   RANDOM_SENDER_NAMES[Math.floor(Math.random() * RANDOM_SENDER_NAMES.length)];
-const ProducerNode = ({ id, data }) => {
+
+const ProducerNode = ({ id, data }: NodeProps<ProducerFlowNode>) => {
   const adapter = new APIAdapter();
   const animateConnection = useStore(
     (state) => state.changeEdgeAnimationFromNodeId
@@ -84,35 +88,30 @@ const ProducerNode = ({ id, data }) => {
   useEffect(() => {
     if (data.connectedQueue && isToggle) {
       const interval = setInterval(() => {
-        _onClick(id);
+        _onClick();
       }, 10000);
       return () => clearInterval(interval);
     }
   }, [data.connectedQueue, isToggle]);
 
-  const _onClick = (id) => {
+  const _onClick = () => {
     setAnimationState(true);
     animateConnection(id, true);
-    try {
-      if (isForTheCodingChallange) {
-        adapter
-          .put(quantity, 1, data.connectedQueue, selectedCurrency)
-          .then(() => {
-            sendMessages(id, 1);
-            setTotalSent((prev) => prev + 1);
-            if (isToggle) adapter.closeProducer();
-          });
-      } else {
-        let message = 'You bought a new ticket!';
-        adapter.put(message, quantity, data.connectedQueue).then(() => {
-          sendMessages(id, quantity);
-          setTotalSent((prev) => prev + quantity);
+    if (isForTheCodingChallange) {
+      adapter
+        .put(quantity, 1, data.connectedQueue, selectedCurrency)
+        .then(() => {
+          sendMessages(id, 1);
+          setTotalSent((prev) => prev + 1);
           if (isToggle) adapter.closeProducer();
         });
-      }
-    } catch (e) {
-      console.log(e);
-      setAnimationState(false);
+    } else {
+      const message = 'You bought a new ticket!';
+      adapter.put(message, quantity, data.connectedQueue).then(() => {
+        sendMessages(id, quantity);
+        setTotalSent((prev) => prev + quantity);
+        if (isToggle) adapter.closeProducer();
+      });
     }
   };
 
@@ -125,10 +124,10 @@ const ProducerNode = ({ id, data }) => {
   const handle = (
     <Handle
       type="source"
-      position="right"
+      position={Position.Right}
       style={{
         zIndex: 200,
-        backgroundColor: data.connectedQueue ? '#555' : '#0050e6',
+        backgroundColor: data.connectedQueue ? '#555' : blue60Hover,
       }}
       isConnectable={!data.connectedQueue}
     />
@@ -164,7 +163,7 @@ const ProducerNode = ({ id, data }) => {
               min={1}
               step={1}
               value={quantity}
-              onChange={(_e, { value }) => setQuantity(value)}
+              onChange={(_e, { value }) => setQuantity(Number(value))}
             />
           </div>
           <div className="producer-node__amount-row__currency">
@@ -176,10 +175,12 @@ const ProducerNode = ({ id, data }) => {
               selectedItem={
                 CURRENCY_ITEMS.find((c) => c.text === selectedCurrency) ?? null
               }
-              onChange={({ selectedItem }) =>
-                setSelectedCurrency(selectedItem.text)
-              }
+              onChange={({ selectedItem }) => {
+                if (selectedItem) setSelectedCurrency(selectedItem.text);
+              }}
               helperText="Currency"
+              label="Currency"
+              titleText=""
             />
           </div>
         </div>
@@ -191,7 +192,7 @@ const ProducerNode = ({ id, data }) => {
           kind="primary"
           isExpressive
           disabled={!data.connectedQueue || animationState || quantity <= 0}
-          onClick={() => _onClick(id)}>
+          onClick={_onClick}>
           Send cash
         </Button>
 
@@ -227,7 +228,7 @@ const ProducerNode = ({ id, data }) => {
         min={1}
         step={1}
         value={quantity}
-        onChange={(_e, { value }) => setQuantity(value)}
+        onChange={(_e, { value }) => setQuantity(Number(value))}
       />
 
       <Button
@@ -236,12 +237,12 @@ const ProducerNode = ({ id, data }) => {
         kind="primary"
         style={{ width: '100%' }}
         disabled={!data.connectedQueue || animationState || quantity <= 0}
-        onClick={() => _onClick(id)}>
+        onClick={_onClick}>
         Create booking
       </Button>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span style={{ fontSize: '11px', color: '#525252' }}>Auto send</span>
+        <span style={{ fontSize: '11px', color: gray70 }}>Auto send</span>
         <Toggle
           id={`producer-toggle-${id}`}
           size="sm"
@@ -249,7 +250,7 @@ const ProducerNode = ({ id, data }) => {
           toggled={isToggle}
           onToggle={() => setIsToggle(!isToggle)}
         />
-        <span style={{ fontSize: '11px', color: '#161616' }}>
+        <span style={{ fontSize: '11px', color: gray100 }}>
           {isToggle ? 'On' : 'Off'}
         </span>
       </div>

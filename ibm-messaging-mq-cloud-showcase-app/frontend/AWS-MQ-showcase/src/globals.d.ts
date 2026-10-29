@@ -17,3 +17,9 @@
 // process.env is shimmed to {} by vite.config — intentionally always returns
 // undefined at runtime. Do NOT replace with import.meta.env.
 declare const process: { env: Record<string, string | undefined> };
+
+// Typed `mq-message-flow` window event (dispatched in Map/utils, consumed by the edges).
+// import() type keeps this file a global script, so `process` above stays global.
+interface WindowEventMap {
+  'mq-message-flow': CustomEvent<import('./types').MessageFlowDetail>;
+}

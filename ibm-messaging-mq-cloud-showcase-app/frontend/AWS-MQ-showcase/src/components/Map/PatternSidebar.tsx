@@ -14,29 +14,36 @@
  * limitations under the License.
  **/
 
-import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  type DragEvent,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { Button, Tag } from '@carbon/react';
-import { Draggable, Information, Close } from '@carbon/icons-react';
+import { Draggable, Information, Close } from '@carbon/react/icons';
 import { makeDraggable } from '@carbon/utilities';
+import type { PatternSidebarItem, PatternSidebarProps } from '../../types';
 import './PatternSidebar.scss';
 
-const TAG_TYPES = ['blue', 'cyan', 'purple', 'teal'];
+const TAG_TYPES = ['blue', 'cyan', 'purple', 'teal'] as const;
 
 const PatternSidebar = ({
   items = [],
   instruction = 'Drag onto canvas. Connect handles. Toggle consumer on to start receiving.',
   howItWorks,
-}) => {
+}: PatternSidebarProps) => {
   const [isBigScreen, setIsBigScreen] = useState(
     () => window.innerWidth >= 1000
   );
   const [isOpen, setIsOpen] = useState(false);
   const [panelPos, setPanelPos] = useState({ top: 0, left: 0 });
-  const dialogRef = useRef(null);
-  const headerRef = useRef(null);
-  const dragRef = useRef(null);
-  const btnRef = useRef(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const dragRef = useRef<HTMLButtonElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const handleResize = () => setIsBigScreen(window.innerWidth >= 1000);
@@ -45,7 +52,7 @@ const PatternSidebar = ({
   }, []);
 
   useEffect(() => {
-    const aside = btnRef.current?.closest('[role="tabpanel"]');
+    const aside = btnRef.current?.closest<HTMLElement>('[role="tabpanel"]');
     if (!aside) return;
     const observer = new MutationObserver(() => {
       if (aside.hidden) setIsOpen(false);
@@ -77,10 +84,13 @@ const PatternSidebar = ({
         left: rect.right + 12,
       });
     }
-    setIsOpen(prev => !prev);
+    setIsOpen((prev) => !prev);
   };
 
-  const onDragStart = (event, nodeType) => {
+  const onDragStart = (
+    event: DragEvent<HTMLDivElement>,
+    nodeType: PatternSidebarItem['nodeType']
+  ) => {
     event.dataTransfer.setData('application/reactflow', nodeType);
     event.dataTransfer.effectAllowed = 'move';
   };
@@ -133,9 +143,9 @@ const PatternSidebar = ({
                 />
               </header>
 
-              {howItWorks.tags?.length > 0 && (
+              {(howItWorks.tags?.length ?? 0) > 0 && (
                 <div className="hiw-panel__tags">
-                  {howItWorks.tags.map((tag, i) => (
+                  {howItWorks.tags?.map((tag, i) => (
                     <Tag
                       key={tag}
                       type={TAG_TYPES[i % TAG_TYPES.length]}
@@ -152,9 +162,9 @@ const PatternSidebar = ({
                 </p>
               )}
 
-              {howItWorks.steps?.length > 0 && (
+              {(howItWorks.steps?.length ?? 0) > 0 && (
                 <ol className="hiw-panel__steps">
-                  {howItWorks.steps.map((step, i) => (
+                  {howItWorks.steps?.map((step, i) => (
                     <li key={i} className="hiw-panel__step">
                       <span className="hiw-panel__step-num">{i + 1}</span>
                       <span className="hiw-panel__step-text">{step}</span>
@@ -179,7 +189,7 @@ const PatternSidebar = ({
               key={nodeType}
               className="pattern-sidebar__card"
               draggable
-              onDragStart={event => onDragStart(event, nodeType)}>
+              onDragStart={(event) => onDragStart(event, nodeType)}>
               <div className="pattern-sidebar__card-icon">{icon}</div>
               <div className="pattern-sidebar__card-text">
                 <span className="pattern-sidebar__card-label">{label}</span>

@@ -14,17 +14,24 @@
  * limitations under the License.
  **/
 
-import React, { useEffect, useState } from 'react';
-import { Handle, useUpdateNodeInternals } from '@xyflow/react';
+import { useEffect, useState } from 'react';
+import { Handle, Position, useUpdateNodeInternals } from '@xyflow/react';
+import type { NodeProps } from '@xyflow/react';
 import { TextInput } from '@carbon/react';
 import { Close, MediaCast } from '@carbon/react/icons';
 import useStore from '../MQPatterns/PubSub/store';
 import './NodeCard.scss';
+import type { QueueFlowNode } from '../../types';
 
 const INVALID_CHARACTERS = /[!@$%^&*()_+\-=[\]{};':"\\|,.<>?]+/;
 const INVALID_TOPIC_NAME_TEXT = 'Invalid topic name';
 
-const validateTopicName = (text = '') => {
+interface TopicValidation {
+  isValid: boolean;
+  isWildcard: boolean;
+}
+
+const validateTopicName = (text = ''): TopicValidation => {
   if (INVALID_CHARACTERS.test(text)) {
     return { isValid: false, isWildcard: false };
   }
@@ -36,7 +43,7 @@ const validateTopicName = (text = '') => {
   return { isValid: isWildcard, isWildcard };
 };
 
-const TopicNode = ({ id, data, isConnectable }) => {
+const TopicNode = ({ id, data, isConnectable }: NodeProps<QueueFlowNode>) => {
   const _updateTopicName = useStore((state) => state.updateTopicName);
   const deleteMe = useStore((state) => state.onDeleteNode);
   const updateNodeInternals = useUpdateNodeInternals();
@@ -49,7 +56,7 @@ const TopicNode = ({ id, data, isConnectable }) => {
     updateNodeInternals(id);
   }, [isAWildcard, id, updateNodeInternals]);
 
-  const onTextInputChange = (e) => {
+  const onTextInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const text = e.target.value;
     const { isValid } = validateTopicName(text);
     setInputValue(text);
@@ -71,7 +78,7 @@ const TopicNode = ({ id, data, isConnectable }) => {
       {!isAWildcard && (
         <Handle
           type="target"
-          position="left"
+          position={Position.Left}
           className="topic-node__handle topic-node__handle--left"
           isConnectable={isConnectable}
         />
@@ -79,7 +86,7 @@ const TopicNode = ({ id, data, isConnectable }) => {
 
       <Handle
         type="source"
-        position="right"
+        position={Position.Right}
         className="topic-node__handle topic-node__handle--right"
         isConnectable={isConnectable}
       />

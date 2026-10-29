@@ -14,15 +14,22 @@
  * limitations under the License.
  **/
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Toggle, Dropdown } from '@carbon/react';
 import { CheckmarkFilled, SubtractAlt } from '@carbon/react/icons';
-import { Handle } from '@xyflow/react';
+import { Handle, Position } from '@xyflow/react';
+import type { NodeProps } from '@xyflow/react';
+import { gray60 } from '@carbon/colors';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PointToPoint/store';
 import NodeCard from './NodeCard';
 import AppIcon from './AppIcon';
 import { SHOWCASE_APP_CONSTANTS } from './utils';
+import type {
+  CodingChallengeResult,
+  ConsumerFlowNode,
+  MQMessage,
+} from '../../types';
 
 const {
   CURRENCY_ITEMS,
@@ -32,7 +39,7 @@ const {
   HEADER_BORDER_IDLE,
 } = SHOWCASE_APP_CONSTANTS;
 
-const ConsumerNode = ({ id, data }) => {
+const ConsumerNode = ({ id, data }: NodeProps<ConsumerFlowNode>) => {
   const adapter = new APIAdapter();
   const _onClick = useStore((state) => state.onClick);
   const deleteMe = useStore((state) => state.onDeleteNode);
@@ -43,26 +50,20 @@ const ConsumerNode = ({ id, data }) => {
     (state) => state.consumeMessageFromQueue
   );
 
-  const [lastMessage, setLastMessage] = useState();
+  const [lastMessage, setLastMessage] = useState<
+    MQMessage | CodingChallengeResult
+  >();
   const [sessionCount, setSessionCount] = useState(0);
   const [selectedCurrency, setSelectedCurrency] = useState('EUR');
 
   const isForTheCodingChallange =
     process.env.REACT_APP_IS_FOR_CODING_CHALLENGE === 'true';
 
-  const closeConsumerConnection = async () => {
-    try {
-      await adapter.closeConsumer(id);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
   useEffect(() => {
     if (data.isActive && data.connectedQueue) {
       const interval = setInterval(async () => {
         try {
-          let _lastMessages;
+          let _lastMessages: MQMessage | CodingChallengeResult | undefined;
           if (isForTheCodingChallange) {
             _lastMessages = await adapter.getFromLimitCodingChallange(
               1,
@@ -87,10 +88,16 @@ const ConsumerNode = ({ id, data }) => {
     }
   }, [data.isActive, data.connectedQueue, selectedCurrency]);
 
+  // Each build only ever holds one of the two.
+  const challengeResult =
+    lastMessage && 'currency' in lastMessage ? lastMessage : undefined;
+  const mqMessage =
+    lastMessage && 'Message' in lastMessage ? lastMessage : undefined;
+
   const handle = (
     <Handle
       type="target"
-      position="left"
+      position={Position.Left}
       style={{
         zIndex: 200,
         backgroundColor: data.connectedQueue ? '#555' : 'orange',
@@ -102,7 +109,7 @@ const ConsumerNode = ({ id, data }) => {
   const StatusIcon = data.isActive ? (
     <CheckmarkFilled size={14} className="queue-node__status-icon" />
   ) : (
-    <SubtractAlt size={14} style={{ color: '#6f6f6f' }} />
+    <SubtractAlt size={14} style={{ color: gray60 }} />
   );
 
   const headerToggle = (
@@ -140,11 +147,12 @@ const ConsumerNode = ({ id, data }) => {
           selectedItem={
             CURRENCY_ITEMS.find((c) => c.text === selectedCurrency) ?? null
           }
-          onChange={({ selectedItem }) =>
-            setSelectedCurrency(selectedItem.text)
-          }
+          onChange={({ selectedItem }) => {
+            if (selectedItem) setSelectedCurrency(selectedItem.text);
+          }}
           helperText={'Filtering by ' + selectedCurrency}
           label="Currency"
+          titleText=""
         />
 
         <div className="node-card__stats">
@@ -162,25 +170,25 @@ const ConsumerNode = ({ id, data }) => {
           <div className="node-card__stat-row">
             <span className="node-card__stat-label">Amount</span>
             <span className="node-card__stat-value">
-              {lastMessage?.message?.Message ?? '—'}
+              {challengeResult?.message.Message ?? '—'}
             </span>
           </div>
           <div className="node-card__stat-row">
             <span className="node-card__stat-label">Currency</span>
             <span className="node-card__stat-value">
-              {lastMessage?.currency ?? '—'}
+              {challengeResult?.currency ?? '—'}
             </span>
           </div>
           <div className="node-card__stat-row">
             <span className="node-card__stat-label">Date</span>
             <span className="node-card__stat-value">
-              {lastMessage?.message?.Sent?.substring(0, 10) ?? '—'}
+              {challengeResult?.message.Sent?.substring(0, 10) ?? '—'}
             </span>
           </div>
           <span className="node-card__stat-label">Count</span>
           <div className="node-card__stat-row">
             <span className="node-card__stat-value">
-              {lastMessage?.message?.count ?? '—'}
+              {challengeResult?.message.count ?? '—'}
             </span>
           </div>
         </div>
@@ -200,7 +208,7 @@ const ConsumerNode = ({ id, data }) => {
       className={data.isActive ? 'blob' : ''}
       onDelete={() => {
         deleteMe(id);
-        closeConsumerConnection();
+        adapter.closeConsumer(id);
       }}>
       {handle}
 
@@ -219,19 +227,19 @@ const ConsumerNode = ({ id, data }) => {
         <div className="node-card__stat-row">
           <span className="node-card__stat-label">Type</span>
           <span className="node-card__stat-value">
-            {lastMessage?.Message ?? '—'}
+            {mqMessage?.Message ?? '—'}
           </span>
         </div>
         <div className="node-card__stat-row">
           <span className="node-card__stat-label">Date</span>
           <span className="node-card__stat-value">
-            {lastMessage?.Sent?.substring(0, 10) ?? '—'}
+            {mqMessage?.Sent?.substring(0, 10) ?? '—'}
           </span>
         </div>
       </div>
 
       <p className="node-card__stat-line">
-        Counter: <strong>{lastMessage?.Count ?? 0}</strong>
+        Counter: <strong>{mqMessage?.Count ?? 0}</strong>
       </p>
 
       {!data.isActive && (

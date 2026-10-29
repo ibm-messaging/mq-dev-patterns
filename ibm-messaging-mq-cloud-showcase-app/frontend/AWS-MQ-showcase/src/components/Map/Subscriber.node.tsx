@@ -14,42 +14,47 @@
  * limitations under the License.
  **/
 
-import React, { useEffect, useRef, useState } from 'react';
-import { Handle } from '@xyflow/react';
+import { useEffect, useRef, useState } from 'react';
+import { Handle, Position } from '@xyflow/react';
+import type { NodeProps } from '@xyflow/react';
 import { TextInput } from '@carbon/react';
+import { gray100 } from '@carbon/colors';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PubSub/store';
 import NodeCard from './NodeCard';
 import AppIcon from './AppIcon';
 import { toast } from 'react-toastify';
+import type { ConsumerFlowNode, SubMessage } from '../../types';
 
 const HEADER_BG = '#defbe6';
 const HEADER_BORDER = '#24a148';
 const HEADER_BG_SUBSCRIBED = '#a7f0ba';
 
-const SubscriberNode = ({ id, data }) => {
+function between(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min) + min);
+}
+
+const SubscriberNode = ({ id, data }: NodeProps<ConsumerFlowNode>) => {
   const adapter = new APIAdapter();
   const animateConnection = useStore(
     (state) => state.changeEdgeAnimationFromNodeId
   );
-  const subscriberReceived = useStore(state => state.subscriberReceived);
-  const _deleteMe = useStore(state => state.onDeleteNode);
+  const subscriberReceived = useStore((state) => state.subscriberReceived);
+  const _deleteMe = useStore((state) => state.onDeleteNode);
   const _deleteEdgeDueToFailingSub = useStore(
-    state => state.deleteEdgeFromNode
+    (state) => state.deleteEdgeFromNode
   );
 
-  const [lastMessage, setLastMessage] = useState(undefined);
+  const [lastMessage, setLastMessage] = useState<SubMessage | undefined>(
+    undefined
+  );
   const [sessionCount, setSessionCount] = useState(0);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [canSend, setCandSend] = useState(true);
   const [animationState, setAnimationState] = useState(false);
-  const nameRef = useRef(null);
+  const nameRef = useRef<HTMLInputElement>(null);
 
   const intervalTillTheLastMessage = between(1500, 3500);
-
-  function between(min, max) {
-    return Math.floor(Math.random() * (max - min) + min);
-  }
 
   useEffect(() => {
     if (data.connectedQueue && isSubscribed) {
@@ -57,7 +62,7 @@ const SubscriberNode = ({ id, data }) => {
         try {
           if (canSend) {
             setCandSend(false);
-            let _lastMessages = await adapter.getForSubFromAppId(
+            const _lastMessages = await adapter.getForSubFromAppId(
               id,
               data.connectedQueue
             );
@@ -86,10 +91,11 @@ const SubscriberNode = ({ id, data }) => {
 
   useEffect(() => {
     if (animationState) {
-      setTimeout(() => {
+      const t = setTimeout(() => {
         animateConnection(id, false);
         setAnimationState(false);
       }, 1000);
+      return () => clearTimeout(t);
     }
   }, [animationState]);
 
@@ -103,14 +109,14 @@ const SubscriberNode = ({ id, data }) => {
   }, [data.connectedQueue, data.subscriptionState]);
 
   const unsub = () => {
-    let promise = new Promise((resolve, reject) => {
+    const promise = new Promise<void>((resolve, reject) => {
       adapter
         .unsubscribe(id)
         .then(() => {
           resolve();
           setIsSubscribed(false);
         })
-        .catch((err) => {
+        .catch(() => {
           reject();
           setIsSubscribed(false);
         });
@@ -123,14 +129,14 @@ const SubscriberNode = ({ id, data }) => {
   };
 
   const subscribe = () => {
-    let prom = new Promise((resolve, reject) => {
+    const prom = new Promise<void>((resolve, reject) => {
       adapter
         .subscribe(id, data.connectedQueue)
         .then(() => {
           resolve();
           setIsSubscribed(true);
         })
-        .catch((err) => {
+        .catch(() => {
           reject();
           _deleteEdgeDueToFailingSub(id);
           setIsSubscribed(false);
@@ -154,11 +160,11 @@ const SubscriberNode = ({ id, data }) => {
       headerBorderColor={HEADER_BORDER}
       icon={<AppIcon size={20} />}
       title="Subscriber"
-      titleColor="#161616"
+      titleColor={gray100}
       onDelete={deleteMe}>
       <Handle
         type="target"
-        position="left"
+        position={Position.Left}
         style={{
           zIndex: 200,
           backgroundColor: data.connectedQueue ? '#555' : 'orange',
