@@ -14,8 +14,9 @@
  * limitations under the License.
  **/
 
-import React, { useCallback, useEffect, useRef, useState, memo } from 'react';
-import { Handle } from '@xyflow/react';
+import { useCallback, useEffect, useRef, useState, memo } from 'react';
+import { Handle, Position } from '@xyflow/react';
+import type { NodeProps } from '@xyflow/react';
 import { Popover, PopoverContent } from '@carbon/react';
 import {
   CheckmarkFilled,
@@ -29,12 +30,27 @@ import useRRStore from '../MQPatterns/RequestResponse/store';
 import NodeCard from './NodeCard';
 import QueueVisualizer from './QueueVisualizer';
 import { toast } from 'react-toastify';
+import { HANDLE_COLORS, QUEUE_COLORS } from '../../utils/colors';
+import type {
+  QueueFlowNode,
+  MQFlowEdge,
+  P2PStoreState,
+  RRStoreState,
+  QueueDepth,
+} from '../../types';
 
 const FALLBACK_MAX_DEPTH = 5000;
-const HEADER_BG = '#161616';
-const HEADER_BORDER = '#161616';
 
-function useQueueStore(id) {
+type QueueStoreSlice = Pick<
+  P2PStoreState | RRStoreState,
+  | 'updateQueueData'
+  | 'setNodeDepth'
+  | 'onDeleteNode'
+  | 'changeEdgeAnimationFromNodeId'
+  | 'edges'
+> & { localDepth: number | undefined };
+
+function useQueueStore(id: string): QueueStoreSlice {
   const p2pHasNode = useP2PStore((state) =>
     state.nodes.some((n) => n.id === id)
   );
@@ -61,29 +77,29 @@ function useQueueStore(id) {
     ? {
         updateQueueData: p2pUpdateQueueData,
         setNodeDepth: p2pSetNodeDepth,
-        deleteMe: p2pDeleteMe,
-        animateEdge: p2pAnimateEdge,
+        onDeleteNode: p2pDeleteMe,
+        changeEdgeAnimationFromNodeId: p2pAnimateEdge,
         edges: p2pEdges,
         localDepth: p2pLocalDepth,
       }
     : {
         updateQueueData: rrUpdateQueueData,
         setNodeDepth: rrSetNodeDepth,
-        deleteMe: rrDeleteMe,
-        animateEdge: rrAnimateEdge,
+        onDeleteNode: rrDeleteMe,
+        changeEdgeAnimationFromNodeId: rrAnimateEdge,
         edges: rrEdges,
         localDepth: rrLocalDepth,
       };
 }
 
-const QueueNode = ({ id, data, isConnectable }) => {
+const QueueNode = ({ id, data, isConnectable }: NodeProps<QueueFlowNode>) => {
   const adapter = useRef(new APIAdapter()).current;
 
   const {
     updateQueueData,
     setNodeDepth,
-    deleteMe,
-    animateEdge,
+    onDeleteNode: deleteMe,
+    changeEdgeAnimationFromNodeId: animateEdge,
     edges,
     localDepth,
   } = useQueueStore(id);
@@ -93,11 +109,20 @@ const QueueNode = ({ id, data, isConnectable }) => {
   const displayDepth = localDepth !== undefined ? localDepth : currentDepth;
   const prevDepthRef = useRef(0);
   const [landCount, setLandCount] = useState(0);
-  const [drainCount, setDrainCount] = useState(0);
   const seenLandRef = useRef(0);
   const seenDrainRef = useRef(0);
 
-  const storeRef = useRef({});
+  const storeRef = useRef<{
+    updateQueueData: (data: QueueDepth[]) => void;
+    setNodeDepth: (nodeId: string, depth: number) => void;
+    animateEdge: (nodeId: string, state: boolean, isFromEdge?: boolean) => void;
+    edges: MQFlowEdge[];
+  }>({
+    updateQueueData,
+    setNodeDepth,
+    animateEdge,
+    edges,
+  });
   storeRef.current.updateQueueData = updateQueueData;
   storeRef.current.setNodeDepth = setNodeDepth;
   storeRef.current.animateEdge = animateEdge;
@@ -123,7 +148,6 @@ const QueueNode = ({ id, data, isConnectable }) => {
     const delta = (data.drainCount || 0) - seenDrainRef.current;
     if (delta > 0) {
       seenDrainRef.current += delta;
-      setDrainCount((prev) => prev + delta);
       setInfoOpen(false);
       setEverLanded(false);
       userDismissedRef.current = false;
@@ -158,27 +182,31 @@ const QueueNode = ({ id, data, isConnectable }) => {
         const result = await adapter.getAllDepths(false);
         if (!cancelled) {
           if (!Number.isInteger(result)) {
-            const queueEntry = result.find((q) => q.name === data.queueName);
-            const _lastDepth = queueEntry['depth'];
-            if (queueEntry['maxDepth'] != null) {
-              setMaxDepth(queueEntry['maxDepth']);
-            }
-            storeRef.current.updateQueueData(result);
-            storeRef.current.setNodeDepth(id, _lastDepth);
-            if (_lastDepth < prevDepthRef.current) {
-              const outEdge = storeRef.current.edges.find(
-                (e) => e.source === id
-              );
-              if (outEdge) {
-                storeRef.current.animateEdge(outEdge.source, true);
-                setTimeout(
-                  () => storeRef.current.animateEdge(outEdge.source, false),
-                  1000
-                );
+            const queueEntry = (result as QueueDepth[]).find(
+              (q) => q.name === data.queueName
+            );
+            if (queueEntry) {
+              const _lastDepth = queueEntry.depth;
+              if (queueEntry.maxDepth != null) {
+                setMaxDepth(queueEntry.maxDepth);
               }
+              storeRef.current.updateQueueData(result as QueueDepth[]);
+              storeRef.current.setNodeDepth(id, _lastDepth);
+              if (_lastDepth < prevDepthRef.current) {
+                const outEdge = storeRef.current.edges.find(
+                  (e) => e.source === id
+                );
+                if (outEdge) {
+                  storeRef.current.animateEdge(outEdge.source, true);
+                  setTimeout(
+                    () => storeRef.current.animateEdge(outEdge.source, false),
+                    1000
+                  );
+                }
+              }
+              prevDepthRef.current = _lastDepth;
+              setCurrentDepth(_lastDepth);
             }
-            prevDepthRef.current = _lastDepth;
-            setCurrentDepth(_lastDepth);
           } else if (result === 525) {
             toast.error('The queue manager is not reachable.');
           } else if (result === 505) {
@@ -201,14 +229,14 @@ const QueueNode = ({ id, data, isConnectable }) => {
     <>
       <Handle
         type="target"
-        position="right"
-        style={{ background: 'orange' }}
+        position={Position.Right}
+        style={{ background: HANDLE_COLORS.CONSUMER_IDLE }}
         isConnectable={isConnectable}
       />
       <Handle
         type="source"
-        position="left"
-        style={{ background: 'orange' }}
+        position={Position.Left}
+        style={{ background: HANDLE_COLORS.CONSUMER_IDLE }}
         isConnectable={isConnectable}
       />
     </>
@@ -216,14 +244,14 @@ const QueueNode = ({ id, data, isConnectable }) => {
     <>
       <Handle
         type="target"
-        position="left"
-        style={{ background: '#0050e6' }}
+        position={Position.Left}
+        style={{ background: HANDLE_COLORS.PRODUCER_IDLE }}
         isConnectable={isConnectable}
       />
       <Handle
         type="source"
-        position="right"
-        style={{ background: 'orange' }}
+        position={Position.Right}
+        style={{ background: HANDLE_COLORS.CONSUMER_IDLE }}
         isConnectable={isConnectable}
       />
     </>
@@ -277,12 +305,12 @@ const QueueNode = ({ id, data, isConnectable }) => {
 
   return (
     <NodeCard
-      headerBg={HEADER_BG}
-      headerBorderColor={HEADER_BORDER}
+      headerBg={QUEUE_COLORS.HEADER}
+      headerBorderColor={QUEUE_COLORS.HEADER}
       icon={<IbmMq size={20} />}
-      iconColor="#ffffff"
+      iconColor={QUEUE_COLORS.ICON}
       title={label}
-      titleColor="#ffffff"
+      titleColor={QUEUE_COLORS.ICON}
       headerAction={infoAction}
       onDelete={() => deleteMe(id, true)}
       className={isTmpQueue ? 'blob' : 'queue-node'}>

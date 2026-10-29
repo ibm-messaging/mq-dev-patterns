@@ -15,7 +15,6 @@
  **/
 
 import { addEdge } from '@xyflow/react';
-import { green10, blue10, blue60Hover } from '@carbon/colors';
 import type { Connection } from '@xyflow/react';
 import type {
   DepthTrackingState,
@@ -25,35 +24,23 @@ import type {
   ZustandSet,
   ZustandGet,
 } from '../../types';
-import {
-  layer01,
-  borderSubtle01,
-  supportSuccess,
-  interactive,
-} from '@carbon/themes';
+import { EDGE_STYLE_THIN } from '../../utils/colors';
 
-export const SHOWCASE_APP_CONSTANTS = {
-  CURRENCY_ITEMS: [
-    { id: '1', text: 'EUR' },
-    { id: '2', text: 'USD' },
-    { id: '3', text: 'GBP' },
-  ],
-  HEADER_BG_ACTIVE: green10,
-  HEADER_BORDER_ACTIVE: supportSuccess,
-  HEADER_BG_IDLE: layer01,
-  HEADER_BORDER_IDLE: borderSubtle01,
-  HEADER_BG_BLUE: blue10,
-  HEADER_BORDER_BLUE: interactive,
-};
+export { EDGE_STYLE_THIN } from '../../utils/colors';
+
+/** Coding-challenge currency options shown in Producer / Consumer dropdowns. */
+export const CURRENCY_ITEMS = [
+  { id: '1', text: 'EUR' },
+  { id: '2', text: 'USD' },
+  { id: '3', text: 'GBP' },
+];
+
 interface StoreSlice {
   nodes: MQFlowNode[];
   edges: MQFlowEdge[];
 }
 
-/** Default 1px edge style for connections between flow nodes. */
-export const EDGE_STYLE_THIN = { stroke: blue60Hover, strokeWidth: 1 };
-
-const EDGE_STYLE = { stroke: blue60Hover, strokeWidth: 1.5 };
+const EDGE_STYLE = { stroke: EDGE_STYLE_THIN.stroke, strokeWidth: 1.5 };
 
 export function isQueueNode(node?: MQFlowNode): node is QueueFlowNode {
   return node?.data.role === 'q';

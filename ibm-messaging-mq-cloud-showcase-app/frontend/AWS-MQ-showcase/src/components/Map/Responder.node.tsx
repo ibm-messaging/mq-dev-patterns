@@ -14,26 +14,32 @@
  * limitations under the License.
  **/
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Toggle, TextInput } from '@carbon/react';
 import { Send, CheckmarkFilled, SubtractAlt } from '@carbon/react/icons';
-import { Handle } from '@xyflow/react';
+import { Handle, Position } from '@xyflow/react';
+import type { NodeProps } from '@xyflow/react';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/RequestResponse/store';
 import NodeCard from './NodeCard';
 import AppIcon from './AppIcon';
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
-import { SHOWCASE_APP_CONSTANTS } from './utils';
+import {
+  NODE_HEADER_COLORS,
+  HANDLE_COLORS,
+  QUEUE_COLORS,
+} from '../../utils/colors';
+import type { ConsumerFlowNode, DynGetResult } from '../../types';
 
 const {
   HEADER_BG_ACTIVE,
   HEADER_BORDER_ACTIVE,
   HEADER_BG_IDLE,
   HEADER_BORDER_IDLE,
-} = SHOWCASE_APP_CONSTANTS;
+} = NODE_HEADER_COLORS;
 
-const ResponderNode = ({ id, data }) => {
+const ResponderNode = ({ id, data }: NodeProps<ConsumerFlowNode>) => {
   const adapter = new APIAdapter();
   const _onClick = useStore((state) => state.onClick);
   const deleteMe = useStore((state) => state.onDeleteNode);
@@ -45,18 +51,22 @@ const ResponderNode = ({ id, data }) => {
   const _deleteTmpConnection = useStore(
     (state) => state.deleteEdgeFromConnection
   );
+
   const [name, setName] = useState(data.label);
-  const [lastMessage, setLastMessage] = useState({});
+  const [lastMessage, setLastMessage] = useState<
+    DynGetResult['message'] | undefined
+  >(undefined);
   const [sessionCount, setSessionCount] = useState(0);
   const [getNext, setGetNext] = useState(true);
-  const [responseMessage, setResponseMesasge] = useState('');
-  const [replyQueue, setReplyQueue] = useState();
-  const [defaultInitQueue, setDefaultInitQueue] = useState();
-  const [sessionID, setSessionID] = useState();
+  const [responseMessage, setResponseMessage] = useState('');
+  const [replyQueue, setReplyQueue] = useState<string | undefined>(undefined);
+  const [defaultInitQueue, setDefaultInitQueue] = useState<string | undefined>(
+    undefined
+  );
+  const [sessionID, setSessionID] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    let _sessionID = Cookies.get('sessionID');
-    id = _sessionID;
+    const _sessionID = Cookies.get('sessionID');
     setSessionID(_sessionID);
     setDefaultInitQueue(data.connectedQueue);
   }, []);
@@ -67,24 +77,24 @@ const ResponderNode = ({ id, data }) => {
         if (getNext) {
           try {
             setGetNext(false);
-            let _lastMessages = await adapter.getDyn(
+            const _lastMessages = await adapter.getDyn(
               1,
               defaultInitQueue,
-              sessionID,
+              sessionID ?? '',
               'DYNREP'
             );
             setGetNext(true);
-            if (_lastMessages) {
+            if (_lastMessages && typeof _lastMessages !== 'string') {
               drainMessageFromQueue(id);
               _onClick(id);
               setLastMessage(_lastMessages.message);
-              let _replyQueue = _lastMessages.replyQueue;
+              const _replyQueue = _lastMessages.replyQueue;
               setReplyQueue(_replyQueue);
               if (_replyQueue) {
                 _drawTmpConnection(_replyQueue, id, true);
                 toast.success('Message received! It is time to reply!');
               }
-              setSessionCount((state) => state + 1);
+              setSessionCount((s) => s + 1);
             }
           } catch (e) {
             console.log(e);
@@ -95,23 +105,18 @@ const ResponderNode = ({ id, data }) => {
     }
   });
 
-  const changeResponseMessage = (e) => {
-    setResponseMesasge(e.target.value);
-  };
-
   const onSendResponse = () => {
-    _animateTmpConnection(replyQueue, id);
-    let _responseMessage = responseMessage;
+    _animateTmpConnection(replyQueue!, id);
     adapter
-      .dynPut(_responseMessage, 1, replyQueue, 'DYNREP', id)
-      .then((res) => {
-        _deleteTmpConnection(replyQueue, id);
-        setReplyQueue('');
-        setLastMessage('');
-        setResponseMesasge('');
+      .dynPut(responseMessage, 1, replyQueue!, 'DYNREP', id)
+      .then(() => {
+        _deleteTmpConnection(replyQueue!, id);
+        setReplyQueue(undefined);
+        setLastMessage(undefined);
+        setResponseMessage('');
         toast.success('Your response has been sent!');
       })
-      .catch((err) => {
+      .catch(() => {
         toast.error('Error on sending your response.');
       });
   };
@@ -119,7 +124,7 @@ const ResponderNode = ({ id, data }) => {
   const StatusIcon = data.isActive ? (
     <CheckmarkFilled size={14} className="queue-node__status-icon" />
   ) : (
-    <SubtractAlt size={14} style={{ color: '#6f6f6f' }} />
+    <SubtractAlt size={14} style={{ color: QUEUE_COLORS.IDLE_ICON }} />
   );
 
   const headerToggle = (
@@ -148,19 +153,23 @@ const ResponderNode = ({ id, data }) => {
       className="responder-app">
       <Handle
         type="target"
-        position="left"
+        position={Position.Left}
         style={{
           zIndex: 200,
-          backgroundColor: defaultInitQueue ? '#555' : 'orange',
+          backgroundColor: defaultInitQueue
+            ? HANDLE_COLORS.CONNECTED
+            : HANDLE_COLORS.CONSUMER_IDLE,
         }}
         isConnectable={!defaultInitQueue}
       />
       <Handle
         type="source"
-        position="left"
+        position={Position.Left}
         style={{
           zIndex: 200,
-          backgroundColor: defaultInitQueue ? '#555' : 'orange',
+          backgroundColor: defaultInitQueue
+            ? HANDLE_COLORS.CONNECTED
+            : HANDLE_COLORS.CONSUMER_IDLE,
         }}
         isConnectable={!defaultInitQueue}
       />
@@ -205,7 +214,7 @@ const ResponderNode = ({ id, data }) => {
         placeholder="Write your response here"
         value={responseMessage}
         size="sm"
-        onChange={(e) => changeResponseMessage(e)}
+        onChange={(e) => setResponseMessage(e.target.value)}
       />
 
       <Button

@@ -14,22 +14,24 @@
  * limitations under the License.
  **/
 
-import React, { useEffect, memo, useState } from 'react';
+import { useEffect, memo, useState } from 'react';
 import { Button, NumberInput, TextInput } from '@carbon/react';
 import { Send } from '@carbon/react/icons';
-import { Handle } from '@xyflow/react';
+import { Handle, Position } from '@xyflow/react';
+import type { NodeProps } from '@xyflow/react';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/RequestResponse/store';
 import NodeCard from './NodeCard';
 import AppIcon from './AppIcon';
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
-import { SHOWCASE_APP_CONSTANTS } from './utils';
+import { NODE_HEADER_COLORS, HANDLE_COLORS } from '../../utils/colors';
+import type { ProducerFlowNode } from '../../types';
 
 const { HEADER_BG_BLUE: HEADER_BG, HEADER_BORDER_BLUE: HEADER_BORDER } =
-  SHOWCASE_APP_CONSTANTS;
+  NODE_HEADER_COLORS;
 
-const RequestorNode = ({ id, data }) => {
+const RequestorNode = ({ id, data }: NodeProps<ProducerFlowNode>) => {
   const adapter = new APIAdapter();
   const animateConnection = useStore(
     (state) => state.changeEdgeAnimationFromNodeId
@@ -41,76 +43,78 @@ const RequestorNode = ({ id, data }) => {
   const _deleteTmpQueue = useStore(
     (state) => state.deleteTmpQueueFromTmpQueueName
   );
+
   const [name, setName] = useState(data.label);
   const [quantity, setQuantity] = useState(1);
   const [animationState, setAnimationState] = useState(false);
-  const [tmpQueueName, setTmpQueueName] = useState();
+  const [tmpQueueName, setTmpQueueName] = useState<string | null>(null);
   const [isWaitingForReply, setIsWaitingForReply] = useState(false);
-  const [responseMessage, setResponseMessage] = useState();
-  const [sessionID, setSessionID] = useState();
+  const [responseMessage, setResponseMessage] = useState<string | undefined>(
+    undefined
+  );
+  const [sessionID, setSessionID] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    let _sessionID = Cookies.get('sessionID');
+    const _sessionID = Cookies.get('sessionID');
     setSessionID(_sessionID);
 
     if (animationState) {
-      setTimeout(() => {
+      const t = setTimeout(() => {
         animateConnection(id, false);
         setAnimationState(false);
       }, 1000);
+      return () => clearTimeout(t);
     }
   });
 
   useEffect(() => {
     if (isWaitingForReply) {
-      const interval = setInterval(async () => {
-        try {
-          adapter.getDyn(1, tmpQueueName, id, 'DYNPUT').then((message) => {
-            if (message) {
-              setResponseMessage(message);
-              setIsWaitingForReply(false);
-              // close the connection
-              _deleteTmpQueue(tmpQueueName);
-              setTmpQueueName(null);
-              toast.success('Response received successfully!');
-            }
-          });
-        } catch (err) {
-          console.log('Error');
-        }
+      const interval = setInterval(() => {
+        adapter.getDyn(1, tmpQueueName!, id, 'DYNPUT').then((message) => {
+          if (message) {
+            setResponseMessage(String(message));
+            setIsWaitingForReply(false);
+            _deleteTmpQueue(tmpQueueName!);
+            setTmpQueueName(null);
+            toast.success('Response received successfully!');
+          }
+        });
       }, 2500);
       return () => clearInterval(interval);
     }
   });
 
-  const _onClick = (id) => {
+  const _onClick = (nodeId: string) => {
     setAnimationState(true);
-    animateConnection(id, true);
-    sendMessages(id, 1);
-    try {
-      let message = 'Request';
-      adapter
-        .dynPut(message, 1, data.connectedQueue, 'DYNPUT', id, sessionID)
-        .then((res) => {
-          //Drow the TMP queue && starting pulling the TMP queue waiting for the response
-          if (res !== -1) {
-            toast.success('The request has been sent!');
-            let tmpQueueName = res._name;
-            setTmpQueueName(tmpQueueName);
-            setIsWaitingForReply(true);
-            _drawTmpQueue(tmpQueueName, id);
-            _drawTmpConnection(data.connectedQueue, id, false);
-          }
-        });
-    } catch (e) {
-      console.log(e);
-      setAnimationState(false);
-    }
+    animateConnection(nodeId, true);
+    sendMessages(nodeId, 1);
+    adapter
+      .dynPut(
+        'Request',
+        1,
+        data.connectedQueue,
+        'DYNPUT',
+        nodeId,
+        sessionID ?? null
+      )
+      .then((res) => {
+        if (res !== -1 && res !== undefined) {
+          toast.success('The request has been sent!');
+          const name = res._name;
+          setTmpQueueName(name);
+          setIsWaitingForReply(true);
+          _drawTmpQueue(name, nodeId);
+          _drawTmpConnection(data.connectedQueue, nodeId, false);
+        }
+      });
   };
 
-  const handleOnChange = (e, value) => {
-    var delta = value.direction === 'up' ? 1 : -1;
-    setQuantity(quantity + delta);
+  const handleOnChange = (
+    _e: unknown,
+    value: { value: string | number; direction: string }
+  ) => {
+    const delta = value.direction === 'up' ? 1 : -1;
+    setQuantity((q) => q + delta);
   };
 
   return (
@@ -122,19 +126,23 @@ const RequestorNode = ({ id, data }) => {
       onDelete={() => deleteMe(id)}>
       <Handle
         type="source"
-        position="right"
+        position={Position.Right}
         style={{
           zIndex: 200,
-          backgroundColor: data.connectedQueue ? '#555' : '#0050e6',
+          backgroundColor: data.connectedQueue
+            ? HANDLE_COLORS.CONNECTED
+            : HANDLE_COLORS.PRODUCER_IDLE,
         }}
         isConnectable={!data.connectedQueue}
       />
       <Handle
         type="target"
-        position="right"
+        position={Position.Right}
         style={{
           zIndex: 200,
-          backgroundColor: data.connectedQueue ? '#555' : '#0050e6',
+          backgroundColor: data.connectedQueue
+            ? HANDLE_COLORS.CONNECTED
+            : HANDLE_COLORS.PRODUCER_IDLE,
         }}
         isConnectable={!data.connectedQueue}
       />
