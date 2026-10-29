@@ -14,8 +14,11 @@
  * limitations under the License.
  **/
 
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { MouseEvent, RefObject } from 'react';
 import { getBezierPath } from '@xyflow/react';
+import type { EdgeProps } from '@xyflow/react';
+import { blue50, blue60, blue60Hover, blue70, blue80 } from '@carbon/colors';
 import useStore from '../MQPatterns/PubSub/store';
 import './map.scss';
 
@@ -23,7 +26,13 @@ const foreignObjectSize = 40;
 const DURATION = 950;
 const REMOVE_AFTER = DURATION + 100;
 
-function MessageIcon({ color }) {
+interface Particle {
+  id: string;
+  reverse: boolean;
+  color: string;
+}
+
+function MessageIcon({ color }: { color: string }) {
   return (
     <g>
       <rect x="-9" y="-6" width="18" height="13" rx="2" fill={color} />
@@ -37,11 +46,17 @@ function MessageIcon({ color }) {
   );
 }
 
-function AnimatedParticle({ pathRef, reverse, color }) {
-  const gRef = useRef(null);
+interface AnimatedParticleProps {
+  pathRef: RefObject<SVGPathElement | null>;
+  reverse: boolean;
+  color: string;
+}
+
+function AnimatedParticle({ pathRef, reverse, color }: AnimatedParticleProps) {
+  const gRef = useRef<SVGGElement>(null);
 
   useEffect(() => {
-    let raf;
+    let raf: number;
     const waitForPath = () => {
       const pathEl = pathRef.current;
       if (!pathEl || !gRef.current) {
@@ -51,7 +66,7 @@ function AnimatedParticle({ pathRef, reverse, color }) {
       const el = gRef.current;
       const start = performance.now();
 
-      const tick = (now) => {
+      const tick = (now: number) => {
         const t = Math.min((now - start) / DURATION, 1);
         // Quintic ease-in-out
         const ease = t < 0.5 ? 16 * t ** 5 : 1 - Math.pow(-2 * t + 2, 5) / 2;
@@ -76,12 +91,12 @@ function AnimatedParticle({ pathRef, reverse, color }) {
   );
 }
 
-const COLORS = ['#0f62fe', '#0050e6', '#4589ff', '#0043ce', '#002d9c'];
+const COLORS = [blue60, blue60Hover, blue50, blue70, blue80];
 function randomColor() {
   return COLORS[Math.floor(Math.random() * COLORS.length)];
 }
 
-export default function CustomEdge({
+export default function CustomPubSubEdge({
   id,
   sourceX,
   sourceY,
@@ -91,7 +106,7 @@ export default function CustomEdge({
   targetPosition,
   style = {},
   markerEnd,
-}) {
+}: EdgeProps) {
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -102,11 +117,11 @@ export default function CustomEdge({
   });
 
   const _deleteOnClick = useStore((state) => state.onDeleteEdge);
-  const pathRef = useRef(null);
-  const [particles, setParticles] = useState([]);
+  const pathRef = useRef<SVGPathElement>(null);
+  const [particles, setParticles] = useState<Particle[]>([]);
 
   useEffect(() => {
-    const handler = (e) => {
+    const handler = (e: WindowEventMap['mq-message-flow']) => {
       const detail = e.detail;
       if (detail.edgeId !== id) return;
 
@@ -125,7 +140,7 @@ export default function CustomEdge({
     return () => window.removeEventListener('mq-message-flow', handler);
   }, [id]);
 
-  const onEdgeClick = (evt, edgeId) => {
+  const onEdgeClick = (evt: MouseEvent, edgeId: string) => {
     evt.stopPropagation();
     _deleteOnClick(edgeId);
   };
@@ -148,7 +163,7 @@ export default function CustomEdge({
         y={labelY - foreignObjectSize / 2}
         className="edgebutton-foreignobject"
         requiredExtensions="http://www.w3.org/1999/xhtml">
-        <div xmlns="http://www.w3.org/1999/xhtml">
+        <div>
           <button
             className="edgebutton"
             onClick={(event) => onEdgeClick(event, id)}>

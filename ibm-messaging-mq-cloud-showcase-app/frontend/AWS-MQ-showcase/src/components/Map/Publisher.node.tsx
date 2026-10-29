@@ -14,43 +14,36 @@
  * limitations under the License.
  **/
 
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Send } from '@carbon/react/icons';
 import { Button, TextArea, TextInput } from '@carbon/react';
-import { Handle } from '@xyflow/react';
+import { Handle, Position } from '@xyflow/react';
+import type { NodeProps } from '@xyflow/react';
+import { blue60Hover } from '@carbon/colors';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PubSub/store';
 import NodeCard from './NodeCard';
 import AppIcon from './AppIcon';
 import { toast } from 'react-toastify';
 import { SHOWCASE_APP_CONSTANTS } from './utils';
+import type { ProducerFlowNode } from '../../types';
 
 const { HEADER_BG_BLUE: HEADER_BG, HEADER_BORDER_BLUE: HEADER_BORDER } =
   SHOWCASE_APP_CONSTANTS;
 
-const PublisherNode = ({ id, data }) => {
+// R-Pub-2 (raised, not fixed): new APIAdapter() runs on every render.
+const PublisherNode = ({ id, data }: NodeProps<ProducerFlowNode>) => {
   const adapter = new APIAdapter();
   const animateConnection = useStore(
     (state) => state.changeEdgeAnimationFromNodeId
   );
   const publisherSent = useStore((state) => state.publisherSent);
   const deleteMe = useStore((state) => state.onDeleteNode);
-  const [animationState, setAnimationState] = useState(false);
-  const [isToggleOn] = useState(false);
-  const [message, setMessage] = useState();
-  const [title, setTitle] = useState();
-  const [canSend, setCandSend] = useState(true);
-  const refTitle = useRef('');
-  const refMessage = useRef('');
 
-  useEffect(() => {
-    if (data.connectedQueue && isToggleOn) {
-      const interval = setInterval(() => {
-        publish();
-      }, 20000);
-      return () => clearInterval(interval);
-    }
-  });
+  const [animationState, setAnimationState] = useState(false);
+  const [canSend, setCandSend] = useState(true);
+  const refTitle = useRef<HTMLInputElement>(null);
+  const refMessage = useRef<HTMLTextAreaElement>(null);
 
   const onClick = () => {
     publish();
@@ -61,42 +54,40 @@ const PublisherNode = ({ id, data }) => {
       setCandSend(false);
       setAnimationState(true);
       animateConnection(id, true);
-      try {
-        let _title = refTitle.current.value;
-        let _message = refMessage.current.value;
-        let messageToSend = _title + '|@|' + _message;
-        let promise = new Promise((resolve, reject) => {
-          adapter
-            .publish(messageToSend, 1, data.connectedQueue, id)
-            .then((res) => {
-              setCandSend(true);
-              publisherSent(id);
-              resolve();
-            })
-            .catch((err) => {
-              setCandSend(true);
-              reject();
-            });
-        });
-        toast.promise(promise, {
-          pending: 'Sending your notification...',
-          success: 'Your notification has been sent with success',
-          error: 'Error on sending your notification',
-        });
-      } catch (e) {
-        console.log(e);
-        setCandSend(true);
-        setAnimationState(false);
-      }
+
+      const _title = refTitle.current?.value ?? '';
+      const _message = refMessage.current?.value ?? '';
+      const messageToSend = _title + '|@|' + _message;
+
+      const promise = new Promise<void>((resolve, reject) => {
+        adapter
+          .publish(messageToSend, 1, data.connectedQueue, id)
+          .then(() => {
+            setCandSend(true);
+            publisherSent(id);
+            resolve();
+          })
+          .catch(() => {
+            setCandSend(true);
+            reject();
+          });
+      });
+
+      toast.promise(promise, {
+        pending: 'Sending your notification...',
+        success: 'Your notification has been sent with success',
+        error: 'Error on sending your notification',
+      });
     }
   };
 
   useEffect(() => {
     if (animationState) {
-      setTimeout(() => {
+      const t = setTimeout(() => {
         animateConnection(id, false);
         setAnimationState(false);
       }, 1000);
+      return () => clearTimeout(t);
     }
   }, [animationState]);
 
@@ -109,10 +100,10 @@ const PublisherNode = ({ id, data }) => {
       onDelete={() => deleteMe(id)}>
       <Handle
         type="source"
-        position="right"
+        position={Position.Right}
         style={{
           zIndex: 200,
-          backgroundColor: data.connectedQueue ? '#555' : '#0050e6',
+          backgroundColor: data.connectedQueue ? '#555' : blue60Hover,
         }}
         isConnectable={!data.connectedQueue}
       />
@@ -122,18 +113,13 @@ const PublisherNode = ({ id, data }) => {
         size="sm"
         ref={refTitle}
         labelText="Notification title"
-        value={title}
         placeholder="Waitlist reminder"
-        onChange={(e) => setTitle(e.value)}
       />
 
       <TextArea
-        size="sm"
         ref={refMessage}
         labelText="Notification content"
         placeholder={"Don't forget about our WAITLIST! " + data.connectedQueue}
-        value={message}
-        onChange={(e) => setMessage(e.value)}
       />
 
       <Button
