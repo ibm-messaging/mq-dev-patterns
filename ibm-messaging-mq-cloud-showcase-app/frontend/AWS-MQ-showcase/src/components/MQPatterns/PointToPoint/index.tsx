@@ -14,72 +14,62 @@
  * limitations under the License.
  **/
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Grid, Column } from '@carbon/react';
 import Chart1 from './chart1';
 import Chart2 from './chart2';
 import './index.scss';
 import Flow from './map';
 import useStore from './store';
+import type { LineChartEntry, BarChartEntry, QueueDepth } from '../../../types';
 
-const PointPointIndex = (props) => {
-  const [dataChart1, setDataChart1] = useState([]);
-  const [dataChart2, setDataChart2] = useState([]);
+const PointPointIndex = () => {
+  const [dataChart1, setDataChart1] = useState<LineChartEntry[]>([]);
+  const [dataChart2, setDataChart2] = useState<BarChartEntry[]>([]);
   const [time, setTime] = useState(1);
   const _result = useStore((state) => state.queueData);
   const currentQueues = useStore((state) => state.getQueuesNodes);
   const [initTime, setInitTime] = useState(true);
 
-  const updateChart = (result) => {
-    if (result) {
-      let _dataChart1 = [...dataChart1];
-      let _dataChart2 = [...dataChart2];
-      let entries = [];
-      result.forEach((queue) => {
-        let isOnTheScreen = currentQueues().find(
-          (x) => x.data.queueName === queue.name
+  const updateChart = (result: QueueDepth[]) => {
+    let _dataChart1 = [...dataChart1];
+    let _dataChart2 = [...dataChart2];
+
+    result.forEach((queue) => {
+      const isOnTheScreen = currentQueues().find(
+        (x) => x.data.queueName === queue.name
+      );
+      const alreadyRenderedChart1 = _dataChart1.find(
+        (x) => x.group === queue.name && x.time === time
+      );
+      const alreadyRenderedChart2 = _dataChart2.find(
+        (x) => x.key === queue.name
+      );
+      const group = queue.name;
+      const depth = parseInt(String(queue.depth));
+
+      if (isOnTheScreen && !alreadyRenderedChart1) {
+        const entry: LineChartEntry = { group, time, value: depth };
+        _dataChart1 = [..._dataChart1, entry];
+      }
+
+      if (!isOnTheScreen && alreadyRenderedChart2) {
+        _dataChart2 = _dataChart2.filter((x) => x.key !== queue.name);
+      } else if (alreadyRenderedChart2) {
+        _dataChart2 = _dataChart2.map((e) =>
+          e.key === queue.name ? { ...e, value: depth } : e
         );
-        let alreadyRenderedChart1 = _dataChart1.find(
-          (x) => x.group === queue.name && x.time === time
-        );
-        let alreadyRenderedChart2 = _dataChart2.find(
-          (x) => x.key === queue.name
-        );
-        let group = queue['name'];
-        let depth = parseInt(queue['depth']);
-        if (isOnTheScreen && !alreadyRenderedChart1) {
-          // updating Chart1
-          let entry = {
-            group: group,
-            time: time,
-            value: depth,
-          };
-          _dataChart1.push(entry);
-          entries.push(entry);
-        }
-        let i = 0;
-        if (!isOnTheScreen && alreadyRenderedChart2) {
-          _dataChart2 = _dataChart2.filter((x) => x.key !== queue.name);
-        } else if (alreadyRenderedChart2) {
-          //update current values
-          _dataChart2.forEach((e) => {
-            if (e['key'] === queue['name']) {
-              _dataChart2[i]['value'] = parseInt(queue['depth']);
-            }
-            i = i + 1;
-          });
-        } else if (isOnTheScreen) {
-          _dataChart2.push({
-            group: 'QUEUE ' + group,
-            key: group,
-            value: depth,
-          });
-        }
-      });
-      setDataChart2(_dataChart2);
-      setDataChart1(_dataChart1);
-      setTime(time + 1);
-    }
+      } else if (isOnTheScreen) {
+        _dataChart2 = [
+          ..._dataChart2,
+          { group: 'QUEUE ' + group, key: group, value: depth },
+        ];
+      }
+    });
+
+    setDataChart2(_dataChart2);
+    setDataChart1(_dataChart1);
+    setTime((t) => t + 1);
   };
 
   useEffect(() => {

@@ -96,3 +96,12 @@ export const PRODUCER_COLORS = {
 
 /** Default 1px edge style for connections between flow nodes. */
 export const EDGE_STYLE_THIN = { stroke: blue60Hover, strokeWidth: 1 };
+
+/**
+ * Colours used in Carbon Charts threshold lines.
+ * THRESHOLD: queue-depth threshold marker colour. CSS 'orange' (#ffa500);
+ * no Carbon token matches this exact value.
+ */
+export const CHART_COLORS = {
+  THRESHOLD: '#ffa500',
+} as const;
