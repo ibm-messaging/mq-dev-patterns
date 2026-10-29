@@ -127,7 +127,7 @@ const useStore = create<RRStoreState>()((set, get) => ({
 
   onNodesChange: (changes) => {
     set({
-      nodes: applyNodeChanges(changes, get().nodes),
+      nodes: applyNodeChanges(changes, get().nodes) as MQFlowNode[], // cast: applyNodeChanges returns Node[]; our nodes are MQFlowNode[] and are unchanged by the utility
     });
   },
 

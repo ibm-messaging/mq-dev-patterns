@@ -28,7 +28,7 @@ import MapUtils, {
   getQueueDepth,
   isQueueNode,
 } from '../../Map/utils';
-import type { P2PStoreState } from '../../../types';
+import type { MQFlowNode, P2PStoreState } from '../../../types';
 
 const utils = new MapUtils();
 
@@ -40,7 +40,7 @@ const useStore = create<P2PStoreState>()((set, get) => ({
   localDepths: {},
   onNodesChange: (changes) => {
     set({
-      nodes: applyNodeChanges(changes, get().nodes),
+      nodes: applyNodeChanges(changes, get().nodes) as MQFlowNode[], // cast: applyNodeChanges returns Node[]; our nodes are MQFlowNode[] and are unchanged by the utility
     });
   },
 

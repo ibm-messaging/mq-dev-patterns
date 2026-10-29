@@ -22,7 +22,7 @@ import {
   BackgroundVariant,
   ReactFlowProvider,
 } from '@xyflow/react';
-import type { ReactFlowInstance, OnNodesChange } from '@xyflow/react';
+import type { ReactFlowInstance } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import ProducerNode from '../../Map/Producer.node';
 import ConsumerNode from '../../Map/Consumer.node';
@@ -143,7 +143,7 @@ function Flow() {
           <ReactFlow
             nodes={nodes}
             edges={edges}
-            onNodesChange={onNodesChange as unknown as OnNodesChange}
+            onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onReconnect={onReconnect}
             onDrop={onDrop}
