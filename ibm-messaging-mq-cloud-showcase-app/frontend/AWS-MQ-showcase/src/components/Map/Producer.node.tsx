@@ -24,20 +24,21 @@ import {
 } from '@carbon/react';
 import { Handle, Position } from '@xyflow/react';
 import type { NodeProps } from '@xyflow/react';
-import { blue60Hover, gray100, gray70 } from '@carbon/colors';
 import { Send } from '@carbon/react/icons';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PointToPoint/store';
 import NodeCard from './NodeCard';
 import AppIcon from './AppIcon';
-import { SHOWCASE_APP_CONSTANTS } from './utils';
+import { CURRENCY_ITEMS } from './utils';
+import {
+  NODE_HEADER_COLORS,
+  HANDLE_COLORS,
+  PRODUCER_COLORS,
+} from '../../utils/colors';
 import type { ProducerFlowNode } from '../../types';
 
-const {
-  CURRENCY_ITEMS,
-  HEADER_BG_BLUE: HEADER_BG,
-  HEADER_BORDER_BLUE: HEADER_BORDER,
-} = SHOWCASE_APP_CONSTANTS;
+const { HEADER_BG_BLUE: HEADER_BG, HEADER_BORDER_BLUE: HEADER_BORDER } =
+  NODE_HEADER_COLORS;
 
 const PRODUCTION_QUANTITY = 5;
 const RANDOM_SENDER_NAMES = [
@@ -127,7 +128,9 @@ const ProducerNode = ({ id, data }: NodeProps<ProducerFlowNode>) => {
       position={Position.Right}
       style={{
         zIndex: 200,
-        backgroundColor: data.connectedQueue ? '#555' : blue60Hover,
+        backgroundColor: data.connectedQueue
+          ? HANDLE_COLORS.CONNECTED
+          : HANDLE_COLORS.PRODUCER_IDLE,
       }}
       isConnectable={!data.connectedQueue}
     />
@@ -242,7 +245,10 @@ const ProducerNode = ({ id, data }: NodeProps<ProducerFlowNode>) => {
       </Button>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span style={{ fontSize: '11px', color: gray70 }}>Auto send</span>
+        <span
+          style={{ fontSize: '11px', color: PRODUCER_COLORS.AUTO_SEND_LABEL }}>
+          Auto send
+        </span>
         <Toggle
           id={`producer-toggle-${id}`}
           size="sm"
@@ -250,7 +256,11 @@ const ProducerNode = ({ id, data }: NodeProps<ProducerFlowNode>) => {
           toggled={isToggle}
           onToggle={() => setIsToggle(!isToggle)}
         />
-        <span style={{ fontSize: '11px', color: gray100 }}>
+        <span
+          style={{
+            fontSize: '11px',
+            color: PRODUCER_COLORS.TOGGLE_STATE_LABEL,
+          }}>
           {isToggle ? 'On' : 'Off'}
         </span>
       </div>

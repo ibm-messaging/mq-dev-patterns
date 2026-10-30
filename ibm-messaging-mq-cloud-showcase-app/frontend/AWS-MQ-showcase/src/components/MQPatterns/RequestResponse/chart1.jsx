@@ -18,7 +18,7 @@ import React from 'react';
 import { LineChart } from '@carbon/charts-react';
 import '@carbon/charts/styles.css';
 
-import './chart.css';
+import '../shared/chart.scss';
 
 const DEFAULTOPTION = {
   title: 'Queue manager 1',

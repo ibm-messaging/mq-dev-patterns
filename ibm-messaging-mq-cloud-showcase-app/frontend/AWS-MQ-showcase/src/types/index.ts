@@ -181,7 +181,7 @@ export interface DepthTrackingState {
 export interface BaseStoreState {
   nodes: MQFlowNode[];
   edges: MQFlowEdge[];
-  onNodesChange: (changes: NodeChange<MQFlowNode>[]) => void;
+  onNodesChange: (changes: NodeChange<Node>[]) => void;
   onEdgesChange: (changes: EdgeChange<MQFlowEdge>[]) => void;
   onReconnect: (oldEdge: MQFlowEdge, connection: Connection) => void;
   onConnect: (connection: Connection) => void;

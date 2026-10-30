@@ -27,7 +27,7 @@ import MapUtils, {
   isQueueNode,
   patchNodeData,
 } from '../../Map/utils';
-import type { PubSubStoreState } from '../../../types';
+import type { MQFlowNode, PubSubStoreState } from '../../../types';
 
 const utils = new MapUtils();
 
@@ -38,7 +38,7 @@ const useStore = create<PubSubStoreState>()((set, get) => ({
 
   onNodesChange: (changes) => {
     set({
-      nodes: applyNodeChanges(changes, get().nodes),
+      nodes: applyNodeChanges(changes, get().nodes) as MQFlowNode[], // cast: applyNodeChanges returns Node[]; our nodes are MQFlowNode[] and are unchanged by the utility
     });
   },
 

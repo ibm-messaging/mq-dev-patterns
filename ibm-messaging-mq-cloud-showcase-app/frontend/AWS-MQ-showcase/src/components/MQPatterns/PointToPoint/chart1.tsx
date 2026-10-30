@@ -14,29 +14,35 @@
  * limitations under the License.
  **/
 
-import React from 'react';
 import { LineChart } from '@carbon/charts-react';
+import { ScaleTypes } from '@carbon/charts';
+import type { LineChartOptions } from '@carbon/charts';
 import '@carbon/charts/styles.css';
+import { CHART_COLORS } from '../../../utils/colors';
+import type { LineChartEntry } from '../../../types';
+import '../shared/chart.scss';
 
-import './chart.css';
+interface Chart1Props {
+  data: LineChartEntry[];
+}
 
-const DEFAULTOPTION = {
+const DEFAULTOPTION: LineChartOptions = {
   title: 'Queue manager 1',
   axes: {
     bottom: {
       title: 'Time',
       mapsTo: 'time',
-      scaleType: 'linear',
+      scaleType: ScaleTypes.LINEAR,
     },
     left: {
       mapsTo: 'value',
       title: 'Queues depth',
-      scaleType: 'linear',
+      scaleType: ScaleTypes.LINEAR,
       thresholds: [
         {
           value: 5000,
           label: 'Max depth',
-          fillColor: 'orange',
+          fillColor: CHART_COLORS.THRESHOLD,
         },
       ],
     },
@@ -45,9 +51,9 @@ const DEFAULTOPTION = {
   height: '400px',
 };
 
-const Chart1 = (props) => {
-  if (!props.data || !props.data.length) return null;
-  return <LineChart data={props.data} options={DEFAULTOPTION} />;
+const Chart1 = ({ data }: Chart1Props) => {
+  if (!data.length) return null;
+  return <LineChart data={data} options={DEFAULTOPTION} />;
 };
 
 export default Chart1;

@@ -24,7 +24,8 @@ import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PointToPoint/store';
 import NodeCard from './NodeCard';
 import AppIcon from './AppIcon';
-import { SHOWCASE_APP_CONSTANTS } from './utils';
+import { CURRENCY_ITEMS } from './utils';
+import { NODE_HEADER_COLORS, HANDLE_COLORS } from '../../utils/colors';
 import type {
   CodingChallengeResult,
   ConsumerFlowNode,
@@ -32,12 +33,11 @@ import type {
 } from '../../types';
 
 const {
-  CURRENCY_ITEMS,
   HEADER_BG_ACTIVE,
   HEADER_BORDER_ACTIVE,
   HEADER_BG_IDLE,
   HEADER_BORDER_IDLE,
-} = SHOWCASE_APP_CONSTANTS;
+} = NODE_HEADER_COLORS;
 
 const ConsumerNode = ({ id, data }: NodeProps<ConsumerFlowNode>) => {
   const adapter = new APIAdapter();
@@ -100,7 +100,9 @@ const ConsumerNode = ({ id, data }: NodeProps<ConsumerFlowNode>) => {
       position={Position.Left}
       style={{
         zIndex: 200,
-        backgroundColor: data.connectedQueue ? '#555' : 'orange',
+        backgroundColor: data.connectedQueue
+          ? HANDLE_COLORS.CONNECTED
+          : HANDLE_COLORS.CONSUMER_IDLE,
       }}
       isConnectable={!data.connectedQueue}
     />

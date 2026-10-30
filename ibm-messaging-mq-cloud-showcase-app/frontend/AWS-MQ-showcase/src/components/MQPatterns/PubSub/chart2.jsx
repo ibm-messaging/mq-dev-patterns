@@ -22,7 +22,7 @@ import '@carbon/charts/styles.css';
 
 // IBM Plex should either be imported in your project by using Carbon
 // or consumed manually through an import
-import './chart.css';
+import '../shared/chart.scss';
 
 const DEFAULTOPTION = {
   title: 'Queue Manager 1',

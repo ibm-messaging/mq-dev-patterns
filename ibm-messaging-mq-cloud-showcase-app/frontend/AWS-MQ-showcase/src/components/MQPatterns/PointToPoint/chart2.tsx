@@ -14,12 +14,19 @@
  * limitations under the License.
  **/
 
-import React from 'react';
 import { GroupedBarChart } from '@carbon/charts-react';
+import { ScaleTypes } from '@carbon/charts';
+import type { BarChartOptions } from '@carbon/charts';
 import '@carbon/charts/styles.css';
-import './chart.css';
+import { CHART_COLORS } from '../../../utils/colors';
+import type { BarChartEntry } from '../../../types';
+import '../shared/chart.scss';
 
-const DEFAULTOPTION = {
+interface Chart2Props {
+  data: BarChartEntry[];
+}
+
+const DEFAULTOPTION: BarChartOptions = {
   title: 'Queue Manager 1',
   axes: {
     left: {
@@ -29,12 +36,12 @@ const DEFAULTOPTION = {
         {
           value: 5000,
           label: 'Max depth',
-          fillColor: 'orange',
+          fillColor: CHART_COLORS.THRESHOLD,
         },
       ],
     },
     bottom: {
-      scaleType: 'labels',
+      scaleType: ScaleTypes.LABELS,
       mapsTo: 'key',
       title: 'Queues',
     },
@@ -42,9 +49,9 @@ const DEFAULTOPTION = {
   height: '400px',
 };
 
-const Chart2 = (props) => {
-  if (!props.data || !props.data.length) return null;
-  return <GroupedBarChart data={props.data} options={DEFAULTOPTION} />;
+const Chart2 = ({ data }: Chart2Props) => {
+  if (!data.length) return null;
+  return <GroupedBarChart data={data} options={DEFAULTOPTION} />;
 };
 
 export default Chart2;

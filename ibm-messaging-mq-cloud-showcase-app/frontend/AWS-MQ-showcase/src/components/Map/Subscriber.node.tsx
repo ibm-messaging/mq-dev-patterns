@@ -18,17 +18,13 @@ import { useEffect, useRef, useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { NodeProps } from '@xyflow/react';
 import { TextInput } from '@carbon/react';
-import { gray100 } from '@carbon/colors';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PubSub/store';
 import NodeCard from './NodeCard';
 import AppIcon from './AppIcon';
 import { toast } from 'react-toastify';
+import { SUBSCRIBER_COLORS, HANDLE_COLORS } from '../../utils/colors';
 import type { ConsumerFlowNode, SubMessage } from '../../types';
-
-const HEADER_BG = '#defbe6';
-const HEADER_BORDER = '#24a148';
-const HEADER_BG_SUBSCRIBED = '#a7f0ba';
 
 function between(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min) + min);
@@ -156,18 +152,23 @@ const SubscriberNode = ({ id, data }: NodeProps<ConsumerFlowNode>) => {
 
   return (
     <NodeCard
-      headerBg={isSubscribed ? HEADER_BG_SUBSCRIBED : HEADER_BG}
-      headerBorderColor={HEADER_BORDER}
+      headerBg={
+        isSubscribed
+          ? SUBSCRIBER_COLORS.HEADER_BG_SUBSCRIBED
+          : SUBSCRIBER_COLORS.HEADER_BG
+      }
+      headerBorderColor={SUBSCRIBER_COLORS.HEADER_BORDER}
       icon={<AppIcon size={20} />}
       title="Subscriber"
-      titleColor={gray100}
       onDelete={deleteMe}>
       <Handle
         type="target"
         position={Position.Left}
         style={{
           zIndex: 200,
-          backgroundColor: data.connectedQueue ? '#555' : 'orange',
+          backgroundColor: data.connectedQueue
+            ? HANDLE_COLORS.CONNECTED
+            : HANDLE_COLORS.CONSUMER_IDLE,
         }}
         isConnectable={!data.connectedQueue}
       />

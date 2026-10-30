@@ -14,7 +14,7 @@
  * limitations under the License.
  **/
 
-import React, { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, type DragEvent } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -22,6 +22,7 @@ import {
   BackgroundVariant,
   ReactFlowProvider,
 } from '@xyflow/react';
+import type { ReactFlowInstance } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import ProducerNode from '../../Map/Producer.node';
 import ConsumerNode from '../../Map/Consumer.node';
@@ -30,6 +31,7 @@ import CustomEdge from '../../Map/Custom.edge';
 import '../../Map/map.scss';
 import useStore from './store';
 import Sidebar from './Sidebar';
+import type { MQFlowNode } from '../../../types';
 
 const nodeTypes = {
   producer: ProducerNode,
@@ -43,7 +45,9 @@ const edgeTypes = {
 
 let id = 150;
 const getId = () => `${id++}`;
-const availableQueueNames = ['DEV.QUEUE.1', 'DEV.QUEUE.2', 'DEV.QUEUE.3'];
+
+const AVAILABLE_QUEUE_NAMES = ['DEV.QUEUE.1', 'DEV.QUEUE.2', 'DEV.QUEUE.3'];
+
 function Flow() {
   const { nodes, edges, onNodesChange, onEdgesChange, onReconnect, onConnect } =
     useStore();
@@ -51,78 +55,82 @@ function Flow() {
   const _addNode = useStore((state) => state.addNode);
   const getQueues = useStore((state) => state.getQueuesNodes);
 
-  const reactFlowWrapper = useRef(null);
-  const [reactFlowInstance, setReactFlowInstance] = useState(null);
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
+  const [reactFlowInstance, setReactFlowInstance] =
+    useState<ReactFlowInstance | null>(null);
 
   const onDrop = useCallback(
-    (event) => {
+    (event: DragEvent<HTMLDivElement>) => {
       event.preventDefault();
+
+      if (!reactFlowWrapper.current || !reactFlowInstance) return;
 
       const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
       const type = event.dataTransfer.getData('application/reactflow');
 
-      if (typeof type === 'undefined' || !type) {
-        return;
-      }
+      if (!type) return;
 
       const position = reactFlowInstance.screenToFlowPosition({
         x: event.clientX - reactFlowBounds.left,
         y: event.clientY - reactFlowBounds.top,
       });
-      let node = {};
+
       if (type === 'producer') {
-        node = {
+        _addNode({
           id: getId(),
-          type: type,
+          type: 'producer',
           data: {
             role: 'Producer',
             label: 'Producer Name',
             connectedQueue: '',
             isActive: false,
           },
-          position: position,
+          position,
           sourcePosition: 'right',
-        };
-      } else if (type === 'consumer') {
-        node = {
+        } as MQFlowNode); // cast: drop literal to the store's union; all discriminants are satisfied
+        return;
+      }
+
+      if (type === 'consumer') {
+        _addNode({
           id: getId(),
-          type: type,
+          type: 'consumer',
           data: {
             role: 'Consumer',
             label: 'Consumer Name',
             connectedQueue: '',
             isActive: false,
           },
-          position: position,
+          position,
           sourcePosition: 'left',
-        };
-      } else if (type === 'queue' && getQueues().length <= 1) {
-        let queues = getQueues();
-        let availableNames = [...availableQueueNames];
-        queues.forEach((x) => {
-          let name = x.data.queueName;
-          availableNames = availableNames.filter((n) => n !== name);
-        });
-        node = {
+        } as MQFlowNode); // cast: drop literal to the store's union; all discriminants are satisfied
+        return;
+      }
+
+      if (type === 'queue' && getQueues().length <= 1) {
+        const usedNames = getQueues().map((q) => q.data.queueName);
+        const availableName = AVAILABLE_QUEUE_NAMES.find(
+          (n) => !usedNames.includes(n)
+        );
+        if (!availableName) return;
+        _addNode({
           id: getId(),
-          type: type,
-          label: availableNames[0],
+          type: 'queue',
+          label: availableName,
           data: {
             role: 'q',
             depth: 0,
-            queueName: availableNames[0],
+            queueName: availableName,
           },
-          position: position,
+          position,
           targetPosition: 'left',
-        };
-      } else {
-        return;
+        } as MQFlowNode); // cast: drop literal to the store's union; all discriminants are satisfied
       }
-      _addNode(node);
     },
-    [reactFlowInstance]
+    [reactFlowInstance, _addNode, getQueues]
   );
-  const onDragOver = useCallback((event) => {
+
+  const onDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
   }, []);

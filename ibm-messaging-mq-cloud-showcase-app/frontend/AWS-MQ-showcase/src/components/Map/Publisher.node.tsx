@@ -19,17 +19,16 @@ import { Send } from '@carbon/react/icons';
 import { Button, TextArea, TextInput } from '@carbon/react';
 import { Handle, Position } from '@xyflow/react';
 import type { NodeProps } from '@xyflow/react';
-import { blue60Hover } from '@carbon/colors';
 import APIAdapter from '../../adapters/API.adapter';
 import useStore from '../MQPatterns/PubSub/store';
 import NodeCard from './NodeCard';
 import AppIcon from './AppIcon';
 import { toast } from 'react-toastify';
-import { SHOWCASE_APP_CONSTANTS } from './utils';
+import { NODE_HEADER_COLORS, HANDLE_COLORS } from '../../utils/colors';
 import type { ProducerFlowNode } from '../../types';
 
 const { HEADER_BG_BLUE: HEADER_BG, HEADER_BORDER_BLUE: HEADER_BORDER } =
-  SHOWCASE_APP_CONSTANTS;
+  NODE_HEADER_COLORS;
 
 // R-Pub-2 (raised, not fixed): new APIAdapter() runs on every render.
 const PublisherNode = ({ id, data }: NodeProps<ProducerFlowNode>) => {
@@ -103,7 +102,9 @@ const PublisherNode = ({ id, data }: NodeProps<ProducerFlowNode>) => {
         position={Position.Right}
         style={{
           zIndex: 200,
-          backgroundColor: data.connectedQueue ? '#555' : blue60Hover,
+          backgroundColor: data.connectedQueue
+            ? HANDLE_COLORS.CONNECTED
+            : HANDLE_COLORS.PRODUCER_IDLE,
         }}
         isConnectable={!data.connectedQueue}
       />
