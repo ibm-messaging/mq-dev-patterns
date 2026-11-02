@@ -17,7 +17,6 @@
 import TutorialHeader from './components/TutorialHeader';
 import { Routes, Route } from 'react-router-dom';
 import LandingPage from './content/LandingPage';
-import RepoPage from './content/RepoPage';
 import { Content, Theme } from '@carbon/react';
 import './app.scss';
 import 'react-toastify/dist/ReactToastify.css';
@@ -42,7 +41,6 @@ function App() {
         />
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/repos" element={<RepoPage />} />
         </Routes>
       </Content>
     </>

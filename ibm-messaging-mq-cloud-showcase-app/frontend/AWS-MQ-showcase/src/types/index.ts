@@ -253,20 +253,3 @@ export interface BarChartEntry {
   key: string;
   value: number;
 }
-
-// ── RepoPage types ───────────────────────────────────────────────────────────
-
-export interface RepoTableHeader {
-  key: string;
-  header: string;
-}
-
-export interface RepoRow {
-  id: string;
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-  issueCount: string;
-  stars: string;
-  links: string;
-}

@@ -21,25 +21,17 @@ import {
   HeaderContainer,
   HeaderName,
   HeaderNavigation,
-  HeaderMenuButton,
   HeaderMenuItem,
   HeaderGlobalBar,
   HeaderGlobalAction,
   SkipToContent,
-  SideNav,
-  SideNavItems,
 } from '@carbon/react';
 
 const TutorialHeader = () => (
   <HeaderContainer
-    render={({ isSideNavExpanded, onClickSideNavExpand }) => (
+    render={() => (
       <Header aria-label="IBM MQ showcase">
         <SkipToContent />
-        <HeaderMenuButton
-          aria-label="Open menu"
-          onClick={onClickSideNavExpand}
-          isActive={isSideNavExpanded}
-        />
         <HeaderName as={Link} to="/" prefix="IBM MQ">
           showcase
         </HeaderName>
@@ -53,16 +45,6 @@ const TutorialHeader = () => (
             Repositories
           </HeaderMenuItem>
         </HeaderNavigation>
-        <SideNav
-          aria-label="Side navigation"
-          expanded={isSideNavExpanded}
-          isPersistent={false}>
-          <SideNavItems>
-            <HeaderMenuItem as={Link} to="/repos">
-              Repositories
-            </HeaderMenuItem>
-          </SideNavItems>
-        </SideNav>
         <HeaderGlobalBar>
           <HeaderGlobalAction
             aria-label="Notifications"
