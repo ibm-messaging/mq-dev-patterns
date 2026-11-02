@@ -14,6 +14,15 @@
 # * limitations under the License.
 
 apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: ibm-mq-devex
+  description: IBM MQ developer experience team
+spec:
+  type: team
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
 kind: System
 metadata:
   name: ibm-mq-dev-portal
@@ -54,7 +63,7 @@ spec:
     - ibm-mq-async-api
   dependsOn:
     - resource:default/queue-manager
-  subcomponentOf: ibm-mq-dev-portal
+  system: ibm-mq-dev-portal
 ---
 apiVersion: backstage.io/v1alpha1
 kind: API
