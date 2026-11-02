@@ -14,12 +14,12 @@
  * limitations under the License.
  **/
 
-import React from 'react';
 import { MediaCast } from '@carbon/react/icons';
 import AppIcon from '../../Map/AppIcon';
 import PatternSidebar from '../../Map/PatternSidebar';
+import type { PatternSidebarItem, HowItWorks } from '../../../types';
 
-const ITEMS = [
+const ITEMS: PatternSidebarItem[] = [
   {
     nodeType: 'producer',
     icon: <AppIcon size={24} />,
@@ -40,7 +40,7 @@ const ITEMS = [
   },
 ];
 
-const HOW_IT_WORKS = {
+const HOW_IT_WORKS: HowItWorks = {
   patternName: 'publish-subscribe',
   tags: ['MQTT', 'REST', 'AMQP', 'JMS', 'Jakarta Msg 3.0'],
   description:

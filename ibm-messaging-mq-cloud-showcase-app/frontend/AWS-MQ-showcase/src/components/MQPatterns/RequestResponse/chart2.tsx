@@ -14,44 +14,44 @@
  * limitations under the License.
  **/
 
-import React, { useState, useEffect } from 'react';
 import { GroupedBarChart } from '@carbon/charts-react';
 import '@carbon/charts/styles.css';
-// Or
-// import "@carbon/charts/styles/styles.scss";
-
-// IBM Plex should either be imported in your project by using Carbon
-// or consumed manually through an import
 import '../shared/chart.scss';
+import { ScaleTypes } from '@carbon/charts';
+import type { BarChartOptions } from '@carbon/charts';
+import type { BarChartEntry } from '../../../types';
+import { CHART_COLORS } from '../../../utils/colors';
 
-const DEFAULTOPTION = {
+const DEFAULTOPTION: BarChartOptions = {
   title: 'Queue Manager 1',
   axes: {
     left: {
       mapsTo: 'value',
-      title: 'Subscribers depth',
+      title: 'Queues depth',
       thresholds: [
         {
           value: 5000,
           label: 'Max depth',
-          fillColor: 'orange',
+          fillColor: CHART_COLORS.THRESHOLD,
         },
       ],
     },
     bottom: {
-      scaleType: 'labels',
+      scaleType: ScaleTypes.LABELS,
       mapsTo: 'key',
-      title: 'Subscribers',
+      title: 'Queues',
     },
   },
   height: '400px',
 };
 
-const Chart2 = (props) => {
-  const [options, setOption] = useState(DEFAULTOPTION);
+interface Props {
+  data: BarChartEntry[];
+}
 
-  if (!props.data || !props.data.length) return null;
-  return <GroupedBarChart data={props.data} options={options} />;
+const Chart2 = ({ data }: Props) => {
+  if (!data.length) return null;
+  return <GroupedBarChart data={data} options={DEFAULTOPTION} />;
 };
 
 export default Chart2;

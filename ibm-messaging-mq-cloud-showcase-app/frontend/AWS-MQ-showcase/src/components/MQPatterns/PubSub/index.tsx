@@ -14,45 +14,42 @@
  * limitations under the License.
  **/
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Grid, Column } from '@carbon/react';
 import Chart1 from './chart1';
 import './index.scss';
-import Flow from '../PubSub/map';
+import Flow from './map';
 import useStore from './store';
+import type { LineChartEntry, DataframeEntry } from '../../../types';
 
-const PubSub = (props) => {
-  const [dataChart1, setDataChart1] = useState([]);
+const PubSub = () => {
+  const [dataChart1, setDataChart1] = useState<LineChartEntry[]>([]);
   const [time, setTime] = useState(1);
   const _updateDataframe = useStore((state) => state.setDataframeForChart);
 
+  const updateChart = (result: DataframeEntry[]) => {
+    let _dataChart1 = [...dataChart1];
+    result.forEach((entry) => {
+      _dataChart1.push({
+        group: entry.group,
+        time,
+        value: entry.value,
+      });
+    });
+    setDataChart1(_dataChart1);
+    setTime((t) => t + 1);
+  };
+
   useEffect(() => {
-    let dataframe = _updateDataframe();
-    updateChart(dataframe);
+    updateChart(_updateDataframe());
   }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      let dataframe = _updateDataframe();
-      updateChart(dataframe);
+      updateChart(_updateDataframe());
     }, 10000);
     return () => clearInterval(interval);
   }, []);
-
-  function updateChart(result) {
-    if (result) {
-      let _dataChart1 = [...dataChart1];
-      result.forEach((entry) => {
-        _dataChart1.push({
-          group: entry.group,
-          time: time,
-          value: entry.value,
-        });
-      });
-      setDataChart1(_dataChart1);
-      setTime(time + 1);
-    }
-  }
 
   return (
     <Grid condensed>

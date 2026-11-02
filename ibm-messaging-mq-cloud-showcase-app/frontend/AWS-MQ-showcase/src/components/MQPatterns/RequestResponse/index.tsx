@@ -13,21 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-import React from 'react';
+
 import { Grid, Column } from '@carbon/react';
 import './index.scss';
 import Flow from './map';
 
-const RequestResponseIndex = (props) => {
-  return (
-    <Grid condensed>
-      <Column md={8} lg={16} sm={4}>
-        <div className="flow-container">
-          <Flow />
-        </div>
-      </Column>
-    </Grid>
-  );
-};
+const RequestResponseIndex = () => (
+  <Grid condensed>
+    <Column md={8} lg={16} sm={4}>
+      <div className="flow-container">
+        <Flow />
+      </div>
+    </Column>
+  </Grid>
+);
 
 export default RequestResponseIndex;

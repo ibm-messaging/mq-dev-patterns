@@ -14,42 +14,46 @@
  * limitations under the License.
  **/
 
-import React, { useState } from 'react';
-import { GroupedBarChart } from '@carbon/charts-react';
+import { LineChart } from '@carbon/charts-react';
 import '@carbon/charts/styles.css';
-// Or
-// import "@carbon/charts/styles/styles.scss";
-
-// IBM Plex should either be imported in your project by using Carbon
-// or consumed manually through an import
 import '../shared/chart.scss';
+import { ScaleTypes } from '@carbon/charts';
+import type { LineChartOptions } from '@carbon/charts';
+import type { LineChartEntry } from '../../../types';
+import { CHART_COLORS } from '../../../utils/colors';
 
-const DEFAULTOPTION = {
-  title: 'Queue Manager 1',
+const DEFAULTOPTION: LineChartOptions = {
+  title: 'Queue manager 1',
   axes: {
+    bottom: {
+      title: 'Time',
+      mapsTo: 'time',
+      scaleType: ScaleTypes.LINEAR,
+    },
     left: {
       mapsTo: 'value',
       title: 'Queues depth',
+      scaleType: ScaleTypes.LINEAR,
       thresholds: [
         {
           value: 5000,
           label: 'Max depth',
-          fillColor: 'orange',
+          fillColor: CHART_COLORS.THRESHOLD,
         },
       ],
     },
-    bottom: {
-      scaleType: 'labels',
-      mapsTo: 'key',
-      title: 'Queues',
-    },
   },
+  curve: 'curveMonotoneX',
   height: '400px',
 };
 
-const Chart2 = (props) => {
-  if (!props.data || !props.data.length) return null;
-  return <GroupedBarChart data={props.data} options={DEFAULTOPTION} />;
+interface Props {
+  data: LineChartEntry[];
+}
+
+const Chart1 = ({ data }: Props) => {
+  if (!data.length) return null;
+  return <LineChart data={data} options={DEFAULTOPTION} />;
 };
 
-export default Chart2;
+export default Chart1;
