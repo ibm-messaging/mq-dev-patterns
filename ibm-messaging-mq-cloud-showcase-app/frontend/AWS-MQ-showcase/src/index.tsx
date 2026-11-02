@@ -14,13 +14,17 @@
  * limitations under the License.
  **/
 
-import React from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.scss';
 import App from './App';
 import { HashRouter as Router } from 'react-router-dom';
 
-createRoot(document.getElementById('root')).render(
+const container = document.getElementById('root');
+if (!container) {
+  throw new Error('Root element #root not found in index.html');
+}
+
+createRoot(container).render(
   <Router>
     <App />
   </Router>

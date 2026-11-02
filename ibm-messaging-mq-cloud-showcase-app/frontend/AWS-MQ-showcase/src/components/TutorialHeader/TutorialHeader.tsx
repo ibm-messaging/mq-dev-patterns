@@ -14,7 +14,6 @@
  * limitations under the License.
  **/
 
-import React from 'react';
 import { Switcher, Notification, UserAvatar } from '@carbon/react/icons';
 import { Link } from 'react-router-dom';
 import {
@@ -41,15 +40,15 @@ const TutorialHeader = () => (
           onClick={onClickSideNavExpand}
           isActive={isSideNavExpanded}
         />
-        <HeaderName element={Link} to="/" prefix="IBM MQ">
+        <HeaderName as={Link} to="/" prefix="IBM MQ">
           showcase
         </HeaderName>
-        <HeaderNavigation aria-label="Carbon Tutorial">
+        <HeaderNavigation aria-label="Getting started links">
           <HeaderMenuItem href="https://www.ibm.com/uk-en/products/mq">
             Getting started
           </HeaderMenuItem>
         </HeaderNavigation>
-        <HeaderNavigation aria-label="Carbon Tutorial">
+        <HeaderNavigation aria-label="Repository links">
           <HeaderMenuItem href="https://github.com/ibm-messaging/mq-dev-patterns.git">
             Repositories
           </HeaderMenuItem>
@@ -59,7 +58,7 @@ const TutorialHeader = () => (
           expanded={isSideNavExpanded}
           isPersistent={false}>
           <SideNavItems>
-            <HeaderMenuItem element={Link} to="/repos">
+            <HeaderMenuItem as={Link} to="/repos">
               Repositories
             </HeaderMenuItem>
           </SideNavItems>

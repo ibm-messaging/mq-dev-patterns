@@ -14,11 +14,11 @@
  * limitations under the License.
  **/
 
-import React from 'react';
 import RepoTable from './RepoTable';
 import { Grid, Column } from '@carbon/react';
+import type { RepoRow, RepoTableHeader } from '../../types';
 
-const headers = [
+const headers: RepoTableHeader[] = [
   {
     key: 'name',
     header: 'Name',
@@ -45,7 +45,7 @@ const headers = [
   },
 ];
 
-const rows = [
+const rows: RepoRow[] = [
   {
     id: '1',
     name: 'Repo 1',

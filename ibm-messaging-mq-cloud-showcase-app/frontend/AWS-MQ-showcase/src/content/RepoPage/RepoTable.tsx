@@ -14,7 +14,7 @@
  * limitations under the License.
  **/
 
-import React from 'react';
+import { Fragment } from 'react';
 import {
   DataTable,
   TableContainer,
@@ -28,19 +28,17 @@ import {
   TableCell,
   TableExpandedRow,
 } from '@carbon/react';
+import type { RepoRow, RepoTableHeader } from '../../types';
 
-const RepoTable = ({ rows, headers }) => {
+interface RepoTableProps {
+  rows: RepoRow[];
+  headers: RepoTableHeader[];
+}
+
+const RepoTable = ({ rows, headers }: RepoTableProps) => {
   return (
-    <DataTable
-      rows={rows}
-      headers={headers}
-      render={({
-        rows,
-        headers,
-        getHeaderProps,
-        getRowProps,
-        getTableProps,
-      }) => (
+    <DataTable rows={rows} headers={headers}>
+      {({ rows, headers, getHeaderProps, getRowProps, getTableProps }) => (
         <TableContainer
           title="Carbon Repositories"
           description="A collection of public Carbon repositories.">
@@ -57,7 +55,7 @@ const RepoTable = ({ rows, headers }) => {
             </TableHead>
             <TableBody>
               {rows.map((row) => (
-                <React.Fragment key={row.id}>
+                <Fragment key={row.id}>
                   <TableExpandRow {...getRowProps({ row })}>
                     {row.cells.map((cell) => (
                       <TableCell key={cell.id}>{cell.value}</TableCell>
@@ -66,13 +64,13 @@ const RepoTable = ({ rows, headers }) => {
                   <TableExpandedRow colSpan={headers.length + 1}>
                     <p>Row description</p>
                   </TableExpandedRow>
-                </React.Fragment>
+                </Fragment>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
       )}
-    />
+    </DataTable>
   );
 };
 

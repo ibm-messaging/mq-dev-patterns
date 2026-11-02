@@ -14,7 +14,6 @@
  * limitations under the License.
  **/
 
-import React from 'react';
 import TutorialHeader from './components/TutorialHeader';
 import { Routes, Route } from 'react-router-dom';
 import LandingPage from './content/LandingPage';
