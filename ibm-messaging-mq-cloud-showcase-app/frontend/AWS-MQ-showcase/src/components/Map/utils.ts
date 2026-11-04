@@ -62,10 +62,6 @@ export function emitMessageFlow(edgeId: string): void {
   dispatchMessageFlow(edgeId);
 }
 
-export function emitMessageFlowReverse(edgeId: string): void {
-  dispatchMessageFlow(edgeId, true);
-}
-
 /** Returns a copy of `nodes` with `patch` merged into the data of node `id`. */
 export function patchNodeData(
   nodes: MQFlowNode[],
