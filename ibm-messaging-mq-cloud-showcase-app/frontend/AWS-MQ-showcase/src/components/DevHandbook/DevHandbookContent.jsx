@@ -17,92 +17,276 @@
 import React from 'react';
 import {
   CodeSnippet,
-  InlineNotification,
   Link,
   ListItem,
+  OrderedList,
   StructuredListBody,
   StructuredListCell,
   StructuredListHead,
   StructuredListRow,
   StructuredListWrapper,
+  Tag,
   Theme,
   UnorderedList,
 } from '@carbon/react';
+import {
+  ArrowRight,
+  Book,
+  Certificate,
+  Code,
+  Launch,
+  LogoGithub,
+  Trophy,
+} from '@carbon/icons-react';
 
-const ROOT_ENV = [
-  {
-    name: 'APP_PASSWORD',
-    note: (
-      <>
-        Compose injects into MQ (<code>MQ_APP_PASSWORD</code>) and backend
-      </>
-    ),
-  },
-  {
-    name: 'ADMIN_PASSWORD',
-    note: 'MQ Web Console login - Compose injects into MQ and backend',
-  },
-  {
-    name: 'IMAGE_ECS_REGISTRY_URI',
-    note: 'AWS ECS only - any non-empty string for local use',
-  },
-  { name: 'CLUSTER_NAME', note: 'AWS ECS only - not needed locally' },
-];
+// ---------------------------------------------------------------------------
+// Data
+// ---------------------------------------------------------------------------
 
-const FRONTEND_ENV = [
+const GLOSSARY = [
   {
-    name: 'VITE_BE_HOST',
-    note: 'Backend hostname - local dev only, not used in Docker',
+    term: 'Queue manager',
+    definition:
+      'The server-side component that hosts queues and topics, manages connections, and routes messages. In this playground it runs as a Docker container.',
   },
   {
-    name: 'VITE_BE_PORT',
-    note: 'Backend port (8080) - local dev only, not used in Docker',
-  },
-];
-
-const BACKEND_ENV = [
-  {
-    name: 'HOST',
-    note: (
-      <>
-        Set to <code>localhost</code> for local dev (Mode A). Not needed when
-        running via Compose - Compose sets <code>HOST=mq</code> automatically.
-      </>
-    ),
+    term: 'Queue',
+    definition:
+      'A named destination where messages are stored until a consumer retrieves them. Messages are delivered in FIFO order and each message is consumed by exactly one application.',
   },
   {
-    name: 'MQ_QMGR_PORT_MQI',
-    note: (
-      <>
-        MQI listener port - set manually for Mode A; Compose injects{' '}
-        <code>1414</code>
-      </>
-    ),
+    term: 'Topic',
+    definition:
+      'A named subject that publishers write to and subscribers read from. Unlike a queue, every active subscriber receives its own copy of each published message.',
   },
   {
-    name: 'MQ_QMGR_PORT_API',
-    note: (
-      <>
-        REST API port - set manually for Mode A; Compose injects{' '}
-        <code>9443</code>
-      </>
-    ),
+    term: 'Message',
+    definition:
+      'A unit of data exchanged between applications. It has three parts: a descriptor (routing metadata), optional properties (key/value pairs), and a payload (your application data).',
   },
   {
-    name: 'APP_PASSWORD',
-    note: 'Set manually for Mode A. Must match root .env value - Compose injects it into the container.',
+    term: 'Channel',
+    definition:
+      'A communication path between an MQ client application and the queue manager. The default developer channel in this playground is DEV.APP.SVRCONN.',
   },
   {
-    name: 'ADMIN_PASSWORD',
-    note: 'Set manually for Mode A. Must match root .env value - Compose injects it into the container.',
+    term: 'Producer / Publisher',
+    definition:
+      'An application that puts messages onto a queue (producer) or publishes events to a topic (publisher).',
+  },
+  {
+    term: 'Consumer / Subscriber',
+    definition:
+      'An application that gets messages from a queue (consumer) or receives published events from a topic (subscriber).',
+  },
+  {
+    term: 'Reply-to queue',
+    definition:
+      'A temporary destination created by the requestor in a request-response exchange. The requestor puts its address in the message so the responder knows where to send the reply.',
   },
 ];
 
-const ACCESS_POINTS = [
-  { service: 'Playground UI', url: 'http://localhost:3000' },
-  { service: 'Backend API', url: 'http://localhost:8080' },
-  { service: 'MQ Web Console', url: 'https://localhost:9443/ibmmq/console' },
+const PATTERN_COMPARISON = [
+  {
+    pattern: 'Point-to-point',
+    direction: 'One-to-one',
+    coupling: 'Loose',
+    delivery: 'Exactly once',
+    persistence: 'Queue-backed',
+    useCase: 'Order processing, task queues',
+    protocols: 'REST, JMS, AMQP',
+  },
+  {
+    pattern: 'Pub / Sub',
+    direction: 'One-to-many',
+    coupling: 'Very loose',
+    delivery: 'Copy per subscriber',
+    persistence: 'Topic-based',
+    useCase: 'Event distribution, notifications',
+    protocols: 'MQTT, REST, JMS, AMQP',
+  },
+  {
+    pattern: 'Request / Response',
+    direction: 'Bidirectional',
+    coupling: 'Loose',
+    delivery: 'Exactly once (each leg)',
+    persistence: 'Temporary reply queue',
+    useCase: 'Service calls, async RPC',
+    protocols: 'REST, JMS, AMQP',
+  },
 ];
+
+const CODE_SAMPLES = [
+  {
+    label: 'Node.js (ibmmq)',
+    lang: 'JavaScript',
+    snippet: `const mq = require('ibmmq');
+
+const cno = new mq.MQCNO();
+cno.Options = mq.MQC.MQCNO_CLIENT_BINDING;
+
+const cd = new mq.MQCD();
+cd.ConnectionName = 'localhost(1414)';
+cd.ChannelName    = 'DEV.APP.SVRCONN';
+cno.ClientConn    = cd;
+
+const csp = new mq.MQCSP();
+csp.UserId   = 'app';
+csp.Password = 'passw0rd';
+cno.SecurityParms = csp;
+
+mq.Connx('QM1', cno, (err, hConn) => {
+  if (err) throw err;
+  // open queue, put/get messages ...
+});`,
+  },
+  {
+    label: 'Python (pymqi)',
+    lang: 'Python',
+    snippet: `import pymqi
+
+qmgr = pymqi.connect(
+    'QM1',
+    'DEV.APP.SVRCONN',
+    'localhost(1414)',
+    'app',
+    'passw0rd'
+)
+
+q = pymqi.Queue(qmgr, 'DEV.QUEUE.1')
+q.put(b'Hello from Python')
+
+msg = q.get()
+print(msg)
+
+q.close()
+qmgr.disconnect()`,
+  },
+  {
+    label: 'Java (JMS)',
+    lang: 'Java',
+    snippet: `JmsFactoryFactory ff =
+    JmsFactoryFactory.getInstance(WMQConstants.WMQ_PROVIDER);
+JmsConnectionFactory cf = ff.createConnectionFactory();
+
+cf.setStringProperty(WMQConstants.WMQ_HOST_NAME, "localhost");
+cf.setIntProperty(WMQConstants.WMQ_PORT, 1414);
+cf.setStringProperty(WMQConstants.WMQ_CHANNEL, "DEV.APP.SVRCONN");
+cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE,
+    WMQConstants.WMQ_CM_CLIENT);
+cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, "QM1");
+cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "MyApp");
+cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
+cf.setStringProperty(WMQConstants.USERID, "app");
+cf.setStringProperty(WMQConstants.PASSWORD, "passw0rd");
+
+JMSContext ctx = cf.createContext();
+Destination dest = ctx.createQueue("queue:///DEV.QUEUE.1");
+ctx.createProducer().send(dest, "Hello from Java");`,
+  },
+];
+
+const MQRC_ERRORS = [
+  {
+    code: '2035',
+    name: 'MQRC_NOT_AUTHORIZED',
+    meaning:
+      'The application credentials are wrong, or the app user lacks permission on the queue/channel. Check APP_PASSWORD and channel security settings.',
+  },
+  {
+    code: '2058',
+    name: 'MQRC_Q_MGR_NAME_ERROR',
+    meaning:
+      'The queue manager name does not match. The default name in this playground is QM1.',
+  },
+  {
+    code: '2059',
+    name: 'MQRC_Q_MGR_NOT_AVAILABLE',
+    meaning:
+      'The queue manager is not running or the MQ container has stopped. Check docker compose ps.',
+  },
+  {
+    code: '2085',
+    name: 'MQRC_UNKNOWN_OBJECT_NAME',
+    meaning:
+      'The queue or topic name you specified does not exist on the queue manager.',
+  },
+  {
+    code: '2195',
+    name: 'MQRC_UNEXPECTED_ERROR',
+    meaning:
+      'A general connectivity failure. Usually means the host or port is wrong, or a firewall is blocking port 1414.',
+  },
+  {
+    code: '2033',
+    name: 'MQRC_NO_MSG_AVAILABLE',
+    meaning:
+      'The queue is empty. No messages were available within the wait interval.',
+  },
+];
+
+const IBM_DEV_LINKS = [
+  {
+    icon: <Trophy size={20} />,
+    label: 'MQ Developer Essentials learning path',
+    description:
+      'End-to-end guide: fundamentals, queue manager setup, first Java app, and the coding challenge.',
+    href: 'https://developer.ibm.com/learningpaths/ibm-mq-badge/',
+    tag: 'Learning path',
+  },
+  {
+    icon: <Code size={20} />,
+    label: 'Take the MQ coding challenge',
+    description:
+      'Build a real-world JMS ticket-reseller app and earn the IBM MQ Developer Essentials badge.',
+    href: 'https://developer.ibm.com/learningpaths/ibm-mq-badge/mq-coding-challenge/',
+    tag: 'Challenge',
+  },
+  {
+    icon: <ArrowRight size={20} />,
+    label: 'Deploy this app to AWS',
+    description:
+      'Deploy the messaging playground to AWS ECS Fargate with a single CDK command.',
+    href: 'https://developer.ibm.com/learningpaths/ibm-mq-on-aws-badge/build-deploy-mq-app-aws-cloud/',
+    tag: 'Tutorial',
+  },
+  {
+    icon: <Code size={20} />,
+    label: 'MQ on AWS coding challenge',
+    description:
+      'Extend the playground app with message properties and selectors, then redeploy to AWS.',
+    href: 'https://developer.ibm.com/learningpaths/ibm-mq-on-aws-badge/mq-on-aws-coding-challenge/',
+    tag: 'Challenge',
+  },
+  {
+    icon: <Book size={20} />,
+    label: 'MQ developer cheat sheet',
+    description:
+      'Quick-reference tips for connecting, debugging, TLS, persistence, and transactions.',
+    href: 'https://developer.ibm.com/learningpaths/ibm-mq-badge/mq-dev-cheat-sheet/',
+    tag: 'Reference',
+  },
+  {
+    icon: <Certificate size={20} />,
+    label: 'IBM MQ on AWS — Developer Essentials',
+    description:
+      'Full learning path: queue manager on AWS, deploy the app, coding challenge, and badge.',
+    href: 'https://developer.ibm.com/learningpaths/ibm-mq-on-aws-badge/',
+    tag: 'Learning path',
+  },
+  {
+    icon: <LogoGithub size={20} />,
+    label: 'MQ dev patterns on GitHub',
+    description:
+      'Source code for this app and a wide range of MQ samples across Node.js, Java, Python, Go, and more.',
+    href: 'https://github.com/ibm-messaging/mq-dev-patterns',
+    tag: 'GitHub',
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Sub-components
+// ---------------------------------------------------------------------------
 
 const HandbookSection = ({ title, children }) => (
   <section className="dev-handbook__section">
@@ -111,253 +295,257 @@ const HandbookSection = ({ title, children }) => (
   </section>
 );
 
-const HandbookCode = ({ children }) => (
-  <Theme theme="g100" className="dev-handbook__code">
-    <CodeSnippet type="multi" feedback="Copied">
-      {children}
-    </CodeSnippet>
-  </Theme>
-);
-
-const HandbookNote = ({ kind = 'info', children }) => (
-  <InlineNotification
-    className="dev-handbook__note"
-    kind={kind}
-    lowContrast
-    hideCloseButton
-    statusIconDescription={kind}
-    subtitle={children}
-  />
-);
-
-const EnvTable = ({ rows }) => (
-  <StructuredListWrapper className="dev-handbook__table" isCondensed>
-    <StructuredListHead>
-      <StructuredListRow head>
-        <StructuredListCell head>Variable</StructuredListCell>
-        <StructuredListCell head>Notes</StructuredListCell>
-      </StructuredListRow>
-    </StructuredListHead>
-    <StructuredListBody>
-      {rows.map(({ name, note }) => (
-        <StructuredListRow key={name}>
-          <StructuredListCell noWrap>
-            <code>{name}</code>
-          </StructuredListCell>
-          <StructuredListCell>{note}</StructuredListCell>
-        </StructuredListRow>
-      ))}
-    </StructuredListBody>
-  </StructuredListWrapper>
-);
-
-const EnvGroup = ({ label, path, description, rows, snippet, children }) => (
-  <div className="dev-handbook__env-group">
-    <div className="dev-handbook__env-group-header">
-      <h4 className="dev-handbook__subtitle">{label}</h4>
-      <code>{path}</code>
-    </div>
-    <p className="dev-handbook__text">{description}</p>
-    <EnvTable rows={rows} />
-    <HandbookCode>{snippet}</HandbookCode>
-    {children}
+const HandbookCode = ({ label, children }) => (
+  <div className="dev-handbook__code-block">
+    {label && <p className="dev-handbook__code-label">{label}</p>}
+    <Theme theme="g100" className="dev-handbook__code">
+      <CodeSnippet type="multi" feedback="Copied">
+        {children}
+      </CodeSnippet>
+    </Theme>
   </div>
 );
 
+// ---------------------------------------------------------------------------
+// Main content
+// ---------------------------------------------------------------------------
+
 const DevHandbookContent = () => (
   <div className="dev-handbook__body" tabIndex={-1}>
-    <HandbookSection title="Prerequisites">
-      <UnorderedList>
+    {/* ── 1. How this playground works ─────────────────────────────────── */}
+    <HandbookSection title="How this playground works">
+      <p className="dev-handbook__text">
+        This app connects to a <strong>live IBM MQ queue manager</strong>{' '}
+        running in a Docker container. Every action you take — sending a
+        message, toggling a consumer on, dragging a subscriber onto the canvas —
+        calls a real MQ REST API on the backend, which in turn puts or gets an
+        actual message from the queue manager.
+      </p>
+      <p className="dev-handbook__text">
+        The three tabs each demonstrate a different messaging pattern. Drag
+        components from the sidebar onto the canvas, connect them, and interact
+        with the controls to see live message counts update in real time.
+      </p>
+      <OrderedList className="dev-handbook__list">
         <ListItem>
-          Docker runtime (Docker Engine on Linux, Docker Desktop or Rancher
-          Desktop on Mac/Windows) - required for all modes
+          <strong>Point-to-point</strong> — drag a producer and a consumer onto
+          the canvas, connect both to a queue, then send messages and watch them
+          flow through.
         </ListItem>
         <ListItem>
-          Node.js 22 + npm - required for <strong>Mode A</strong> (local dev
-          server) only
+          <strong>Publish / Subscribe</strong> — connect a publisher to a topic,
+          add one or more subscribers, then publish and watch every subscriber
+          receive a copy.
         </ListItem>
         <ListItem>
-          A root <code>.env</code> file - required for all modes (docker compose
-          reads it for MQ passwords)
+          <strong>Request / Response</strong> — connect a requestor to a queue,
+          toggle the responder on, send a request and observe the automatic
+          reply-to queue lifecycle.
         </ListItem>
-      </UnorderedList>
+      </OrderedList>
     </HandbookSection>
 
-    <HandbookSection title="Environment files">
+    {/* ── 2. MQ concepts glossary ──────────────────────────────────────── */}
+    <HandbookSection title="MQ concepts glossary">
       <p className="dev-handbook__text">
-        There are{' '}
-        <strong>
-          three separate <code>.env</code> locations
-        </strong>
-        , each serving a different layer. All three are gitignored - create them
-        manually.
+        Key terms used throughout this app and IBM MQ documentation.
       </p>
-
-      <EnvGroup
-        label="Root .env"
-        path="ibm-messaging-mq-cloud-showcase-app/.env"
-        description="Docker Compose secrets - shared between the MQ container and backend."
-        rows={ROOT_ENV}
-        snippet={`APP_PASSWORD=passw0rd
-ADMIN_PASSWORD=passw0rd
-IMAGE_ECS_REGISTRY_URI=image_ecs
-CLUSTER_NAME=cluster_name`}
-      />
-
-      <EnvGroup
-        label="Frontend .env"
-        path="frontend/AWS-MQ-showcase/.env"
-        description="Vite local dev server only - not used inside Docker."
-        rows={FRONTEND_ENV}
-        snippet={`VITE_BE_HOST=localhost
-VITE_BE_PORT=8080`}>
-        <HandbookNote>
-          Docker builds use <code>REACT_APP_*</code> variables injected at
-          container start via <code>docker-entrypoint.sh</code> - do not confuse
-          the two.
-        </HandbookNote>
-      </EnvGroup>
-
-      <EnvGroup
-        label="Backend .env"
-        path="backend/AWS-showcase-backend/.env"
-        description="Local dev server only - Compose injects these at container start."
-        rows={BACKEND_ENV}
-        snippet={`HOST=localhost
-MQ_QMGR_PORT_MQI=1414
-MQ_QMGR_PORT_API=9443
-APP_PASSWORD=passw0rd
-ADMIN_PASSWORD=passw0rd`}>
-        <HandbookNote>
-          This file is only needed for Mode A (local backend dev). When running
-          via Docker Compose, these values are injected automatically - do not
-          set <code>HOST=localhost</code> in that case or the backend container
-          will fail to reach the MQ service.
-        </HandbookNote>
-      </EnvGroup>
-    </HandbookSection>
-
-    <HandbookSection title="MQ Web Console">
-      <p className="dev-handbook__text">
-        Available whenever the MQ container is running (any mode):
-      </p>
-      <HandbookCode>{`https://localhost:9443/ibmmq/console
-
-Username: admin
-Password: <your ADMIN_PASSWORD>`}</HandbookCode>
-      <HandbookNote>
-        The console uses a self-signed certificate - accept the browser warning
-        on first visit.
-      </HandbookNote>
-    </HandbookSection>
-
-    <HandbookSection title="Mode A - Local dev servers">
-      <p className="dev-handbook__text">
-        Use when actively developing frontend or backend code. The MQ container
-        still runs in Docker. Hot-reload is active for both frontend and
-        backend.
-      </p>
-      <HandbookCode>{`cd ibm-messaging-mq-cloud-showcase-app/
-docker compose -f docker-compose.yaml up mq
-
-cd backend/AWS-showcase-backend/
-npm install
-npm start
-
-cd frontend/AWS-MQ-showcase/
-npm install
-npm run start`}</HandbookCode>
-    </HandbookSection>
-
-    <HandbookSection title="Mode B - Standalone frontend Docker image">
-      <p className="dev-handbook__text">
-        Use to test the frontend container in isolation while the backend runs
-        separately.
-      </p>
-      <HandbookCode>{`cd ibm-messaging-mq-cloud-showcase-app/frontend/
-docker build -t frontend:test .
-
-docker run -p 3000:80 \\
-  -e REACT_APP_FE_AS_PROXY=false \\
-  -e REACT_APP_BE_HOST=localhost \\
-  -e REACT_APP_BE_PORT=8080 \\
-  -e REACT_APP_BE_TLS=false \\
-  frontend:test`}</HandbookCode>
-      <HandbookNote>
-        Rancher Desktop manages its own Docker context. The first{' '}
-        <code>docker build</code> will pull base images into Rancher's registry
-        - normal, happens once only.
-      </HandbookNote>
-    </HandbookSection>
-
-    <HandbookSection title="Apple Silicon (ARM64)">
-      <p className="dev-handbook__text">
-        <code>icr.io/ibm-messaging/mq:latest</code> is <strong>x86-only</strong>
-        . On Apple Silicon you must build a local ARM64 image first. Full build
-        instructions:{' '}
-        <Link
-          href="https://community.ibm.com/community/user/blogs/richard-coppen/2023/06/30/ibm-mq-9330-container-image-now-available-for-appl"
-          target="_blank"
-          rel="noopener noreferrer">
-          IBM MQ ARM64 container image guide
-        </Link>
-        .
-      </p>
-      <p className="dev-handbook__text">
-        Once built, update the <code>mq</code> service image line in{' '}
-        <code>docker-compose.yaml</code>:
-      </p>
-      <HandbookCode>{`image: "ibm-mqadvanced-server-dev:10.0.0.5-arm64"`}</HandbookCode>
-      <HandbookNote>
-        This edit is <strong>local only</strong> - do not commit it. CI/CD and
-        AWS use the <code>icr.io</code> image on <code>linux/amd64</code>.
-      </HandbookNote>
-    </HandbookSection>
-
-    <HandbookSection title="Mode C - Full Docker Compose stack">
-      <p className="dev-handbook__text">
-        Complete self-contained deployment, exactly as it runs in production.
-      </p>
-      <h4 className="dev-handbook__subtitle">Standard build + run</h4>
-      <HandbookCode>{`cd ibm-messaging-mq-cloud-showcase-app/
-docker-compose --file docker-compose.yaml build --no-cache
-docker-compose --file docker-compose.yaml up`}</HandbookCode>
-      <h4 className="dev-handbook__subtitle">
-        One-liner (no .env file needed)
-      </h4>
-      <HandbookCode>{`APP_PASSWORD=passw0rd ADMIN_PASSWORD=passw0rd docker compose up --build`}</HandbookCode>
-      <h4 className="dev-handbook__subtitle">Access points</h4>
       <StructuredListWrapper className="dev-handbook__table" isCondensed>
         <StructuredListHead>
           <StructuredListRow head>
-            <StructuredListCell head>Service</StructuredListCell>
-            <StructuredListCell head>URL</StructuredListCell>
+            <StructuredListCell head>Term</StructuredListCell>
+            <StructuredListCell head>Definition</StructuredListCell>
           </StructuredListRow>
         </StructuredListHead>
         <StructuredListBody>
-          {ACCESS_POINTS.map(({ service, url }) => (
-            <StructuredListRow key={service}>
-              <StructuredListCell noWrap>{service}</StructuredListCell>
-              <StructuredListCell>
-                <code>{url}</code>
+          {GLOSSARY.map(({ term, definition }) => (
+            <StructuredListRow key={term}>
+              <StructuredListCell noWrap>
+                <strong>{term}</strong>
               </StructuredListCell>
+              <StructuredListCell>{definition}</StructuredListCell>
             </StructuredListRow>
           ))}
         </StructuredListBody>
       </StructuredListWrapper>
     </HandbookSection>
 
-    <HandbookSection title="Stopping containers">
-      <HandbookCode>{`docker compose down`}</HandbookCode>
+    {/* ── 3. Pattern comparison ─────────────────────────────────────────── */}
+    <HandbookSection title="Pattern comparison">
       <p className="dev-handbook__text">
-        Stops and removes containers. Volumes are preserved - MQ queue data
-        persists across restarts.
+        Compare the three patterns shown in this playground across the
+        dimensions that matter most when choosing one for your application.
       </p>
-      <HandbookCode>{`docker compose down -v`}</HandbookCode>
-      <HandbookNote kind="warning">
-        <strong>Destructive:</strong> the <code>-v</code> flag also deletes
-        volumes, wiping all MQ queue data. Use only when you want a clean slate.
-      </HandbookNote>
+      <StructuredListWrapper className="dev-handbook__table" isCondensed>
+        <StructuredListHead>
+          <StructuredListRow head>
+            <StructuredListCell head>Pattern</StructuredListCell>
+            <StructuredListCell head>Direction</StructuredListCell>
+            <StructuredListCell head>Delivery</StructuredListCell>
+            <StructuredListCell head>Typical use case</StructuredListCell>
+            <StructuredListCell head>Protocols</StructuredListCell>
+          </StructuredListRow>
+        </StructuredListHead>
+        <StructuredListBody>
+          {PATTERN_COMPARISON.map(
+            ({ pattern, direction, delivery, useCase, protocols }) => (
+              <StructuredListRow key={pattern}>
+                <StructuredListCell noWrap>
+                  <strong>{pattern}</strong>
+                </StructuredListCell>
+                <StructuredListCell noWrap>{direction}</StructuredListCell>
+                <StructuredListCell noWrap>{delivery}</StructuredListCell>
+                <StructuredListCell>{useCase}</StructuredListCell>
+                <StructuredListCell noWrap>{protocols}</StructuredListCell>
+              </StructuredListRow>
+            )
+          )}
+        </StructuredListBody>
+      </StructuredListWrapper>
+    </HandbookSection>
+
+    {/* ── 4. What happens when you click Send ──────────────────────────── */}
+    <HandbookSection title="What happens when you click Send">
+      <p className="dev-handbook__text">
+        Tracing a point-to-point message end-to-end through the stack:
+      </p>
+      <OrderedList className="dev-handbook__list">
+        <ListItem>
+          <strong>Frontend</strong> — the producer node calls the backend REST
+          API: <code>PUT /api/send</code> with the queue name and message body.
+        </ListItem>
+        <ListItem>
+          <strong>Backend (Node.js)</strong> — the message session manager
+          receives the request and opens a connection to the queue manager using
+          the <code>ibmmq</code> Node.js client library.
+        </ListItem>
+        <ListItem>
+          <strong>Queue manager (MQ container)</strong> — the queue manager
+          authenticates the connection, authorises access to the queue, and
+          persists the message to <code>DEV.QUEUE.1</code>.
+        </ListItem>
+        <ListItem>
+          <strong>Queue depth</strong> — the frontend polls{' '}
+          <code>GET /api/queueStatus</code> to read the current depth and
+          renders it as the percentage-full indicator on the queue node.
+        </ListItem>
+        <ListItem>
+          <strong>Consumer</strong> — when you toggle a consumer on, the backend
+          calls <code>GET /api/receive</code>, which issues an MQ{' '}
+          <code>MQGET</code> and returns the message body to the frontend for
+          display.
+        </ListItem>
+      </OrderedList>
+      <p className="dev-handbook__text">
+        The full backend source lives in{' '}
+        <Link
+          href="https://github.com/ibm-messaging/mq-dev-patterns/tree/master/ibm-messaging-mq-cloud-showcase-app/backend"
+          target="_blank"
+          rel="noopener noreferrer"
+          renderIcon={Launch}>
+          backend/AWS-showcase-backend
+        </Link>{' '}
+        on GitHub.
+      </p>
+    </HandbookSection>
+
+    {/* ── 5. Try it yourself — code samples ────────────────────────────── */}
+    <HandbookSection title="Try it yourself">
+      <p className="dev-handbook__text">
+        Connect to the same queue manager running in this playground from your
+        own application. The queue manager listens on{' '}
+        <code>localhost:1414</code> with channel <code>DEV.APP.SVRCONN</code>,
+        user <code>app</code>, and the password you set in{' '}
+        <code>APP_PASSWORD</code>.
+      </p>
+      {CODE_SAMPLES.map(({ label, snippet }) => (
+        <HandbookCode key={label} label={label}>
+          {snippet}
+        </HandbookCode>
+      ))}
+      <p className="dev-handbook__text">
+        More language samples (Go, .NET, MQTT, REST) are in the{' '}
+        <Link
+          href="https://github.com/ibm-messaging/mq-dev-patterns"
+          target="_blank"
+          rel="noopener noreferrer"
+          renderIcon={Launch}>
+          mq-dev-patterns repository
+        </Link>
+        .
+      </p>
+    </HandbookSection>
+
+    {/* ── 6. Common errors ─────────────────────────────────────────────── */}
+    <HandbookSection title="Common errors and what they mean">
+      <p className="dev-handbook__text">
+        IBM MQ uses reason codes (MQRC) to describe errors. Here are the ones
+        you are most likely to encounter while exploring this playground.
+      </p>
+      <StructuredListWrapper className="dev-handbook__table" isCondensed>
+        <StructuredListHead>
+          <StructuredListRow head>
+            <StructuredListCell head>Code</StructuredListCell>
+            <StructuredListCell head>Name</StructuredListCell>
+            <StructuredListCell head>What it means</StructuredListCell>
+          </StructuredListRow>
+        </StructuredListHead>
+        <StructuredListBody>
+          {MQRC_ERRORS.map(({ code, name, meaning }) => (
+            <StructuredListRow key={code}>
+              <StructuredListCell noWrap>
+                <code>{code}</code>
+              </StructuredListCell>
+              <StructuredListCell noWrap>
+                <code>{name}</code>
+              </StructuredListCell>
+              <StructuredListCell>{meaning}</StructuredListCell>
+            </StructuredListRow>
+          ))}
+        </StructuredListBody>
+      </StructuredListWrapper>
+      <p className="dev-handbook__text">
+        For a full list see the{' '}
+        <Link
+          href="https://www.ibm.com/docs/en/ibm-mq/latest?topic=codes-reason-mqrc"
+          target="_blank"
+          rel="noopener noreferrer"
+          renderIcon={Launch}>
+          IBM MQ reason codes reference
+        </Link>
+        .
+      </p>
+    </HandbookSection>
+
+    {/* ── 7. Learn more & next steps ───────────────────────────────────── */}
+    <HandbookSection title="Learn more &amp; next steps">
+      <p className="dev-handbook__text">
+        Ready to go deeper? These resources from IBM Developer take you from
+        playground to production.
+      </p>
+      <ul className="dev-handbook__link-list">
+        {IBM_DEV_LINKS.map(({ icon, label, description, href, tag }) => (
+          <li key={href} className="dev-handbook__link-card">
+            <div className="dev-handbook__link-card-icon">{icon}</div>
+            <div className="dev-handbook__link-card-body">
+              <div className="dev-handbook__link-card-header">
+                <Link
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  renderIcon={Launch}
+                  className="dev-handbook__link-card-title">
+                  {label}
+                </Link>
+                <Tag size="sm" type="blue" className="dev-handbook__link-tag">
+                  {tag}
+                </Tag>
+              </div>
+              <p className="dev-handbook__link-card-desc">{description}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
     </HandbookSection>
   </div>
 );
