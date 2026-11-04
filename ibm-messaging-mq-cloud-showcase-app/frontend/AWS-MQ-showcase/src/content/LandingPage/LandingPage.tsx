@@ -14,7 +14,6 @@
  * limitations under the License.
  **/
 
-import React from 'react';
 import PointPointIndex from '../../components/MQPatterns/PointToPoint/index';
 import PubSubIndex from '../../components/MQPatterns/PubSub';
 import RequestResponseIndex from '../../components/MQPatterns/RequestResponse';
@@ -29,7 +28,7 @@ import {
   Column,
   Link,
 } from '@carbon/react';
-import { Launch } from '@carbon/icons-react';
+import { Launch } from '@carbon/react/icons';
 
 const LandingPage = () => {
   return (

@@ -14,9 +14,18 @@
  * limitations under the License.
  **/
 
-@use '@carbon/react/scss/spacing' as *;
+import { createRoot } from 'react-dom/client';
+import './index.scss';
+import App from './App';
+import { HashRouter as Router } from 'react-router-dom';
 
-.repo-page__r1 {
-  padding-top: $spacing-05;
-  padding-bottom: $spacing-05;
+const container = document.getElementById('root');
+if (!container) {
+  throw new Error('Root element #root not found in index.html');
 }
+
+createRoot(container).render(
+  <Router>
+    <App />
+  </Router>
+);

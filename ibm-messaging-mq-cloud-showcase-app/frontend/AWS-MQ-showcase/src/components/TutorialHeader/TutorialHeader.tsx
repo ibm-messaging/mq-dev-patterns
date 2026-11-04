@@ -14,7 +14,6 @@
  * limitations under the License.
  **/
 
-import React from 'react';
 import { Switcher, Notification, UserAvatar } from '@carbon/react/icons';
 import { Link } from 'react-router-dom';
 import {
@@ -22,48 +21,30 @@ import {
   HeaderContainer,
   HeaderName,
   HeaderNavigation,
-  HeaderMenuButton,
   HeaderMenuItem,
   HeaderGlobalBar,
   HeaderGlobalAction,
   SkipToContent,
-  SideNav,
-  SideNavItems,
 } from '@carbon/react';
 
 const TutorialHeader = () => (
   <HeaderContainer
-    render={({ isSideNavExpanded, onClickSideNavExpand }) => (
+    render={() => (
       <Header aria-label="IBM MQ showcase">
         <SkipToContent />
-        <HeaderMenuButton
-          aria-label="Open menu"
-          onClick={onClickSideNavExpand}
-          isActive={isSideNavExpanded}
-        />
-        <HeaderName element={Link} to="/" prefix="IBM MQ">
+        <HeaderName as={Link} to="/" prefix="IBM MQ">
           showcase
         </HeaderName>
-        <HeaderNavigation aria-label="Carbon Tutorial">
+        <HeaderNavigation aria-label="Getting started links">
           <HeaderMenuItem href="https://www.ibm.com/uk-en/products/mq">
             Getting started
           </HeaderMenuItem>
         </HeaderNavigation>
-        <HeaderNavigation aria-label="Carbon Tutorial">
+        <HeaderNavigation aria-label="Repository links">
           <HeaderMenuItem href="https://github.com/ibm-messaging/mq-dev-patterns.git">
             Repositories
           </HeaderMenuItem>
         </HeaderNavigation>
-        <SideNav
-          aria-label="Side navigation"
-          expanded={isSideNavExpanded}
-          isPersistent={false}>
-          <SideNavItems>
-            <HeaderMenuItem element={Link} to="/repos">
-              Repositories
-            </HeaderMenuItem>
-          </SideNavItems>
-        </SideNav>
         <HeaderGlobalBar>
           <HeaderGlobalAction
             aria-label="Notifications"
