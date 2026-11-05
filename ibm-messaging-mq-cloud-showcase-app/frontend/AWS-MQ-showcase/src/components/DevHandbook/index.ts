@@ -14,9 +14,4 @@
  * limitations under the License.
  **/
 
-@use '@carbon/react/scss/spacing' as *;
-
-.repo-page__r1 {
-  padding-top: $spacing-05;
-  padding-bottom: $spacing-05;
-}
+export { default } from './DevHandbook';

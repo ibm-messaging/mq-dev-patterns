@@ -14,10 +14,10 @@
  * limitations under the License.
  **/
 
-import React from 'react';
 import PointPointIndex from '../../components/MQPatterns/PointToPoint/index';
 import PubSubIndex from '../../components/MQPatterns/PubSub';
 import RequestResponseIndex from '../../components/MQPatterns/RequestResponse';
+import DevHandbook from '../../components/DevHandbook';
 
 import {
   Tabs,
@@ -29,26 +29,29 @@ import {
   Column,
   Link,
 } from '@carbon/react';
-import { Launch } from '@carbon/icons-react';
+import { Launch } from '@carbon/react/icons';
 
 const LandingPage = () => {
   return (
     <Grid className="landing-page" condensed>
       <Column lg={16} md={8} sm={4} className="landing-page__heading-section">
-        <h1 className="landing-page__heading">IBM MQ messaging patterns</h1>
-        <p className="landing-page__description">
-          Explore how applications communicate using IBM MQ messaging patterns.
-          To deploy this showcase app to AWS and learn more about MQ messaging
-          patterns,{' '}
-          <Link
-            href="https://developer.ibm.com/tutorials/mq-build-deploy-ibm-mq-app-to-aws-cloud/"
-            target="_blank"
-            rel="noopener noreferrer"
-            renderIcon={Launch}>
-            visit this tutorial
-          </Link>
-          .
-        </p>
+        <div className="landing-page__heading-text">
+          <h1 className="landing-page__heading">IBM MQ messaging patterns</h1>
+          <p className="landing-page__description">
+            Explore how applications communicate using IBM MQ messaging
+            patterns. To deploy this showcase app to AWS and learn more about MQ
+            messaging patterns,{' '}
+            <Link
+              href="https://developer.ibm.com/tutorials/mq-build-deploy-ibm-mq-app-to-aws-cloud/"
+              target="_blank"
+              rel="noopener noreferrer"
+              renderIcon={Launch}>
+              visit this tutorial
+            </Link>
+            .
+          </p>
+        </div>
+        <DevHandbook />
       </Column>
       <Column lg={16} md={8} sm={4} className="landing-page__tabs">
         <Tabs>
