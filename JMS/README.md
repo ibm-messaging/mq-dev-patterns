@@ -29,6 +29,8 @@ There are then additional modules to provide shared functions. They include:
 * **LoggingHelper.java** - Implements a simple log strategy to report progress
 * **JwtHelper.java** - Use JWT tokens for authentication. Obtain the token from a configured server.
 
+There is also **ConversationSharing.java** used as part of [this article](https://developer.ibm.com/articles/awb-sharing-mq-conversations-over-channel-instances).
+
 The location and name of the configuration file defaults to `../env.json`. This can be overriden by setting the
 environment variable or system property `EnvFile`.
 
