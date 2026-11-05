@@ -16,7 +16,6 @@
 
 import React from 'react';
 import {
-  CodeSnippet,
   Link,
   ListItem,
   OrderedList,
@@ -26,7 +25,6 @@ import {
   StructuredListRow,
   StructuredListWrapper,
   Tag,
-  Theme,
   UnorderedList,
 } from '@carbon/react';
 import {
@@ -47,7 +45,7 @@ const GLOSSARY = [
   {
     term: 'Queue manager',
     definition:
-      'The server-side component that hosts queues and topics, manages connections, and routes messages. In this playground it runs as a Docker container.',
+      'The server-side component that hosts queues and topics, manages connections, and routes messages. In this playground it runs as a container.',
   },
   {
     term: 'Queue',
@@ -67,7 +65,7 @@ const GLOSSARY = [
   {
     term: 'Channel',
     definition:
-      'A communication path between an MQ client application and the queue manager. The default developer channel in this playground is DEV.APP.SVRCONN.',
+      'A logical link that moves data between two queue managers (message channels) or between an MQ client and a queue manager (MQI channels). AMQP channels connect AMQP clients to a queue manager. This playground connects clients through the SVRCONN channel DEV.APP.SVRCONN.',
   },
   {
     term: 'Producer / Publisher',
@@ -116,74 +114,15 @@ const PATTERN_COMPARISON = [
   },
 ];
 
-const CODE_SAMPLES = [
-  {
-    label: 'Node.js (ibmmq)',
-    lang: 'JavaScript',
-    snippet: `const mq = require('ibmmq');
+const REPO_BASE =
+  'https://github.com/ibm-messaging/mq-dev-patterns/tree/master';
 
-const cno = new mq.MQCNO();
-cno.Options = mq.MQC.MQCNO_CLIENT_BINDING;
-
-const cd = new mq.MQCD();
-cd.ConnectionName = 'localhost(1414)';
-cd.ChannelName    = 'DEV.APP.SVRCONN';
-cno.ClientConn    = cd;
-
-const csp = new mq.MQCSP();
-csp.UserId   = 'app';
-csp.Password = 'passw0rd';
-cno.SecurityParms = csp;
-
-mq.Connx('QM1', cno, (err, hConn) => {
-  if (err) throw err;
-  // open queue, put/get messages ...
-});`,
-  },
-  {
-    label: 'Python (pymqi)',
-    lang: 'Python',
-    snippet: `import pymqi
-
-qmgr = pymqi.connect(
-    'QM1',
-    'DEV.APP.SVRCONN',
-    'localhost(1414)',
-    'app',
-    'passw0rd'
-)
-
-q = pymqi.Queue(qmgr, 'DEV.QUEUE.1')
-q.put(b'Hello from Python')
-
-msg = q.get()
-print(msg)
-
-q.close()
-qmgr.disconnect()`,
-  },
-  {
-    label: 'Java (JMS)',
-    lang: 'Java',
-    snippet: `JmsFactoryFactory ff =
-    JmsFactoryFactory.getInstance(WMQConstants.WMQ_PROVIDER);
-JmsConnectionFactory cf = ff.createConnectionFactory();
-
-cf.setStringProperty(WMQConstants.WMQ_HOST_NAME, "localhost");
-cf.setIntProperty(WMQConstants.WMQ_PORT, 1414);
-cf.setStringProperty(WMQConstants.WMQ_CHANNEL, "DEV.APP.SVRCONN");
-cf.setIntProperty(WMQConstants.WMQ_CONNECTION_MODE,
-    WMQConstants.WMQ_CM_CLIENT);
-cf.setStringProperty(WMQConstants.WMQ_QUEUE_MANAGER, "QM1");
-cf.setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, "MyApp");
-cf.setBooleanProperty(WMQConstants.USER_AUTHENTICATION_MQCSP, true);
-cf.setStringProperty(WMQConstants.USERID, "app");
-cf.setStringProperty(WMQConstants.PASSWORD, "passw0rd");
-
-JMSContext ctx = cf.createContext();
-Destination dest = ctx.createQueue("queue:///DEV.QUEUE.1");
-ctx.createProducer().send(dest, "Hello from Java");`,
-  },
+const CODE_SAMPLE_LINKS = [
+  { label: 'Node.js samples (ibmmq)', href: `${REPO_BASE}/Node.js` },
+  { label: 'Python samples (pymqi)', href: `${REPO_BASE}/Python` },
+  { label: 'Java JMS samples', href: `${REPO_BASE}/JMS` },
+  { label: 'Java samples (MQ classes)', href: `${REPO_BASE}/Java-MQ` },
+  { label: 'Go samples', href: `${REPO_BASE}/Go` },
 ];
 
 const MQRC_ERRORS = [
@@ -295,17 +234,6 @@ const HandbookSection = ({ title, children }) => (
   </section>
 );
 
-const HandbookCode = ({ label, children }) => (
-  <div className="dev-handbook__code-block">
-    {label && <p className="dev-handbook__code-label">{label}</p>}
-    <Theme theme="g100" className="dev-handbook__code">
-      <CodeSnippet type="multi" feedback="Copied">
-        {children}
-      </CodeSnippet>
-    </Theme>
-  </div>
-);
-
 // ---------------------------------------------------------------------------
 // Main content
 // ---------------------------------------------------------------------------
@@ -316,10 +244,10 @@ const DevHandbookContent = () => (
     <HandbookSection title="How this playground works">
       <p className="dev-handbook__text">
         This app connects to a <strong>live IBM MQ queue manager</strong>{' '}
-        running in a Docker container. Every action you take — sending a
-        message, toggling a consumer on, dragging a subscriber onto the canvas —
-        calls a real MQ REST API on the backend, which in turn puts or gets an
-        actual message from the queue manager.
+        running in a container. Every action you take — sending a message,
+        toggling a consumer on, dragging a subscriber onto the canvas — calls a
+        real MQ REST API on the backend, which in turn puts or gets an actual
+        message from the queue manager.
       </p>
       <p className="dev-handbook__text">
         The three tabs each demonstrate a different messaging pattern. Drag
@@ -458,13 +386,21 @@ const DevHandbookContent = () => (
         user <code>app</code>, and the password you set in{' '}
         <code>APP_PASSWORD</code>.
       </p>
-      {CODE_SAMPLES.map(({ label, snippet }) => (
-        <HandbookCode key={label} label={label}>
-          {snippet}
-        </HandbookCode>
-      ))}
+      <UnorderedList className="dev-handbook__list">
+        {CODE_SAMPLE_LINKS.map(({ label, href }) => (
+          <ListItem key={label}>
+            <Link
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              renderIcon={Launch}>
+              {label}
+            </Link>
+          </ListItem>
+        ))}
+      </UnorderedList>
       <p className="dev-handbook__text">
-        More language samples (Go, .NET, MQTT, REST) are in the{' '}
+        More language samples (.NET, MQTT, REST) are in the{' '}
         <Link
           href="https://github.com/ibm-messaging/mq-dev-patterns"
           target="_blank"

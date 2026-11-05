@@ -56,17 +56,6 @@
   padding-inline-start: $spacing-06;
 }
 
-.dev-handbook__code-block {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-03;
-}
-
-.dev-handbook__code-label {
-  @include type-style('label-01');
-  color: $text-secondary;
-}
-
 // Resource link cards
 .dev-handbook__link-list {
   list-style: none;
@@ -124,14 +113,6 @@
   @include type-style('code-01');
   background-color: $layer-accent-01;
   padding: 0 $spacing-02;
-}
-
-.dev-handbook__code {
-  background: transparent;
-
-  .cds--snippet {
-    max-inline-size: 100%;
-  }
 }
 
 .dev-handbook__note {

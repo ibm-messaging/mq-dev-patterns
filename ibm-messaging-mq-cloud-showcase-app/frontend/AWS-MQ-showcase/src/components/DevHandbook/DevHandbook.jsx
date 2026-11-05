@@ -39,7 +39,7 @@ const DevHandbook = () => {
         onRequestClose={() => setOpen(false)}
         launcherButtonRef={buttonRef}
         title="Dev handbook"
-        subtitle="Environment setup, configuration, and deployment modes for running the IBM MQ Messaging Playground locally."
+        subtitle="How the IBM MQ Messaging Playground works, key MQ concepts, messaging pattern comparisons, code sample links, common errors, and further learning resources."
         placement="right"
         size="lg"
         includeOverlay
