@@ -25,6 +25,7 @@
     "@carbon/charts": "1.27.18",
     "@carbon/charts-react": "1.27.18",
     "@carbon/colors": "^11.61.0",
+    "@carbon/ibm-products": "^2.100.0",
     "@carbon/react": "1.115.0",
     "@xyflow/react": "^12",
     "axios": "^1.20.0",
