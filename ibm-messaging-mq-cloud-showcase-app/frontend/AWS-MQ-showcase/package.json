@@ -4,7 +4,7 @@
   "private": true,
   "packageManager": "npm@12.0.2",
   "engines": {
-    "node": ">=22.22.1"
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
   },
   "repository": "git@github.com:ibm-messaging/mq-dev-patterns.git",
   "license": "Apache-2.0",
@@ -22,34 +22,34 @@
     "prepare": "cd ../../.. && (husky ibm-messaging-mq-cloud-showcase-app/.husky || true)"
   },
   "dependencies": {
-    "@carbon/charts": "1.27.18",
-    "@carbon/charts-react": "1.27.18",
-    "@carbon/colors": "^11.61.0",
-    "@carbon/ibm-products": "^2.100.0",
-    "@carbon/react": "1.115.0",
-    "@xyflow/react": "^12",
-    "axios": "^1.20.0",
+    "@carbon/charts": "1.27.25",
+    "@carbon/charts-react": "1.27.25",
+    "@carbon/colors": "^11.62.0",
+    "@carbon/ibm-products": "^2.102.0",
+    "@carbon/react": "1.120.0",
+    "@xyflow/react": "^12.12.1",
+    "axios": "^1.21.0",
     "js-cookie": "^3.0.8",
-    "react": "^19",
-    "react-dom": "^19",
-    "react-router-dom": "^7.18.3",
-    "react-toastify": "^11.1.0",
-    "uuid": "^14.0.0",
-    "zustand": "^5"
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router-dom": "^7.18.5",
+    "react-toastify": "^11.2.0",
+    "uuid": "^14.0.3",
+    "zustand": "^5.0.16"
   },
   "devDependencies": {
-    "@commitlint/cli": "^21",
-    "@commitlint/config-conventional": "^21",
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
     "@types/js-cookie": "^3.0.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6",
-    "husky": "^9",
-    "lint-staged": "^17",
-    "prettier": "^3",
-    "sass": "^1.104.0",
+    "@vitejs/plugin-react": "^6.2.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.9.10",
+    "sass": "^1.107.1",
     "typescript": "^7.0.2",
-    "vite": "^8"
+    "vite": "^8.3.5"
   },
   "browserslist": [
     ">0.2%",
