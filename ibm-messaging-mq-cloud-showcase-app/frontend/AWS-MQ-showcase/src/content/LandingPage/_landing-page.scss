@@ -20,9 +20,14 @@
 @use './overrides.scss';
 
 .landing-page__heading-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-05;
   padding-top: $spacing-05;
   padding-bottom: $spacing-05;
   padding-left: $spacing-05;
+  padding-right: $spacing-05;
 }
 
 .landing-page__heading {
