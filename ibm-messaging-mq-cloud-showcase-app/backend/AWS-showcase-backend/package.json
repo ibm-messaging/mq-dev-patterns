@@ -11,18 +11,19 @@
   },
   "dependencies": {
     "async-mutex": "^0.5.0",
-    "axios": "^1.20.0",
+    "axios": "^1.21.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
-    "dotenv": "^18.0.0",
-    "express": "^5.2.1",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
     "http-errors": "^2.0.1",
     "ibmmq": "^2.1.9",
     "morgan": "^1.12.1",
-    "uuid": "^14.0.2"
+    "uuid": "^14.0.3"
   },
   "overrides": {
-    "qs": "^6.16.0"
+    "basic-ftp": "^6.2.6",
+    "qs": "^6.17.1"
   },
   "scripts": {
     "start": "node server.js",
@@ -32,14 +33,14 @@
     "prepare": "cd ../../.. && (husky ibm-messaging-mq-cloud-showcase-app/.husky || true)"
   },
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.22.1"
   },
   "devDependencies": {
-    "@commitlint/cli": "^21",
-    "@commitlint/config-conventional": "^21",
-    "husky": "^9",
-    "lint-staged": "^17",
-    "prettier": "^3"
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.9.10"
   },
   "commitlint": {
     "extends": [
