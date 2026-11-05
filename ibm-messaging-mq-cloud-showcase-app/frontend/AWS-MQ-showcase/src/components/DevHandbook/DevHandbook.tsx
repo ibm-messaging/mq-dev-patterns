@@ -20,9 +20,9 @@ import { Book } from '@carbon/icons-react';
 import { SidePanel } from '@carbon/ibm-products';
 import DevHandbookContent from './DevHandbookContent';
 
-const DevHandbook = () => {
+const DevHandbook: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const buttonRef = useRef(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   return (
     <>

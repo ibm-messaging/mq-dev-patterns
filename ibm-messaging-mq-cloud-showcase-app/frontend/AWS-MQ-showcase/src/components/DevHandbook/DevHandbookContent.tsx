@@ -227,7 +227,15 @@ const IBM_DEV_LINKS = [
 // Sub-components
 // ---------------------------------------------------------------------------
 
-const HandbookSection = ({ title, children }) => (
+interface HandbookSectionProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+const HandbookSection: React.FC<HandbookSectionProps> = ({
+  title,
+  children,
+}) => (
   <section className="dev-handbook__section">
     <h3 className="dev-handbook__section-title">{title}</h3>
     {children}
@@ -238,7 +246,7 @@ const HandbookSection = ({ title, children }) => (
 // Main content
 // ---------------------------------------------------------------------------
 
-const DevHandbookContent = () => (
+const DevHandbookContent: React.FC = () => (
   <div className="dev-handbook__body" tabIndex={-1}>
     {/* ── 1. How this playground works ─────────────────────────────────── */}
     <HandbookSection title="How this playground works">
