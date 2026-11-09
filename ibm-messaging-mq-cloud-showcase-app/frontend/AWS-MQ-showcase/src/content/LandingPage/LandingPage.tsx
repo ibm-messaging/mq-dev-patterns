@@ -14,9 +14,7 @@
  * limitations under the License.
  **/
 
-import PointPointIndex from '../../components/MQPatterns/PointToPoint/index';
-import PubSubIndex from '../../components/MQPatterns/PubSub';
-import RequestResponseIndex from '../../components/MQPatterns/RequestResponse';
+import { lazy, Suspense } from 'react';
 import DevHandbook from '../../components/DevHandbook';
 
 import {
@@ -28,8 +26,17 @@ import {
   Grid,
   Column,
   Link,
+  InlineLoading,
 } from '@carbon/react';
 import { Launch } from '@carbon/react/icons';
+
+const PointPointIndex = lazy(
+  () => import('../../components/MQPatterns/PointToPoint/index')
+);
+const PubSubIndex = lazy(() => import('../../components/MQPatterns/PubSub'));
+const RequestResponseIndex = lazy(
+  () => import('../../components/MQPatterns/RequestResponse')
+);
 
 const LandingPage = () => {
   return (
@@ -62,13 +69,19 @@ const LandingPage = () => {
           </TabList>
           <TabPanels>
             <TabPanel>
-              <PointPointIndex />
+              <Suspense fallback={<InlineLoading description="Loading..." />}>
+                <PointPointIndex />
+              </Suspense>
             </TabPanel>
             <TabPanel>
-              <PubSubIndex />
+              <Suspense fallback={<InlineLoading description="Loading..." />}>
+                <PubSubIndex />
+              </Suspense>
             </TabPanel>
             <TabPanel>
-              <RequestResponseIndex />
+              <Suspense fallback={<InlineLoading description="Loading..." />}>
+                <RequestResponseIndex />
+              </Suspense>
             </TabPanel>
           </TabPanels>
         </Tabs>
