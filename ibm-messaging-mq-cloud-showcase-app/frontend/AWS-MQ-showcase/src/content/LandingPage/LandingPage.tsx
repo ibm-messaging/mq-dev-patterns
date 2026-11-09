@@ -26,7 +26,7 @@ import {
   Grid,
   Column,
   Link,
-  InlineLoading,
+  Loading,
 } from '@carbon/react';
 import { Launch } from '@carbon/react/icons';
 
@@ -39,6 +39,12 @@ const RequestResponseIndex = lazy(
 );
 
 const LandingPage = () => {
+  const loadingFallback = (
+    <div className="landing-page__loading">
+      <Loading withOverlay={false} description="Loading pattern" />
+    </div>
+  );
+
   return (
     <Grid className="landing-page" condensed>
       <Column lg={16} md={8} sm={4} className="landing-page__heading-section">
@@ -69,17 +75,17 @@ const LandingPage = () => {
           </TabList>
           <TabPanels>
             <TabPanel>
-              <Suspense fallback={<InlineLoading description="Loading..." />}>
+              <Suspense fallback={loadingFallback}>
                 <PointPointIndex />
               </Suspense>
             </TabPanel>
             <TabPanel>
-              <Suspense fallback={<InlineLoading description="Loading..." />}>
+              <Suspense fallback={loadingFallback}>
                 <PubSubIndex />
               </Suspense>
             </TabPanel>
             <TabPanel>
-              <Suspense fallback={<InlineLoading description="Loading..." />}>
+              <Suspense fallback={loadingFallback}>
                 <RequestResponseIndex />
               </Suspense>
             </TabPanel>
