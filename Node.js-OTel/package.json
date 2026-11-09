@@ -17,6 +17,6 @@
     "@opentelemetry/sdk-node": "^0.221.0",
     "debug": "^4.4.1",
     "express": "^5.2.0",
-    "ibmmq": "^2.1.4"
+    "ibmmq": "^2.1.10"
   }
 }
