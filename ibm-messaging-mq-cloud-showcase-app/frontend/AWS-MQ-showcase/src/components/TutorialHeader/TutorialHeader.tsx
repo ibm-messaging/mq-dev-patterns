@@ -14,7 +14,6 @@
  * limitations under the License.
  **/
 
-import { Switcher, Notification, UserAvatar } from '@carbon/react/icons';
 import { Link } from 'react-router-dom';
 import {
   Header,
@@ -22,8 +21,6 @@ import {
   HeaderName,
   HeaderNavigation,
   HeaderMenuItem,
-  HeaderGlobalBar,
-  HeaderGlobalAction,
   SkipToContent,
 } from '@carbon/react';
 
@@ -45,21 +42,6 @@ const TutorialHeader = () => (
             Repositories
           </HeaderMenuItem>
         </HeaderNavigation>
-        <HeaderGlobalBar>
-          <HeaderGlobalAction
-            aria-label="Notifications"
-            tooltipAlignment="center">
-            <Notification size={20} />
-          </HeaderGlobalAction>
-          <HeaderGlobalAction
-            aria-label="User Avatar"
-            tooltipAlignment="center">
-            <UserAvatar size={20} />
-          </HeaderGlobalAction>
-          <HeaderGlobalAction aria-label="App Switcher" tooltipAlignment="end">
-            <Switcher size={20} />
-          </HeaderGlobalAction>
-        </HeaderGlobalBar>
       </Header>
     )}
   />
