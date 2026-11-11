@@ -27,3 +27,6 @@ Thumbs.db
 
 # Local secrets and settings - copy .env.example to .env
 .env
+
+#test folders
+coverage/
