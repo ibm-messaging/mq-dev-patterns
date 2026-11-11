@@ -356,10 +356,7 @@ describe('SubscriberNode', () => {
       expect(log).toHaveBeenCalled();
     });
 
-    // KNOWN BUG (see frontend-testing-coverage.md): `canSend` is set to false
-    // before the request and only set back to true when it succeeds, so one
-    // failed poll stops every later poll. Remove `.fails` once it is fixed.
-    it.fails('keeps polling after a failed poll', async () => {
+    it('keeps polling after a failed poll', async () => {
       vi.useFakeTimers();
       vi.spyOn(console, 'log').mockImplementation(() => {});
       adapter.getForSubFromAppId.mockRejectedValueOnce(new Error('boom'));
