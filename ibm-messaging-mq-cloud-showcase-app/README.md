@@ -89,6 +89,28 @@ The coding challenge turns the application into the University Donations app. To
 
 The setting applies to the local dev server, containers and AWS. It is built into the frontend, so rebuild or restart after changing it. Any value other than `true` shows the standard ticket-booking demo.
 
+### Frontend tests
+
+The frontend uses [Vitest](https://vitest.dev/), React Testing Library and jsdom. Run the commands from `frontend/AWS-MQ-showcase`:
+
+```bash
+npm test
+npm run test:watch
+npm run test:coverage
+npm run typecheck
+npm run format:diff
+```
+
+- `npm test` runs the full suite once.
+- `npm run test:watch` re-runs tests when files change.
+- `npm run test:coverage` runs the suite and writes a coverage report: a text summary in the terminal and HTML in `coverage/index.html`.
+- `npm run typecheck` type-checks the project, including test files.
+- `npm run format:diff` checks Prettier formatting.
+
+Test files live next to the code they cover and match `src/**/*.test.{ts,tsx}`. Shared setup is in `src/test/setup.ts`, and `src/test/utils.tsx` provides `renderWithRouter` for components that use routing.
+
+Use Node.js 22.22.2 or later (24.15.0 or later, or 26.x). The repository `.nvmrc` pins v26.6.0, so run `nvm use` before installing dependencies.
+
 ### AWS Cloud (CDK)
 
 The `cdk/` directory contains a Python AWS CDK stack that deploys the full three-tier application to AWS ECS Fargate with an EFS-backed queue manager.
