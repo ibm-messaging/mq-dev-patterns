@@ -93,19 +93,25 @@ The setting applies to the local dev server, containers and AWS. It is built int
 
 The frontend uses [Vitest](https://vitest.dev/), React Testing Library and jsdom. Run the commands from `frontend/AWS-MQ-showcase`:
 
-```bash
-npm test
-npm run test:watch
-npm run test:coverage
-npm run typecheck
-npm run format:diff
-```
+Run the full suite once:
 
-- `npm test` runs the full suite once.
-- `npm run test:watch` re-runs tests when files change.
-- `npm run test:coverage` runs the suite and writes a coverage report: a text summary in the terminal and HTML in `coverage/index.html`.
-- `npm run typecheck` type-checks the project, including test files.
-- `npm run format:diff` checks Prettier formatting.
+    npm test
+
+Re-run tests when files change:
+
+    npm run test:watch
+
+Run the suite and write a coverage report (terminal summary and `coverage/index.html`):
+
+    npm run test:coverage
+
+Type-check the project, including test files:
+
+    npm run typecheck
+
+Check Prettier formatting:
+
+    npm run format:diff
 
 Test files live next to the code they cover and match `src/**/*.test.{ts,tsx}`. Shared setup is in `src/test/setup.ts`, and `src/test/utils.tsx` provides `renderWithRouter` for components that use routing.
 
