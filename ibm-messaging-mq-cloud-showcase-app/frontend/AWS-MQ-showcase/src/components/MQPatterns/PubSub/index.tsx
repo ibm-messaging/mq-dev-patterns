@@ -34,6 +34,8 @@ const PubSub = () => {
   });
   const _updateDataframe = useStore((state) => state.setDataframeForChart);
 
+  // Both effects run with [] deps, so this must not read state from the
+  // closure: it appends to the previous chart data at the previous time step.
   const updateChart = (result: DataframeEntry[]) => {
     setChartState((prev) => ({
       dataChart1: [
