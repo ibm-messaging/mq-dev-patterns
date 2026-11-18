@@ -22,11 +22,13 @@ import ProducerNode from './Producer.node';
 import useStore from '../MQPatterns/PointToPoint/store';
 import type { ProducerFlowNode } from '../../types';
 
+// Mock API functions (created early so vi.mock below can use them).
 const adapter = vi.hoisted(() => ({
   put: vi.fn(),
   closeProducer: vi.fn(),
 }));
 
+// Replace the real API adapter so no network calls are made.
 vi.mock('../../adapters/API.adapter', () => ({
   default: class {
     put = adapter.put;
@@ -34,10 +36,12 @@ vi.mock('../../adapters/API.adapter', () => ({
   },
 }));
 
+// Ids and names that match the default graph in the store.
 const QUEUE_NAME = 'DEV.QUEUE.1';
 const PRODUCER_ID = '1';
 const QUEUE_ID = '3';
 
+// Renders the Producer node.
 function renderProducer(connectedQueue = QUEUE_NAME) {
   const props: NodeProps<ProducerFlowNode> = {
     id: PRODUCER_ID,
@@ -70,6 +74,7 @@ const getSendButton = () =>
 
 const flushPromises = () => act(async () => {});
 
+// Producer node: send tickets to a queue by hand or automatically, and delete it.
 describe('ProducerNode', () => {
   beforeEach(() => {
     useStore.setState(useStore.getInitialState(), true);
@@ -186,6 +191,7 @@ describe('ProducerNode', () => {
       expect(useStore.getState().localDepths[QUEUE_ID]).toBe(5);
     });
 
+    // Two sends in a row add up: Total sent becomes 10.
     it('accumulates the total over several sends', async () => {
       vi.useFakeTimers();
       renderProducer();

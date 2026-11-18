@@ -22,11 +22,13 @@ import ResponderNode from './Responder.node';
 import useStore from '../MQPatterns/RequestResponse/store';
 import type { ConsumerFlowNode } from '../../types';
 
+// Mock API functions (created early so vi.mock below can use them).
 const { dynPut, getDyn } = vi.hoisted(() => ({
   dynPut: vi.fn(),
   getDyn: vi.fn(),
 }));
 
+// Replace the real API adapter so no network calls are made.
 vi.mock('../../adapters/API.adapter', () => ({
   default: class {
     dynPut = dynPut;
@@ -34,12 +36,14 @@ vi.mock('../../adapters/API.adapter', () => ({
   },
 }));
 
+// Replace the toast library so tests can check which messages are shown.
 vi.mock('react-toastify', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
 const NODE_ID = 'responder-1';
 
+// Renders the Responder node; pass data to override the defaults.
 const renderNode = (overrides?: Partial<ConsumerFlowNode['data']>) =>
   render(
     <ReactFlowProvider>
@@ -66,6 +70,7 @@ const renderNode = (overrides?: Partial<ConsumerFlowNode['data']>) =>
     </ReactFlowProvider>
   );
 
+// Responder node: listen for a request, then send a reply.
 describe('ResponderNode', () => {
   beforeEach(() => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
@@ -117,6 +122,7 @@ describe('ResponderNode', () => {
     expect(screen.getByRole('button', { name: 'Send reply' })).toBeDisabled();
   });
 
+  // While on, the queue is polled; a request shows its reply queue and enables Send reply.
   it('polls the queue while active and handles an incoming request', async () => {
     getDyn.mockResolvedValue({
       message: { Message: 'Is Alice registered?' },
