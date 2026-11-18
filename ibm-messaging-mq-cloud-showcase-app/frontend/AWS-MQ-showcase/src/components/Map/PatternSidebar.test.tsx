@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Tests the pattern sidebar: draggable element list and drag data, the
+// instruction text, hiding on narrow screens, and the How it works panel
+// (opening, closing, portal rendering, keyboard drag handle, and closing when
+// its tab is hidden).
+
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import PatternSidebar from './PatternSidebar';

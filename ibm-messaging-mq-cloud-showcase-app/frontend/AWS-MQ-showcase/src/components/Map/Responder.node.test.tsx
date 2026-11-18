@@ -14,6 +14,12 @@
  * limitations under the License.
  **/
 
+// Tests the Responder app node (Map/Responder.node.tsx) used in the
+// Request/Response pattern: the Idle/Listening state and the header toggle,
+// polling the request queue only while active, showing the incoming message
+// and its reply queue, sending the reply, and the error toast on failure.
+// The API adapter is mocked.
+
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@xyflow/react';

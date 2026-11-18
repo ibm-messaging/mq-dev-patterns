@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Unit tests for APIAdapter (src/adapters/API.adapter.ts), the HTTP client
+// the frontend uses to reach the backend. axios is mocked here, so no real
+// network calls are made: the tests check the request each method builds
+// (URL, method, payload) and how it maps responses and errors.
+
 import axios from 'axios';
 import APIAdapter from './API.adapter';
 

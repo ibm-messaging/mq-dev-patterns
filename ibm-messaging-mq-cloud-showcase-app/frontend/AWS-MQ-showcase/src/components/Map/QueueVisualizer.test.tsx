@@ -14,6 +14,10 @@
  * limitations under the License.
  **/
 
+// Tests the QueueVisualizer graphic: it draws 10 slots, fills one per message
+// on the queue (capped at 10), adds a slot when landCount increases, and is a
+// decorative SVG that honours its size prop.
+
 import { render } from '@testing-library/react';
 import QueueVisualizer from './QueueVisualizer';
 

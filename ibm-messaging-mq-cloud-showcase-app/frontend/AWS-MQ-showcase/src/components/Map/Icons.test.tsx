@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
+// Tests the decorative AppIcon and QueueIcon SVGs: default size, custom size,
+// and that they are hidden from assistive technology.
 
 import { render } from '@testing-library/react';
 import AppIcon from './AppIcon';

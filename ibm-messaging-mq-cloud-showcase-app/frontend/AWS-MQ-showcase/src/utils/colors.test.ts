@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Tests the colour constants in utils/colors.ts: node header colours are
+// defined, connected and idle handles differ, the subscriber, queue and
+// producer palettes are exposed, and the edge style and chart threshold colour
+// are set.
+
 import {
   CHART_COLORS,
   EDGE_STYLE_THIN,

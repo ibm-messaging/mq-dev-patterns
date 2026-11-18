@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Tests the shared Map helpers (Map/utils.ts) used by all three pattern
+// stores: queue-node checks, message-flow events, node patches, queue counters
+// and depth lookup, and the edge and connection rules (connecting, rejecting
+// invalid pairs, and disconnecting).
+
 import MapUtils, {
   CURRENCY_ITEMS,
   EDGE_STYLE_THIN,

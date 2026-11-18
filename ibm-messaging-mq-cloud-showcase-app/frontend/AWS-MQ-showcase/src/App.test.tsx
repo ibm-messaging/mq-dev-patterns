@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
+// Tests the top-level App shell: the header and landing page render on the
+// root route, page content sits in the main landmark, unknown routes render
+// no page content, and the toast container is mounted.
 
 import { screen } from '@testing-library/react';
 import { renderWithRouter } from './test/utils';

@@ -14,6 +14,10 @@
  * limitations under the License.
  **/
 
+// Tests the Dev handbook launcher and side panel: the panel stays closed until
+// its button is pressed, opens with its title and content, shows an overlay,
+// and closes via the close button or Escape and can be reopened.
+
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import DevHandbook from './DevHandbook';
