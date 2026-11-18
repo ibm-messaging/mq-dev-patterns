@@ -14,6 +14,7 @@
  * limitations under the License.
  **/
 
+/// <reference types="vitest/config" />
 import path from 'node:path';
 import { type SassPreprocessorOptions, defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -66,6 +67,25 @@ export default defineConfig(({ mode }) => {
       'process.env': {},
       'process.env.REACT_APP_IS_FOR_CODING_CHALLENGE':
         JSON.stringify(codingChallenge),
+    },
+    test: {
+      environment: 'jsdom',
+      globals: true,
+      setupFiles: ['./src/test/setup.ts'],
+      include: ['src/**/*.test.{ts,tsx}'],
+      css: false,
+      coverage: {
+        provider: 'v8',
+        reporter: ['text', 'html'],
+        include: ['src/**/*.{ts,tsx}'],
+        exclude: [
+          'src/**/*.test.{ts,tsx}',
+          'src/test/**',
+          'src/**/*.d.ts',
+          'src/index.tsx',
+          'src/types/**',
+        ],
+      },
     },
   };
 });
