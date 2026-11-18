@@ -20,6 +20,7 @@ import QueueVisualizer from './QueueVisualizer';
 const filledSlots = (container: HTMLElement) =>
   container.querySelectorAll('.queue-visualizer__slot--filled').length;
 
+// QueueVisualizer: a small picture of a queue with 10 slots that fill and drain.
 describe('QueueVisualizer', () => {
   it('renders 10 slots, none filled for an empty queue', () => {
     const { container } = render(<QueueVisualizer />);
@@ -51,6 +52,7 @@ describe('QueueVisualizer', () => {
     expect(filledSlots(container)).toBe(10);
   });
 
+  // When landCount goes up by 2, 2 slots become filled.
   it('adds a slot when landCount increases', () => {
     const { container, rerender } = render(<QueueVisualizer landCount={0} />);
 
@@ -67,6 +69,7 @@ describe('QueueVisualizer', () => {
     expect(filledSlots(container)).toBe(10);
   });
 
+  // When the visual depth drops from 4 to 1, only 1 slot stays filled.
   it('removes slots when the visual depth drains', () => {
     const { container, rerender } = render(
       <QueueVisualizer depth={4} vizDepth={4} />
@@ -77,6 +80,7 @@ describe('QueueVisualizer', () => {
     expect(filledSlots(container)).toBe(1);
   });
 
+  // When the visual depth rises, the filled slots stay the same.
   it('keeps slots when the visual depth grows', () => {
     const { container, rerender } = render(
       <QueueVisualizer depth={2} vizDepth={2} />

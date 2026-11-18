@@ -34,6 +34,7 @@ import type {
 
 const position = { x: 0, y: 0 };
 
+// Builds a fake Producer node; any field can be overridden.
 const producerNode = (
   id = 'p',
   data: Partial<ProducerNodeData> = {}
@@ -50,6 +51,7 @@ const producerNode = (
   },
 });
 
+// Builds a fake Consumer node; any field can be overridden.
 const consumerNode = (
   id = 'c',
   data: Partial<ConsumerNodeData> = {}
@@ -66,6 +68,7 @@ const consumerNode = (
   },
 });
 
+// Builds a fake Queue node (default name DEV.QUEUE.1); any field can be overridden.
 const queueNode = (
   id = 'q',
   queueName = 'DEV.QUEUE.1',
@@ -83,6 +86,7 @@ const edge = (source: string, target: string): MQFlowEdge => ({
   target,
 });
 
+// The part of the store these helpers use: the nodes and the edges.
 interface Slice {
   nodes: MQFlowNode[];
   edges: MQFlowEdge[];
@@ -109,6 +113,7 @@ const connection = (source: string, target: string) => ({
   targetHandle: null,
 });
 
+// Unit tests for Map utils: currency list, node/queue helpers and MapUtils store actions.
 describe('CURRENCY_ITEMS', () => {
   it('lists EUR, USD and GBP with unique ids', () => {
     expect(CURRENCY_ITEMS.map((c) => c.text)).toEqual(['EUR', 'USD', 'GBP']);
@@ -269,6 +274,7 @@ describe('MapUtils', () => {
   });
 
   describe('disabledNonConnetedQueue', () => {
+    // The replaced app is switched off and unlinked; the new edge is animated.
     it('disconnects the replaced node and refreshes the new neighbour edges', () => {
       const store = createStore(
         [
@@ -318,6 +324,7 @@ describe('MapUtils', () => {
   });
 
   describe('edge animation', () => {
+    // Sample graph: producer -> queue -> consumer.
     const nodes = [producerNode('p'), queueNode('q'), consumerNode('c')];
     const edges = [edge('p', 'q'), edge('q', 'c')];
 
@@ -402,6 +409,7 @@ describe('MapUtils', () => {
   });
 
   describe('updateQueueOnDeletingEdge', () => {
+    // Sample graph: an active producer and consumer, both linked to the queue.
     const buildStore = () =>
       createStore([
         producerNode('p', { connectedQueue: 'DEV.QUEUE.1', isActive: true }),
@@ -427,6 +435,7 @@ describe('MapUtils', () => {
       });
     });
 
+    // For a subscription edge, the node is also set to "unsubscribing" (state 2).
     it('marks the node as unsubscribing when the edge is a subscription', () => {
       const store = buildStore();
 

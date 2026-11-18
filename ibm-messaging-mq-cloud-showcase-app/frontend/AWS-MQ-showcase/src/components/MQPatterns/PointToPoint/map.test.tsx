@@ -18,6 +18,7 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import Flow from './map';
 import useStore from './store';
 
+// Replace the real API adapter so no network calls are made.
 vi.mock('../../../adapters/API.adapter', () => ({
   default: class {
     put = vi.fn();
@@ -28,6 +29,7 @@ vi.mock('../../../adapters/API.adapter', () => ({
   },
 }));
 
+// Simulates dropping a sidebar item onto the canvas (no type = empty drop).
 const drop = (container: HTMLElement, type?: string) => {
   const canvas = container.querySelector('.react-flow') as HTMLElement;
   fireEvent.drop(canvas, {
@@ -43,6 +45,7 @@ const drop = (container: HTMLElement, type?: string) => {
 const nodesOfType = (type: string) =>
   useStore.getState().nodes.filter((n) => n.type === type);
 
+// Renders the canvas and waits until the 3 default nodes are drawn.
 const renderFlow = async () => {
   const view = render(<Flow />);
   // The drop is ignored until React Flow has initialised and drawn the nodes.
@@ -55,6 +58,7 @@ const renderFlow = async () => {
   return view;
 };
 
+// Point-to-point canvas: what it shows and how dropping items adds nodes.
 describe('PointToPoint canvas', () => {
   beforeEach(() => {
     window.innerWidth = 1200;

@@ -19,6 +19,7 @@ import initialEdges from './edges';
 
 // The coding-challenge flag is inlined at build time and is off for tests, so
 // these tests cover the default graph only.
+// Starting graph of the point-to-point pattern: producer, queue and consumer.
 describe('PointToPoint initial graph', () => {
   describe('nodes', () => {
     it('has one producer, one consumer and one queue', () => {
@@ -59,6 +60,7 @@ describe('PointToPoint initial graph', () => {
       });
     });
 
+    // The queue sits at x 650, y 220 on the canvas.
     it('places the queue at the default position', () => {
       const queue = initialNodes.find((n) => n.type === 'queue');
 

@@ -23,25 +23,30 @@ import QueueNode from './Queue.node';
 import useStore from '../MQPatterns/PointToPoint/store';
 import type { QueueFlowNode } from '../../types';
 
+// Mock API functions (created early so vi.mock below can use them).
 const adapter = vi.hoisted(() => ({
   getAllDepths: vi.fn(),
 }));
 
+// Replace the real API adapter so no network calls are made.
 vi.mock('../../adapters/API.adapter', () => ({
   default: class {
     getAllDepths = adapter.getAllDepths;
   },
 }));
 
+// Replace the toast library so tests can check which errors are shown.
 vi.mock('react-toastify', () => ({
   toast: { error: vi.fn() },
 }));
 
+// Ids and names that match the default graph in the store.
 const QUEUE_NAME = 'DEV.QUEUE.1';
 const QUEUE_ID = '3';
 
 type QueueData = QueueFlowNode['data'];
 
+// Builds the props for the Queue node. Pass data to override the defaults.
 function buildProps(data: Partial<QueueData> = {}): NodeProps<QueueFlowNode> {
   return {
     id: QUEUE_ID,
@@ -59,6 +64,7 @@ function buildProps(data: Partial<QueueData> = {}): NodeProps<QueueFlowNode> {
   };
 }
 
+// Wraps the Queue node in the provider it needs (reused to re-render with new data).
 const tree = (data?: Partial<QueueData>) => (
   <ReactFlowProvider>
     <QueueNode {...buildProps(data)} />
@@ -76,6 +82,7 @@ const advance = (ms: number) =>
 const getInfoButton = () =>
   screen.queryByRole('button', { name: 'Messages waiting in queue' });
 
+// Queue node: shows queue depth, polls for updates, reports errors, shows an info popover.
 describe('QueueNode', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -100,6 +107,7 @@ describe('QueueNode', () => {
       expect(screen.getByText('Active')).toBeInTheDocument();
     });
 
+    // A queue named APP.REPLIES.* is labelled REPLY QUEUE.
     it('labels a reply queue differently', () => {
       renderQueue({ queueName: 'APP.REPLIES.1' });
 
@@ -240,6 +248,7 @@ describe('QueueNode', () => {
   });
 
   describe('error toasts', () => {
+    // Error code 525 shows a "queue manager not reachable" message.
     it('tells the user the queue manager is unreachable on 525', async () => {
       adapter.getAllDepths.mockResolvedValue(525);
       renderQueue();
@@ -251,6 +260,7 @@ describe('QueueNode', () => {
       );
     });
 
+    // Error code 505 shows a "backend not reachable" message.
     it('tells the user the backend is unreachable on 505', async () => {
       adapter.getAllDepths.mockResolvedValue(505);
       renderQueue();
@@ -273,6 +283,7 @@ describe('QueueNode', () => {
       expect(screen.getByText('6 / 5000 msgs')).toBeInTheDocument();
     });
 
+    // If a request throws, it is logged (no toast) and polling continues.
     it('keeps polling when the adapter throws', async () => {
       const log = vi.spyOn(console, 'log').mockImplementation(() => {});
       adapter.getAllDepths.mockRejectedValueOnce(new Error('boom'));

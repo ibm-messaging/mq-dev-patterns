@@ -64,6 +64,7 @@ const topicName = (id = TOPIC_ID) =>
 const hasEdge = (edgeId: string) =>
   useStore.getState().edges.some((e) => e.id === edgeId);
 
+// Topic node: show and rename a topic, validate its name, delete it.
 describe('TopicNode', () => {
   beforeEach(() => {
     useStore.setState(useStore.getInitialState(), true);
@@ -172,6 +173,7 @@ describe('TopicNode', () => {
       }
     );
 
+    // Typing 'bad.name' stores only 'bad', because '.' is invalid.
     it('keeps the last valid name in the topic when the input turns invalid', async () => {
       const user = userEvent.setup();
       renderTopic();

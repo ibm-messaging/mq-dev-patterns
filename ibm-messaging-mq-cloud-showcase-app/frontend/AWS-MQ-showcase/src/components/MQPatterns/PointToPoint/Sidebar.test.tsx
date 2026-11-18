@@ -18,6 +18,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Sidebar from './Sidebar';
 
+// Changes the window width and fires a resize event.
 const setWidth = (width: number) => {
   window.innerWidth = width;
   act(() => {
@@ -31,6 +32,7 @@ const openPanel = async () => {
   return user;
 };
 
+// Point-to-point sidebar: draggable cards and the "How it works" dialog.
 describe('PointToPoint Sidebar', () => {
   const originalWidth = window.innerWidth;
 

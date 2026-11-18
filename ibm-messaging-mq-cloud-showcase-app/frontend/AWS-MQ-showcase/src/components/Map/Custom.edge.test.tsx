@@ -21,6 +21,7 @@ import type { EdgeProps } from '@xyflow/react';
 import CustomEdge from './Custom.edge';
 import useStore from '../MQPatterns/PointToPoint/store';
 
+// The edge under test, taken from the default graph (producer to queue).
 const EDGE_ID = '1-3';
 
 const edgeProps = (id = EDGE_ID) =>
@@ -37,6 +38,7 @@ const edgeProps = (id = EDGE_ID) =>
     style: { stroke: 'red' },
   }) as EdgeProps;
 
+// Renders the edge inside an SVG.
 const renderEdge = (id = EDGE_ID) =>
   render(
     <svg>
@@ -44,6 +46,7 @@ const renderEdge = (id = EDGE_ID) =>
     </svg>
   );
 
+// Sends a message-flow event, as a node does when it sends a message.
 const sendMessage = (edgeId: string, id = 'm1', reverse?: boolean) =>
   act(() => {
     window.dispatchEvent(
@@ -56,6 +59,7 @@ const sendMessage = (edgeId: string, id = 'm1', reverse?: boolean) =>
 const particles = (container: HTMLElement) =>
   container.querySelectorAll('g > rect');
 
+// Point-to-point edge: its path, delete button and moving message particles.
 describe('CustomEdge', () => {
   beforeEach(() => {
     useStore.setState(useStore.getInitialState(), true);
@@ -82,6 +86,7 @@ describe('CustomEdge', () => {
       expect(path?.getAttribute('d')).toMatch(/^M\s?0,0\s?C/);
     });
 
+    // The test props give the edge a red stroke.
     it('applies the style it is given', () => {
       const { container } = renderEdge();
 
@@ -153,6 +158,7 @@ describe('CustomEdge', () => {
       expect(particles(container)).toHaveLength(2);
     });
 
+    // Fake timers: the particle lasts 1050ms.
     it('removes a particle once its animation is over', () => {
       vi.useFakeTimers();
       const { container } = renderEdge();
@@ -165,6 +171,7 @@ describe('CustomEdge', () => {
       expect(particles(container)).toHaveLength(0);
     });
 
+    // Fake timers: after 1s the particle has a translate() transform.
     it('moves the particle along the path', () => {
       vi.useFakeTimers();
       const { container } = renderEdge();
@@ -177,6 +184,7 @@ describe('CustomEdge', () => {
       expect(group?.getAttribute('transform')).toMatch(/^translate\(/);
     });
 
+    // Fake timers: the fake path is 100 long, so after 40 ms x is past 90.
     it('starts at the end of the path for a reverse message', () => {
       vi.useFakeTimers();
       const { container } = renderEdge();
