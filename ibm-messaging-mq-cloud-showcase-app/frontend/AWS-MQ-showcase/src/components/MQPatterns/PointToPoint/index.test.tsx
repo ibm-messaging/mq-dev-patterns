@@ -14,15 +14,20 @@
  * limitations under the License.
  **/
 
+// Tests the point-to-point page (PointToPoint/index.tsx). It checks that the page
+// shows the canvas and no chart before there is queue data. It checks that the
+// charts are drawn when the first data arrives. It checks that the line chart
+// gets a new point every 15 seconds. It checks a queue removed from the canvas.
+// It checks that the timer stops on unmount. The canvas and the charts library
+// are mocked.
+
 import { act, render, screen } from '@testing-library/react';
 import PointPointIndex from './index';
 import useStore from './store';
 import type { QueueDepth } from '../../../types';
 
-// Replace the canvas with a simple placeholder.
 vi.mock('./map', () => ({ default: () => <div data-testid="flow" /> }));
 
-// Replace the real charts with plain divs that print the data they receive.
 vi.mock('@carbon/charts-react', () => ({
   LineChart: ({ data }: { data: unknown }) => (
     <div data-testid="line-chart">{JSON.stringify(data)}</div>
@@ -32,20 +37,16 @@ vi.mock('@carbon/charts-react', () => ({
   ),
 }));
 
-// The queue name from the default graph.
 const QUEUE = 'DEV.QUEUE.1';
 
 const chartData = (testId: string) =>
   JSON.parse(screen.getByTestId(testId).textContent ?? '[]');
 
-// Sends new queue depths into the store, as the API polling would.
 const publish = (data: QueueDepth[]) =>
   act(() => useStore.getState().updateQueueData(data));
 
-// Moves fake time forward.
 const tick = (ms: number) => act(() => vi.advanceTimersByTime(ms));
 
-// Point-to-point page: the canvas plus the depth charts that update over time.
 describe('PointToPoint index', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -115,7 +116,7 @@ describe('PointToPoint index', () => {
   });
 
   describe('15 s interval', () => {
-    // Every 15s the line chart gets a new point with the next time step.
+    // The line chart gets a new point every 15 seconds.
     it('adds a point to the line chart for the next time step', () => {
       render(<PointPointIndex />);
       publish([{ name: QUEUE, depth: 3 }]);

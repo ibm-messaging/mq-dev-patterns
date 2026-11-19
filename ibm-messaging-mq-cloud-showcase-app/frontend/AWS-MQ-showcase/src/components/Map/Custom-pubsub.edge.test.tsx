@@ -14,6 +14,10 @@
  * limitations under the License.
  **/
 
+// Tests the publish/subscribe edge (Map/Custom-pubsub.edge.tsx). It checks the path
+// and its style. It checks the delete button. It checks the moving message
+// particles: when they appear, when they are removed and where they move.
+
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Position } from '@xyflow/react';
@@ -21,7 +25,6 @@ import type { EdgeProps } from '@xyflow/react';
 import CustomPubSubEdge from './Custom-pubsub.edge';
 import useStore from '../MQPatterns/PubSub/store';
 
-// The edge under test, taken from the default graph (publisher to topic).
 const EDGE_ID = '1-2';
 
 const edgeProps = (id = EDGE_ID) =>
@@ -38,7 +41,6 @@ const edgeProps = (id = EDGE_ID) =>
     style: { stroke: 'red' },
   }) as EdgeProps;
 
-// Renders the edge inside an SVG.
 const renderEdge = (id = EDGE_ID) =>
   render(
     <svg>
@@ -46,7 +48,6 @@ const renderEdge = (id = EDGE_ID) =>
     </svg>
   );
 
-// Sends a message-flow event, as a node does when it sends a message.
 const sendMessage = (edgeId: string, id = 'm1', reverse?: boolean) =>
   act(() => {
     window.dispatchEvent(
@@ -59,11 +60,10 @@ const sendMessage = (edgeId: string, id = 'm1', reverse?: boolean) =>
 const particles = (container: HTMLElement) =>
   container.querySelectorAll('g > rect');
 
-// Publish/subscribe edge: its path, delete button and moving message particles.
 describe('CustomPubSubEdge', () => {
   beforeEach(() => {
     useStore.setState(useStore.getInitialState(), true);
-    // jsdom has no SVG geometry, the particle animation needs these.
+    // jsdom has no SVG geometry. The animation needs these two functions.
     Object.assign(SVGElement.prototype, {
       getTotalLength: () => 100,
       getPointAtLength: (d: number) => ({ x: d, y: 0 }),
@@ -86,7 +86,6 @@ describe('CustomPubSubEdge', () => {
       expect(path?.getAttribute('d')).toMatch(/^M\s?0,0\s?C/);
     });
 
-    // The test props give the edge a red stroke.
     it('applies the style it is given', () => {
       const { container } = renderEdge();
 
@@ -158,7 +157,7 @@ describe('CustomPubSubEdge', () => {
       expect(particles(container)).toHaveLength(2);
     });
 
-    // Fake timers: the particle lasts 1050ms.
+    // The particle lasts 1050 ms.
     it('removes a particle once its animation is over', () => {
       vi.useFakeTimers();
       const { container } = renderEdge();
@@ -171,7 +170,7 @@ describe('CustomPubSubEdge', () => {
       expect(particles(container)).toHaveLength(0);
     });
 
-    // Fake timers: after 1s the particle has a translate() transform.
+    // After 1 second the particle has a translate() transform.
     it('moves the particle along the path', () => {
       vi.useFakeTimers();
       const { container } = renderEdge();
@@ -184,7 +183,7 @@ describe('CustomPubSubEdge', () => {
       expect(group?.getAttribute('transform')).toMatch(/^translate\(/);
     });
 
-    // Fake timers: the fake path is 100 long, so after 40ms x is past 90.
+    // The fake path is 100 long. After 40 ms, x is past 90.
     it('starts at the end of the path for a reverse message', () => {
       vi.useFakeTimers();
       const { container } = renderEdge();
