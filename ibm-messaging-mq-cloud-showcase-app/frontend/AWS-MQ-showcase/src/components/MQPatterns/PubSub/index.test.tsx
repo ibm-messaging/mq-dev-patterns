@@ -14,6 +14,12 @@
  * limitations under the License.
  **/
 
+// Tests the publish-subscribe page (PubSub/index.tsx). It checks that the page
+// shows the canvas. It checks that the chart of subscribers per topic is drawn
+// when the page loads. It checks that a new time step is added every 10 seconds
+// and that the earlier ones are kept. It checks that the timer stops on unmount.
+// The canvas and the charts library are mocked.
+
 import { act, render, screen } from '@testing-library/react';
 import PubSubIndex from './index';
 import useStore from './store';
@@ -77,6 +83,7 @@ describe('PubSub index', () => {
       expect(chartData()[0].value).toBe(2);
     });
 
+    // Deleting subscriber '4' leaves the classic topic with 1 subscriber, not 2.
     it('reads the subscribers of the topics again', () => {
       render(<PubSubIndex />);
       act(() => useStore.getState().onDeleteNode('4'));
@@ -99,6 +106,7 @@ describe('PubSub index', () => {
       expect(chartData().map((e: { time: number }) => e.time)).toContain(3);
     });
 
+    // 30 s is 3 ticks. Time steps 1 to 4 with 3 topics each make 12 points.
     it('keeps the earlier time steps when a new one is added', () => {
       render(<PubSubIndex />);
       act(() => useStore.getState().onDeleteNode('4'));

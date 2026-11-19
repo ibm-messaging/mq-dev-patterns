@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Tests the publish-subscribe store (PubSub/store.ts). It checks the nodes and
+// edges and the actions that change them. It checks that a message is played
+// along the right edges. It checks the subscriber count of each topic. It checks
+// connecting, reconnecting, renaming and deleting nodes and edges.
+
 import { Position } from '@xyflow/react';
 import useStore from './store';
 import type { MQFlowNode } from '../../../types';
@@ -65,6 +70,7 @@ const makeTopic = (id: string, queueName: string): MQFlowNode => ({
   targetPosition: Position.Left,
 });
 
+// Returns the sorted ids of the edges that get a message event while fn runs.
 const flowEdges = (fn: () => void): string[] => {
   const edgeIds: string[] = [];
   const listener = (e: Event) => edgeIds.push((e as CustomEvent).detail.edgeId);
@@ -162,6 +168,7 @@ describe('PubSub store', () => {
   });
 
   describe('getAvailableTopic', () => {
+    // The cast is needed. getAvailableTopic is not in the store's typed interface.
     const getAvailableTopic = () =>
       (
         useStore.getState() as unknown as {
@@ -211,6 +218,7 @@ describe('PubSub store', () => {
       });
     });
 
+    // The subscribers are 2 + 1 + 1 across the three topics.
     it('does not count publishers', () => {
       const total = useStore
         .getState()
@@ -236,6 +244,7 @@ describe('PubSub store', () => {
         .getState()
         .onConnect({ source, target, sourceHandle: null, targetHandle: null });
 
+    // window.alert is mocked. It must not be called for a valid connection.
     it('connects a publisher to a topic and adds the edge', () => {
       const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
       useStore.getState().addNode(makePublisher('50'));
@@ -255,6 +264,7 @@ describe('PubSub store', () => {
     });
 
     it('connects a topic to a subscriber and resets its subscription state', () => {
+      // It starts from state 2 (unsubscribed). Connecting must set it back to 0.
       useStore.getState().addNode(makeSubscriber('50'));
       useStore.setState({
         nodes: useStore.getState().nodes.map((n): MQFlowNode =>
@@ -351,6 +361,7 @@ describe('PubSub store', () => {
   });
 
   describe('changeEdgeAnimationFromNodeId', () => {
+    // The 2nd and 3rd arguments are ignored. The animation is always flipped.
     it('toggles the animation of the edges of the node whatever the state', () => {
       useStore
         .getState()
@@ -425,6 +436,7 @@ describe('PubSub store', () => {
       expect(useStore.getState().nodes).toHaveLength(8);
     });
 
+    // The second argument (true) marks the node as a topic.
     it('removes a topic together with all its edges', () => {
       useStore.getState().onDeleteNode(CLASSIC_TOPIC, true);
 

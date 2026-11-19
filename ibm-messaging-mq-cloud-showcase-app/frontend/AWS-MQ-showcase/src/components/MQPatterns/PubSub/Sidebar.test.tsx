@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Tests the publish-subscribe sidebar (PubSub/Sidebar.tsx). It checks the
+// draggable cards and their order. It checks that the sidebar is hidden on a
+// narrow screen. It checks the "How it works" dialog: opening and closing it,
+// and what it shows.
+
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Sidebar from './Sidebar';
