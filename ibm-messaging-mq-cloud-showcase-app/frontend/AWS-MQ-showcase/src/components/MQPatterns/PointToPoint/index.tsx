@@ -38,7 +38,8 @@ const PointPointIndex = () => {
   const _result = useStore((state) => state.queueData);
   const currentQueues = useStore((state) => state.getQueuesNodes);
   const [initTime, setInitTime] = useState(true);
-  // keeps the interval from restarting every time queueData changes
+  // Queue.node publishes a new array every 3 s. The 15 s interval reads the
+  // latest one from here so it does not have to be recreated on every publish.
   const latestResult = useRef(_result);
   latestResult.current = _result;
 
