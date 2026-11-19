@@ -14,12 +14,16 @@
  * limitations under the License.
  **/
 
+// Tests the pattern sidebar: draggable element list and drag data, the
+// instruction text, hiding on narrow screens, and the How it works panel
+// (opening, closing, portal rendering, keyboard drag handle, and closing when
+// its tab is hidden).
+
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import PatternSidebar from './PatternSidebar';
 import type { HowItWorks, PatternSidebarItem } from '../../types';
 
-// Two sample draggable items to show in the sidebar.
 const ITEMS: PatternSidebarItem[] = [
   {
     nodeType: 'producer',
@@ -42,7 +46,6 @@ const HOW_IT_WORKS: HowItWorks = {
   steps: ['Put a message', 'Store the message', 'Get the message'],
 };
 
-// Helper: sets the browser window width.
 const setWidth = (width: number) => {
   Object.defineProperty(window, 'innerWidth', {
     configurable: true,
@@ -51,7 +54,6 @@ const setWidth = (width: number) => {
   });
 };
 
-// PatternSidebar: the side panel of draggable elements and its "How it works" help.
 describe('PatternSidebar', () => {
   beforeEach(() => setWidth(1280));
   afterEach(() => setWidth(1024));
@@ -91,7 +93,6 @@ describe('PatternSidebar', () => {
     expect(dataTransfer.effectAllowed).toBe('move');
   });
 
-  // On a narrow window (800px) the sidebar is not shown at all.
   it('renders nothing on narrow screens', () => {
     setWidth(800);
 

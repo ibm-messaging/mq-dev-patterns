@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Tests the Requestor app node (Map/Requestor.node.tsx) used in the
+// Request/Response pattern: submitting a request, the waiting state while the
+// temporary reply queue is polled, the response shown once it arrives, and
+// the error path when the request is rejected. The API adapter is mocked.
+
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@xyflow/react';
@@ -22,13 +27,11 @@ import RequestorNode from './Requestor.node';
 import useStore from '../MQPatterns/RequestResponse/store';
 import type { ProducerFlowNode } from '../../types';
 
-// Mock API functions (created early so vi.mock below can use them).
 const { dynPut, getDyn } = vi.hoisted(() => ({
   dynPut: vi.fn(),
   getDyn: vi.fn(),
 }));
 
-// Replace the real API adapter so no network calls are made.
 vi.mock('../../adapters/API.adapter', () => ({
   default: class {
     dynPut = dynPut;
@@ -36,14 +39,12 @@ vi.mock('../../adapters/API.adapter', () => ({
   },
 }));
 
-// Replace the toast library so tests can check which messages are shown.
 vi.mock('react-toastify', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
 const NODE_ID = 'requestor-1';
 
-// Renders the Requestor node. Pass data to override the defaults (e.g. no queue).
 const renderNode = (overrides?: Partial<ProducerFlowNode['data']>) =>
   render(
     <ReactFlowProvider>
@@ -70,7 +71,6 @@ const renderNode = (overrides?: Partial<ProducerFlowNode['data']>) =>
     </ReactFlowProvider>
   );
 
-// Requestor node: send a request, wait for the reply, then show the response.
 describe('RequestorNode', () => {
   beforeEach(() => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
@@ -155,7 +155,6 @@ describe('RequestorNode', () => {
     ).toBeDisabled();
   });
 
-  // If sending fails, there is no waiting state and Submit stays enabled.
   it('does not enter the waiting state when the request fails', async () => {
     dynPut.mockResolvedValue(-1);
     renderNode();
@@ -170,7 +169,6 @@ describe('RequestorNode', () => {
     ).toBeEnabled();
   });
 
-  // Reply queue is polled every 2.5 s; on a reply it is shown and the queue is deleted.
   it('polls for the reply and shows the response once it arrives', async () => {
     dynPut.mockResolvedValue({ _name: 'amq.reply.1' });
     getDyn.mockResolvedValueOnce(undefined).mockResolvedValueOnce('42 EUR');

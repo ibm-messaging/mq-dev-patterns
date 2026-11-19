@@ -14,6 +14,10 @@
  * limitations under the License.
  **/
 
+// Tests the tutorial header: it is a labelled banner, the product name links
+// back to the home route, the Getting started and Repositories links point to
+// the external MQ pages, and both navigation regions are labelled.
+
 import { screen } from '@testing-library/react';
 import { renderWithRouter } from '../../test/utils';
 import TutorialHeader from './TutorialHeader';

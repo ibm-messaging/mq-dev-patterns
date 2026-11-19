@@ -75,6 +75,15 @@ There are no defaults for `mq_app_password` or `mq_admin_password`, so they must
 terraform apply -var mq_app_password="AD1ficlutToDeciferAppPassw0rd" -var mq_admin_password="AD1ficlutToDeciferAdminPassw0rd"
 ````
 
+The passwords are stored in an [AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/) secret
+(`appPassword` and `adminPassword` keys), created by the configuration. ECS reads the secret when it starts the
+container and injects the values as the `MQ_APP_PASSWORD` and `MQ_ADMIN_PASSWORD` environment variables, so they do not
+appear in plain text in the ECS task definition. The task execution role is given `secretsmanager:GetSecretValue` on
+that secret only. The user running Terraform therefore needs permission to create secrets in Secrets Manager.
+
+*Note:* as Terraform creates the secret from the `mq_app_password` and `mq_admin_password` variables, the password
+values are still stored in the Terraform state file (`terraform.tfstate`). Protect the state file accordingly.
+
 Other MQ parameters are defaulted to 
 ````
 "LICENSE" = "accept",

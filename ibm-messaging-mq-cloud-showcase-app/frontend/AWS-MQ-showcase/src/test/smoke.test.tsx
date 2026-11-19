@@ -14,6 +14,10 @@
  * limitations under the License.
  **/
 
+// Smoke test for the test environment itself: confirms Vitest, React Testing
+// Library, user-event and the router helper work together. It has no
+// application logic.
+
 import { Button } from '@carbon/react';
 import { Link } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
