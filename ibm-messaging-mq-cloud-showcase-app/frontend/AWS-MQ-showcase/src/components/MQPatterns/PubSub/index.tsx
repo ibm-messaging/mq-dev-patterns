@@ -22,22 +22,32 @@ import Flow from './map';
 import useStore from './store';
 import type { LineChartEntry, DataframeEntry } from '../../../types';
 
+interface ChartState {
+  dataChart1: LineChartEntry[];
+  time: number;
+}
+
 const PubSub = () => {
-  const [dataChart1, setDataChart1] = useState<LineChartEntry[]>([]);
-  const [time, setTime] = useState(1);
+  const [{ dataChart1 }, setChartState] = useState<ChartState>({
+    dataChart1: [],
+    time: 1,
+  });
   const _updateDataframe = useStore((state) => state.setDataframeForChart);
 
+  // Both effects run with [] deps, so this must not read state from the
+  // closure: it appends to the previous chart data at the previous time step.
   const updateChart = (result: DataframeEntry[]) => {
-    let _dataChart1 = [...dataChart1];
-    result.forEach((entry) => {
-      _dataChart1.push({
-        group: entry.group,
-        time,
-        value: entry.value,
-      });
-    });
-    setDataChart1(_dataChart1);
-    setTime((t) => t + 1);
+    setChartState((prev) => ({
+      dataChart1: [
+        ...prev.dataChart1,
+        ...result.map((entry) => ({
+          group: entry.group,
+          time: prev.time,
+          value: entry.value,
+        })),
+      ],
+      time: prev.time + 1,
+    }));
   };
 
   useEffect(() => {
@@ -62,9 +72,6 @@ const PubSub = () => {
         <Column md={8} lg={16} sm={4}>
           <Grid className="chartSection">
             <Column md={16} />
-            {/* <Column md={8} lg={{ offset: 8 }} sm={3}>
-              <Chart2 data={dataChart2} />
-            </Column> */}
           </Grid>
         </Column>
       </Column>
