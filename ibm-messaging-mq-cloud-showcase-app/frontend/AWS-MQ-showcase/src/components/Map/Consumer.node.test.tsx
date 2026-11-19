@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Tests the Consumer node (Map/Consumer.node.tsx). It checks the toggle and
+// the Active/Inactive state. It checks that the queue is polled only while the
+// node is on. It checks the message shown, the counters and the delete button.
+// The API adapter is mocked.
+
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@xyflow/react';
@@ -22,13 +27,11 @@ import ConsumerNode from './Consumer.node';
 import useStore from '../MQPatterns/PointToPoint/store';
 import type { ConsumerFlowNode } from '../../types';
 
-// Mock API functions (created early so vi.mock below can use them).
 const adapter = vi.hoisted(() => ({
   getFromLimit: vi.fn(),
   closeConsumer: vi.fn(),
 }));
 
-// Replace the real API adapter so no network calls are made.
 vi.mock('../../adapters/API.adapter', () => ({
   default: class {
     getFromLimit = adapter.getFromLimit;
@@ -98,7 +101,6 @@ const advance = (ms: number) =>
     await vi.advanceTimersByTimeAsync(ms);
   });
 
-// Consumer node: switch on/off, poll the queue for messages, show them, delete.
 describe('ConsumerNode', () => {
   beforeEach(() => {
     useStore.setState(useStore.getInitialState(), true);
@@ -145,7 +147,6 @@ describe('ConsumerNode', () => {
       expect(getToggle()).toBeDisabled();
     });
 
-    // Switching on marks the consumer active and animates the queue-to-consumer edge.
     it('activates the consumer and its edges when switched on', async () => {
       const user = userEvent.setup();
       renderConsumer();
@@ -241,7 +242,7 @@ describe('ConsumerNode', () => {
       expect(screen.getByText('Counter:')).toHaveTextContent('Counter: 4');
     });
 
-    // After 3 polls with a message each, "Received" shows 3.
+    // 6000 ms is 3 polls, and each poll returns a message.
     it('adds one to the received count per message', async () => {
       vi.useFakeTimers();
       adapter.getFromLimit.mockResolvedValue(MESSAGE);
@@ -285,7 +286,7 @@ describe('ConsumerNode', () => {
       expect(useStore.getState().localDepths[QUEUE_ID]).toBe(3);
     });
 
-    // One failed request is logged, and the next poll still works.
+    // The first request fails and is logged. The next poll still works.
     it('keeps polling after the adapter throws', async () => {
       vi.useFakeTimers();
       const log = vi.spyOn(console, 'log').mockImplementation(() => {});

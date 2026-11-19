@@ -14,14 +14,17 @@
  * limitations under the License.
  **/
 
+// Tests the two depth charts (PointToPoint/chart1.tsx and chart2.tsx). It checks
+// that Chart1 (line) and Chart2 (bar) show nothing without data. It checks the
+// data and axes they pass on, and the max depth of 5000. The charts library is
+// mocked.
+
 import { render, screen } from '@testing-library/react';
 import Chart1 from './chart1';
 import Chart2 from './chart2';
 
-// Spies that record what the line and bar charts are given.
 const charts = vi.hoisted(() => ({ line: vi.fn(), bar: vi.fn() }));
 
-// Replace the real charts with empty divs that record their props.
 vi.mock('@carbon/charts-react', () => ({
   LineChart: (props: unknown) => {
     charts.line(props);
@@ -33,7 +36,6 @@ vi.mock('@carbon/charts-react', () => ({
   },
 }));
 
-// The two depth charts: Chart1 is a line chart, Chart2 is a bar chart.
 describe('PointToPoint charts', () => {
   afterEach(() => vi.clearAllMocks());
 

@@ -14,12 +14,15 @@
  * limitations under the License.
  **/
 
+// Tests the point-to-point store (PointToPoint/store.ts). It checks the nodes and
+// edges and the actions that change them. It checks that messages are sent one
+// second apart and that the queue counts them. It checks that the queue depth
+// never goes below 0. It checks switching a node on and off.
+
 import { Position } from '@xyflow/react';
 import useStore from './store';
 import type { MQFlowNode } from '../../../types';
 
-// Ids from the default graph: 1 = producer, 2 = consumer, 3 = queue
-// (DEV.QUEUE.1), edges '1-3' and '3-2'.
 const PRODUCER_ID = '1';
 const CONSUMER_ID = '2';
 const QUEUE_ID = '3';
@@ -49,7 +52,6 @@ const makeQueue = (id: string, queueName: string): MQFlowNode => ({
   targetPosition: Position.Left,
 });
 
-// Point-to-point store: the shared state and actions behind the canvas.
 describe('PointToPoint store', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -94,7 +96,7 @@ describe('PointToPoint store', () => {
       expect(useStore.getState().localDepths).toEqual({});
     });
 
-    // For 3 messages, one animation event is sent now and one each second after.
+    // For 3 messages, one event is sent now and one each second after.
     it('emits one message-flow event per message, one second apart', () => {
       const listener = vi.fn();
       window.addEventListener('mq-message-flow', listener);
@@ -112,7 +114,7 @@ describe('PointToPoint store', () => {
       expect(detail.edgeId).toBe('1-3');
     });
 
-    // The queue counts a message as arrived 950ms after it starts moving.
+    // The queue counts a message as arrived 950 ms after it starts moving.
     it('bumps the queue landCount 950ms after each message is emitted', () => {
       useStore.getState().sendMessages(PRODUCER_ID, 2);
 
@@ -143,7 +145,7 @@ describe('PointToPoint store', () => {
       );
     });
 
-    // Consuming from a queue with 1 message three times ends at 0, not -2.
+    // Three consumes on a queue with 1 message end at 0, not -2.
     it('never lets the depth go below zero', () => {
       useStore.getState().setNodeDepth(QUEUE_ID, 1);
 
@@ -356,7 +358,7 @@ describe('PointToPoint store', () => {
   });
 
   describe('onClick', () => {
-    // Switching on animates the edge leaving the node, not the other edge.
+    // Switching on animates the edge that leaves the node. The other edge stays still.
     it('activates the node and animates its edges', () => {
       useStore.getState().onClick(PRODUCER_ID);
 

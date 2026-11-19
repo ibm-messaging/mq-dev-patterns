@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Tests the Queue node (Map/Queue.node.tsx). It checks the queue name, label
+// and depth. It checks that depths are polled every 3 seconds. It checks the
+// error toasts, the local depth and the info popover. It checks the delete
+// button. The API adapter and the toast library are mocked.
+
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@xyflow/react';
@@ -23,30 +28,25 @@ import QueueNode from './Queue.node';
 import useStore from '../MQPatterns/PointToPoint/store';
 import type { QueueFlowNode } from '../../types';
 
-// Mock API functions (created early so vi.mock below can use them).
 const adapter = vi.hoisted(() => ({
   getAllDepths: vi.fn(),
 }));
 
-// Replace the real API adapter so no network calls are made.
 vi.mock('../../adapters/API.adapter', () => ({
   default: class {
     getAllDepths = adapter.getAllDepths;
   },
 }));
 
-// Replace the toast library so tests can check which errors are shown.
 vi.mock('react-toastify', () => ({
   toast: { error: vi.fn() },
 }));
 
-// Ids and names that match the default graph in the store.
 const QUEUE_NAME = 'DEV.QUEUE.1';
 const QUEUE_ID = '3';
 
 type QueueData = QueueFlowNode['data'];
 
-// Builds the props for the Queue node. Pass data to override the defaults.
 function buildProps(data: Partial<QueueData> = {}): NodeProps<QueueFlowNode> {
   return {
     id: QUEUE_ID,
@@ -64,7 +64,7 @@ function buildProps(data: Partial<QueueData> = {}): NodeProps<QueueFlowNode> {
   };
 }
 
-// Wraps the Queue node in the provider it needs (reused to re-render with new data).
+// Returns the node as an element, so a test can pass it to rerender().
 const tree = (data?: Partial<QueueData>) => (
   <ReactFlowProvider>
     <QueueNode {...buildProps(data)} />
@@ -82,7 +82,6 @@ const advance = (ms: number) =>
 const getInfoButton = () =>
   screen.queryByRole('button', { name: 'Messages waiting in queue' });
 
-// Queue node: shows queue depth, polls for updates, reports errors, shows an info popover.
 describe('QueueNode', () => {
   beforeEach(() => {
     vi.useFakeTimers();

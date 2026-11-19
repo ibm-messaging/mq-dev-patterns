@@ -14,6 +14,10 @@
  * limitations under the License.
  **/
 
+// Tests the Request/Response pattern page: the flow canvas renders with the
+// sidebar, the initial requestor, responder and queue are shown, and the
+// sidebar items and instruction text are correct.
+
 import { render, screen } from '@testing-library/react';
 import RequestResponseIndex from './index';
 import useStore from './store';

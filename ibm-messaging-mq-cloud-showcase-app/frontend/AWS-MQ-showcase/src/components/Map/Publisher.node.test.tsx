@@ -14,6 +14,12 @@
  * limitations under the License.
  **/
 
+// Tests the Publisher node (Map/Publisher.node.tsx). It checks the title and
+// content fields and the send button. It checks the message published to the
+// topic and the toast. It checks the 1 second animation and that a second send
+// is ignored while the first is pending. It checks the delete button.
+// The API adapter and the toast library are mocked.
+
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@xyflow/react';
@@ -22,20 +28,16 @@ import PublisherNode from './Publisher.node';
 import useStore from '../MQPatterns/PubSub/store';
 import type { ProducerFlowNode } from '../../types';
 
-// Mock API functions (created early so vi.mock below can use them).
 const adapter = vi.hoisted(() => ({ publish: vi.fn() }));
-// Mock toast function (also created early for vi.mock below).
 const toast = vi.hoisted(() => ({ promise: vi.fn() }));
 
-// Replace the real API adapter so no network calls are made.
 vi.mock('../../adapters/API.adapter', () => ({
   default: class {
     publish = adapter.publish;
   },
 }));
 
-// Replace the toast library so tests can check the messages shown.
-// The real toast.promise swallows a rejection; the mock has to do the same.
+// The real toast.promise ignores a rejected promise. The mock does the same.
 vi.mock('react-toastify', () => ({
   toast: {
     promise: (promise: Promise<unknown>, messages: unknown) => {
@@ -48,7 +50,6 @@ vi.mock('react-toastify', () => ({
 const TOPIC = 'tickets/classic';
 const PUBLISHER_ID = '1';
 
-// Renders the Publisher node. Pass '' to render it with no connected topic.
 function renderPublisher(connectedQueue = TOPIC) {
   const props: NodeProps<ProducerFlowNode> = {
     id: PUBLISHER_ID,
@@ -84,7 +85,7 @@ const getSendButton = () =>
 
 const flushPromises = () => act(async () => {});
 
-// Records which edges get a message animation (stop() ends recording).
+// Records the edges that get a message animation. Call stop() to end it.
 const flowEvents = () => {
   const edgeIds: string[] = [];
   const listener = (e: Event) => edgeIds.push((e as CustomEvent).detail.edgeId);
@@ -95,7 +96,6 @@ const flowEvents = () => {
   };
 };
 
-// Publisher node: write a notification, publish it to a topic, and delete the node.
 describe('PublisherNode', () => {
   beforeEach(() => {
     useStore.setState(useStore.getInitialState(), true);
@@ -239,7 +239,7 @@ describe('PublisherNode', () => {
       expect(getSendButton()).toBeDisabled();
     });
 
-    // Fake timers: advance 1s by hand.
+    // Fake timers: move the clock forward 1 second.
     it('stops the animation and re-enables the button after 1 s', async () => {
       vi.useFakeTimers();
       renderPublisher();
@@ -259,7 +259,7 @@ describe('PublisherNode', () => {
       expect(getSendButton()).toBeEnabled();
     });
 
-    // Fake timers: 999 ms is 1ms before the 1s animation ends.
+    // Fake timers: 999 ms is 1 ms before the animation ends.
     it('keeps the animation on until the second is over', async () => {
       vi.useFakeTimers();
       renderPublisher();

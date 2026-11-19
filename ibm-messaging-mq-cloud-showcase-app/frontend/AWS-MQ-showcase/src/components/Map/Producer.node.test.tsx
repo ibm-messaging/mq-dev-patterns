@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Tests the Producer node (Map/Producer.node.tsx). It checks the send button
+// and the quantity field. It checks the message put on the queue, the counters
+// and the 1.8 second wait after a send. It checks auto send every 10 seconds.
+// It checks that the node can be deleted. The API adapter is mocked.
+
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@xyflow/react';
@@ -22,13 +27,11 @@ import ProducerNode from './Producer.node';
 import useStore from '../MQPatterns/PointToPoint/store';
 import type { ProducerFlowNode } from '../../types';
 
-// Mock API functions (created early so vi.mock below can use them).
 const adapter = vi.hoisted(() => ({
   put: vi.fn(),
   closeProducer: vi.fn(),
 }));
 
-// Replace the real API adapter so no network calls are made.
 vi.mock('../../adapters/API.adapter', () => ({
   default: class {
     put = adapter.put;
@@ -36,12 +39,10 @@ vi.mock('../../adapters/API.adapter', () => ({
   },
 }));
 
-// Ids and names that match the default graph in the store.
 const QUEUE_NAME = 'DEV.QUEUE.1';
 const PRODUCER_ID = '1';
 const QUEUE_ID = '3';
 
-// Renders the Producer node.
 function renderProducer(connectedQueue = QUEUE_NAME) {
   const props: NodeProps<ProducerFlowNode> = {
     id: PRODUCER_ID,
@@ -74,7 +75,6 @@ const getSendButton = () =>
 
 const flushPromises = () => act(async () => {});
 
-// Producer node: send tickets to a queue by hand or automatically, and delete it.
 describe('ProducerNode', () => {
   beforeEach(() => {
     useStore.setState(useStore.getInitialState(), true);
@@ -191,7 +191,8 @@ describe('ProducerNode', () => {
       expect(useStore.getState().localDepths[QUEUE_ID]).toBe(5);
     });
 
-    // Two sends in a row add up: Total sent becomes 10.
+    // Fake timers: the button is off for 1800 ms, so wait that long between sends.
+    // Two sends of 5 add up to 10.
     it('accumulates the total over several sends', async () => {
       vi.useFakeTimers();
       renderProducer();

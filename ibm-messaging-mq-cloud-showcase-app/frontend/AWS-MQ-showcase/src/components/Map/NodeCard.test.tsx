@@ -14,11 +14,14 @@
  * limitations under the License.
  **/
 
+// Tests the shared NodeCard wrapper used by every pattern node: the title and
+// children, optional icon, header action and delete button, icon colour,
+// header colours and extra class names.
+
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import NodeCard from './NodeCard';
 
-// NodeCard: the shared card with a title, icon, header action and delete button.
 describe('NodeCard', () => {
   it('renders the title and children', () => {
     render(

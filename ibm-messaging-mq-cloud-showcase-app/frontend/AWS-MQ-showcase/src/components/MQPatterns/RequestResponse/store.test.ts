@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Tests the Request/Response Zustand store (RequestResponse/store.ts): the
+// session-cookie node IDs and initial graph, the temporary reply queue created
+// for each request and its edges, draining and landing counters, the timed
+// message animation, and node toggle and delete actions.
+
 import Cookies from 'js-cookie';
 
 const SESSION_ID = 'a'.repeat(32);

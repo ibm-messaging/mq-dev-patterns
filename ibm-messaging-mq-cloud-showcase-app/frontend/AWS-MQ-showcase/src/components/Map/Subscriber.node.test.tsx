@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Tests the Subscriber node (Map/Subscriber.node.tsx). It checks subscribe and
+// unsubscribe and the state colours. It checks that the node polls for
+// notifications after a random delay. It checks the notifications it shows.
+// It checks the delete button. The API adapter and the toast library are mocked.
+
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@xyflow/react';
@@ -22,19 +27,16 @@ import SubscriberNode from './Subscriber.node';
 import useStore from '../MQPatterns/PubSub/store';
 import type { ConsumerFlowNode } from '../../types';
 
-// Mock API functions (created early so vi.mock below can use them).
 const adapter = vi.hoisted(() => ({
   subscribe: vi.fn(),
   unsubscribe: vi.fn(),
   getForSubFromAppId: vi.fn(),
 }));
-// Mock toast functions (created early so the toast mock below can use them).
 const toast = vi.hoisted(() => ({
   promise: vi.fn(),
   success: vi.fn(),
 }));
 
-// Replace the real API adapter so no network calls are made.
 vi.mock('../../adapters/API.adapter', () => ({
   default: class {
     subscribe = adapter.subscribe;
@@ -43,7 +45,6 @@ vi.mock('../../adapters/API.adapter', () => ({
   },
 }));
 
-// Fake toasts that record what is shown and ignore rejected promises.
 vi.mock('react-toastify', () => ({
   toast: {
     promise: (promise: Promise<unknown>, messages: unknown) => {
@@ -55,11 +56,9 @@ vi.mock('react-toastify', () => ({
 }));
 
 const TOPIC = 'tickets/classic';
-// Ids from the default graph: topic '2' is connected to subscriber '3'
-// through the edge '2-3'.
 const SUBSCRIBER_ID = '3';
 const EDGE_ID = '2-3';
-// Poll delay: Math.random is mocked to 0.5, which gives 2.5 seconds.
+// The poll delay is 2.5 s because Math.random is mocked to 0.5.
 const POLL_MS = 2500;
 
 const MESSAGE = {
@@ -94,7 +93,7 @@ const makeProps = (data: Partial<Data> = {}): NodeProps<ConsumerFlowNode> => ({
   positionAbsoluteY: 0,
 });
 
-// Renders the Subscriber; `update` re-renders it with new data.
+// `update` renders the same node again with new data.
 function renderSubscriber(data: Partial<Data> = {}) {
   const ui = (d: Partial<Data>) => (
     <ReactFlowProvider>
@@ -121,7 +120,6 @@ const isEdgeAnimated = () =>
 
 const valueOf = (label: string) => screen.getByText(label).nextSibling;
 
-// Subscriber node: subscribe, poll for notifications, show them, delete.
 describe('SubscriberNode', () => {
   beforeEach(() => {
     useStore.setState(useStore.getInitialState(), true);
@@ -176,7 +174,6 @@ describe('SubscriberNode', () => {
       expect(screen.queryByText(/Subscribed to/)).not.toBeInTheDocument();
     });
 
-    // Light green before subscribing, darker green after.
     it('turns the header darker once subscribed', async () => {
       renderSubscriber();
       const header = screen
@@ -299,7 +296,7 @@ describe('SubscriberNode', () => {
   });
 
   describe('polling', () => {
-    // Fake timers: advance 10s and check that no poll was sent.
+    // The timers advance 10 seconds. No poll is sent.
     it('does not poll without a subscription', async () => {
       vi.useFakeTimers();
       renderSubscriber({ connectedQueue: '' });
@@ -309,7 +306,7 @@ describe('SubscriberNode', () => {
       expect(adapter.getForSubFromAppId).not.toHaveBeenCalled();
     });
 
-    // Math.random is mocked to 0.5, so the poll delay is exactly POLL_MS.
+    // Math.random is 0.5, so the delay is exactly POLL_MS.
     it('polls the topic at a random 1.5 - 3.5 s interval once subscribed', async () => {
       vi.useFakeTimers();
       renderSubscriber();
@@ -340,7 +337,7 @@ describe('SubscriberNode', () => {
       expect(toast.success).not.toHaveBeenCalled();
     });
 
-    // An answer of -1 confirms the subscription; the count stays 0.
+    // The answer -1 confirms the subscription. The count stays 0.
     it('confirms the subscription when the answer is -1', async () => {
       vi.useFakeTimers();
       adapter.getForSubFromAppId.mockResolvedValue(-1);
@@ -355,7 +352,6 @@ describe('SubscriberNode', () => {
       );
     });
 
-    // console.log is mocked to check that the error is logged.
     it('logs a failing poll instead of throwing', async () => {
       vi.useFakeTimers();
       const log = vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -368,7 +364,7 @@ describe('SubscriberNode', () => {
       expect(log).toHaveBeenCalled();
     });
 
-    // Fake timers: the first poll rejects, the second must still run.
+    // The first poll fails. The next poll still runs.
     it('keeps polling after a failed poll', async () => {
       vi.useFakeTimers();
       vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -384,7 +380,6 @@ describe('SubscriberNode', () => {
   });
 
   describe('receiving a notification', () => {
-    // Delivers one notification, then returns the rendered view.
     async function receiveOne() {
       vi.useFakeTimers();
       adapter.getForSubFromAppId.mockResolvedValueOnce(MESSAGE);
@@ -405,7 +400,7 @@ describe('SubscriberNode', () => {
       );
     });
 
-    // Fake timers: two poll intervals, each one returns a message.
+    // Two poll intervals pass. Each one returns a message.
     it('counts every notification it receives', async () => {
       vi.useFakeTimers();
       adapter.getForSubFromAppId.mockResolvedValue(MESSAGE);
