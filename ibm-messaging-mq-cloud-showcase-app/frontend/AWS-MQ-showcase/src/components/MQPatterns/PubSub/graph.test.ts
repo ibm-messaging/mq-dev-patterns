@@ -14,6 +14,10 @@
  * limitations under the License.
  **/
 
+// Tests the starting graph (PubSub/nodes.ts and edges.ts). It checks the two
+// publishers, the three topics and the four subscribers. It checks their data
+// and how they are linked. It checks the six edges that join them.
+
 import initialNodes from './nodes';
 import initialEdges from './edges';
 

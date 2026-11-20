@@ -14,6 +14,12 @@
  * limitations under the License.
  **/
 
+// Tests the Publisher node (Map/Publisher.node.tsx). It checks the title and
+// content fields and the send button. It checks the message published to the
+// topic and the toast. It checks the 1 second animation and that a second send
+// is ignored while the first is pending. It checks the delete button.
+// The API adapter and the toast library are mocked.
+
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@xyflow/react';
@@ -31,7 +37,7 @@ vi.mock('../../adapters/API.adapter', () => ({
   },
 }));
 
-// The real toast.promise swallows a rejection; the mock has to do the same.
+// The real toast.promise ignores a rejected promise. The mock does the same.
 vi.mock('react-toastify', () => ({
   toast: {
     promise: (promise: Promise<unknown>, messages: unknown) => {
@@ -79,6 +85,7 @@ const getSendButton = () =>
 
 const flushPromises = () => act(async () => {});
 
+// Records the edges that get a message animation. Call stop() to end it.
 const flowEvents = () => {
   const edgeIds: string[] = [];
   const listener = (e: Event) => edgeIds.push((e as CustomEvent).detail.edgeId);
@@ -232,6 +239,7 @@ describe('PublisherNode', () => {
       expect(getSendButton()).toBeDisabled();
     });
 
+    // Fake timers: move the clock forward 1 second.
     it('stops the animation and re-enables the button after 1 s', async () => {
       vi.useFakeTimers();
       renderPublisher();
@@ -251,6 +259,7 @@ describe('PublisherNode', () => {
       expect(getSendButton()).toBeEnabled();
     });
 
+    // Fake timers: 999 ms is 1 ms before the animation ends.
     it('keeps the animation on until the second is over', async () => {
       vi.useFakeTimers();
       renderPublisher();
@@ -269,6 +278,7 @@ describe('PublisherNode', () => {
   });
 
   describe('sending twice in a row', () => {
+    // The publish promise never resolves, so the first send stays pending.
     it('ignores a second send while the first is still pending', async () => {
       adapter.publish.mockReturnValue(new Promise(() => {}));
       renderPublisher();

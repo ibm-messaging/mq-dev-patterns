@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Tests the Producer node (Map/Producer.node.tsx). It checks the send button
+// and the quantity field. It checks the message put on the queue, the counters
+// and the 1.8 second wait after a send. It checks auto send every 10 seconds.
+// It checks that the node can be deleted. The API adapter is mocked.
+
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@xyflow/react';
@@ -186,6 +191,8 @@ describe('ProducerNode', () => {
       expect(useStore.getState().localDepths[QUEUE_ID]).toBe(5);
     });
 
+    // Fake timers: the button is off for 1800 ms, so wait that long between sends.
+    // Two sends of 5 add up to 10.
     it('accumulates the total over several sends', async () => {
       vi.useFakeTimers();
       renderProducer();

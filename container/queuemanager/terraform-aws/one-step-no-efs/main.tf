@@ -47,7 +47,8 @@ data "aws_availability_zones" "available_zones" {
 
 # Create a new VPC making use of the terraform aws vpc module
 module "vpc" {
-  source = "terraform-aws-modules/vpc/aws"
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "~> 5.0"
 
   name = "mq-ecs-vpc"
   cidr = var.vpc_cidr_block
@@ -73,6 +74,38 @@ resource "aws_iam_role" "ecs_task_execution_role" {
 resource "aws_iam_role_policy_attachment" "ecs_task_execution_role" {
   role       = aws_iam_role.ecs_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+# Store the MQ app and admin passwords in AWS Secrets Manager. ECS reads them
+# at container start up and injects them as environment variables, so they do
+# not appear in plain text in the task definition.
+resource "aws_secretsmanager_secret" "mq_secret" {
+  name        = "mq-passwords"
+  description = "IBM MQ app and admin passwords"
+  # Delete immediately on destroy so the name can be reused on the next apply.
+  recovery_window_in_days = 0
+}
+
+resource "aws_secretsmanager_secret_version" "mq_secret" {
+  secret_id = aws_secretsmanager_secret.mq_secret.id
+  secret_string = jsonencode({
+    appPassword   = var.mq_app_password
+    adminPassword = var.mq_admin_password
+  })
+}
+
+# Allow the task execution role to read the secret when starting the container.
+resource "aws_iam_role_policy" "ecs_read_mq_secret" {
+  name = "read-mq-secret"
+  role = aws_iam_role.ecs_task_execution_role.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["secretsmanager:GetSecretValue"]
+      Resource = [aws_secretsmanager_secret.mq_secret.arn]
+    }]
+  })
 }
 
 
@@ -177,8 +210,7 @@ resource "aws_ecs_task_definition" "mq_task" {
     MQ_MQI_PORT       = 1414,
     MQ_CONTAINER_NAME = var.mq_container_name,
     LOG_GROUP_NAME    = var.log_group,
-    MQ_APP_PASSWORD   = var.mq_app_password,
-    MQ_ADMIN_PASSWORD = var.mq_admin_password,
+    MQ_SECRET_ARN     = aws_secretsmanager_secret.mq_secret.arn,
     REGION            = var.region,
     ENVVARS           = var.envvars
   })
@@ -278,7 +310,13 @@ resource "aws_ecs_service" "mq-dev-service" {
   # otherwise, the policy may be destroyed too soon and the ECS service will 
   # then get stuck in the DRAINING state.
   # See https://registry.terraform.io/providers/figma/aws-4-49-0/latest/docs/resources/ecs_service
-  depends_on = [aws_lb_listener.mqon9443, aws_lb_listener.mqon1414, aws_iam_role_policy_attachment.ecs_task_execution_role]
+  depends_on = [
+    aws_lb_listener.mqon9443,
+    aws_lb_listener.mqon1414,
+    aws_iam_role_policy_attachment.ecs_task_execution_role,
+    aws_iam_role_policy.ecs_read_mq_secret,
+    aws_secretsmanager_secret_version.mq_secret
+  ]
 }
 
 

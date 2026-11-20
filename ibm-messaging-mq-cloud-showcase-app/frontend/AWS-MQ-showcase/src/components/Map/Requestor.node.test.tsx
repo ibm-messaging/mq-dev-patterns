@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Tests the Requestor app node (Map/Requestor.node.tsx) used in the
+// Request/Response pattern: submitting a request, the waiting state while the
+// temporary reply queue is polled, the response shown once it arrives, and
+// the error path when the request is rejected. The API adapter is mocked.
+
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@xyflow/react';

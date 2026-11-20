@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Tests the landing page: its heading, tutorial link, Dev handbook launcher,
+// statistics and benefits, plus the three pattern tabs (default selection,
+// switching panels, and arrow-key and Enter navigation). The pattern canvases
+// are mocked.
+
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import LandingPage from './LandingPage';

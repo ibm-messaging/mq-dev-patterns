@@ -14,6 +14,10 @@
  * limitations under the License.
  **/
 
+// Tests the Topic node (Map/Topic.node.tsx). It checks the topic name and the
+// handles, and that a wildcard topic has no target handle. It checks renaming
+// and the error for an invalid name. It checks the delete button.
+
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@xyflow/react';
@@ -22,8 +26,6 @@ import TopicNode from './Topic.node';
 import useStore from '../MQPatterns/PubSub/store';
 import type { QueueFlowNode } from '../../types';
 
-// Ids from the default graph: topic '2' (tickets/classic) publishes to the
-// subscribers '3' and '4' through the edges '2-3' and '2-4'.
 const TOPIC_ID = '2';
 
 /**
@@ -172,6 +174,7 @@ describe('TopicNode', () => {
       }
     );
 
+    // Typing 'bad.name' stores only 'bad'. The '.' is not allowed.
     it('keeps the last valid name in the topic when the input turns invalid', async () => {
       const user = userEvent.setup();
       renderTopic();

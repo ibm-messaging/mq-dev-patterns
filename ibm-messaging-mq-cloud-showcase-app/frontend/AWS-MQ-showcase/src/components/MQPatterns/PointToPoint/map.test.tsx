@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Tests the point-to-point canvas (PointToPoint/map.tsx). It checks that it shows
+// the sidebar and the three default nodes. It checks that dropping a producer,
+// a consumer or a queue adds a node with its own id. It checks the limit of two
+// queues. It checks that bad drops are ignored. The API adapter is mocked.
+
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import Flow from './map';
 import useStore from './store';
@@ -45,7 +50,7 @@ const nodesOfType = (type: string) =>
 
 const renderFlow = async () => {
   const view = render(<Flow />);
-  // The drop is ignored until React Flow has initialised and drawn the nodes.
+  // React Flow ignores a drop until it has drawn the nodes.
   await waitFor(() =>
     expect(view.container.querySelectorAll('.react-flow__node')).toHaveLength(3)
   );

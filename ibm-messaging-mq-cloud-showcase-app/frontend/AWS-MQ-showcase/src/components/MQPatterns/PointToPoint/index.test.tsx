@@ -14,6 +14,13 @@
  * limitations under the License.
  **/
 
+// Tests the point-to-point page (PointToPoint/index.tsx). It checks that the page
+// shows the canvas and no chart before there is queue data. It checks that the
+// charts are drawn when the first data arrives. It checks that the line chart
+// gets a new point every 15 seconds. It checks a queue removed from the canvas.
+// It checks that the timer stops on unmount. The canvas and the charts library
+// are mocked.
+
 import { act, render, screen } from '@testing-library/react';
 import PointPointIndex from './index';
 import useStore from './store';
@@ -109,6 +116,7 @@ describe('PointToPoint index', () => {
   });
 
   describe('15 s interval', () => {
+    // The line chart gets a new point every 15 seconds.
     it('adds a point to the line chart for the next time step', () => {
       render(<PointPointIndex />);
       publish([{ name: QUEUE, depth: 3 }]);

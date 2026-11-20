@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Tests the Consumer node (Map/Consumer.node.tsx). It checks the toggle and
+// the Active/Inactive state. It checks that the queue is polled only while the
+// node is on. It checks the message shown, the counters and the delete button.
+// The API adapter is mocked.
+
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@xyflow/react';
@@ -34,6 +39,7 @@ vi.mock('../../adapters/API.adapter', () => ({
   },
 }));
 
+// Ids and names that match the default graph in the store.
 const QUEUE_NAME = 'DEV.QUEUE.1';
 const CONSUMER_ID = '2';
 const QUEUE_ID = '3';
@@ -44,6 +50,7 @@ const MESSAGE = {
   Count: 4,
 };
 
+// Renders the Consumer node, wired to the store so toggling updates the UI.
 function renderConsumer(connectedQueue = QUEUE_NAME) {
   const props: NodeProps<ConsumerFlowNode> = {
     id: CONSUMER_ID,
@@ -235,6 +242,7 @@ describe('ConsumerNode', () => {
       expect(screen.getByText('Counter:')).toHaveTextContent('Counter: 4');
     });
 
+    // 6000 ms is 3 polls, and each poll returns a message.
     it('adds one to the received count per message', async () => {
       vi.useFakeTimers();
       adapter.getFromLimit.mockResolvedValue(MESSAGE);
@@ -278,6 +286,7 @@ describe('ConsumerNode', () => {
       expect(useStore.getState().localDepths[QUEUE_ID]).toBe(3);
     });
 
+    // The first request fails and is logged. The next poll still works.
     it('keeps polling after the adapter throws', async () => {
       vi.useFakeTimers();
       const log = vi.spyOn(console, 'log').mockImplementation(() => {});

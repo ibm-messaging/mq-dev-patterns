@@ -14,6 +14,10 @@
  * limitations under the License.
  **/
 
+// Tests the publish/subscribe edge (Map/Custom-pubsub.edge.tsx). It checks the path
+// and its style. It checks the delete button. It checks the moving message
+// particles: when they appear, when they are removed and where they move.
+
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Position } from '@xyflow/react';
@@ -59,7 +63,7 @@ const particles = (container: HTMLElement) =>
 describe('CustomPubSubEdge', () => {
   beforeEach(() => {
     useStore.setState(useStore.getInitialState(), true);
-    // jsdom has no SVG geometry, the particle animation needs these.
+    // jsdom has no SVG geometry. The animation needs these two functions.
     Object.assign(SVGElement.prototype, {
       getTotalLength: () => 100,
       getPointAtLength: (d: number) => ({ x: d, y: 0 }),
@@ -153,6 +157,7 @@ describe('CustomPubSubEdge', () => {
       expect(particles(container)).toHaveLength(2);
     });
 
+    // The particle lasts 1050 ms.
     it('removes a particle once its animation is over', () => {
       vi.useFakeTimers();
       const { container } = renderEdge();
@@ -165,6 +170,7 @@ describe('CustomPubSubEdge', () => {
       expect(particles(container)).toHaveLength(0);
     });
 
+    // After 1 second the particle has a translate() transform.
     it('moves the particle along the path', () => {
       vi.useFakeTimers();
       const { container } = renderEdge();
@@ -177,6 +183,7 @@ describe('CustomPubSubEdge', () => {
       expect(group?.getAttribute('transform')).toMatch(/^translate\(/);
     });
 
+    // The fake path is 100 long. After 40 ms, x is past 90.
     it('starts at the end of the path for a reverse message', () => {
       vi.useFakeTimers();
       const { container } = renderEdge();

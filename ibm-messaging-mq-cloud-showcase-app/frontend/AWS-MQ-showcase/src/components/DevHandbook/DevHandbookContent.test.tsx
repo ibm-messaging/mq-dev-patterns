@@ -14,6 +14,10 @@
  * limitations under the License.
  **/
 
+// Tests the Dev handbook content: the seven sections in order, the three-
+// pattern overview and comparison, the glossary, code samples, MQRC error
+// codes, learning resources, and that external links open safely in a new tab.
+
 import { render, screen, within } from '@testing-library/react';
 import DevHandbookContent from './DevHandbookContent';
 

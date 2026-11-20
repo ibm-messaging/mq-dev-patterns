@@ -14,6 +14,10 @@
  * limitations under the License.
  **/
 
+// Tests the starting graph (PointToPoint/nodes.ts and edges.ts). It checks the
+// producer, the queue and the consumer. It checks their data and positions. It
+// checks the edges that join them.
+
 import initialNodes from './nodes';
 import initialEdges from './edges';
 

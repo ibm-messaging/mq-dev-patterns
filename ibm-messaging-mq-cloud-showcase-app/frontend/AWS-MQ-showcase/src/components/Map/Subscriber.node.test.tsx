@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Tests the Subscriber node (Map/Subscriber.node.tsx). It checks subscribe and
+// unsubscribe and the state colours. It checks that the node polls for
+// notifications after a random delay. It checks the notifications it shows.
+// It checks the delete button. The API adapter and the toast library are mocked.
+
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@xyflow/react';
@@ -51,10 +56,9 @@ vi.mock('react-toastify', () => ({
 }));
 
 const TOPIC = 'tickets/classic';
-// Ids from the default graph: topic '2' is connected to subscriber '3'
-// through the edge '2-3'.
 const SUBSCRIBER_ID = '3';
 const EDGE_ID = '2-3';
+// The poll delay is 2.5 s because Math.random is mocked to 0.5.
 const POLL_MS = 2500;
 
 const MESSAGE = {
@@ -89,6 +93,7 @@ const makeProps = (data: Partial<Data> = {}): NodeProps<ConsumerFlowNode> => ({
   positionAbsoluteY: 0,
 });
 
+// `update` renders the same node again with new data.
 function renderSubscriber(data: Partial<Data> = {}) {
   const ui = (d: Partial<Data>) => (
     <ReactFlowProvider>
@@ -291,6 +296,7 @@ describe('SubscriberNode', () => {
   });
 
   describe('polling', () => {
+    // The timers advance 10 seconds. No poll is sent.
     it('does not poll without a subscription', async () => {
       vi.useFakeTimers();
       renderSubscriber({ connectedQueue: '' });
@@ -300,6 +306,7 @@ describe('SubscriberNode', () => {
       expect(adapter.getForSubFromAppId).not.toHaveBeenCalled();
     });
 
+    // Math.random is 0.5, so the delay is exactly POLL_MS.
     it('polls the topic at a random 1.5 - 3.5 s interval once subscribed', async () => {
       vi.useFakeTimers();
       renderSubscriber();
@@ -330,6 +337,7 @@ describe('SubscriberNode', () => {
       expect(toast.success).not.toHaveBeenCalled();
     });
 
+    // The answer -1 confirms the subscription. The count stays 0.
     it('confirms the subscription when the answer is -1', async () => {
       vi.useFakeTimers();
       adapter.getForSubFromAppId.mockResolvedValue(-1);
@@ -356,6 +364,7 @@ describe('SubscriberNode', () => {
       expect(log).toHaveBeenCalled();
     });
 
+    // The first poll fails. The next poll still runs.
     it('keeps polling after a failed poll', async () => {
       vi.useFakeTimers();
       vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -391,6 +400,7 @@ describe('SubscriberNode', () => {
       );
     });
 
+    // Two poll intervals pass. Each one returns a message.
     it('counts every notification it receives', async () => {
       vi.useFakeTimers();
       adapter.getForSubFromAppId.mockResolvedValue(MESSAGE);

@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Tests the Queue node (Map/Queue.node.tsx). It checks the queue name, label
+// and depth. It checks that depths are polled every 3 seconds. It checks the
+// error toasts, the local depth and the info popover. It checks the delete
+// button. The API adapter and the toast library are mocked.
+
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@xyflow/react';
@@ -59,6 +64,7 @@ function buildProps(data: Partial<QueueData> = {}): NodeProps<QueueFlowNode> {
   };
 }
 
+// Returns the node as an element, so a test can pass it to rerender().
 const tree = (data?: Partial<QueueData>) => (
   <ReactFlowProvider>
     <QueueNode {...buildProps(data)} />
@@ -100,6 +106,7 @@ describe('QueueNode', () => {
       expect(screen.getByText('Active')).toBeInTheDocument();
     });
 
+    // A queue named APP.REPLIES.* is labelled REPLY QUEUE.
     it('labels a reply queue differently', () => {
       renderQueue({ queueName: 'APP.REPLIES.1' });
 
@@ -240,6 +247,7 @@ describe('QueueNode', () => {
   });
 
   describe('error toasts', () => {
+    // Error code 525 shows a "queue manager not reachable" message.
     it('tells the user the queue manager is unreachable on 525', async () => {
       adapter.getAllDepths.mockResolvedValue(525);
       renderQueue();
@@ -251,6 +259,7 @@ describe('QueueNode', () => {
       );
     });
 
+    // Error code 505 shows a "backend not reachable" message.
     it('tells the user the backend is unreachable on 505', async () => {
       adapter.getAllDepths.mockResolvedValue(505);
       renderQueue();
@@ -273,6 +282,7 @@ describe('QueueNode', () => {
       expect(screen.getByText('6 / 5000 msgs')).toBeInTheDocument();
     });
 
+    // If a request throws, it is logged (no toast) and polling continues.
     it('keeps polling when the adapter throws', async () => {
       const log = vi.spyOn(console, 'log').mockImplementation(() => {});
       adapter.getAllDepths.mockRejectedValueOnce(new Error('boom'));

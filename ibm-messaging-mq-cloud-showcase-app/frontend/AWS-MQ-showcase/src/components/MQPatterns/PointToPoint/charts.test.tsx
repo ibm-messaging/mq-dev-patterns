@@ -14,6 +14,11 @@
  * limitations under the License.
  **/
 
+// Tests the two depth charts (PointToPoint/chart1.tsx and chart2.tsx). It checks
+// that Chart1 (line) and Chart2 (bar) show nothing without data. It checks the
+// data and axes they pass on, and the max depth of 5000. The charts library is
+// mocked.
+
 import { render, screen } from '@testing-library/react';
 import Chart1 from './chart1';
 import Chart2 from './chart2';
