@@ -78,6 +78,8 @@ const SubscriberNode = ({ id, data }: NodeProps<ConsumerFlowNode>) => {
             }
           }
         } catch (e) {
+          // Let the next tick poll again; otherwise one failure stops polling.
+          setCandSend(true);
           console.log(e);
         }
       }, intervalTillTheLastMessage);
