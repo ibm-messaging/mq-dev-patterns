@@ -18,6 +18,8 @@
 // Request/Response pattern: the Idle/Listening state and the header toggle,
 // polling the request queue only while active, showing the incoming message
 // and its reply queue, sending the reply, and the error toast on failure.
+// It also checks read errors, string answers, a message with no reply queue,
+// a read still in progress, and renaming and deleting the node.
 // The API adapter is mocked.
 
 import { act, render, screen } from '@testing-library/react';
@@ -155,6 +157,84 @@ describe('ResponderNode', () => {
     expect(await screen.findByText('Is Alice registered?')).toBeInTheDocument();
     expect(screen.getByText('amq.reply.7')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Send reply' })).toBeEnabled();
+  });
+
+  it('lets the user rename the application', async () => {
+    renderNode();
+    const input = screen.getByRole('textbox', { name: 'Application name' });
+
+    await userEvent.clear(input);
+    await userEvent.type(input, 'Registry');
+
+    expect(input).toHaveValue('Registry');
+  });
+
+  it('removes the node from the store when deleted', async () => {
+    const deleteNode = vi.fn();
+    useStore.setState({ onDeleteNode: deleteNode });
+    renderNode();
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Delete Responder app' })
+    );
+
+    expect(deleteNode).toHaveBeenCalledWith(NODE_ID);
+  });
+
+  it('logs the error when the queue read fails', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    getDyn.mockRejectedValue(new Error('boom'));
+    renderNode({ isActive: true });
+
+    await act(async () => {
+      vi.advanceTimersByTime(1800);
+    });
+
+    expect(log).toHaveBeenCalledWith(expect.any(Error));
+    log.mockRestore();
+  });
+
+  it('ignores a plain string answer from the queue', async () => {
+    getDyn.mockResolvedValue('no message');
+    const drainMessageFromQueue = vi.fn();
+    useStore.setState({ drainMessageFromQueue });
+    renderNode({ isActive: true });
+
+    await act(async () => {
+      vi.advanceTimersByTime(1800);
+    });
+
+    expect(drainMessageFromQueue).not.toHaveBeenCalled();
+    expect(screen.getByText('Transactions').nextSibling).toHaveTextContent('0');
+  });
+
+  it('shows a message that has no reply queue without drawing a connection', async () => {
+    getDyn.mockResolvedValue({ message: { Message: 'Ping' } });
+    const drawTmpConnection = vi.fn();
+    useStore.setState({ drawTmpConnection, drainMessageFromQueue: vi.fn() });
+    renderNode({ isActive: true });
+
+    await act(async () => {
+      vi.advanceTimersByTime(1800);
+    });
+
+    expect(await screen.findByText('Ping')).toBeInTheDocument();
+    expect(drawTmpConnection).not.toHaveBeenCalled();
+    expect(toast.success).not.toHaveBeenCalled();
+  });
+
+  it('does not ask the queue again while the last read is still running', async () => {
+    getDyn.mockReturnValue(new Promise(() => {}));
+    renderNode({ isActive: true });
+
+    await act(async () => {
+      vi.advanceTimersByTime(1800);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1800);
+    });
+
+    expect(getDyn).toHaveBeenCalledTimes(1);
   });
 
   it('does not poll while inactive', async () => {

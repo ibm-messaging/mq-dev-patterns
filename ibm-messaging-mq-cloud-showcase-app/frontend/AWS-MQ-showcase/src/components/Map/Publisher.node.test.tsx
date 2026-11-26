@@ -17,8 +17,10 @@
 // Tests the Publisher node (Map/Publisher.node.tsx). It checks the title and
 // content fields and the send button. It checks the message published to the
 // topic and the toast. It checks the 1 second animation and that a second send
-// is ignored while the first is pending. It checks the delete button.
-// The API adapter and the toast library are mocked.
+// is ignored while the first is pending, including a click after the animation
+// ends. It checks the delete button and the fallbacks used when the input refs
+// are missing. The API adapter, the toast library and the Carbon text fields
+// are mocked.
 
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -30,6 +32,25 @@ import type { ProducerFlowNode } from '../../types';
 
 const adapter = vi.hoisted(() => ({ publish: vi.fn() }));
 const toast = vi.hoisted(() => ({ promise: vi.fn() }));
+// When false, the mocked inputs below do not hand their ref to the node.
+const inputRefs = vi.hoisted(() => ({ attach: true }));
+
+vi.mock('@carbon/react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@carbon/react')>();
+  const { forwardRef } = await import('react');
+  type Props = Record<string, unknown>;
+  const withOptionalRef = (Real: unknown) => {
+    const Input = Real as React.ComponentType<Props>;
+    return forwardRef<unknown, Props>((props, ref) => (
+      <Input {...props} ref={inputRefs.attach ? ref : null} />
+    ));
+  };
+  return {
+    ...actual,
+    TextInput: withOptionalRef(actual.TextInput),
+    TextArea: withOptionalRef(actual.TextArea),
+  };
+});
 
 vi.mock('../../adapters/API.adapter', () => ({
   default: class {
@@ -103,6 +124,7 @@ describe('PublisherNode', () => {
   });
 
   afterEach(() => {
+    inputRefs.attach = true;
     vi.useRealTimers();
     vi.clearAllMocks();
   });
@@ -277,7 +299,41 @@ describe('PublisherNode', () => {
     });
   });
 
+  describe('when the inputs give no value', () => {
+    // The node reads the fields through refs and falls back to empty strings.
+    it('publishes an empty title and content', async () => {
+      inputRefs.attach = false;
+      const user = userEvent.setup();
+      renderPublisher();
+
+      await user.click(getSendButton());
+
+      expect(adapter.publish).toHaveBeenCalledWith('|@|', 1, TOPIC, '1');
+    });
+  });
+
   describe('sending twice in a row', () => {
+    // The animation ends after 1 second and the button is enabled again, but
+    // the publish is still pending. A click now must not send a second message.
+    it('ignores a click after the animation ends while the publish is pending', async () => {
+      vi.useFakeTimers();
+      adapter.publish.mockReturnValue(new Promise(() => {}));
+      renderPublisher();
+      await act(async () => {
+        getSendButton().click();
+      });
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(getSendButton()).toBeEnabled();
+
+      await act(async () => {
+        getSendButton().click();
+      });
+
+      expect(adapter.publish).toHaveBeenCalledTimes(1);
+    });
+
     // The publish promise never resolves, so the first send stays pending.
     it('ignores a second send while the first is still pending', async () => {
       adapter.publish.mockReturnValue(new Promise(() => {}));
