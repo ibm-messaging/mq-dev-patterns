@@ -171,3 +171,56 @@ npx cdk deploy
 ```bash
 npx cdk destroy
 ```
+
+### AWS Cloud (Terraform)
+
+The `terraform/` directory deploys the same three-container application to AWS ECS Fargate as an alternative to the CDK stack above. Use one or the other per AWS account and region, not both: they use the same resource names, so the second deployment fails on names that already exist.
+
+One `terraform apply` builds and pushes the frontend and backend images, then creates the network rules, EFS storage, secrets, Network Load Balancer and a single ECS task running all three containers.
+
+#### Prerequisites
+
+- [Terraform](https://developer.hashicorp.com/terraform/install) 1.11 or later
+- AWS CLI configured (`aws configure`). There is no bootstrap step, so your own credentials need permission to create IAM roles, Secrets Manager secrets, and the ECS, EFS, ECR and load balancer resources.
+- Podman (default) or Docker, plus `bash`, to build and push the images. Set `container_cli = "docker"` to use Docker.
+
+#### Configure
+
+```bash
+cd terraform
+cp terraform.tfvars.example terraform.tfvars
+```
+
+Set `app_password` and `admin_password` in `terraform.tfvars`. The file is git-ignored, so never commit it. Alternatively, export `TF_VAR_app_password` and `TF_VAR_admin_password`.
+
+Other inputs have defaults (see `terraform/variables.tf`), for example `region` (`us-west-1`) and `mq_image`.
+
+> **Security:** by default, `allowed_ingress_cidr` is `0.0.0.0/0`, so the application (port 80) and the MQ console (port 9443) are reachable from any address. Set it to your own range, for example `"203.0.113.4/32"`, before sharing the URL. MQ port 1414 is not exposed.
+
+#### Deploy
+
+```bash
+terraform init
+terraform plan
+terraform apply
+```
+
+Terraform prints three outputs (run `terraform output` to see them again):
+
+- `app_url`: the Messaging Playground
+- `mq_console_url`: the IBM MQ web console (HTTPS on 9443)
+- `nlb_dns_name`: the load balancer address
+
+The first start can take a while, because ECS ignores health checks for 300 seconds to give MQ time to come up. The service runs one task, since MQ locks its storage, so an update causes a short gap.
+
+#### State
+
+State is a local file, `terraform/terraform.tfstate`, which is git-ignored. If you lose it, the AWS resources stay in place but Terraform no longer knows them. For shared use, configure a remote backend. The MQ passwords are write-only attributes and are not stored in state, but the file still holds resource IDs and settings, so treat it as sensitive.
+
+#### Tear down
+
+```bash
+terraform destroy
+```
+
+This removes everything Terraform created, including the ECR repositories and the secrets (deleted immediately, with no recovery window). The default VPC and subnets are only looked up, so they stay.
