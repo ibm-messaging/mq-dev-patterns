@@ -17,7 +17,8 @@
 // Tests the Consumer node (Map/Consumer.node.tsx). It checks the toggle and
 // the Active/Inactive state. It checks that the queue is polled only while the
 // node is on. It checks the message shown, the counters and the delete button.
-// The API adapter is mocked.
+// It also checks the coding challenge build (limited reads, the challenge
+// message and its error handling). The API adapter is mocked.
 
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -29,12 +30,14 @@ import type { ConsumerFlowNode } from '../../types';
 
 const adapter = vi.hoisted(() => ({
   getFromLimit: vi.fn(),
+  getFromLimitCodingChallange: vi.fn(),
   closeConsumer: vi.fn(),
 }));
 
 vi.mock('../../adapters/API.adapter', () => ({
   default: class {
     getFromLimit = adapter.getFromLimit;
+    getFromLimitCodingChallange = adapter.getFromLimitCodingChallange;
     closeConsumer = adapter.closeConsumer;
   },
 }));
@@ -315,6 +318,124 @@ describe('ConsumerNode', () => {
         useStore.getState().nodes.find((n) => n.id === CONSUMER_ID)
       ).toBeUndefined();
       expect(adapter.closeConsumer).toHaveBeenCalledWith(CONSUMER_ID);
+    });
+  });
+
+  // The coding challenge build shows a cash receiver with a currency filter.
+  // The flag is read when the node renders, so each test sets it first.
+  describe('coding challenge', () => {
+    const CHALLENGE_MESSAGE = {
+      message: {
+        Message: '25',
+        Sent: '2026-11-10T10:00:00.000Z',
+        count: 4,
+      },
+      currency: 'EUR',
+    };
+
+    // The value next to a label in the stats list. The currency dropdown also
+    // has the label "Currency", so look at the stat labels only.
+    const statValue = (label: string) =>
+      Array.from(document.querySelectorAll('.node-card__stat-label')).find(
+        (el) => el.textContent?.trim() === label
+      )?.nextSibling;
+
+    beforeEach(() => {
+      process.env.REACT_APP_IS_FOR_CODING_CHALLENGE = 'true';
+      adapter.getFromLimitCodingChallange.mockResolvedValue(undefined);
+    });
+
+    afterEach(() => {
+      process.env.REACT_APP_IS_FOR_CODING_CHALLENGE = 'false';
+    });
+
+    it('shows the currency filter and empty stats before any message', () => {
+      renderConsumer();
+
+      expect(screen.getByText('Filtering by EUR')).toBeInTheDocument();
+      expect(screen.getByText('Inactive')).toBeInTheDocument();
+      expect(statValue('Received')).toHaveTextContent('0');
+      expect(statValue('Amount')).toHaveTextContent('—');
+      expect(statValue('Currency')).toHaveTextContent('—');
+      expect(statValue('Date')).toHaveTextContent('—');
+      expect(screen.getByText('Count').nextSibling).toHaveTextContent('—');
+      expect(screen.queryByText('Type')).not.toBeInTheDocument();
+    });
+
+    it('filters by the currency the user picked', async () => {
+      const user = userEvent.setup();
+      renderConsumer();
+
+      await user.click(screen.getByRole('combobox'));
+      await user.click(screen.getByRole('option', { name: 'USD' }));
+
+      expect(screen.getByText('Filtering by USD')).toBeInTheDocument();
+    });
+
+    it('activates when switched on and shows the active status', async () => {
+      const user = userEvent.setup();
+      renderConsumer();
+
+      await user.click(getToggle());
+
+      expect(isActive()).toBe(true);
+      expect(screen.getByText('Active')).toBeInTheDocument();
+    });
+
+    it('polls with the currency filter and the node id every 2 seconds', async () => {
+      vi.useFakeTimers();
+      renderConsumer();
+      act(() => useStore.getState().onClick(CONSUMER_ID));
+
+      await advance(2000);
+
+      expect(adapter.getFromLimitCodingChallange).toHaveBeenCalledWith(
+        1,
+        QUEUE_NAME,
+        'EUR',
+        CONSUMER_ID
+      );
+      expect(adapter.getFromLimit).not.toHaveBeenCalled();
+    });
+
+    it('shows the amount, currency, date and count of the received message', async () => {
+      vi.useFakeTimers();
+      adapter.getFromLimitCodingChallange.mockResolvedValue(CHALLENGE_MESSAGE);
+      renderConsumer();
+      act(() => useStore.getState().onClick(CONSUMER_ID));
+
+      await advance(2000);
+
+      expect(statValue('Received')).toHaveTextContent('1');
+      expect(statValue('Amount')).toHaveTextContent('25');
+      expect(statValue('Currency')).toHaveTextContent('EUR');
+      expect(statValue('Date')).toHaveTextContent('2026-11-10');
+      expect(screen.getByText('Count').nextSibling).toHaveTextContent('4');
+    });
+
+    it('leaves the stats alone when the queue is empty', async () => {
+      vi.useFakeTimers();
+      renderConsumer();
+      act(() => useStore.getState().onClick(CONSUMER_ID));
+
+      await advance(4000);
+
+      expect(adapter.getFromLimitCodingChallange).toHaveBeenCalledTimes(2);
+      expect(statValue('Received')).toHaveTextContent('0');
+      expect(statValue('Amount')).toHaveTextContent('—');
+    });
+
+    it('removes the node on delete', async () => {
+      const user = userEvent.setup();
+      renderConsumer();
+
+      await user.click(
+        screen.getByRole('button', { name: 'Delete Consumer app' })
+      );
+
+      expect(
+        useStore.getState().nodes.find((n) => n.id === CONSUMER_ID)
+      ).toBeUndefined();
     });
   });
 });

@@ -16,8 +16,9 @@
 
 // Tests the Requestor app node (Map/Requestor.node.tsx) used in the
 // Request/Response pattern: submitting a request, the waiting state while the
-// temporary reply queue is polled, the response shown once it arrives, and
-// the error path when the request is rejected. The API adapter is mocked.
+// temporary reply queue is polled, the response shown once it arrives, the
+// error path when the request is rejected, and renaming and deleting the node.
+// The API adapter is mocked.
 
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -153,6 +154,30 @@ describe('RequestorNode', () => {
     expect(
       await screen.findByRole('button', { name: 'Waiting for reply…' })
     ).toBeDisabled();
+  });
+
+  it('lets the user rename the application', async () => {
+    renderNode();
+    const input = screen.getByRole('textbox', {
+      name: 'Name of your application',
+    });
+
+    await userEvent.clear(input);
+    await userEvent.type(input, 'Box office');
+
+    expect(input).toHaveValue('Box office');
+  });
+
+  it('removes the node from the store when deleted', async () => {
+    const deleteNode = vi.fn();
+    useStore.setState({ onDeleteNode: deleteNode });
+    renderNode();
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Delete Requestor app' })
+    );
+
+    expect(deleteNode).toHaveBeenCalledWith(NODE_ID);
   });
 
   it('does not enter the waiting state when the request fails', async () => {

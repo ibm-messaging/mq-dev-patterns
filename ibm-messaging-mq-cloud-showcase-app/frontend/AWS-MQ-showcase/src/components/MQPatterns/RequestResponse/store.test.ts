@@ -17,9 +17,12 @@
 // Tests the Request/Response Zustand store (RequestResponse/store.ts): the
 // session-cookie node IDs and initial graph, the temporary reply queue created
 // for each request and its edges, draining and landing counters, the timed
-// message animation, and node toggle and delete actions.
+// message animation, and node toggle and delete actions. It also checks
+// connecting and reconnecting nodes to a queue, the node and edge changes from
+// the canvas, and the stored queue depths and queue data.
 
 import Cookies from 'js-cookie';
+import type { MQFlowNode } from '../../../types';
 
 const SESSION_ID = 'a'.repeat(32);
 const REQUESTOR_ID = 'b'.repeat(32);
@@ -63,6 +66,19 @@ describe('RequestResponse store', () => {
         `17-${SESSION_ID}`,
         `${REQUESTOR_ID}-17`,
       ]);
+    });
+  });
+
+  describe('session cookies', () => {
+    it('fails to load when only one of the two session cookies exists', async () => {
+      Cookies.remove('requestorSessionID');
+      vi.resetModules();
+
+      await expect(import('./store')).rejects.toThrow(
+        'Failed to initialise session cookies'
+      );
+
+      Cookies.set('requestorSessionID', REQUESTOR_ID);
     });
   });
 
@@ -143,6 +159,17 @@ describe('RequestResponse store', () => {
         .getState()
         .edges.find((e) => e.source === SESSION_ID && e.target === '10');
       expect(edge?.animated).toBe(true);
+    });
+
+    it('emits no message flow when there is no edge to the reply queue', () => {
+      const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+      useStore.setState({
+        edges: useStore.getState().edges.filter((e) => e.target !== '10'),
+      });
+
+      useStore.getState().animateTmpConnection(TMP_QUEUE, SESSION_ID);
+
+      expect(dispatchSpy).not.toHaveBeenCalled();
     });
 
     it('does nothing when the reply queue does not exist', () => {
@@ -229,6 +256,22 @@ describe('RequestResponse store', () => {
       expect(useStore.getState().localDepths['17']).toBe(0);
     });
 
+    it('treats a source that is not a queue as an empty queue', () => {
+      useStore.setState({
+        edges: [
+          {
+            id: `${REQUESTOR_ID}-${SESSION_ID}`,
+            source: REQUESTOR_ID,
+            target: SESSION_ID,
+          },
+        ],
+      });
+
+      useStore.getState().drainMessageFromQueue(SESSION_ID);
+
+      expect(useStore.getState().localDepths[REQUESTOR_ID]).toBe(0);
+    });
+
     it('does nothing when the responder has no inbound edge', () => {
       useStore.setState({ edges: [] });
       const before = useStore.getState().nodes;
@@ -273,6 +316,131 @@ describe('RequestResponse store', () => {
       useStore.getState().sendMessages(REQUESTOR_ID, 1);
 
       expect(useStore.getState().localDepths).toEqual({});
+    });
+  });
+
+  describe('onConnect', () => {
+    it('connects the requestor to a new queue and records the queue name', () => {
+      useStore.getState().addNode({
+        id: '11',
+        type: 'queue',
+        data: { role: 'q', depth: 0, queueName: 'DEV.QUEUE.1' },
+        position: { x: 0, y: 0 },
+      } as MQFlowNode);
+
+      useStore.getState().onConnect({
+        source: REQUESTOR_ID,
+        target: '11',
+        sourceHandle: null,
+        targetHandle: null,
+      });
+
+      expect(useStore.getState().edges).toContainEqual(
+        expect.objectContaining({
+          id: `${REQUESTOR_ID}-11`,
+          source: REQUESTOR_ID,
+          target: '11',
+        })
+      );
+      expect(
+        useStore.getState().nodes.find((n) => n.id === REQUESTOR_ID)?.data
+      ).toMatchObject({ connectedQueue: 'DEV.QUEUE.1' });
+    });
+
+    it('alerts and adds no edge when connecting two applications', () => {
+      const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+
+      useStore.getState().onConnect({
+        source: REQUESTOR_ID,
+        target: SESSION_ID,
+        sourceHandle: null,
+        targetHandle: null,
+      });
+
+      expect(alertSpy).toHaveBeenCalledWith(
+        'Impossible setting the connection between these two components'
+      );
+      expect(useStore.getState().edges).toHaveLength(2);
+    });
+  });
+
+  describe('onReconnect', () => {
+    it('moves the requestor edge to another queue', () => {
+      useStore.getState().addNode({
+        id: '11',
+        type: 'queue',
+        data: { role: 'q', depth: 0, queueName: 'DEV.QUEUE.1' },
+        position: { x: 0, y: 0 },
+      } as MQFlowNode);
+      const oldEdge = useStore
+        .getState()
+        .edges.find((e) => e.id === `${REQUESTOR_ID}-17`)!;
+
+      useStore.getState().onReconnect(oldEdge, {
+        source: REQUESTOR_ID,
+        target: '11',
+        sourceHandle: null,
+        targetHandle: null,
+      });
+
+      const edges = useStore.getState().edges;
+      expect(edges.some((e) => e.target === '11')).toBe(true);
+      expect(edges.some((e) => e.id === oldEdge.id)).toBe(false);
+      expect(
+        useStore.getState().nodes.find((n) => n.id === REQUESTOR_ID)?.data
+      ).toMatchObject({ connectedQueue: 'DEV.QUEUE.1' });
+    });
+  });
+
+  describe('onNodesChange / onEdgesChange', () => {
+    it('applies a position change to the node', () => {
+      useStore.getState().onNodesChange([
+        {
+          id: REQUESTOR_ID,
+          type: 'position',
+          position: { x: 10, y: 20 },
+        },
+      ]);
+
+      expect(
+        useStore.getState().nodes.find((n) => n.id === REQUESTOR_ID)?.position
+      ).toEqual({ x: 10, y: 20 });
+    });
+
+    it('applies a remove change to the edge', () => {
+      useStore
+        .getState()
+        .onEdgesChange([{ id: `17-${SESSION_ID}`, type: 'remove' }]);
+
+      expect(useStore.getState().edges.map((e) => e.id)).toEqual([
+        `${REQUESTOR_ID}-17`,
+      ]);
+    });
+  });
+
+  describe('setNodeDepth', () => {
+    it('stores the depth as the API depth and as the local depth', () => {
+      useStore.getState().setNodeDepth('17', 7);
+
+      expect(useStore.getState().nodeDepths['17']).toBe(7);
+      expect(useStore.getState().localDepths['17']).toBe(7);
+    });
+
+    it('keeps the depths of the other queues', () => {
+      useStore.getState().setNodeDepth('a', 1);
+      useStore.getState().setNodeDepth('b', 2);
+
+      expect(useStore.getState().nodeDepths).toEqual({ a: 1, b: 2 });
+    });
+  });
+
+  describe('updateQueueData', () => {
+    it('replaces the queue data', () => {
+      const data = [{ name: 'DEV.QUEUE.3', depth: 4, maxDepth: 5000 }];
+
+      useStore.getState().updateQueueData(data);
+
+      expect(useStore.getState().queueData).toEqual(data);
     });
   });
 

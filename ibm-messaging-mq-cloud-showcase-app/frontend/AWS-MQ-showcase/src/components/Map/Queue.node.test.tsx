@@ -16,8 +16,9 @@
 
 // Tests the Queue node (Map/Queue.node.tsx). It checks the queue name, label
 // and depth. It checks that depths are polled every 3 seconds. It checks the
-// error toasts, the local depth and the info popover. It checks the delete
-// button. The API adapter and the toast library are mocked.
+// error toasts, the local depth and the info popover, including closing it
+// with Escape and with an outside click. It checks the delete button. The API
+// adapter and the toast library are mocked.
 
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -353,6 +354,36 @@ describe('QueueNode', () => {
       expect(getInfoButton()).toHaveAttribute('aria-expanded', 'false');
 
       rerender(tree({ landCount: 2 }));
+      expect(getInfoButton()).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('closes on Escape and stays closed for later messages', () => {
+      const { rerender } = renderQueue();
+      act(() => useStore.getState().setNodeDepth(QUEUE_ID, 1));
+      rerender(tree({ landCount: 1 }));
+      expect(getInfoButton()).toHaveAttribute('aria-expanded', 'true');
+
+      // The popover only reacts to Escape pressed inside its content.
+      act(() => {
+        screen
+          .getByRole('button', { name: 'Close' })
+          .dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
+          );
+      });
+      expect(getInfoButton()).toHaveAttribute('aria-expanded', 'false');
+
+      rerender(tree({ landCount: 2 }));
+      expect(getInfoButton()).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('closes when the user clicks outside the popover', () => {
+      const { rerender } = renderQueue();
+      act(() => useStore.getState().setNodeDepth(QUEUE_ID, 1));
+      rerender(tree({ landCount: 1 }));
+
+      act(() => document.body.click());
+
       expect(getInfoButton()).toHaveAttribute('aria-expanded', 'false');
     });
 
